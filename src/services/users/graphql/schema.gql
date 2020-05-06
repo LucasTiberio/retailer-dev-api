@@ -1,0 +1,18 @@
+# type Query{
+#   hellob8: String! @hasRole(role: ["MANAGER", "AFFILIATE"])
+# }
+
+type Mutation{
+  signUp(input: SignUpInput!): SignUpPayload!
+}
+
+input SignUpInput{
+  username: String!
+  email: String!
+  password: String!
+}
+
+type SignUpPayload{
+  username: String!
+  email: String!
+}
