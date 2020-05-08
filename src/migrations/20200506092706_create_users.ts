@@ -21,6 +21,13 @@ export async function up(knex: Knex): Promise<any> {
             .text('encrypted_password')
             .notNullable();
         table
+            .boolean('verified')
+            .defaultsTo(false)
+            .notNullable();
+        table
+            .text('verification_hash')
+            .unique();
+        table
             .timestamps(true, true)
   }).then(() => knex.raw(knexfile.onUpdateTrigger('users')));
 }

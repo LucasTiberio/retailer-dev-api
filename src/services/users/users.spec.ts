@@ -4,6 +4,7 @@ import Faker from 'faker';
 import knex from '../../knex-database';
 import { Transaction } from 'knex';
 import common from '../../common'
+import { ISignUpAdapted } from './types';
 
 describe('Authentication', () => {
 
@@ -21,8 +22,7 @@ describe('Authentication', () => {
         }); 
     });
 
-
-    beforeEach(async () => {
+    afterEach(async () => {
         await trx('users').del();
     })
 
@@ -50,12 +50,102 @@ describe('Authentication', () => {
             expect.objectContaining({
                 username: signUpPayload.username,
                 email: signUpPayload.email,
-                encrypted_password: expect.any(String)
+                encrypted_password: expect.any(String),
+                verified: false,
+                verification_hash: expect.any(String)
             })
         )
         expect(common.passwordIsCorrect(signUpPayload.password, userOnDb[0].encrypted_password)).toBeTruthy();
 
         done();
     })
+
+    describe("tets with user before created", () => {
+
+        let signUpCreated: ISignUpAdapted;
+
+        beforeEach(async () => {
+
+            const signUpPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: Faker.internet.password()
+            }
+
+            signUpCreated = await service.signUp(signUpPayload, trx);
+        });
+
+        test("user should verify your sign up", async done => {
+
+            const [userFromDb] = await (trx || knex)('users').where('id', signUpCreated.id).select('verification_hash');
+
+            const userVerified = await service.verifyEmail(userFromDb.verification_hash, trx);
+
+            expect(userVerified).toBeTruthy();
+
+            const userOnDb = await (trx || knex)('users').where('id', signUpCreated.id).select();
+
+            expect(userOnDb).toHaveLength(1);
+            expect(userOnDb[0]).toEqual(
+                expect.objectContaining({
+                    username: signUpCreated.username,
+                    email: signUpCreated.email,
+                    verified: true,
+                    verification_hash: null
+                })
+            )
+            
+            done();
+        })
+
+        test("user should recovery your password", async done => {
+
+            const userPasswordRecoveredMailSent = await service.recoveryPassword(signUpCreated.email, trx);
+            
+            expect(userPasswordRecoveredMailSent).toBeTruthy();
+
+            const userOnDb = await (trx || knex)('users').where('id', signUpCreated.id).select();
+
+            expect(userOnDb).toHaveLength(1);
+            expect(userOnDb[0]).toEqual(
+                expect.objectContaining({
+                    username: signUpCreated.username,
+                    email: signUpCreated.email,
+                    verification_hash: expect.any(String)
+                })
+            )
+            
+            done();
+        })
+
+        test("user should recovery and change your password", async done => {
+
+            const userPasswordRecoveredMailSent = await service.recoveryPassword(signUpCreated.email, trx);
+
+            const [userFound] = await (trx || knex)('users').where('id', signUpCreated.id).select();
+
+            const newPassword = Faker.internet.password();
+
+            const userPasswordChanged = await service.changePassword({hash: userFound.verification_hash, password: newPassword}, trx)
+            
+            expect(userPasswordChanged).toBeTruthy();
+
+            const userOnDb = await (trx || knex)('users').where('id', signUpCreated.id).select();
+
+            expect(userOnDb).toHaveLength(1);
+            expect(userOnDb[0]).toEqual(
+                expect.objectContaining({
+                    username: signUpCreated.username,
+                    email: signUpCreated.email,
+                    verification_hash: null,
+                    encrypted_password: expect.any(String)
+                })
+            )
+            expect(common.passwordIsCorrect(newPassword, userOnDb[0].encrypted_password)).toBeTruthy();
+            
+            done();
+        })
+    })
+
         
 });

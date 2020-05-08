@@ -1,5 +1,16 @@
 export interface ISignUp{
     username: string
-    password: string
     email: string
+    password: string
+}
+
+export interface ISignUpAdapted{
+    id: string
+    username: string
+    email: string
+}
+
+export interface IChangePassword{
+    password: string
+    hash: string
 }
