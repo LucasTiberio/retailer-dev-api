@@ -22,7 +22,7 @@ describe('Users', () => {
         }); 
     });
 
-    afterEach(async () => {
+    beforeEach(async () => {
         await trx('users').del();
     })
 
