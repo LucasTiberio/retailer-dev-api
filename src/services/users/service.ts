@@ -2,7 +2,7 @@ import common from '../../common';
 import MailService from '../mail/service';
 import { ISignUp, ISignUpAdapted, IChangePassword } from './types';
 import { Transaction  } from 'knex';
-const knex = require('../../knex-database').knex;
+import database from '../../knex-database';
 
 const _signUpAdapter = (record: ISignUpAdapted) => ({
   username: record.username,
@@ -21,7 +21,7 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
 
   try {
 
-    const [signUpCreated] = await (trx || knex)
+    const [signUpCreated] = await (trx || database.knex)
     .insert({
       username,
       email,
@@ -43,13 +43,13 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
 const verifyEmail = async (hash: string, trx: Transaction) => {
 
   try {
-      const [user] = await (trx || knex)('users')
+      const [user] = await (trx || database.knex)('users')
           .where('verification_hash', hash)
           .select();     
 
       if(!user) throw new Error("User already verified!");
 
-      await (trx || knex)('users')
+      await (trx || database.knex)('users')
           .select()
           .where('verification_hash', hash)
           .update({ verified: true, verification_hash: null });
@@ -62,7 +62,7 @@ const verifyEmail = async (hash: string, trx: Transaction) => {
 }
 
 const getUserByEmail = async (email: string, trx: Transaction) => {
-  const [user] = await (trx || knex)('users')
+  const [user] = await (trx || database.knex)('users')
   .where('email', email)
   .select();
 
@@ -87,7 +87,7 @@ const recoveryPassword = async (email: string, trx: Transaction) => {
       hashToVerify: encryptedHashVerification
     })
   
-    await (trx || knex)('users').where('email', email).update({'verification_hash':encryptedHashVerification, verified: true});
+    await (trx || database.knex)('users').where('email', email).update({'verification_hash':encryptedHashVerification, verified: true});
 
     return true
 
@@ -102,7 +102,7 @@ const changePassword = async (attrs : IChangePassword, trx : Transaction) => {
   try {
     const encryptedPassword = await common.encrypt(attrs.password);
 
-    const [userPasswordChanged] = await (trx || knex)('users').where('verification_hash', attrs.hash).update({'encrypted_password': encryptedPassword, 'verification_hash': null}).returning(['email', 'username']);
+    const [userPasswordChanged] = await (trx || database.knex)('users').where('verification_hash', attrs.hash).update({'encrypted_password': encryptedPassword, 'verification_hash': null}).returning(['email', 'username']);
 
     await MailService.sendRecoveredPasswordMail({email: userPasswordChanged.email, username: userPasswordChanged.username})
 
@@ -118,5 +118,6 @@ export default {
   signUp,
   verifyEmail,
   recoveryPassword,
-  changePassword
+  changePassword,
+  getUserByEmail
 }

@@ -1,9 +1,11 @@
 import { reduce, merge } from 'lodash';
 
 import UserService from './users';
+import AuthenticationService from './authentication';
 
 let services = [
-  UserService
+  UserService,
+  AuthenticationService
 ];
 
 export default {

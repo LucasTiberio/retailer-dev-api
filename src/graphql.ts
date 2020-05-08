@@ -14,6 +14,12 @@ declare var process : {
 }
 
 const typeDefsBase = gql`
+  type Query{
+    _empty: String
+  }
+  type Mutation{
+    _empty: String
+  }
   scalar Date
   scalar Datetime
   scalar Upload
@@ -22,6 +28,12 @@ const typeDefsBase = gql`
 `;
 
 const resolversBase : IResolvers = {
+  Query: {
+    _empty: () => ""
+  },
+  Mutation: {
+    _empty: () => ""
+  },
   Upload: GraphQLUpload,
   Date: new GraphQLScalarType({
     name: 'Date',

@@ -17,7 +17,7 @@ server.applyMiddleware({app, cors: true});
 
 const port = process.env.PORT || 5000;
 
-export default app
+module.exports = app
 
 if(process.env.NODE_ENV !== 'test')
   app.listen({port}, () => console.log("server running"));

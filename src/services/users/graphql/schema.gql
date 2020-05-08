@@ -1,9 +1,21 @@
-# type Query{
-#   hellob8: String! @hasRole(role: ["MANAGER", "AFFILIATE"])
-# }
+extend type Mutation{
+  signUp(input: SignUpInput!): User!
+  userVerifyEmail(input: UserVerifyEmailInput!): Boolean
+  userRecoveryPassword(input: UserRecoveryPasswordInput!): Boolean
+  userPasswordChange(input: UserPasswordChangeInput!): Boolean
+}
 
-type Mutation{
-  signUp(input: SignUpInput!): SignUpPayload!
+input UserPasswordChangeInput{
+  hash: String!
+  password: String!
+}
+
+input UserRecoveryPasswordInput{
+  email: String!
+}
+
+input UserVerifyEmailInput{
+  verificationHash: String!
 }
 
 input SignUpInput{
@@ -12,7 +24,8 @@ input SignUpInput{
   password: String!
 }
 
-type SignUpPayload{
+type User{
+  id: String!
   username: String!
   email: String!
 }

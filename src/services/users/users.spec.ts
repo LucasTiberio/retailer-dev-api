@@ -6,7 +6,7 @@ import { Transaction } from 'knex';
 import common from '../../common'
 import { ISignUpAdapted } from './types';
 
-describe('Authentication', () => {
+describe('Users', () => {
 
     let trx : Transaction;
 
@@ -120,7 +120,7 @@ describe('Authentication', () => {
 
         test("user should recovery and change your password", async done => {
 
-            const userPasswordRecoveredMailSent = await service.recoveryPassword(signUpCreated.email, trx);
+            await service.recoveryPassword(signUpCreated.email, trx);
 
             const [userFound] = await (trx || knex)('users').where('id', signUpCreated.id).select();
 
