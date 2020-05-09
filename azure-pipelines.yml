@@ -8,7 +8,7 @@ trigger:
 
 resources:
   containers:
-  - container: postgres
+  - container: postgres_integration_tests
     image: postgres:10.8
     ports:
     - 5432:5432
@@ -20,7 +20,7 @@ resources:
 jobs:
 - job: Tests
   services: 
-    postgres: postgres
+    postgres: postgres_integration_tests
   pool:
     vmImage: 'ubuntu-16.04'
   variables: 
