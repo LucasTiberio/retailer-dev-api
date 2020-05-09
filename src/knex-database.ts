@@ -1,7 +1,9 @@
 // @ts-nocheck
-require('dotenv').config();	
+require('dotenv');	
 import config from '../knexfile';
 import knexCleaner from 'knex-cleaner';
+
+console.log(config)
 
 declare var process : {
 	env: {
