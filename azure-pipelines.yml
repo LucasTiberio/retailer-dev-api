@@ -26,3 +26,14 @@ jobs:
           Database=plugonetests;
           Username=$(IntegrationTests.Database.Todo.Username);
           Password=$(IntegrationTests.Database.Todo.Password);
+    steps:
+      # Ensure Node.js 12 is active
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '12.x'
+        displayName: 'Use Node.js 12'
+
+      # Ensure Python 2.7 is active
+      - script: |
+          npm run install
+          npm run test
