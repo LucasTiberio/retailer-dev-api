@@ -27,7 +27,7 @@ describe('Users', () => {
         await trx('users').del();
     })
 
-    test("should create new user", async done => {
+    test.only("should create new user", async done => {
 
         const signUpPayload = {
             username: Faker.name.firstName(),
