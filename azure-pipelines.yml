@@ -26,10 +26,6 @@ jobs:
     postgres: postgres
   steps:
 
-    - script: |
-        sudo apt install -y postgresql-client
-        psql --host=localhost --username=postgres --command="SELECT 1;"
-
     - task: NodeTool@0
       inputs:
         versionSpec: '12.x'
