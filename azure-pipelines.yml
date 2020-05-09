@@ -18,7 +18,6 @@ resources:
       POSTGRES_PASSWORD: postgres
 
 jobs:
-- template: 'teste template'
   parameters:
     job:
       name: 'linux'
