@@ -31,6 +31,7 @@ jobs:
     DB_TEST_PASSWORD: postgres
     DB_TEST_HOST: postgres
     DB_TEST_PORT: 5432
+    PG_PORT: 5432
   steps:
 
     - task: NodeTool@0
