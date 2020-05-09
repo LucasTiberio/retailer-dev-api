@@ -1,43 +1,28 @@
-trigger:
-- staging
-
 resources:
   containers:
+  - container: my_container
+    image: ubuntu:16.04
   - container: pg11
     image: postgres:11
-    ports:
-        - 5432
+  - container: pg10
+    image: postgres:10
 
-variables:
-  tag: '$(Build.BuildId)'
+pool:
+  vmImage: 'ubuntu-16.04'
 
-stages:
-- stage: Test
-  displayName: Test Suit
-  jobs:  
-  - job: Test
-    displayName: Test
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
+strategy:
+  matrix:
+    postgres11:
+      postgresService: pg11
+    postgres10:
+      postgresService: pg10
 
-    - script: |
-        apt install -y postgresql-client
-        psql --host=postgres --username=postgres --command="SELECT 1;"
+container: my_container
 
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '10.x'
-      displayName: 'Install Node.js'
-      env:
-        SOMEVAR: '$(TestVar)'
-        DB_TEST_USER: postgres
-        # DB_TEST_PASSWORD:
-        DB_TEST_DATABASE: testeplugone
-        DB_TEST_HOST: postgres
-        DB_TEST_PORT: 5432
+services:
+  postgres: $[ variables['postgresService'] ]
 
-    - script: |
-        npm install
-        npm run test
-      displayName: 'npm install and output coverage'
+steps:
+- script: |
+    apt install -y postgresql-client
+    psql --host=postgres --username=postgres --command="SELECT 1;"
