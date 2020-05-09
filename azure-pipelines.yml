@@ -29,7 +29,7 @@ jobs:
     DB_TEST_USER: postgres
     DB_TEST_DATABASE: postgres
     DB_TEST_PASSWORD: postgres
-    DB_TEST_HOST: localhost
+    DB_TEST_HOST: postgres
     DB_TEST_PORT: 5432
   steps:
 
