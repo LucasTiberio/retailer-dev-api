@@ -18,9 +18,7 @@ trigger:
 #       POSTGRES_PASSWORD: postgres
 
 jobs:
-- job:
-  name: 'linux'
-  displayName: 'Build on Linux'
+- job: Tests
   pool:
     vmImage: 'ubuntu-16.04'
   # services:
@@ -32,14 +30,14 @@ jobs:
   #       Database=plugonetests;
   #       Username=$(IntegrationTests.Database.Todo.Username);
   #       Password=$(IntegrationTests.Database.Todo.Password);
-    steps:
-      # Ensure Node.js 12 is active
-      - task: NodeTool@0
-        inputs:
-          versionSpec: '12.x'
-        displayName: 'Use Node.js 12'
+  steps:
+    # Ensure Node.js 12 is active
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+      displayName: 'Use Node.js 12'
 
-      # Ensure Python 2.7 is active
-      - script: |
-          npm run install
-          npm run test
+    # Ensure Python 2.7 is active
+    - script: |
+        npm run install
+        npm run test
