@@ -32,7 +32,7 @@ jobs:
 
     - script: |
         npm install
-        knex:migrate:latest --env test
+        npm run knex:migrate:latest --env test
         npm run test
       env: 
         NODE_ENV: test

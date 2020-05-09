@@ -10,7 +10,7 @@
     "start": "node ./dist/app.js",
     "test": "jest --runInBand --detectOpenHandles",
     "knex:migrate:make": "knex --knexfile src/knexfile.ts -x ts migrate:make",
-    "knex:migrate:latest": "npx knex --knexfile src/knexfile.ts migrate:latest",
+    "knex:migrate:latest": "knex --knexfile src/knexfile.ts migrate:latest",
     "knex:migrate:rollback": "knex --knexfile src/knexfile.ts migrate:rollback"
   },
   "keywords": [],
