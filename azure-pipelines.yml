@@ -38,4 +38,4 @@ jobs:
     - script: |
         npm install
         npx knex migrate:latest --env test
-        NODE_ENV=test npm run test src/services/users/users.spec.ts
+        npm run test src/services/users/users.spec.ts
