@@ -9,12 +9,12 @@ trigger:
 resources:
   containers:
   - container: postgres
-    image: 'postgres:11.3-alpine'
+    image: postgres:10.8
     ports:
     - 5432:5432
     env:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
+      POSTGRES_USER: plugone-api
+      POSTGRES_DB: plugone-api
     options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
 jobs:
@@ -25,8 +25,8 @@ jobs:
     postgres: postgres
   variables: 
     NODE_ENV: test
-    DB_TEST_USER: postgres
-    DB_TEST_DATABASE: postgres
+    DB_TEST_USER: plugone-api
+    DB_TEST_DATABASE: plugone-api
     DB_TEST_PORT: 5432
     PG_PORT: 5432
   steps:

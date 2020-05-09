@@ -11,7 +11,7 @@ describe('Users', () => {
     let trx : Transaction;
 
     beforeAll(async () => {
-        trx = await database.knexTest.transaction(); 
+        trx = await database.knex.transaction(); 
     });
 
     afterAll(async () => {
@@ -43,7 +43,7 @@ describe('Users', () => {
             })    
         );
 
-        const userOnDb = await (trx || database.knexTest)('users').select();
+        const userOnDb = await (trx || database.knex)('users').select();
 
         expect(userOnDb).toHaveLength(1);
         expect(userOnDb[0]).toEqual(
@@ -77,13 +77,13 @@ describe('Users', () => {
 
         test("user should verify your sign up", async done => {
 
-            const [userFromDb] = await (trx || database.knexTest)('users').where('id', signUpCreated.id).select('verification_hash');
+            const [userFromDb] = await (trx || database.knex)('users').where('id', signUpCreated.id).select('verification_hash');
 
             const userVerified = await service.verifyEmail(userFromDb.verification_hash, trx);
 
             expect(userVerified).toBeTruthy();
 
-            const userOnDb = await (trx || database.knexTest)('users').where('id', signUpCreated.id).select();
+            const userOnDb = await (trx || database.knex)('users').where('id', signUpCreated.id).select();
 
             expect(userOnDb).toHaveLength(1);
             expect(userOnDb[0]).toEqual(
@@ -104,7 +104,7 @@ describe('Users', () => {
             
             expect(userPasswordRecoveredMailSent).toBeTruthy();
 
-            const userOnDb = await (trx || database.knexTest)('users').where('id', signUpCreated.id).select();
+            const userOnDb = await (trx || database.knex)('users').where('id', signUpCreated.id).select();
 
             expect(userOnDb).toHaveLength(1);
             expect(userOnDb[0]).toEqual(
@@ -122,7 +122,7 @@ describe('Users', () => {
 
             await service.recoveryPassword(signUpCreated.email, trx);
 
-            const [userFound] = await (trx || database.knexTest)('users').where('id', signUpCreated.id).select();
+            const [userFound] = await (trx || database.knex)('users').where('id', signUpCreated.id).select();
 
             const newPassword = Faker.internet.password();
 
@@ -130,7 +130,7 @@ describe('Users', () => {
             
             expect(userPasswordChanged).toBeTruthy();
 
-            const userOnDb = await (trx || database.knexTest)('users').where('id', signUpCreated.id).select();
+            const userOnDb = await (trx || database.knex)('users').where('id', signUpCreated.id).select();
 
             expect(userOnDb).toHaveLength(1);
             expect(userOnDb[0]).toEqual(
