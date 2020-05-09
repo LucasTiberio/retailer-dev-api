@@ -32,6 +32,7 @@ jobs:
 
     - script: |
         npm install
+        npx knex migrate:latest --env test 
         npm run test
       env: 
         DB_TEST_USER: postgres
