@@ -16,6 +16,7 @@ resources:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
 jobs:
 - job: Tests
@@ -24,6 +25,10 @@ jobs:
   services: 
     postgres: postgres
   steps:
+
+    - script: |
+        apt install -y postgresql-client
+        psql --host=postgres --username=postgres --command="SELECT 1;"
 
     - task: NodeTool@0
       inputs:
