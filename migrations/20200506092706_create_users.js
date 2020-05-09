@@ -1,10 +1,9 @@
-// @ts-nocheck
-import * as Knex from 'knex';
-import knexfile from '../knexfile';
+const Knex = require('knex');
+const knexfile = require('../knexfile');
 
-export async function up(knex: Knex): Promise<any> {
+exports.up = async function(knex) {
     await knex.schema.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-    return knex.schema.createTable('users',(table: Knex.TableBuilder) => {
+    return knex.schema.createTable('users',(table) => {
         table
             .uuid('id')
             .unique()
@@ -29,9 +28,9 @@ export async function up(knex: Knex): Promise<any> {
             .unique();
         table
             .timestamps(true, true)
-  }).then(() => knex.raw(knexfile.onUpdateTrigger('users')));
-}
+        }).then(() => knex.raw(knexfile.onUpdateTrigger('users')));
+};
 
-export async function down(knex: Knex): Promise<any> {
-  return knex.schema.dropTable('users');
-}
+exports.down = function(knex) {
+    return knex.schema.dropTable('users');
+};

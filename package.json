@@ -9,9 +9,9 @@
     "copy-schemas": "npx cpx src/services/webrtc/graphql/*.gql dist/services/webrtc/graphql",
     "start": "node ./dist/app.js",
     "test": "jest --runInBand --detectOpenHandles",
-    "knex:migrate:make": "knex --knexfile src/knexfile.ts -x ts migrate:make",
-    "knex:migrate:latest": "knex --knexfile src/knexfile.ts migrate:latest",
-    "knex:migrate:rollback": "knex --knexfile src/knexfile.ts migrate:rollback"
+    "knex:migrate:make": "knex -x ts migrate:make",
+    "knex:migrate:latest": "knex migrate:latest",
+    "knex:migrate:rollback": "knex migrate:rollback"
   },
   "keywords": [],
   "author": "",
