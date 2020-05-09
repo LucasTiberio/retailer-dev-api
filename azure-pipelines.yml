@@ -28,6 +28,10 @@ jobs:
     DB_TEST_USER: plugone-api
     DB_TEST_DATABASE: plugone-api
     DB_TEST_PORT: 5432
+    MAIL_HOST: smtp.mailtrap.io
+    MAIL_PORT: 2525
+    MAIL_USER: cd47bbf212775c
+    MAIL_PASS: dce5f9d71d1971
   steps:
 
     - task: NodeTool@0
@@ -37,5 +41,5 @@ jobs:
 
     - script: |
         npm install
-        npx knex migrate:latest --env test
-        npm run test src/services/users/users.spec.ts
+        npm run knex:migrate:latest --env test
+        npm run test

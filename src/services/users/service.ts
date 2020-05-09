@@ -29,11 +29,12 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
       verification_hash: encryptedHashVerification
     }).into('users').returning('*')
 
-    // await MailService.sendSignUpMail({email: signUpCreated.email, username: signUpCreated.username, hashToVerify: signUpCreated.verification_hash})
+    await MailService.sendSignUpMail({email: signUpCreated.email, username: signUpCreated.username, hashToVerify: signUpCreated.verification_hash})
 
     return _signUpAdapter(signUpCreated);
 
   } catch(e){
+    trx.rollback();
     throw new Error(e.message)
   }
 
