@@ -35,7 +35,7 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
 
   } catch(e){
     trx.rollback();
-    throw new Error(e.message)
+    throw new Error(e)
   }
 
 };

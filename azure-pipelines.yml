@@ -19,10 +19,10 @@ resources:
 
 jobs:
 - job: Tests
-  pool:
-    vmImage: 'ubuntu-16.04'
   services: 
     postgres: postgres
+  pool:
+    vmImage: 'ubuntu-16.04'
   variables: 
     NODE_ENV: test
     DB_TEST_USER: plugone-api
