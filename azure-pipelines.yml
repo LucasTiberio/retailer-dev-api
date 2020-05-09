@@ -19,8 +19,8 @@ trigger:
 
 jobs:
 - job:
-    name: 'linux'
-    displayName: 'Build on Linux'
+  name: 'linux'
+  displayName: 'Build on Linux'
   pool:
     vmImage: 'ubuntu-16.04'
   # services:
