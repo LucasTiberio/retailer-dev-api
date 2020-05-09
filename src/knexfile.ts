@@ -3,6 +3,8 @@
 require('ts-node/register');
 if(process.env.NODE_ENV !== 'test')
   require('dotenv').config({path: '../.env'});
+else
+  require('dotenv')
 
 const user = process.env.DB_USER;
 const password = process.env.DB_PASSWORD;
