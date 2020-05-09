@@ -8,27 +8,26 @@ trigger:
 
 resources:
   containers:
-  - container: postgres
-    image: 'postgres:11.3-alpine'
-    ports:
-    - 5432:5432/tcp
-    env:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+  - container: pg11
+    image: postgres:11
 
 jobs:
 - job: Tests
   pool:
     vmImage: 'ubuntu-16.04'
+  services: 
+    postgres: pg11
   steps:
-    # Ensure Node.js 12 is active
+
+    - script: |
+        apt install -y postgresql-client
+        psql --host=postgres --username=postgres --command="SELECT 1;"
+
     - task: NodeTool@0
       inputs:
         versionSpec: '12.x'
       displayName: 'Use Node.js 12'
 
-    # Ensure Python 2.7 is active
     - script: |
         npm install
         npm run test
