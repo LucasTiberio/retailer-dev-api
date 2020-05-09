@@ -1,5 +1,5 @@
 // @ts-nocheck
-require('dotenv');	
+require('dotenv');
 import config from '../knexfile';
 import knexCleaner from 'knex-cleaner';
 
