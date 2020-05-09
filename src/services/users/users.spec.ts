@@ -12,6 +12,7 @@ describe('Users', () => {
 
     beforeAll(async () => {
         trx = await database.knex.transaction(); 
+        console.log("database.knex", database.knex)
     });
 
     afterAll(async () => {
