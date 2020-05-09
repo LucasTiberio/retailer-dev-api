@@ -40,5 +40,5 @@ jobs:
 
     - script: |
         npm install
-        npm run knex:migrate:latest --env test
-        npm run test
+        npx knex migrate:latest --env test
+        NODE_ENV=test npm run test
