@@ -23,6 +23,12 @@ jobs:
     vmImage: 'ubuntu-16.04'
   services: 
     postgres: postgres
+  variables: 
+    NODE_ENV: test
+    DB_TEST_USER: postgres
+    DB_TEST_DATABASE: postgres
+    DB_TEST_HOST: localhost
+    DB_TEST_PORT: 5432
   steps:
 
     - task: NodeTool@0
@@ -30,13 +36,8 @@ jobs:
         versionSpec: '12.x'
       displayName: 'Use Node.js 12'
 
+    - task: Run Test
     - script: |
         npm install
         npm run knex:migrate:latest --env test
         npm run test
-      env: 
-        NODE_ENV: test
-        DB_TEST_USER: postgres
-        DB_TEST_DATABASE: postgres
-        DB_TEST_HOST: localhost
-        DB_TEST_PORT: 5432
