@@ -38,5 +38,5 @@ jobs:
 
     - script: |
         npm install
-        npm run knex:migrate:latest --env test
+        DB_TEST_PORT=5432 npm run knex:migrate:latest --env test
         npm run test
