@@ -11,13 +11,6 @@ resources:
 variables:
   tag: '$(Build.BuildId)'
 
-services:
-  postgres: $[ variables['postgresService'] ]
-steps:
-- script: |
-    apt install -y postgresql-client
-    psql --host=postgres --username=postgres --command="SELECT 1;"
-
 stages:
 - stage: Test
   displayName: Test Suit
@@ -27,6 +20,11 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+
+    - script: |
+        apt install -y postgresql-client
+        psql --host=postgres --username=postgres --command="SELECT 1;"
+
     - task: NodeTool@0
       inputs:
         versionSpec: '10.x'
