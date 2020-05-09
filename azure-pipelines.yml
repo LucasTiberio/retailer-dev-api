@@ -35,6 +35,7 @@ jobs:
         npx knex migrate:latest --env test 
         npm run test
       env: 
+        NODE_ENV: test
         DB_TEST_USER: postgres
         DB_TEST_DATABASE: plugonetest
         DB_TEST_HOST: localhost
