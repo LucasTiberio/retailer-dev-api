@@ -10,7 +10,7 @@ pool:
 
 container: linux container
 
-jobs:
+steps:
   build:
     name: Test
     runs-on: ubuntu-latest
