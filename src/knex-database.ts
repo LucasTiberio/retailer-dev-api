@@ -3,7 +3,7 @@ require('dotenv');
 import config from '../knexfile';
 import knexCleaner from 'knex-cleaner';
 
-console.log(config)
+console.log(process.env.NODE_ENV)
 
 declare var process : {
 	env: {
