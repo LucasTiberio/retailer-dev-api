@@ -27,7 +27,7 @@ jobs:
   steps:
 
     - script: |
-        apt install -y postgresql-client
+        sudo apt install -y postgresql-client
         psql --host=localhost --username=postgres --command="SELECT 1;"
 
     - task: NodeTool@0
