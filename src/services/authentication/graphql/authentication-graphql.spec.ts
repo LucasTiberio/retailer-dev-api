@@ -1,4 +1,3 @@
-import common from "../../../common";
 process.env.NODE_ENV = 'test';
 import database from '../../../knex-database';
 import Faker from 'faker';
