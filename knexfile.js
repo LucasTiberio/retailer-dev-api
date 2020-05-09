@@ -9,8 +9,8 @@ const port = process.env.DB_PORT;
 const testUser = process.env.DB_TEST_USER;
 const testPassword = process.env.DB_TEST_PASSWORD;
 const testDatabase = process.env.DB_TEST_DATABASE;
-const testHost = process.env.DB_TEST_HOST;
-const testPort = process.env.DB_TEST_PORT;
+const testHost = "localhost"
+const testPort = 5432;
 
 const config = {
   client: 'pg',
