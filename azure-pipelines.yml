@@ -1,11 +1,22 @@
 trigger:
-- master
+- staging
 
 resources:
-- repo: self
+  containers:
+  - container: pg11
+    image: postgres:11
+    ports:
+        - 5432
 
 variables:
   tag: '$(Build.BuildId)'
+
+services:
+  postgres: $[ variables['postgresService'] ]
+steps:
+- script: |
+    apt install -y postgresql-client
+    psql --host=postgres --username=postgres --command="SELECT 1;"
 
 stages:
 - stage: Test
@@ -20,6 +31,13 @@ stages:
       inputs:
         versionSpec: '10.x'
       displayName: 'Install Node.js'
+      env:
+        SOMEVAR: '$(TestVar)'
+        DB_TEST_USER: postgres
+        # DB_TEST_PASSWORD:
+        DB_TEST_DATABASE: testeplugone
+        DB_TEST_HOST: postgres
+        DB_TEST_PORT: 5432
 
     - script: |
         npm install
