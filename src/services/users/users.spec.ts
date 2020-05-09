@@ -11,8 +11,7 @@ describe('Users', () => {
     let trx : Transaction;
 
     beforeAll(async () => {
-        trx = await database.knexTest.transaction(); 
-        console.log("database.knex", database.knexTest._context.client)
+        trx = await database.knex.transaction(); 
     });
 
     afterAll(async () => {
