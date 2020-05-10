@@ -28,6 +28,7 @@ stages:
         repository: 'gabrieltamurab8one/plugone-api-staging'
         Dockerfile: '**/Dockerfile'
         arguments: '--build-arg dbuser=$(DB_USER) --build-arg dbpassword=$(DB_PASSWORD) --build-arg dbdatabase=$(DB_DATABASE) --build-arg dbport=$(DB_PORT) --build-arg dbhost=$(DB_HOST)'
+        includeLatestTag: true
 
     - task: Docker@2
       displayName: DockerPush
@@ -35,6 +36,7 @@ stages:
         command: push
         containerRegistry: 'gabrieltamura-dockerhub'
         repository: 'gabrieltamurab8one/plugone-api-staging'
+        includeLatestTag: true
         tags: |
           $(Build.BuildId) 
           latest
