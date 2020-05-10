@@ -2,7 +2,6 @@ pool:
   vmImage: 'Ubuntu 16.04'
 
 pr:
-- staging
 - feature/*
 
 resources:
