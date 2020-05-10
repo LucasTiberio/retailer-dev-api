@@ -1,7 +1,7 @@
 pool:
   vmImage: 'Ubuntu 16.04'
 
-pr:
+trigger:
   branches:
     include:
     - feature/*
