@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpileOnly src/app.ts",
     "build": "tsc -p . && npm run copy-schemas",
-    "copy-schemas": "npx cpx src/services/**/graphql/*.gql dist/services/**/graphql",
+    "copy-schemas": "npx cpx src/services/authentication/graphql/*.gql dist/services/authentication/graphql && npx cpx src/services/users/graphql/*.gql dist/services/users/graphql",
     "start": "node ./dist/app.js",
     "test": "jest --runInBand --detectOpenHandles",
     "knex:migrate:make": "knex -x ts migrate:make",
