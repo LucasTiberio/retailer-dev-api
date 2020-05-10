@@ -4,7 +4,6 @@ pool:
 pr:
   branches:
     include:
-    - staging
     - feature/*
 
 resources:
