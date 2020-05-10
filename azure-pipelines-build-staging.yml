@@ -23,15 +23,9 @@ stages:
     - task: Docker@2
       displayName: DockerBuild
       inputs:
-        command: 'build'
+        command: build
         Dockerfile: '**/Dockerfile'
-        arguments: |
-          --secret 
-          dbuser=$(DB_USER)
-          dbpassword=$(DB_PASSWORD)
-          dbdatabase=$(DB_DATABASE)
-          dbport=$(DB_PORT)
-          dbhost=$(DB_HOST)
+        arguments: '--build-arg dbuser=$(DB_USER) --build-arg dbpassword=$(DB_PASSWORD) --build-arg dbdatabase=$(DB_DATABASE) --build-arg dbport=$(DB_PORT) --build-arg dbhost=$(DB_HOST)'
         tags: |
           $(Build.BuildId)
           latest
@@ -41,7 +35,7 @@ stages:
       inputs:
         containerRegistry: 'gabrieltamura-dockerhub'
         repository: 'gabrieltamurab8one/plugone-api-staging'
-        command: 'push'
+        command: push
         tags: |
           $(Build.BuildId)
           latest
