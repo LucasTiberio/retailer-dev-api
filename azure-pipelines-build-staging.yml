@@ -24,8 +24,9 @@ stages:
       displayName: DockerBuild
       inputs:
         command: build
+        containerRegistry: 'gabrieltamura-dockerhub'
         Dockerfile: '**/Dockerfile'
-        arguments: '--build-arg dbuser=$(DB_USER) --build-arg dbpassword=$(DB_PASSWORD) --build-arg dbdatabase=$(DB_DATABASE) --build-arg dbport=$(DB_PORT) --build-arg dbhost=$(DB_HOST)'
+        arguments: '--build-arg dbuser=$(DB_USER) --build-arg dbpassword=$(DB_PASSWORD) --build-arg dbdatabase=$(DB_DATABASE) --build-arg dbport=$(DB_PORT) --build-arg dbhost=$(DB_HOST) -t $(containerRegistry)/$(imageRepository):$(imageTag)'
         tags: |
           $(Build.BuildId)
           latest
