@@ -11,5 +11,5 @@ ARG dbport
 ENV DB_PORT=$dbport
 ARG dbhost
 ENV DB_HOST=$dbhost
-RUN npm install
-CMD ["/bin/sh", "-c", "npx knex migrate:latest && npm start"]
+RUN npm install && npm run build
+CMD ["/bin/sh", "-c", "npx knex migrate:latest  && npm start"]
