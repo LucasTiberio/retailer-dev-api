@@ -26,6 +26,13 @@ stages:
         repository: 'gabrieltamurab8one/plugone-api-staging'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
+        arguments: |
+          --secret 
+          dbuser=$(DB_USER)
+          dbpassword=$(DB_PASSWORD)
+          dbdatabase=$(DB_DATABASE)
+          dbport=$(DB_PORT)
+          dbhost=$(DB_HOST)
         tags: |
           $(Build.BuildId)
           latest
