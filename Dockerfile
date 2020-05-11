@@ -11,5 +11,7 @@ ARG dbport
 ENV DB_PORT=$dbport
 ARG dbhost
 ENV DB_HOST=$dbhost
+ARG jwtsecret
+ENV JWT_SECRET=$jwtsecret
 RUN npm install && npm run build
 CMD ["/bin/sh", "-c", "npx knex migrate:latest  && npm start"]
