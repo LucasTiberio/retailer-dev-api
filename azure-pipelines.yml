@@ -37,7 +37,7 @@ jobs:
     MAIL_USER: cd47bbf212775c
     MAIL_PASS: dce5f9d71d1971
     JWT_SECRET: testing
-    PORT: 5000
+    PORT: 80
   steps:
 
     - task: NodeTool@0
