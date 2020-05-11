@@ -1,6 +1,11 @@
 pool:
   vmImage: 'Ubuntu 16.04'
 
+trigger:
+  branches:
+    include:
+    - master
+
 resources:
   containers:
   - container: postgres_integration_tests
