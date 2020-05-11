@@ -4,8 +4,8 @@ pool:
 pr:
   branches:
     include:
+    - feature/*
     - master
-    - staging
 
 resources:
   containers:
