@@ -1,14 +1,9 @@
 import Mail from '../../lib/Mail';
 import { ISendMail, ISendRecoveryPasswordMail, IMail } from "./types";
-import common from '../../common';
-
-const SLEEP_MS_TIME_IN_TEST = 2000;
 
 const sendSignUpMail = async (data: ISendMail) => {
 
-    if(process.env.NODE_ENV === 'test') {
-        await common.sleep(SLEEP_MS_TIME_IN_TEST);   
-    }
+    if(process.env.NODE_ENV === 'test') return;
 
     try {
         await Mail.sendMail({
@@ -24,9 +19,7 @@ const sendSignUpMail = async (data: ISendMail) => {
 
 const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
 
-    if(process.env.NODE_ENV === 'test') {
-        await common.sleep(SLEEP_MS_TIME_IN_TEST);   
-    }
+    if(process.env.NODE_ENV === 'test') return;
 
     try {
         await Mail.sendMail({
@@ -42,9 +35,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
 
 const sendRecoveredPasswordMail = async (data: IMail) => {
 
-    if(process.env.NODE_ENV === 'test') {
-        await common.sleep(SLEEP_MS_TIME_IN_TEST);   
-    }
+    if(process.env.NODE_ENV === 'test') return;
 
     try {
         await Mail.sendMail({
