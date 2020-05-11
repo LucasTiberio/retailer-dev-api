@@ -12,6 +12,13 @@ const resolvers : IResolvers = {
       });
     }
   },
+  Query: {
+    verifyOrganizationName: (_, { input }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.verifyOrganizationName(input.name, trx);
+      });
+    }
+  },
   Organization: {
     user: async (obj) => {
       return UserService.getUserById(obj.userId);

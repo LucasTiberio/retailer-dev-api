@@ -1,12 +1,8 @@
-// import common from '../../common';
-// import MailService from '../mail/service';
-// import { Transaction  } from 'knex';
-// import database from '../../knex-database';
-
-import { IOrganizationFromDB, IOrganizationAdapted, IOrganizationPayload } from "./types";
+import { IOrganizationFromDB, IOrganizationPayload } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
+import knexDatabase from "../../knex-database";
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -37,6 +33,15 @@ const createOrganization = async (createOrganizationPayload : IOrganizationPaylo
 
 }
 
+const verifyOrganizationName = async (name : string, trx : Transaction) => {
+
+  const organizationFound = await (trx || knexDatabase.knex)('organizations').where("name", name).select();
+
+  return !!organizationFound.length
+
+}
+
 export default {
-  createOrganization
+  createOrganization,
+  verifyOrganizationName
 }
