@@ -82,5 +82,36 @@ describe('Organizations', () => {
 
         done();
     })
+
+    test("user should verify organization duplicated name before create with new organization", async done => {
+
+        const verifyOrganizationNamePayload = {
+            name: Faker.internet.domainName()
+        }
+
+        const verifiedOrganizationName = await service.verifyOrganizationName(verifyOrganizationNamePayload.name, trx);
+
+        expect(verifiedOrganizationName).toBeFalsy();
+
+        done();
+
+    })
+
+    test("user should verify organization duplicated name before create with exists organization", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.domainName(),
+            contactEmail: Faker.internet.email(),
+        }
+
+        await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const verifiedOrganizationName = await service.verifyOrganizationName(createOrganizationPayload.name, trx);
+
+        expect(verifiedOrganizationName).toBeTruthy();
+
+        done();
+
+    })
         
 });

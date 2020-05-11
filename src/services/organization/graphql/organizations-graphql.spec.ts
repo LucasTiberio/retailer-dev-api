@@ -29,6 +29,12 @@ const USER_VERIFY_EMAIL = `
     }
 `
 
+const VERIFY_ORGANIZATION_NAME = `
+    query verifyOrganizationName($input: VerifyOrganizationNameInput!) {
+        verifyOrganizationName(input: $input)
+    }
+`
+
 const CREATE_ORGANIZATION = `
     mutation createOrganization($input: CreateOrganizationInput!) {
         createOrganization(input: $input){
@@ -151,6 +157,68 @@ describe('organizations graphql', () => {
             )
     
             done();
+        })
+
+        test("user should verify organization duplicated name before create with new organization graphql", async done => {
+
+            const verifyOrganizationNamePayload = {
+                name: Faker.internet.domainName()
+            }
+
+            const verifiedOrganizationNameResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_ORGANIZATION_NAME, 
+            'variables': {
+                    input: verifyOrganizationNamePayload
+                }
+            });
+    
+            expect(verifiedOrganizationNameResponse.statusCode).toBe(200);
+            expect(verifiedOrganizationNameResponse.body.data.verifyOrganizationName).toBeFalsy();
+    
+            done();
+    
+        })
+
+        test("user should verify organization duplicated name before create with organization exists graphql", async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const verifiedOrganizationNameResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_ORGANIZATION_NAME, 
+            'variables': {
+                    input: {
+                        name: createOrganizationPayload.name
+                    }
+                }
+            });
+    
+            expect(verifiedOrganizationNameResponse.statusCode).toBe(200);
+            expect(verifiedOrganizationNameResponse.body.data.verifyOrganizationName).toBeTruthy();
+    
+            done();
+    
         })
 
     })
