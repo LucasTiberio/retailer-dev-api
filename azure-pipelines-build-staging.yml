@@ -48,14 +48,11 @@ stages:
       inputs: 
         kubectlVersion: 'latest'
 
-    - step:
-        name: Deploy to Kubernetes
-        image: atlassian/pipelines-kubectl
-        script:
-          - apk --no-cache add curl
-          - curl -sL https://github.com/digitalocean/doctl/releases/download/v1.27.0/doctl-1.27.0-linux-amd64.tar.gz | tar -xzv
-          - mv ./doctl /usr/local/bin
-          - doctl -t $(DOCTL_TOKEN) k8s cluster kubeconfig show k8s-1-17-5-do-0-nyc1-plugone > kubeconfig.yml
-          - kubectl --kubeconfig=kubeconfig.yml apply -f ./config/graphql-users-api-staging.yaml
-          - kubectl --kubeconfig=kubeconfig.yml rollout restart deploy graphql-users-api-staging --namespace graphql-api-staging
-          - kubectl --kubeconfig=kubeconfig.yml rollout status deploy graphql-users-api-staging --namespace graphql-api-staging
+    - script: |
+        apk --no-cache add curl
+        curl -sL https://github.com/digitalocean/doctl/releases/download/v1.27.0/doctl-1.27.0-linux-amd64.tar.gz | tar -xzv
+        mv ./doctl /usr/local/bin
+        doctl -t $(DOCTL_TOKEN) k8s cluster kubeconfig show k8s-1-17-5-do-0-nyc1-plugone > kubeconfig.yml
+        kubectl --kubeconfig=kubeconfig.yml apply -f ./config/graphql-users-api-staging.yaml
+        kubectl --kubeconfig=kubeconfig.yml rollout restart deploy graphql-users-api-staging --namespace graphql-api-staging
+        kubectl --kubeconfig=kubeconfig.yml rollout status deploy graphql-users-api-staging --namespace graphql-api-staging
