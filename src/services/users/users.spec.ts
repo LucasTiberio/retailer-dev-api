@@ -23,10 +23,11 @@ describe('Users', () => {
     });
 
     beforeEach(async () => {
+        await trx('organizations').del();
         await trx('users').del();
     })
 
-    test.only("should create new user", async done => {
+    test("should create new user", async done => {
 
         const signUpPayload = {
             username: Faker.name.firstName(),

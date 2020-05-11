@@ -69,6 +69,15 @@ const getUserByEmail = async (email: string, trx: Transaction) => {
   return user
 }
 
+const getUserById = async (id: string, trx?: Transaction) => {
+
+  const [user] = await (trx || database.knex)('users')
+  .where('id', id)
+  .select();
+
+  return user
+}
+
 const recoveryPassword = async (email: string, trx: Transaction) => {
 
   const user = await getUserByEmail(email, trx);
@@ -119,5 +128,6 @@ export default {
   verifyEmail,
   recoveryPassword,
   changePassword,
-  getUserByEmail
+  getUserByEmail,
+  getUserById
 }

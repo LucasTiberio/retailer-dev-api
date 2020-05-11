@@ -1,10 +1,10 @@
 pool:
   vmImage: 'Ubuntu 16.04'
 
-trigger:
+pr:
   branches:
     include:
-    - feature/*
+    - '*'
 
 resources:
   containers:
