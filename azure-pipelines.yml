@@ -1,10 +1,9 @@
 pool:
   vmImage: 'Ubuntu 16.04'
 
-PR:
-  branches:
-    include:
-    - feature/*
+pr:
+- staging
+- feature/*
 
 resources:
   containers:
