@@ -2,19 +2,12 @@ apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: plugone-ingress
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "letsencrypt-plugone-api-staging"
   namespace: graphql-api-staging
 spec:
-  tls:
-  - hosts:
-    - staging.api.plugone.io
-    secretName: echo-tls
   rules:
   - host: staging.api.plugone.io
     http:
       paths:
       - backend:
           serviceName: api-staging
-          servicePort: 50
+          servicePort: 80
