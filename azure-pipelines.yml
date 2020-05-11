@@ -1,14 +1,18 @@
 pool:
   vmImage: 'Ubuntu 16.04'
 
-pr:
+trigger:
   branches:
     include:
-    - '*'
+    - releases/*
+    exclude:
+    - feature/*
+    - staging
+    - master
 
 resources:
   containers:
-  - container: postgres_integration_tests
+  - container: postgres_integration_integration_tests
     image: postgres:10.8
     ports:
     - 5432:5432/tcp
@@ -20,7 +24,7 @@ resources:
 jobs:
 - job: Tests
   services: 
-    postgres: postgres_integration_tests
+    postgres: postgres_integration_integration_tests
   pool:
     vmImage: 'ubuntu-16.04'
   variables: 
