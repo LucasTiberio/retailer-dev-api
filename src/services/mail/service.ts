@@ -2,7 +2,7 @@ import Mail from '../../lib/Mail';
 import { ISendMail, ISendRecoveryPasswordMail, IMail } from "./types";
 import common from '../../common';
 
-const SLEEP_MS_TIME_IN_TEST = 1500;
+const SLEEP_MS_TIME_IN_TEST = 2000;
 
 const sendSignUpMail = async (data: ISendMail) => {
 
