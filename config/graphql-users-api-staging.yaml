@@ -19,11 +19,11 @@ spec:
       - name: graphql-users-api-staging-container
         image: gabrieltamurab8one/plugone-api-staging:latest
         ports:
-        - containerPort: 80
+        - containerPort: 5000
         imagePullPolicy: Always
         env:
         - name: PORT
-          value: "80"
+          value: "5000"
       imagePullSecrets:
         - name: "gabrieltamura"
 
@@ -32,12 +32,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api-staging
+  name: graphql-users-api-staging
   namespace: graphql-api-staging
 spec:
   selector:
     app: graphql-users-api-staging
   ports:
     - port: 80
-      targetPort: 80
+      targetPort: 5000
   type: ClusterIP

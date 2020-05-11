@@ -2,6 +2,8 @@ apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: plugone-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
   namespace: graphql-api-staging
 spec:
   rules:
@@ -9,5 +11,5 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: api-staging
+          serviceName: graphql-users-api-staging
           servicePort: 80

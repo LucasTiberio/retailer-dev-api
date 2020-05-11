@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 server.applyMiddleware({app, cors: true});
 
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 5000;
 
 module.exports = app
 
