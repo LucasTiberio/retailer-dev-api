@@ -11,7 +11,9 @@ const server = new ApolloServer({
   }),
   context: ({req, connection}) => {
     store.resetStores();
-    return {};
+    return {
+      headers: req.headers
+    }
   },
   introspection: true,
   playground: true

@@ -20,7 +20,7 @@ const config = {
     host,
     port,
     database,
-    ssl: true,
+    ssl: false,
   },
   requestTimeout: 10000,
   connectionTimeout: 10000,

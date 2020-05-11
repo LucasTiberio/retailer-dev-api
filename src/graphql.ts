@@ -6,6 +6,7 @@ import { mergeTypes } from 'merge-graphql-schemas';
 import { gql, IResolvers, IDirectiveResolvers } from 'apollo-server';
 import { GraphQLUpload } from 'graphql-upload';
 import jwt from 'jsonwebtoken';
+import knexDatabase from './knex-database';
 
 declare var process : {
 	env: {
@@ -25,6 +26,7 @@ const typeDefsBase = gql`
   scalar Upload
   directive @hasRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
+  directive @isVerified on FIELD | FIELD_DEFINITION
 `;
 
 const resolversBase : IResolvers = {
@@ -87,22 +89,25 @@ const directiveResolvers : IDirectiveResolvers = {
     if (hasSpecifiedRole) return next();
     throw new Error(`Must have role: ${args.role}, you have role: ${userRoles}`)
   },
-  // async isAuthenticated(next, _, __, context) {
-  //   const token = context.headers.authorization;
-  //   if (!token) {
-  //     throw new Error("You must supply a JWT for authorization!");
-  //   }
-  //   try {
-  //     const decoded = jwt.verify(
-  //       token.replace("Bearer ", ""),
-  //       process.env.JWT_SECRET
-  //     );
-  //     context.user = decoded;
-  //     return next();
-  //   } catch (err) {
-  //     throw new Error("You are not authorized.");
-  //   }
-  // }
+  async isAuthenticated(next, _, __, context) {
+    const token = context.headers['x-api-token'];
+    if (!token) throw new Error("token must be provided!");
+    try {
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+      context.client = decoded;
+      return next();
+    } catch (err) {
+      throw new Error("You are not authorized.");
+    }
+  },
+  async isVerified(next, _, __, context) {
+    const [user] = await knexDatabase.knex('users').where('id', context.client.id).select();
+    if(!user.verified) throw new Error("you need verify your email!")
+    return next();
+  }
 };
 
 const typeDefs = gql`${mergeTypes([typeDefsBase].concat(services.apis.graphql.typeDefs))}`;

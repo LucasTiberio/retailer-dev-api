@@ -1,0 +1,18 @@
+extend type Mutation{
+  createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
+}
+
+input CreateOrganizationInput{
+  name: String!
+  contactEmail: String!
+}
+
+type Organization{
+  name: String!
+  contactEmail: String!
+  id: String!
+  user: User! @isVerified @isAuthenticated
+  active: Boolean!
+  updatedAt: Datetime!
+  createdAt: Datetime!
+}
