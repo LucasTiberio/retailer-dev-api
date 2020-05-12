@@ -6,6 +6,7 @@ import database from '../../knex-database';
 import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
+import { OrganizationRoles } from './types';
 
 describe('Organizations', () => {
 
@@ -26,11 +27,6 @@ describe('Organizations', () => {
         trx = await database.knex.transaction(); 
     });
 
-    beforeEach(async () => {
-        signUpCreated = await UserService.signUp(signUpPayload, trx);
-        userToken = { origin: 'user', id: signUpCreated.id };
-    })
-
     afterAll(async () => {
         await trx.rollback();
         await trx.destroy();
@@ -39,12 +35,15 @@ describe('Organizations', () => {
         }); 
     });
 
-    afterEach(async () => {
+    beforeEach(async () => {
+        await trx('users_organization_roles').del();
         await trx('organizations').del();
         await trx('users').del();
+        signUpCreated = await UserService.signUp(signUpPayload, trx);
+        userToken = { origin: 'user', id: signUpCreated.id };
     })
 
-    test("user should create new organization", async done => {
+    test("user should create new organization and grant admin role", async done => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
@@ -75,6 +74,31 @@ describe('Organizations', () => {
                 contact_email: createOrganizationPayload.contactEmail,
                 user_id: userToken.id,
                 active: true,
+                updated_at: expect.any(Date),
+                created_at: expect.any(Date)
+            })
+        )
+
+        const [organizationRoles] = await (trx || database.knex)('organization_roles').where('name', OrganizationRoles.ADMIN).select();
+
+        expect(organizationRoles).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                name: OrganizationRoles.ADMIN,
+                updated_at: expect.any(Date),
+                created_at: expect.any(Date)
+            })
+        );
+        
+        const userOrganizationRoles = await (trx || database.knex)('users_organization_roles').select();
+        
+        expect(userOrganizationRoles).toHaveLength(1);
+        expect(userOrganizationRoles[0]).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                user_id: userToken.id,
+                organization_id: organizationCreated.id,
+                organization_role_id: organizationRoles.id,
                 updated_at: expect.any(Date),
                 created_at: expect.any(Date)
             })
