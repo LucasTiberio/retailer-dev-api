@@ -1,8 +1,9 @@
 process.env.NODE_ENV = 'test';
-import database from '../../../knex-database';
 import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
+import knexDatabase from '../../../knex-database';
+import { OrganizationRoles, IOrganizationSimple, OrganizationInviteStatus } from '../types';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -32,6 +33,18 @@ const USER_VERIFY_EMAIL = `
 const VERIFY_ORGANIZATION_NAME = `
     query verifyOrganizationName($input: VerifyOrganizationNameInput!) {
         verifyOrganizationName(input: $input)
+    }
+`
+
+const INVITE_USER_TO_ORGANIZATION = `
+    mutation inviteUserToOrganization($input: InviteUserToOrganizationInput!) {
+        inviteUserToOrganization(input: $input)
+    }
+`
+
+const RESPONSE_INVITE = `
+    mutation responseOrganizationInvite($input: ResponseOrganizationInviteInput!) {
+        responseOrganizationInvite(input: $input)
     }
 `
 
@@ -85,13 +98,13 @@ describe('organizations graphql', () => {
     });
 
     afterAll(async () => {
-        await database.cleanMyTestDB();
+        await knexDatabase.knex.cleanMyTestDB();
     })
 
     describe("organization tests with user verified", () => {
         
         beforeEach(async () => {
-            const [userFromDb] = await database.knex('users').where('id', signUpCreated.id).select('verification_hash');
+            const [userFromDb] = await knexDatabase.knex('users').where('id', signUpCreated.id).select('verification_hash');
 
             const userVerifyEmailPayload = {
                 verificationHash: userFromDb.verification_hash
@@ -141,7 +154,7 @@ describe('organizations graphql', () => {
                 })    
             );
     
-            const organizationOnDb = await database.knex('organizations').select();
+            const organizationOnDb = await knexDatabase.knex('organizations').select();
     
             expect(organizationOnDb).toHaveLength(1);
             expect(organizationOnDb[0]).toEqual(
@@ -216,6 +229,464 @@ describe('organizations graphql', () => {
     
             expect(verifiedOrganizationNameResponse.statusCode).toBe(200);
             expect(verifiedOrganizationNameResponse.body.data.verifyOrganizationName).toBeTruthy();
+    
+            done();
+    
+        })
+
+        test('user organization admin should invite existent members', async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            let signUpOtherMemberPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: Faker.internet.password()
+            };
+
+            const signUpResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpOtherMemberPayload
+                }
+            });
+    
+            let otherSignUpCreated = signUpResponse.body.data.signUp
+    
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+
+            const inviteUserToOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+
+            expect(inviteUserToOrganizationResponse.statusCode).toBe(200);
+            expect(inviteUserToOrganizationResponse.body.data.inviteUserToOrganization).toBeTruthy();
+    
+            const userOrganizationRoles = await knexDatabase.knex('users_organization_roles').select();
+    
+            const organizationRoles = await knexDatabase.knex('organization_roles').select('id', 'name');
+    
+            const adminRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.ADMIN)
+            const memberRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.MEMBER)
+    
+            expect(userOrganizationRoles).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: userClient.id,
+                        organization_id: organizationCreated.id,
+                        organization_role_id: adminRole[0].id,
+                        invite_status: OrganizationInviteStatus.ACCEPT,
+                        invite_hash: null,
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    }),
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: otherSignUpCreated.id,
+                        organization_id: organizationCreated.id,
+                        organization_role_id: memberRole[0].id,
+                        invite_status: OrganizationInviteStatus.PENDENT,
+                        invite_hash: expect.any(String),
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    })
+                ]),
+            )
+    
+            done();
+        });
+
+        test('user organization admin should invite inexistent members', async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            let signUpOtherMemberPayload = {
+                email: Faker.internet.email(),
+            };
+    
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    email: signUpOtherMemberPayload.email
+                }]
+            }
+
+            const inviteUserToOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+
+            expect(inviteUserToOrganizationResponse.statusCode).toBe(200);
+            expect(inviteUserToOrganizationResponse.body.data.inviteUserToOrganization).toBeTruthy();
+    
+            const userOrganizationRoles = await knexDatabase.knex('users_organization_roles').select();
+    
+            const organizationRoles = await knexDatabase.knex('organization_roles').select('id', 'name');
+    
+            const adminRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.ADMIN)
+            const memberRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.MEMBER)
+
+            const [user] = await knexDatabase.knex('users').where('email', inviteUserToOrganizationPayload.users[0].email).select('id');
+    
+            expect(userOrganizationRoles).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: userClient.id,
+                        organization_id: organizationCreated.id,
+                        organization_role_id: adminRole[0].id,
+                        invite_status: OrganizationInviteStatus.ACCEPT,
+                        invite_hash: null,
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    }),
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: user.id,
+                        organization_id: organizationCreated.id,
+                        organization_role_id: memberRole[0].id,
+                        invite_status: OrganizationInviteStatus.PENDENT,
+                        invite_hash: expect.any(String),
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    })
+                ]),
+            )
+    
+            done();
+        });
+    
+        test('existent user should accept invite', async done => {
+    
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            let signUpOtherMemberPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: Faker.internet.password()
+            };
+
+            const signUpResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpOtherMemberPayload
+                }
+            });
+    
+            let otherSignUpCreated = signUpResponse.body.data.signUp
+    
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+    
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organization_roles').where("user_id", otherSignUpCreated.id).select('invite_hash');
+    
+            const responseOrganizationInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+
+            const responseOrganizationInviteResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': RESPONSE_INVITE, 
+            'variables': {
+                    input: responseOrganizationInvitePayload
+                }
+            });
+    
+            expect(responseOrganizationInviteResponse.statusCode).toBe(200);
+            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeTruthy();
+    
+            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organization_roles').where("user_id", otherSignUpCreated.id).select('*');
+    
+            const [organizationRoles] = await knexDatabase.knex('organization_roles').where('name', OrganizationRoles.MEMBER).select();
+    
+            expect(invitedUserToOrganizationAfter).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    user_id: otherSignUpCreated.id,
+                    organization_id: organizationCreated.id,
+                    organization_role_id: organizationRoles.id,
+                    invite_status: OrganizationInviteStatus.ACCEPT,
+                    updated_at: expect.any(Date),
+                    created_at: expect.any(Date)
+                })
+            )
+    
+            done();
+    
+        });
+    
+        test('existent user should refuse invite', async done => {
+    
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            let signUpOtherMemberPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: Faker.internet.password()
+            };
+
+            const signUpResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpOtherMemberPayload
+                }
+            });
+    
+            let otherSignUpCreated = signUpResponse.body.data.signUp
+    
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+    
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organization_roles').where("user_id", otherSignUpCreated.id).select('invite_hash');
+    
+            const responseOrganizationInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.REFUSED
+            }
+
+            const responseOrganizationInviteResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': RESPONSE_INVITE, 
+            'variables': {
+                    input: responseOrganizationInvitePayload
+                }
+            });
+    
+            expect(responseOrganizationInviteResponse.statusCode).toBe(200);
+            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeTruthy();
+    
+            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organization_roles').where("user_id", otherSignUpCreated.id).select('*');
+    
+            const [organizationRoles] = await knexDatabase.knex('organization_roles').where('name', OrganizationRoles.MEMBER).select();
+    
+            expect(invitedUserToOrganizationAfter).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    user_id: otherSignUpCreated.id,
+                    organization_id: organizationCreated.id,
+                    organization_role_id: organizationRoles.id,
+                    invite_status: OrganizationInviteStatus.REFUSED,
+                    updated_at: expect.any(Date),
+                    created_at: expect.any(Date)
+                })
+            )
+    
+            done();
+    
+        });
+    
+        test('no existent user should accept invite', async done => {
+    
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            let signUpOtherMemberPayload = {
+                email: Faker.internet.email(),
+            };
+    
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    email: signUpOtherMemberPayload.email
+                }]
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+
+            const [userFound] = await knexDatabase.knex('users').where('email', signUpOtherMemberPayload.email).select('id')
+    
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organization_roles').where("user_id", userFound.id).select('invite_hash');
+    
+            const responseOrganizationInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+
+            const responseOrganizationInviteResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': RESPONSE_INVITE, 
+            'variables': {
+                    input: responseOrganizationInvitePayload
+                }
+            });
+    
+            expect(responseOrganizationInviteResponse.statusCode).toBe(200);
+            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeFalsy();
+    
+            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organization_roles').where("user_id", userFound.id).select('*');
+    
+            const [organizationRoles] = await knexDatabase.knex('organization_roles').where('name', OrganizationRoles.MEMBER).select();
+    
+            expect(invitedUserToOrganizationAfter).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    user_id: userFound.id,
+                    organization_id: organizationCreated.id,
+                    organization_role_id: organizationRoles.id,
+                    invite_status: OrganizationInviteStatus.PENDENT,
+                    updated_at: expect.any(Date),
+                    created_at: expect.any(Date)
+                })
+            )
     
             done();
     
