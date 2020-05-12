@@ -8,6 +8,29 @@ input VerifyOrganizationNameInput{
 
 extend type Mutation{
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
+  inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  responseOrganizationInvite(input: ResponseOrganizationInviteInput!): Boolean!
+}
+
+input ResponseOrganizationInviteInput{
+  inviteHash: String!
+  response: OrganizationInviteStatus!
+}
+
+enum OrganizationInviteStatus {
+    refused,
+    pendent,
+    accept
+}
+
+input InviteUserToOrganizationInput {
+  organizationId: String!
+  users: [InviteUsersInput]!
+}
+
+input InviteUsersInput {
+  id: String
+  email: String!
 }
 
 input CreateOrganizationInput{

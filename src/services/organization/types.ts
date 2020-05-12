@@ -50,3 +50,8 @@ export interface IInviteUserToOrganizationData{
     id?: string
     email: string
 }
+
+export interface IResponseInvitePayload{
+    inviteHash: string,
+    response: OrganizationInviteStatus
+}

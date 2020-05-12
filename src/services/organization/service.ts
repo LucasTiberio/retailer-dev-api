@@ -1,4 +1,4 @@
-import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload } from "./types";
+import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
@@ -81,7 +81,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
     const [memberOrganizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', OrganizationRoles.MEMBER).select('id');
 
-    const usersAttached = await Promise.all(usersToAttach.users.map(async (user : IInviteUserToOrganizationData ) => {
+    await Promise.all(usersToAttach.users.map(async (user : IInviteUserToOrganizationData ) => {
 
       let hashToVerify = await common.encrypt(JSON.stringify({...user, timestamp: +new Date()}));
 
@@ -115,7 +115,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
     }))
 
-    return usersAttached;
+    return true;
 
 
   } catch(e){
@@ -135,8 +135,35 @@ const createUserOrganizationRoles = async (hashToVerify: string, userId: string,
   return createdUserOrganizationRoles
 }
 
+const responseInvite = async (responseInvitePayload : IResponseInvitePayload, trx : Transaction) => {
+
+  const [user] = await (trx || knexDatabase.knex)('users_organization_roles as uor')
+  .where('invite_hash', responseInvitePayload.inviteHash)
+  .innerJoin('users as usr', 'usr.id', 'uor.user_id')
+  .select('usr.encrypted_password', 'usr.username', 'usr.email');
+
+  if(!user.encrypted_password || !user.username){
+    return false
+  }
+
+  try {
+    await (trx || knexDatabase.knex)('users_organization_roles')
+    .update({
+      invite_hash: null,
+      invite_status: responseInvitePayload.response
+    })
+    .where('invite_hash', responseInvitePayload.inviteHash);
+
+    return true;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+
+}
+
 export default {
   createOrganization,
   verifyOrganizationName,
-  inviteUserToOrganization
+  inviteUserToOrganization,
+  responseInvite
 }

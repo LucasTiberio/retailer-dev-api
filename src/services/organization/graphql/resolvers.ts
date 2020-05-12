@@ -10,6 +10,16 @@ const resolvers : IResolvers = {
       return database.knex.transaction((trx: Transaction) => {
         return service.createOrganization(input, client, trx);
       });
+    },
+    inviteUserToOrganization: (_, { input }, { client }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.inviteUserToOrganization(input, client, trx);
+      });
+    },
+    responseOrganizationInvite: (_, { input }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.responseInvite(input, trx);
+      });
     }
   },
   Query: {
