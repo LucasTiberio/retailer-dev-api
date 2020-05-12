@@ -1,8 +1,11 @@
-import { IOrganizationFromDB, IOrganizationPayload, OrganizationRoles } from "./types";
+import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
+import MailService from '../mail/service';
+import UserService from '../users/service';
 import knexDatabase from "../../knex-database";
+import common from "../../common";
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -53,7 +56,8 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
      await (trx || knexDatabase.knex)('users_organization_roles').insert({
       user_id: userId,
       organization_id: organizationId, 
-      organization_role_id: organizationRole.id
+      organization_role_id: organizationRole.id,
+      invite_status: OrganizationInviteStatus.ACCEPT
      })
 
 }
@@ -63,7 +67,76 @@ const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transact
   return organizationRole;
 }
 
+const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganizationPayload, token: IUserToken, trx: Transaction) => {
+
+  if(!token) throw new Error("Token must be provided.");
+
+  try {
+
+    const organizationId = usersToAttach.organizationId;
+
+    const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('name');
+
+    if(!organization) throw new Error("Organization not found.")
+
+    const [memberOrganizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', OrganizationRoles.MEMBER).select('id');
+
+    const usersAttached = await Promise.all(usersToAttach.users.map(async (user : IInviteUserToOrganizationData ) => {
+
+      let hashToVerify = await common.encrypt(JSON.stringify({...user, timestamp: +new Date()}));
+
+      let userOrganizationCreated;
+
+      if(user.id){
+
+        userOrganizationCreated = await createUserOrganizationRoles(hashToVerify, user.id, organizationId, memberOrganizationRole.id, trx);
+
+        await MailService.sendInviteUserMail({
+          email: user.email,
+          hashToVerify,
+          organizationName: organization.name,
+        })
+      
+      } else {
+
+        const partialUserCreated = await UserService.signUpWithEmailOnly(user.email, trx);
+
+        userOrganizationCreated = await createUserOrganizationRoles(hashToVerify, partialUserCreated.id, organizationId, memberOrganizationRole.id, trx);
+
+        await MailService.sendInviteNewUserMail({
+          email: partialUserCreated.email,
+          hashToVerify,
+          organizationName: organization.name
+        })
+
+      }
+
+      return userOrganizationCreated;
+
+    }))
+
+    return usersAttached;
+
+
+  } catch(e){
+    throw new Error(e.message);
+  }
+
+}
+
+const createUserOrganizationRoles = async (hashToVerify: string, userId: string, organizationId: string, organizationRoleId: string, trx : Transaction ) => {
+  const [createdUserOrganizationRoles] = await (trx || knexDatabase.knex)('users_organization_roles').insert({
+    invite_hash: hashToVerify,
+    user_id: userId,
+    organization_id: organizationId,
+    organization_role_id: organizationRoleId,
+    invite_status: OrganizationInviteStatus.PENDENT
+  }).returning('*')
+  return createdUserOrganizationRoles
+}
+
 export default {
   createOrganization,
-  verifyOrganizationName
+  verifyOrganizationName,
+  inviteUserToOrganization
 }

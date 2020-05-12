@@ -22,9 +22,31 @@ export interface IOrganizationFromDB{
 }
 
 export enum OrganizationRoles {
-    ADMIN = 'ADMIN'
+    ADMIN = 'ADMIN',
+    MEMBER = 'MEMBER'
+}
+
+export enum OrganizationInviteStatus {
+    REFUSED = 'refused',
+    PENDENT = 'pendent',
+    ACCEPT = 'accept'
 }
 
 export interface IOrganizationRoleResponse {
     name: string
+}
+
+export interface IInviteUserToOrganizationPayload {
+    organizationId: string
+    users: IInviteUserToOrganizationData[]
+}
+
+export interface IOrganizationSimple{
+    id: string
+    name: string
+}
+
+export interface IInviteUserToOrganizationData{
+    id?: string
+    email: string
 }

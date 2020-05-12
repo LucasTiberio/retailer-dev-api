@@ -10,6 +10,17 @@ const _signUpAdapter = (record: ISignUpAdapted) => ({
   id: record.id
 });
 
+const signUpWithEmailOnly = async (email: string, trx : Transaction ) => {
+
+  const [partialSignUpCreated] = await (trx || database.knex)
+  .insert({
+    email,
+  }).into('users').returning('*')
+
+  return partialSignUpCreated;
+
+}
+
 const signUp = async (attrs : ISignUp, trx : Transaction) => {
 
   const { username, password, email } = attrs;
@@ -129,5 +140,6 @@ export default {
   recoveryPassword,
   changePassword,
   getUserByEmail,
-  getUserById
+  getUserById,
+  signUpWithEmailOnly
 }

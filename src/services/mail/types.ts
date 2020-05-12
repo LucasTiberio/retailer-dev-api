@@ -10,3 +10,9 @@ export interface ISendMail extends IMail{
 export interface ISendRecoveryPasswordMail extends IMail{
     hashToVerify: string
 }
+
+export interface ISendInviteUserMail{
+    email: string
+    organizationName: string
+    hashToVerify: string
+}
