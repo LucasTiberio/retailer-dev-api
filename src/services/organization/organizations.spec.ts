@@ -268,7 +268,7 @@ describe('Organizations', () => {
 
     //     const createOrganizationPayload = {
     //         name: Faker.internet.userName(),
-    //         contactEmail: Faker.internet.email(),
+    //         contactEmail: Faker.internet.email()
     //     }
 
     //     const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
@@ -290,6 +290,10 @@ describe('Organizations', () => {
     //     }
 
     //     await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+    //     const invitedUserToOrganization = await (trx || knexDatabase.knex)
+
+    //     done();
 
     // })
         
