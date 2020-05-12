@@ -52,6 +52,9 @@ const testConfig = {
     port: testPort,
     ssl: false,
   },
+  seeds: {
+    directory: __dirname + '/seeds/test'
+  },
   debug: false,
   requestTimeout: 5000,
   connectionTimeout: 5000,
