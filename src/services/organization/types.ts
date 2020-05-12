@@ -24,3 +24,7 @@ export interface IOrganizationFromDB{
 export enum OrganizationRoles {
     ADMIN = 'ADMIN'
 }
+
+export interface IOrganizationRoleResponse {
+    name: string
+}
