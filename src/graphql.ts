@@ -24,7 +24,7 @@ const typeDefsBase = gql`
   scalar Date
   scalar Datetime
   scalar Upload
-  directive @hasRole(role: [String]!) on FIELD | FIELD_DEFINITION
+  directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
 `;
@@ -83,11 +83,17 @@ const resolversBase : IResolvers = {
 };
 
 const directiveResolvers : IDirectiveResolvers = {
-  async hasRole(next, _, args): Promise<any> {
-    const userRoles = ["MANAGER"] //return roles
-    const hasSpecifiedRole = userRoles.some((role : string) => args.role.includes(role));
+  async hasOrganizationRole(next, _, args, context): Promise<any> {
+    const userOrganizationRoles = await knexDatabase.knex('users as usr')
+    .where('usr.id', context.client.id)
+    .innerJoin('users_organization_roles as uor', 'usr.id', 'uor.user_id')
+    .innerJoin('organization_roles as or', 'uor.organization_id', 'or.id')
+    .select('organization_roles.name');
+    console.log("userOrganizationRoles", userOrganizationRoles)
+    // const userOrganizationRoles = ["MANAGER"] //return roles
+    const hasSpecifiedRole = userOrganizationRoles.some((role : string) => args.role.includes(role));
     if (hasSpecifiedRole) return next();
-    throw new Error(`Must have role: ${args.role}, you have role: ${userRoles}`)
+    throw new Error(`Must have role: ${args.role}, you have role: ${userOrganizationRoles}`)
   },
   async isAuthenticated(next, _, __, context) {
     const token = context.headers['x-api-token'];
