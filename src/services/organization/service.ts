@@ -28,7 +28,7 @@ const createOrganization = async (createOrganizationPayload : IOrganizationPaylo
     }).into('organizations').returning('*')
 
     await organizationRolesAttach(userToken.id, organizationCreated.id, OrganizationRoles.ADMIN, trx);
-  
+
     return _organizationAdapter(organizationCreated)
   } catch(e){
     throw new Error(e.message);
@@ -46,7 +46,7 @@ const verifyOrganizationName = async (name : string, trx : Transaction) => {
 
 const organizationRolesAttach = async (userId: string, organizationId: string, roleName: OrganizationRoles, trx: Transaction) => {
 
-     const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', roleName).select('id');
+     const organizationRole = await organizationRoleByName(roleName, trx);
 
      if(!organizationRole) throw new Error("Organization role not found.")
      
@@ -56,6 +56,11 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
       organization_role_id: organizationRole.id
      })
 
+}
+
+const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transaction) => {
+  const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', roleName).select('id');
+  return organizationRole;
 }
 
 export default {

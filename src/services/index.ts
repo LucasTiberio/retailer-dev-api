@@ -3,11 +3,13 @@ import { reduce, merge } from 'lodash';
 import UserService from './users';
 import AuthenticationService from './authentication';
 import OrganizationService from './organization';
+import ServicesService from './services';
 
 let services = [
   UserService,
   AuthenticationService,
-  OrganizationService
+  OrganizationService,
+  ServicesService
 ];
 
 export default {
