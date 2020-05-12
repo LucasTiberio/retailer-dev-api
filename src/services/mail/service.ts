@@ -1,5 +1,5 @@
 import Mail from '../../lib/Mail';
-import { ISendMail, ISendRecoveryPasswordMail, IMail } from "./types";
+import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail } from "./types";
 
 const sendSignUpMail = async (data: ISendMail) => {
 
@@ -49,8 +49,47 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
     }
 }
 
+const sendInviteUserMail = async (data: ISendInviteUserMail) => {
+
+    if(process.env.NODE_ENV === 'test') return;
+
+    try {
+        await Mail.sendMail({
+            from: 'PlugOne Robot <robot@plugone.com>',
+            to: `<${data.email}>`,
+            subject: `You haas been invited to ${data.organizationName}!`,
+            html: `Hello, 
+                \n to accept: http://localhost:3000/member-invited/${data.hashToVerify}?response=accept
+                \n to refuse: http://localhost:3000/member-invited/${data.hashToVerify}?response=refuse
+                `
+        });
+    } catch(e){
+        throw new Error(e.message)
+    }
+}
+
+const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
+
+    if(process.env.NODE_ENV === 'test') return;
+
+    try {
+        await Mail.sendMail({
+            from: 'PlugOne Robot <robot@plugone.com>',
+            to: `<${data.email}>`,
+            subject: `You haas been invited to Plugone by ${data.organizationName}!`,
+            html: `Hello, 
+                \n to accept: http://localhost:3000/member-invited/${data.hashToVerify}
+                `
+        });
+    } catch(e){
+        throw new Error(e.message)
+    }
+}
+
 export default {
     sendSignUpMail,
     sendRecoveryPasswordMail,
-    sendRecoveredPasswordMail
+    sendRecoveredPasswordMail,
+    sendInviteUserMail,
+    sendInviteNewUserMail
 }
