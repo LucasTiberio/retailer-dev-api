@@ -1,0 +1,8 @@
+extend type Mutation{
+    createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+}
+
+input CreateServiceInOrganizationInput{
+    serviceId: String!
+    organizationId: String!
+}
