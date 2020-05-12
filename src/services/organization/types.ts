@@ -20,3 +20,7 @@ export interface IOrganizationFromDB{
     updated_at: Date
     created_at: Date
 }
+
+export enum OrganizationRoles {
+    ADMIN = 'ADMIN'
+}
