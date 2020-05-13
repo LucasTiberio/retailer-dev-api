@@ -12,6 +12,8 @@ const testDatabase = process.env.DB_TEST_DATABASE;
 const testHost = process.env.DB_TEST_HOST;
 const testPort = process.env.DB_TEST_PORT;
 
+console.log(process.env)
+
 const config = {
   client: 'pg',
   connection: {
