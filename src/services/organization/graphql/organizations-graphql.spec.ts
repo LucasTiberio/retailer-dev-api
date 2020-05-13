@@ -64,6 +64,19 @@ const CREATE_ORGANIZATION = `
     }
 `
 
+const FIND_USERS_TO_ORGANIZATION = `
+    query findUsersToOrganization($input: FindUsersToOrganizationInput!) {
+        findUsersToOrganization(input: $input){
+            invited
+            user{
+                id
+                email
+                username
+            }
+        }
+    }
+`
+
 describe('organizations graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -98,7 +111,7 @@ describe('organizations graphql', () => {
     });
 
     afterAll(async () => {
-        await knexDatabase.knex.cleanMyTestDB();
+        await knexDatabase.cleanMyTestDB();
     })
 
     describe("organization tests with user verified", () => {
@@ -686,6 +699,324 @@ describe('organizations graphql', () => {
                     updated_at: expect.any(Date),
                     created_at: expect.any(Date)
                 })
+            )
+    
+            done();
+    
+        })
+
+        test("user should search other members", async done => {
+    
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+
+            const signUpPayload2 = {
+                username: "User1",
+                email: "user1@b8one.com",
+                password: Faker.internet.password()
+            }
+
+            const signUpPayload3 = {
+                username: "User2",
+                email: "user2@b8one.com",
+                password: Faker.internet.password()
+            }
+    
+            const signUpResponse2 = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpPayload2
+                }
+            });
+    
+            let signUpCreated2 = signUpResponse2.body.data.signUp
+
+            const signUpResponse3 = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpPayload3
+                }
+            });
+    
+            let signUpCreated3 = signUpResponse3.body.data.signUp
+    
+    
+            const [userFromDb2] = await knexDatabase.knex('users').where('id', signUpCreated2.id).select('verification_hash');
+            const [userFromDb3] = await knexDatabase.knex('users').where('id', signUpCreated3.id).select('verification_hash');
+
+            const userVerifyEmailPayload2 = {
+                verificationHash: userFromDb2.verification_hash
+            }
+
+            const userVerifyEmailPayload3 = {
+                verificationHash: userFromDb3.verification_hash
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': USER_VERIFY_EMAIL, 
+            'variables': {
+                    input: userVerifyEmailPayload2
+                }
+            });
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': USER_VERIFY_EMAIL, 
+            'variables': {
+                    input: userVerifyEmailPayload3
+                }
+            });
+    
+            const findUsersPayload = {
+                name: "user",
+                organizationId: organizationCreated.id
+            }
+
+
+            const findUsersToOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': FIND_USERS_TO_ORGANIZATION, 
+            'variables': {
+                    input: findUsersPayload
+                }
+            });
+
+            expect(findUsersToOrganizationResponse.statusCode).toBe(200);
+            expect(findUsersToOrganizationResponse.body.data.findUsersToOrganization).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        invited: false,
+                        user: expect.objectContaining({
+                            id: expect.any(String),
+                            username: signUpPayload2.username,
+                            email: signUpPayload2.email,
+                        })
+                    }),
+                    expect.objectContaining({
+                        user: expect.objectContaining({
+                            id: expect.any(String),
+                            username: signUpPayload3.username,
+                            email: signUpPayload3.email,
+                        }),
+                        invited: false
+                    })
+                ])
+            )
+    
+            const userFoundsOnDB = await knexDatabase.knexTest('users').select();
+    
+            expect(userFoundsOnDB).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        username: signUpCreated.username,
+                        email: signUpCreated.email
+                    }),
+                    expect.objectContaining({
+                        username: signUpPayload2.username,
+                        email: signUpPayload2.email
+                    }),
+                    expect.objectContaining({
+                        username: signUpPayload3.username,
+                        email: signUpPayload3.email
+                    })
+                ])
+            )
+    
+            done();
+    
+        })
+
+        test("user should search other invited members", async done => {
+    
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+
+            const signUpPayload2 = {
+                username: "User3",
+                email: "user3@b8one.com",
+                password: Faker.internet.password()
+            }
+
+            const signUpPayload3 = {
+                username: "User4",
+                email: "user4@b8one.com",
+                password: Faker.internet.password()
+            }
+    
+            const signUpResponse2 = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpPayload2
+                }
+            });
+
+            let signUpCreated2 = signUpResponse2.body.data.signUp
+
+            const signUpResponse3 = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpPayload3
+                }
+            });
+    
+            let signUpCreated3 = signUpResponse3.body.data.signUp
+    
+    
+            const [userFromDb2] = await knexDatabase.knex('users').where('id', signUpCreated2.id).select('verification_hash');
+            const [userFromDb3] = await knexDatabase.knex('users').where('id', signUpCreated3.id).select('verification_hash');
+
+            const userVerifyEmailPayload2 = {
+                verificationHash: userFromDb2.verification_hash
+            }
+
+            const userVerifyEmailPayload3 = {
+                verificationHash: userFromDb3.verification_hash
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': USER_VERIFY_EMAIL, 
+            'variables': {
+                    input: userVerifyEmailPayload2
+                }
+            });
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': USER_VERIFY_EMAIL, 
+            'variables': {
+                    input: userVerifyEmailPayload3
+                }
+            });
+
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: signUpCreated2.id,
+                    email: signUpCreated2.email
+                }]
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+    
+            const findUsersPayload = {
+                name: "user",
+                organizationId: organizationCreated.id
+            }
+
+            const findUsersToOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': FIND_USERS_TO_ORGANIZATION, 
+            'variables': {
+                    input: findUsersPayload
+                }
+            });
+
+            expect(findUsersToOrganizationResponse.statusCode).toBe(200);
+            expect(findUsersToOrganizationResponse.body.data.findUsersToOrganization).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        invited: true,
+                        user: expect.objectContaining({
+                            id: expect.any(String),
+                            username: signUpPayload2.username,
+                            email: signUpPayload2.email,
+                        })
+                    }),
+                    expect.objectContaining({
+                        user: expect.objectContaining({
+                            id: expect.any(String),
+                            username: signUpPayload3.username,
+                            email: signUpPayload3.email,
+                        }),
+                        invited: false
+                    })
+                ])
+            )
+    
+            const userFoundsOnDB = await knexDatabase.knexTest('users').select();
+    
+            expect(userFoundsOnDB).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        username: signUpCreated.username,
+                        email: signUpCreated.email
+                    }),
+                    expect.objectContaining({
+                        username: signUpPayload2.username,
+                        email: signUpPayload2.email
+                    }),
+                    expect.objectContaining({
+                        username: signUpPayload3.username,
+                        email: signUpPayload3.email
+                    })
+                ])
             )
     
             done();

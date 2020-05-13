@@ -1,5 +1,16 @@
 extend type Query{
   verifyOrganizationName(input: VerifyOrganizationNameInput!): Boolean @isAuthenticated
+  findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input FindUsersToOrganizationInput{
+  name: String!
+  organizationId: String!
+}
+
+type FindUsersToOrganizationPayload{
+  user: User!
+  invited: Boolean!
 }
 
 input VerifyOrganizationNameInput{

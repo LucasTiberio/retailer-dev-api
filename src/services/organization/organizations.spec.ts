@@ -434,5 +434,189 @@ describe('Organizations', () => {
         done();
 
     })
+
+    test("user should search other members", async done => {
+
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
+
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const signUpPayload2 = {
+            username: "User1",
+            email: "user1@b8one.com",
+            password: Faker.internet.password()
+        }
+
+        const signUpPayload3 = {
+            username: "User2",
+            email: "user2@b8one.com",
+            password: Faker.internet.password()
+        }
+
+        let signUpCreated2 = await UserService.signUp(signUpPayload2, trx);
+        let signUpCreated3 = await UserService.signUp(signUpPayload3, trx);
+
+        const [userFromDb2] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated2.id).select('verification_hash');
+
+        await UserService.verifyEmail(userFromDb2.verification_hash, trx);
+
+        const [userFromDb3] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated3.id).select('verification_hash');
+
+        await UserService.verifyEmail(userFromDb3.verification_hash, trx);
+
+        const findUsersPayload = {
+            name: "user",
+            organizationId: organizationCreated.id
+        }
+
+        const userFound = await service.findUsersToOrganization(findUsersPayload, userToken, trx);
+
+        expect(userFound).toHaveLength(2);
+        expect(userFound).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    user: expect.objectContaining({
+                        username: signUpPayload2.username,
+                        email: signUpPayload2.email,
+                    }),
+                    invited: false
+                }),
+                expect.objectContaining({
+                    user: expect.objectContaining({
+                        username: signUpPayload3.username,
+                        email: signUpPayload3.email,
+                    }),
+                    invited: false
+                })
+            ])
+        )
+
+        const userFoundsOnDB = await (trx || knexDatabase.knexTest)('users').select();
+
+        expect(userFoundsOnDB).toHaveLength(3);
+        expect(userFoundsOnDB).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    username: signUpPayload.username,
+                    email: signUpPayload.email
+                }),
+                expect.objectContaining({
+                    username: signUpPayload2.username,
+                    email: signUpPayload2.email
+                }),
+                expect.objectContaining({
+                    username: signUpPayload3.username,
+                    email: signUpPayload3.email
+                })
+            ])
+        )
+
+        done();
+
+    })
+
+    test("user should search other invited members", async done => {
+
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
+
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const signUpPayload2 = {
+            username: "User1",
+            email: "user1@b8one.com",
+            password: Faker.internet.password()
+        }
+
+        const signUpPayload3 = {
+            username: "User2",
+            email: "user2@b8one.com",
+            password: Faker.internet.password()
+        }
+
+        let signUpCreated2 = await UserService.signUp(signUpPayload2, trx);
+        let signUpCreated3 = await UserService.signUp(signUpPayload3, trx);
+
+        const [userFromDb2] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated2.id).select('verification_hash');
+
+        await UserService.verifyEmail(userFromDb2.verification_hash, trx);
+
+        const [userFromDb3] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated3.id).select('verification_hash');
+
+        await UserService.verifyEmail(userFromDb3.verification_hash, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpCreated2.id,
+                email: signUpCreated2.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const findUsersPayload = {
+            name: "user",
+            organizationId: organizationCreated.id
+        }
+
+        const userFound = await service.findUsersToOrganization(findUsersPayload, userToken, trx);
+
+        expect(userFound).toHaveLength(2);
+        expect(userFound).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    user: expect.objectContaining({
+                        username: signUpPayload2.username,
+                        email: signUpPayload2.email,
+                    }),
+                    invited: true
+                }),
+                expect.objectContaining({
+                    user: expect.objectContaining({
+                        username: signUpPayload3.username,
+                        email: signUpPayload3.email,
+                    }),
+                    invited: false
+                })
+            ])
+        )
+
+        const userFoundsOnDB = await (trx || knexDatabase.knexTest)('users').select();
+
+        expect(userFoundsOnDB).toHaveLength(3);
+        expect(userFoundsOnDB).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    username: signUpPayload.username,
+                    email: signUpPayload.email
+                }),
+                expect.objectContaining({
+                    username: signUpPayload2.username,
+                    email: signUpPayload2.email
+                }),
+                expect.objectContaining({
+                    username: signUpPayload3.username,
+                    email: signUpPayload3.email
+                })
+            ])
+        )
+
+        done();
+
+    })
         
 });
