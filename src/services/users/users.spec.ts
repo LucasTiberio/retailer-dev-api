@@ -61,6 +61,40 @@ describe('Users', () => {
         done();
     })
 
+    test("user not should create duplicate account", async done => {
+
+        const signUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: Faker.internet.password()
+        }
+
+        await service.signUp(signUpPayload, trx);
+
+        try {
+            await service.signUp(signUpPayload, trx);
+        } catch(e){
+            expect(e.message).toBe("user already registered.");
+        }
+
+        const userOnDb = await (trx || database.knex)('users').select();
+
+        expect(userOnDb).toHaveLength(1);
+        expect(userOnDb[0]).toEqual(
+            expect.objectContaining({
+                username: signUpPayload.username,
+                email: signUpPayload.email,
+                encrypted_password: expect.any(String),
+                verified: false,
+                verification_hash: expect.any(String)
+            })
+        )
+        expect(common.passwordIsCorrect(signUpPayload.password, userOnDb[0].encrypted_password)).toBeTruthy();
+
+        done();
+
+    })
+
     describe("tets with user before created", () => {
 
         let signUpCreated: ISignUpAdapted;

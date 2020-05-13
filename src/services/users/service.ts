@@ -1,10 +1,11 @@
 import common from '../../common';
 import MailService from '../mail/service';
-import { ISignUp, ISignUpAdapted, IChangePassword } from './types';
+import { ISignUp, ISignUpAdapted, IChangePassword, ISignUpFromDB } from './types';
 import { Transaction  } from 'knex';
 import database from '../../knex-database';
+import knexDatabase from '../../knex-database';
 
-const _signUpAdapter = (record: ISignUpAdapted) => ({
+const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
   email: record.email,
   id: record.id
@@ -14,7 +15,7 @@ const signUpWithEmailOnly = async (email: string, trx : Transaction ) => {
 
   const [partialSignUpCreated] = await (trx || database.knex)
   .insert({
-    email,
+    email
   }).into('users').returning('*')
 
   return partialSignUpCreated;
@@ -25,24 +26,46 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
 
   const { username, password, email } = attrs;
 
+  const [userPreAddedFound] = await(trx || knexDatabase.knex)('users').where('email', email).select('id', 'encrypted_password', 'username');
+
+  if(userPreAddedFound && (userPreAddedFound.encrypted_password || userPreAddedFound.username)) throw new Error("user already registered.");
+
   const encryptedPassword = await common.encrypt(password);
   const encryptedHashVerification = await common.encrypt(
     JSON.stringify({...attrs, timestamp: +new Date()})
   );
 
+  let signUpCreated : ISignUpFromDB[];
+
   try {
 
-    const [signUpCreated] = await (trx || database.knex)
-    .insert({
-      username,
-      email,
-      encrypted_password: encryptedPassword,
-      verification_hash: encryptedHashVerification
-    }).into('users').returning('*')
+    if(userPreAddedFound) {
 
-    await MailService.sendSignUpMail({email: signUpCreated.email, username: signUpCreated.username, hashToVerify: signUpCreated.verification_hash})
+      signUpCreated = await (trx || database.knex)
+      .update({
+        username,
+        encrypted_password: encryptedPassword,
+        verification_hash: encryptedHashVerification
+      })
+      .where('id', userPreAddedFound)
+      .into('users').returning('*')
+    
+    } else {
 
-    return _signUpAdapter(signUpCreated);
+      signUpCreated = await (trx || database.knex)
+      .insert({
+        username,
+        email,
+        encrypted_password: encryptedPassword,
+        verification_hash: encryptedHashVerification
+      }).into('users').returning('*')
+
+    }
+
+
+    await MailService.sendSignUpMail({email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash})
+
+    return _signUpAdapter(signUpCreated[0]);
 
   } catch(e){
     trx.rollback();
