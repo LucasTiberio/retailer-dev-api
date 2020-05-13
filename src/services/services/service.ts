@@ -39,6 +39,20 @@ const getServiceById = async (serviceId: string, trx: Transaction) => {
   return _serviceAdapter(serviceFound);
 }
 
+// const listServices = async (organizationCreatedId: string ,userToken : IUserToken, trx: Transaction) => {
+
+//   if(!userToken) throw new Error("token must be provided!");
+
+//   const availableServices = await (trx || knexDatabase.knex)('services AS ser')
+//   .leftJoin('organization_services AS os', 'os.service_id', 'ser.id')
+//   .select('ser.*');
+   
+//   console.log("availableServices", availableServices)
+
+//   return availableServices;
+// }
+
 export default {
-  createServiceInOrganization
+  createServiceInOrganization,
+  // listServices
 }

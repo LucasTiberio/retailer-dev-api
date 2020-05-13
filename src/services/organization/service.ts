@@ -52,14 +52,14 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
 
      const organizationRole = await organizationRoleByName(roleName, trx);
 
-     if(!organizationRole) throw new Error("Organization role not found.")
+     if(!organizationRole) throw new Error("Organization role not found.");
      
      await (trx || knexDatabase.knex)('users_organization_roles').insert({
       user_id: userId,
       organization_id: organizationId, 
       organization_role_id: organizationRole.id,
       invite_status: OrganizationInviteStatus.ACCEPT
-     })
+     });
 
 }
 
@@ -166,7 +166,9 @@ const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes,
 
   if(!userToken) throw new Error("token must be provided.");
 
-  const usersFound = await UserService.getUserByNameOrEmail(findUserAttributes.name, trx);
+  let usersFound = await UserService.getUserByNameOrEmail(findUserAttributes.name, trx);
+
+  usersFound = usersFound.filter((el: IUsersDB) => el.id !== userToken.id);
 
   const userOrganizationAccept = await userOrganizationResponse(usersFound, findUserAttributes.organizationId, trx);
 
@@ -183,7 +185,10 @@ const userOrganizationResponse = async (users: IUsersDB[], organizationId: strin
   .where('organization_id', organizationId)
   .select();
 
-  const userOrganizationResponseFound = users.map(item => ({user: {...item}, invited: userOrganizationResponse.findIndex(el => el.user_id === item.id) !== -1}))
+  let userOrganizationResponseFound = users.map(item => {
+    let organizationResponseIndex = userOrganizationResponse.findIndex(el => el.user_id === item.id);
+    return ({user: {...item}, invited: organizationResponseIndex !== -1})
+  })
 
   return userOrganizationResponseFound;
 
