@@ -26,7 +26,9 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
 
   const { username, password, email } = attrs;
 
-  const [userPreAddedFound] = await(trx || knexDatabase.knex)('users').where('email', email).select('id', 'encrypted_password', 'username');
+  const [userPreAddedFound] = await(trx || knexDatabase.knex)('users')
+    .whereRaw("LOWER(email) = LOWER(?)", email) 
+    .select('id', 'encrypted_password', 'username');
 
   if(userPreAddedFound && (userPreAddedFound.encrypted_password || userPreAddedFound.username)) throw new Error("user already registered.");
 
@@ -112,6 +114,16 @@ const getUserById = async (id: string, trx?: Transaction) => {
   return user
 }
 
+const getUserByNameOrEmail = async (name: string, trx?: Transaction) => {
+
+  const user = await (trx || database.knex)('users')
+  .whereRaw(`LOWER(email) LIKE ?`, [`%${name.toLowerCase()}%`])
+  .orWhereRaw(`LOWER(username) LIKE ?`, [`%${name.toLowerCase()}%`])
+  .select();
+
+  return user;
+}
+
 const recoveryPassword = async (email: string, trx: Transaction) => {
 
   const user = await getUserByEmail(email, trx);
@@ -164,5 +176,7 @@ export default {
   changePassword,
   getUserByEmail,
   getUserById,
-  signUpWithEmailOnly
+  signUpWithEmailOnly,
+  _signUpAdapter,
+  getUserByNameOrEmail
 }

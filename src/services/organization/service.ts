@@ -1,4 +1,4 @@
-import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload } from "./types";
+import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
@@ -6,6 +6,7 @@ import MailService from '../mail/service';
 import UserService from '../users/service';
 import knexDatabase from "../../knex-database";
 import common from "../../common";
+import { IUsersDB } from "../users/types";
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -161,9 +162,38 @@ const responseInvite = async (responseInvitePayload : IResponseInvitePayload, tr
 
 }
 
+const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes, userToken : IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided.");
+
+  const usersFound = await UserService.getUserByNameOrEmail(findUserAttributes.name, trx);
+
+  const userOrganizationAccept = await userOrganizationResponse(usersFound, findUserAttributes.organizationId, trx);
+
+  return userOrganizationAccept;
+
+}
+
+const userOrganizationResponse = async (users: IUsersDB[], organizationId: string, trx: Transaction) => {
+
+  const userIds = users.map(item => item.id);
+
+  const userOrganizationResponse = await (trx || knexDatabase.knex)('users_organization_roles')
+  .whereIn('user_id', userIds)
+  .where('organization_id', organizationId)
+  .select();
+
+  const userOrganizationResponseFound = users.map(item => ({user: {...item}, invited: userOrganizationResponse.findIndex(el => el.user_id === item.id) !== -1}))
+
+  return userOrganizationResponseFound;
+
+}
+
 export default {
   createOrganization,
   verifyOrganizationName,
   inviteUserToOrganization,
-  responseInvite
+  responseInvite,
+  _organizationAdapter,
+  findUsersToOrganization
 }

@@ -55,3 +55,8 @@ export interface IResponseInvitePayload{
     inviteHash: string,
     response: OrganizationInviteStatus
 }
+
+export interface IFindUsersAttributes{
+    name: string
+    organizationId: string
+}

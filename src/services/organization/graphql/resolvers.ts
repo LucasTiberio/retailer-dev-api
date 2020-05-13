@@ -27,6 +27,11 @@ const resolvers : IResolvers = {
       return database.knex.transaction((trx: Transaction) => {
         return service.verifyOrganizationName(input.name, trx);
       });
+    },
+    findUsersToOrganization: (_, { input }, { client }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.findUsersToOrganization(input, client, trx);
+      });
     }
   },
   Organization: {
