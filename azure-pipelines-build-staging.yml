@@ -17,13 +17,13 @@ stages:
   jobs:  
   - job: Build
     displayName: Build
-    env: 
-      DB_USER: '$(DB_USER)'
-      DB_PASSWORD: '$(DB_PASSWORD)'
-      DB_DATABASE: '$(DB_DATABASE)'
-      DB_PORT: '$(DB_PORT)'
-      DB_HOST: '$(DB_HOST)'
-      JWT_SECRET: '$(JWT_SECRET)'
+    # env: 
+    #   DB_USER: '$(DB_USER)'
+    #   DB_PASSWORD: '$(DB_PASSWORD)'
+    #   DB_DATABASE: '$(DB_DATABASE)'
+    #   DB_PORT: '$(DB_PORT)'
+    #   DB_HOST: '$(DB_HOST)'
+    #   JWT_SECRET: '$(JWT_SECRET)'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
