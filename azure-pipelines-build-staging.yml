@@ -10,12 +10,12 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
-  DB_USER: $(DB_USER) 
-  DB_PASSWORD: $(DB_PASSWORD)
-  DB_DATABASE: $(DB_DATABASE)
-  DB_PORT: $(DB_PORT)
-  DB_HOST: $(DB_HOST)
-  JWT_SECRET: $(JWT_SECRET)
+  DB_USER: '$(DB_USER)'
+  DB_PASSWORD: '$(DB_PASSWORD)'
+  DB_DATABASE: '$(DB_DATABASE)'
+  DB_PORT: '$(DB_PORT)'
+  DB_HOST: '$(DB_HOST)'
+  JWT_SECRET: '$(JWT_SECRET)'
 
 stages:
 - stage: Build
