@@ -10,6 +10,12 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  DB_USER: $(DB_USER) 
+  DB_PASSWORD: $(DB_PASSWORD)
+  DB_DATABASE: $(DB_DATABASE)
+  DB_PORT: $(DB_PORT)
+  DB_HOST: $(DB_HOST)
+  JWT_SECRET: $(JWT_SECRET)
 
 stages:
 - stage: Build
@@ -27,7 +33,7 @@ stages:
         containerRegistry: 'gabrieltamura-dockerhub'
         repository: 'gabrieltamurab8one/plugone-api-staging'
         Dockerfile: '**/Dockerfile'
-        arguments: '--build-arg dbuser=$DB_USER --build-arg dbpassword=$DB_PASSWORD --build-arg dbdatabase=$DB_DATABASE --build-arg dbport=$DB_PORT --build-arg dbhost=$DB_HOST --build-arg jwtsecret=$JWT_SECRET'
+        arguments: '--build-arg dbuser=$(DB_USER) --build-arg dbpassword=$(DB_PASSWORD) --build-arg dbdatabase=$(DB_DATABASE) --build-arg dbport=$(DB_PORT) --build-arg dbhost=$(DB_HOST) --build-arg jwtsecret=$(JWT_SECRET)'
         includeLatestTag: true
         tags: |
           $(Build.BuildId)
