@@ -1,3 +1,19 @@
+extend type Query{
+    listAvailableServices(input: ListAvailableServicesInput!): [Services]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+}
+
+input ListAvailableServicesInput {
+    organizationId: String!
+}
+
+type Services{
+    id: String!
+    name: String!
+    active: Boolean!
+    updatedAt: Datetime!
+    createdAt: Datetime!
+}
+
 extend type Mutation{
     createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
 }

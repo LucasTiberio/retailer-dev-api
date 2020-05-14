@@ -4,7 +4,7 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import { IOrganizationAdapted } from '../../organization/types';
-import { Services } from '../types';
+import { Services, IServiceAdapted } from '../types';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -50,6 +50,18 @@ const CREATE_ORGANIZATION = `
 const CREATE_SERVICE_IN_ORGANIZATION = `
     mutation createServiceInOrganization($input: CreateServiceInOrganizationInput!) {
         createServiceInOrganization(input: $input)
+    }
+`
+
+const LIST_AVAILABLE_SERVICES = `
+    query listAvailableServices($input: ListAvailableServicesInput!) {
+        listAvailableServices(input: $input){
+            id
+            name
+            active
+            updatedAt
+            createdAt
+        }
     }
 `
 
@@ -128,7 +140,7 @@ describe('services graphql', () => {
 
     describe("organization tests with user verified", () => {
 
-        test.only("user should create new service in organization graphql", async done => {
+        test("user should create new service in organization graphql", async done => {
 
             const [serviceFound] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id');
 
@@ -165,6 +177,44 @@ describe('services graphql', () => {
             )
     
             done();
+        })
+
+        test.only("user should list services availables to organization", async done => {
+
+            const servicesFound = await knexDatabase.knex('services').select('id', 'name');
+
+            const listAvailableServicesPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            const listAvailableServicesResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': LIST_AVAILABLE_SERVICES, 
+            'variables': {
+                    input: listAvailableServicesPayload
+                }
+            });
+
+            expect(listAvailableServicesResponse.statusCode).toBe(200);
+            expect(listAvailableServicesResponse.body.data.listAvailableServices).toEqual(
+                expect.arrayContaining(
+                    servicesFound.map((service : IServiceAdapted) => 
+                        expect.objectContaining({
+                            id: service.id,
+                            name: service.name,
+                            active: true,
+                            updatedAt: expect.any(String),
+                            createdAt: expect.any(String)
+                        })
+                    )
+                )
+            )
+
+            done();
+
         })
 
     })
