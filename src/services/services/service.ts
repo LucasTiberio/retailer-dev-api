@@ -54,8 +54,6 @@ const listUsedServices = async (organizationCreatedId: string ,userToken : IUser
     `
   );
 
-  console.log("availableServices", availableServices.rows)
-
   return availableServices.rows.map(_serviceAdapter);
 }
 
