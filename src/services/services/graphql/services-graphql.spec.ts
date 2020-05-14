@@ -61,6 +61,7 @@ const LIST_AVAILABLE_SERVICES = `
             active
             updatedAt
             createdAt
+            hasOrganization
         }
     }
 `
