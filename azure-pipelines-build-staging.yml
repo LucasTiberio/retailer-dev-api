@@ -27,7 +27,18 @@ stages:
         containerRegistry: 'gabrieltamura-dockerhub'
         repository: 'gabrieltamurab8one/plugone-api-staging'
         Dockerfile: '**/Dockerfile'
-        arguments: '--build-arg dbuser=$(DB_USER) --build-arg dbpassword=$(DB_PASSWORD) --build-arg dbdatabase=$(DB_DATABASE) --build-arg dbport=$(DB_PORT) --build-arg dbhost=$(DB_HOST) --build-arg jwtsecret=$(JWT_SECRET)'
+        arguments: | 
+          --build-arg nodeenv=development 
+          --build-arg dbuser=$(DB_USER) 
+          --build-arg dbpassword=$(DB_PASSWORD) 
+          --build-arg dbdatabase=$(DB_DATABASE) 
+          --build-arg dbport=$(DB_PORT) 
+          --build-arg dbhost=$(DB_HOST) 
+          --build-arg jwtsecret=$(JWT_SECRET)
+          --build-arg mailhost=$(MAIL_HOST)
+          --build-arg mailport=$(MAIL_PORT)
+          --build-arg mailuser=$(MAIL_USER)
+          --build-arg sendgridapikey=$(SEND_GRID_API_KEY)
         includeLatestTag: true
         tags: |
           $(Build.BuildId)

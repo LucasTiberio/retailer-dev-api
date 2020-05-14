@@ -7,7 +7,7 @@ const sendSignUpMail = async (data: ISendMail) => {
 
     try {
         await Mail.sendMail({
-            from: 'PlugOne Robot <robot@plugone.com>',
+            from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
             subject: 'Welcome to PlugOne!',
             html: `Hello, ${data.username}! confirm your registration: http://localhost:3000/verification/${data.hashToVerify}`
@@ -23,7 +23,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
 
     try {
         await Mail.sendMail({
-            from: 'PlugOne Robot <robot@plugone.com>',
+            from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
             subject: 'Recovery PlugOne Password!',
             html: `Hello, ${data.username}, Link para recuperação de senha: http://localhost:3000/recovery-password/${data.hashToVerify}`
@@ -39,7 +39,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
 
     try {
         await Mail.sendMail({
-            from: 'PlugOne Robot <robot@plugone.com>',
+            from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
             subject: 'Recovered PlugOne Password!',
             html: `Hello, ${data.username}, your password has been changed on our system!`
@@ -55,7 +55,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
 
     try {
         await Mail.sendMail({
-            from: 'PlugOne Robot <robot@plugone.com>',
+            from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `<${data.email}>`,
             subject: `You haas been invited to ${data.organizationName}!`,
             html: `Hello, 
@@ -74,7 +74,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
 
     try {
         await Mail.sendMail({
-            from: 'PlugOne Robot <robot@plugone.com>',
+            from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `<${data.email}>`,
             subject: `You haas been invited to Plugone by ${data.organizationName}!`,
             html: `Hello, 
