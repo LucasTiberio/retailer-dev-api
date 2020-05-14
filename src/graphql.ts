@@ -1,4 +1,4 @@
-import { reduce, merge } from 'lodash';
+import { merge } from 'lodash';
 import services from './services';
 import moment from 'moment';
 import { GraphQLScalarType } from 'graphql';
@@ -12,7 +12,8 @@ import { IOrganizationRoleResponse } from './services/organization/types';
 
 declare var process : {
 	env: {
-	  JWT_SECRET: string
+    JWT_SECRET: string
+    NODE_ENV: 'test' | 'production' | 'staging'
 	}
 }
 
@@ -85,16 +86,36 @@ const resolversBase : IResolvers = {
 };
 
 const directiveResolvers : IDirectiveResolvers = {
-  async hasOrganizationRole(next, _, args, context): Promise<NextFunction> {
-    const userOrganizationRoles = await knexDatabase.knex('users as usr')
-    .where('usr.id', context.client.id)
-    .innerJoin('users_organization_roles as uor', 'usr.id', 'uor.user_id')
-    .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
-    .select('or.name');
-    const hasSpecifiedRole = userOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
-    if (hasSpecifiedRole) return next();
-    throw new Error(`Must have role: ${args.role}, you have role: ${userOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
-  },
+  async hasOrganizationRole(next, _, args : any, context, other : any): Promise<NextFunction> {
+
+    let organizationId: string;
+
+  if(process.env.NODE_ENV === 'test'){
+    organizationId = other.variableValues.input.organizationId;
+
+    if(!organizationId) throw new Error("Organization identifier invalid!")
+
+  } else {
+    const fields = other.fieldNodes[0].arguments[0].value.fields;
+    const organizationIdField = fields.filter((el : any) => el.name.value === 'organizationId');
+  
+    if(!organizationIdField.length) throw new Error("Organization identifier invalid!")
+  
+    organizationId = organizationIdField[0].value.value;
+  }
+
+
+  const userOrganizationRoles = await knexDatabase.knex('users as usr')
+  .where('usr.id', context.client.id)
+  .andWhere('uor.organization_id', organizationId)
+  .innerJoin('users_organization_roles as uor', 'usr.id', 'uor.user_id')
+  .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
+  .select('or.name');
+
+  const hasSpecifiedRole = userOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
+  if (hasSpecifiedRole) return next();
+  throw new Error(`Must have role: ${args.role}, you have role: ${userOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
+},
   async isAuthenticated(next, _, __, context): Promise<NextFunction> {
     const token = context.headers['x-api-token'];
     if (!token) throw new Error("token must be provided!");
@@ -111,7 +132,8 @@ const directiveResolvers : IDirectiveResolvers = {
   },
   async isVerified(next, _, __, context): Promise<NextFunction> {
     const [user] = await knexDatabase.knex('users').where('id', context.client.id).select();
-    if(!user.verified) throw new Error("you need verify your email!")
+    if(!user) throw new Error("user not found!");
+    if(!user.verified) throw new Error("you need verify your email!");
     return next();
   }
 };

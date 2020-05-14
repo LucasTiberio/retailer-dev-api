@@ -39,6 +39,24 @@ const getServiceById = async (serviceId: string, trx: Transaction) => {
   return _serviceAdapter(serviceFound);
 }
 
+const listUsedServices = async (organizationCreatedId: string ,userToken : IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided!");
+
+  const availableServices = await (trx || knexDatabase.knex).raw(
+    `
+    SELECT svc.*, os.organization_id = '${organizationCreatedId}' as hasOrganization
+    FROM services AS svc
+      LEFT JOIN organization_services AS os
+      ON svc.id = os.service_id
+        WHERE svc.active = true
+    `
+  );
+
+  return availableServices.rows.map(_serviceAdapter);
+}
+
 export default {
-  createServiceInOrganization
+  createServiceInOrganization,
+  listUsedServices
 }
