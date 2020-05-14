@@ -8,6 +8,7 @@ export interface IServiceAdaptedFromDB {
     active: boolean
     updated_at: Date
     created_at: Date
+    has_organization: boolean
 }
 
 export interface IServiceAdapted {
@@ -16,6 +17,7 @@ export interface IServiceAdapted {
     active: boolean
     updatedAt: Date
     createdAt: Date
+    hasOrganization: Boolean
 }
 
 export interface ICreateServiceInOrganization{

@@ -12,6 +12,7 @@ type Services{
     active: Boolean!
     updatedAt: Datetime!
     createdAt: Datetime!
+    hasOrganization: Boolean!
 }
 
 extend type Mutation{

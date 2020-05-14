@@ -8,7 +8,8 @@ const _serviceAdapter = (record: IServiceAdaptedFromDB) => ({
   name: record.name,
   active: record.active,
   createdAt: record.created_at,
-  updatedAt: record.updated_at
+  updatedAt: record.updated_at,
+  hasOrganization: !!record.has_organization
 });
 
 const createServiceInOrganization = async (serviceId: string, organizationId: string, userToken: IUserToken, trx: Transaction) => {
@@ -45,13 +46,15 @@ const listUsedServices = async (organizationCreatedId: string ,userToken : IUser
 
   const availableServices = await (trx || knexDatabase.knex).raw(
     `
-    SELECT svc.*, os.organization_id = '${organizationCreatedId}' as hasOrganization
+    SELECT svc.*, os.organization_id = '${organizationCreatedId}' as has_organization
     FROM services AS svc
       LEFT JOIN organization_services AS os
       ON svc.id = os.service_id
         WHERE svc.active = true
     `
   );
+
+  console.log("availableServices", availableServices.rows)
 
   return availableServices.rows.map(_serviceAdapter);
 }
