@@ -14,6 +14,15 @@ const resolvers : IResolvers = {
             });
         }
       },
+    Query: {
+        listAvailableServices: (_, attrs, { client }) => {
+            const { input } = attrs;
+
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.listUsedServices(input.organizationId, client, trx);
+            });
+        }
+      },
 };
 
 export default resolvers;

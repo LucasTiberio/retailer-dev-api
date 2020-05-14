@@ -1,9 +1,9 @@
-import { IServiceAdapted } from "./types";
+import { IServiceAdaptedFromDB } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import knexDatabase from "../../knex-database";
 
-const _serviceAdapter = (record: IServiceAdapted) => ({
+const _serviceAdapter = (record: IServiceAdaptedFromDB) => ({
   id: record.id,
   name: record.name,
   active: record.active,
