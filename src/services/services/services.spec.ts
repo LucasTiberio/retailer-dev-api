@@ -78,27 +78,27 @@ describe('Services', () => {
         done();
     })
 
-    // test.only("organization admin should list services", async done => {
+    test("organization admin should list services", async done => {
 
-    //     const servicesFound = await (trx || knexDatabase.knex)('services').select('id', 'name');
-        
-    //     const listServices = await service.listServices(organizationCreated.id ,userToken, trx);
+        const servicesFound = await (trx || knexDatabase.knex)('services').select('id', 'name');
 
-    //     expect(listServices).toEqual(
-    //         expect.arrayContaining(
-    //             servicesFound.map(service => {
-    //                 expect.objectContaining({
-    //                     id: service.id,
-    //                     name: service.name,
-    //                     active: true,
-    //                     updatedAt: expect.any(Date),
-    //                     createdAt: expect.any(Date)
-    //                 })
-    //             })
-    //         )
-    //     )
+        const listServices = await service.listUsedServices(organizationCreated.id ,userToken, trx);
 
-    //     done();
-    // })
+        expect(listServices).toEqual(
+            expect.arrayContaining(
+                servicesFound.map(service => 
+                    expect.objectContaining({
+                        id: service.id,
+                        name: service.name,
+                        active: true,
+                        updatedAt: expect.any(Date),
+                        createdAt: expect.any(Date)
+                    })
+                )
+            )
+        )
+
+        done();
+    })
         
 });

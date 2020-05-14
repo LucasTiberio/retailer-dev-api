@@ -128,13 +128,13 @@ describe('services graphql', () => {
 
     describe("organization tests with user verified", () => {
 
-        test("user should create new service in organization graphql", async done => {
+        test.only("user should create new service in organization graphql", async done => {
 
             const [serviceFound] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id');
 
             const createServiceInOrganizationPayload = {
-                serviceId: serviceFound.id,
                 organizationId: organizationCreated.id,
+                serviceId: serviceFound.id,
             }
 
             const createServiceInOrganizationResponse = await request

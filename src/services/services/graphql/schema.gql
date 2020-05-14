@@ -1,5 +1,5 @@
 extend type Mutation{
-    createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
 }
 
 input CreateServiceInOrganizationInput{

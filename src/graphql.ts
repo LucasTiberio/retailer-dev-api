@@ -12,7 +12,8 @@ import { IOrganizationRoleResponse } from './services/organization/types';
 
 declare var process : {
 	env: {
-	  JWT_SECRET: string
+    JWT_SECRET: string
+    NODE_ENV: 'test' | 'production' | 'staging'
 	}
 }
 
@@ -86,24 +87,30 @@ const resolversBase : IResolvers = {
 
 const directiveResolvers : IDirectiveResolvers = {
   async hasOrganizationRole(next, _, args : any, context, other : any): Promise<NextFunction> {
-  const fields = other.fieldNodes[0].arguments[0].value.fields;
-  const organizationIdField = fields.filter((el : any) => el.name.value === 'organizationId');
 
-  if(!organizationIdField.length) throw new Error("Organization identifier invalid!")
+    let organizationId: string;
 
-  const organizationId = organizationIdField[0].value.value;
+  if(process.env.NODE_ENV === 'test'){
+    organizationId = other.variableValues.input.organizationId;
 
-  console.log("context.client.id", context.client.id)
-  console.log("organizationId", organizationId)
+    if(!organizationId) throw new Error("Organization identifier invalid!")
+
+  } else {
+    const fields = other.fieldNodes[0].arguments[0].value.fields;
+    const organizationIdField = fields.filter((el : any) => el.name.value === 'organizationId');
+  
+    if(!organizationIdField.length) throw new Error("Organization identifier invalid!")
+  
+    organizationId = organizationIdField[0].value.value;
+  }
+
 
   const userOrganizationRoles = await knexDatabase.knex('users as usr')
   .where('usr.id', context.client.id)
-  // .andWhere('uor.organization_id', organizationId)
+  .andWhere('uor.organization_id', organizationId)
   .innerJoin('users_organization_roles as uor', 'usr.id', 'uor.user_id')
   .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
   .select('or.name');
-
-  console.log("userOrganizationRoles", userOrganizationRoles)
 
   const hasSpecifiedRole = userOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
   if (hasSpecifiedRole) return next();
