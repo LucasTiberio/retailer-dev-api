@@ -30,6 +30,9 @@ const typeDefsBase = gql`
   directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
+  # directive @hasServiceRole(role: [String]!, service: String!) on FIELD | FIELD_DEFINITION  
+  # analysta responsavel admin 
+  # microservicos > admin
 `;
 
 const resolversBase : IResolvers = {
@@ -107,8 +110,9 @@ const directiveResolvers : IDirectiveResolvers = {
 
   const userOrganizationRoles = await knexDatabase.knex('users as usr')
   .where('usr.id', context.client.id)
-  .andWhere('uor.organization_id', organizationId)
-  .innerJoin('users_organization_roles as uor', 'usr.id', 'uor.user_id')
+  .andWhere('uo.organization_id', organizationId)
+  .innerJoin('users_organizations AS uo', 'uo.user_id', 'usr.id')
+  .innerJoin('users_organization_roles as uor', 'uo.id', 'uor.users_organization_id')
   .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
   .select('or.name');
 
