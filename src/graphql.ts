@@ -31,8 +31,6 @@ const typeDefsBase = gql`
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
   # directive @hasServiceRole(role: [String]!, service: String!) on FIELD | FIELD_DEFINITION  
-  # analysta responsavel admin 
-  # microservicos > admin
 `;
 
 const resolversBase : IResolvers = {
@@ -106,7 +104,6 @@ const directiveResolvers : IDirectiveResolvers = {
   
     organizationId = organizationIdField[0].value.value;
   }
-
 
   const userOrganizationRoles = await knexDatabase.knex('users as usr')
   .where('usr.id', context.client.id)
