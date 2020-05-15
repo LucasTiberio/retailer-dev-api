@@ -12,10 +12,11 @@ exports.up = async function(knex) {
             .uuid('user_id')
             .notNullable()
             .references('users.id');
+            
         table
-            .uuid('organization_id')
+            .uuid('users_organization_id')
             .notNullable()
-            .references('organizations.id');
+            .references('users_organizations.id');
         table
             .uuid('organization_role_id')
             .notNullable()
