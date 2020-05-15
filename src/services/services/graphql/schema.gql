@@ -1,22 +1,46 @@
 extend type Query{
-    listAvailableServices(input: ListAvailableServicesInput!): [Services]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    listAvailableServices(input: ListAvailableServicesInput!): [Service]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+}
+
+extend type Mutation{
+    createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    addUserInOrganizationService(input: AddUserInOrganizationServiceInput!): UserOrganizationService! @isVerified @isAuthenticated  # ADD DIRECTIVES 
+    # addUserInOrganizationService @hasOrganizationRole(role: ["ADMIN"])
+}
+
+type UserOrganizationService{
+    id: String!
+    service: Service!
+    serviceRoles: ServiceRoles!
+    userOrganization: UserOrganization!
+    createdAt: Datetime!
+    updatedAt: Datetime!
+}
+
+type ServiceRoles{
+    id: String!
+    name: String!
+    createdAt: Datetime!
+    updatedAt: Datetime!
+}
+
+input AddUserInOrganizationServiceInput{
+    userId: String!
+    organizationId: String!
+    serviceName: String!
 }
 
 input ListAvailableServicesInput {
     organizationId: String!
 }
 
-type Services{
+type Service{
     id: String!
     name: String!
     active: Boolean!
     updatedAt: Datetime!
     createdAt: Datetime!
-    hasOrganization: Boolean!
-}
-
-extend type Mutation{
-    createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    hasOrganization: Boolean
 }
 
 input CreateServiceInOrganizationInput{

@@ -67,3 +67,23 @@ export interface IUserOrganizationDB extends ISimpleUser{
     invite_status?: string
     users_organizations_id?: string
 }
+
+export interface IUserOrganizationAdaptedFromDB{
+    id: string
+    user_id: string
+    organization_id: string
+    invite_status: OrganizationInviteStatus
+    invite_hash?: string
+    created_at: Date
+    updated_at: Date
+}
+
+export interface IUserOrganizationAdapted{
+    id: string
+    userId: string
+    organizationId: string
+    inviteStatus: OrganizationInviteStatus
+    inviteHash?: string
+    createdAt: Date
+    updatedAt: Date
+}

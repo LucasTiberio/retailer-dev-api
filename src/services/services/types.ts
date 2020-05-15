@@ -2,6 +2,12 @@ export enum Services {
     AFFILIATE = 'affiliate'
 }
 
+export enum ServiceRoles {
+    ADMIN = 'ADMIN',
+    ANALYST = 'ANALYST',
+    RESPONSIBLE = 'RESPONSIBLE'
+}
+
 export interface IServiceAdaptedFromDB {
     id: string
     name: string
@@ -27,4 +33,26 @@ export interface ICreateServiceInOrganization{
 interface ICreateServiceInOrganizationInput{
     serviceId: string
     organizationId: string
+}
+
+export interface IUsersOrganizationServiceDB{
+    id: string
+    service_roles_id: string
+    users_organization_id: string
+    created_at: Date
+    updated_at: Date
+}
+
+export interface IServiceRolesAdapted{
+    id: string
+    name: string
+    createdAt: Date
+    updatedAt: Date
+}
+
+export interface IServiceRolesDB{
+    id: string
+    name: string
+    created_at: Date
+    updated_at: Date
 }

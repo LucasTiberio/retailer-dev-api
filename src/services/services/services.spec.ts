@@ -7,8 +7,8 @@ import database from '../../knex-database';
 import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
-import { Services } from './types';
-import { IOrganizationAdapted } from '../organization/types';
+import { Services, IServiceAdaptedFromDB, IServiceAdapted, ServiceRoles } from './types';
+import { IOrganizationAdapted, OrganizationInviteStatus, IUserOrganizationAdapted } from '../organization/types';
 import knexDatabase from '../../knex-database';
 
 describe('Services', () => {
@@ -31,9 +31,13 @@ describe('Services', () => {
     
     let userToken : IUserToken;
     let organizationCreated: IOrganizationAdapted;
+    let serviceFound: IServiceAdaptedFromDB;
 
     beforeAll(async () => {
         trx = await database.knex.transaction(); 
+
+        const [serviceFoundDB] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        serviceFound = serviceFoundDB
     });
 
     afterAll(async () => {
@@ -53,11 +57,11 @@ describe('Services', () => {
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
         organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
     })
 
     test("user should create new service in organization", async done => {
-
-        const [serviceFound] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
 
         const serviceInOrganizationCreated = await service.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
 
@@ -100,6 +104,74 @@ describe('Services', () => {
         )
 
         done();
+    });
+
+    describe('services with service organization attached', () => {
+
+        let serviceFound : IServiceAdaptedFromDB;
+
+        beforeEach(async () => {
+            const [serviceFoundDB] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+            serviceFound = serviceFoundDB
+            await service.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
+        })
+
+        test('organization admin should added member on service', async done => {
+
+            let otherSignUpPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: Faker.internet.password()
+            }
+
+            let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+            const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+            await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+    
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+            const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+            const responseInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+    
+            await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+            const addUserInOrganizationServicePayload = {
+                organizationId:organizationCreated.id,
+                userId: otherSignUpCreated.id,
+                serviceName: Services.AFFILIATE 
+            };
+
+            const newMemberOnOrgazationService = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+
+            const [serviceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+
+            expect(newMemberOnOrgazationService).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    serviceRolesId:serviceRoles.id,
+                    usersOrganizationId: invitedUserToOrganization.id,
+                    serviceId: serviceFound.id,
+                    createdAt: expect.any(Date),
+                    updatedAt: expect.any(Date),
+                })
+            )
+    
+            done();
+        })
+
     })
+
         
 });

@@ -1,4 +1,4 @@
-import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes } from "./types";
+import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes, IUserOrganizationAdaptedFromDB } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
@@ -17,6 +17,16 @@ const _organizationAdapter = (record: IOrganizationFromDB) => ({
   createdAt: record.created_at,
   updatedAt: record.updated_at
 });
+
+const _usersOrganizationsAdapter = (record: IUserOrganizationAdaptedFromDB) => ({
+    id: record.id,
+    userId: record.user_id,
+    organizationId: record.organization_id,
+    inviteStatus: record.invite_status,
+    inviteHash: record.invite_hash,
+    createdAt: record.created_at,
+    updatedAt: record.updated_at
+})
 
 const createOrganization = async (createOrganizationPayload : IOrganizationPayload, userToken : IUserToken, trx : Transaction) => {
 
@@ -184,11 +194,38 @@ const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes,
 
 }
 
+const userOrganizationInviteStatus = async (userId: string, organizationId: string,  trx: Transaction) => {
+
+  const [userOrganizationInviteStatusFound] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', userId).andWhere('organization_id', organizationId).select();
+
+  return _usersOrganizationsAdapter(userOrganizationInviteStatusFound);
+
+}
+
+const getUserOrganizationById = async (userOrganizationId: string, trx?: Transaction) => {
+
+  const [userOrganization] = await (trx || knexDatabase.knexTest)('users_organizations').where('id', userOrganizationId).select();
+
+  return _usersOrganizationsAdapter(userOrganization)
+
+}
+
+const getOrganizationById = async (organizationId: string, trx?: Transaction) => {
+
+  const [organization] = await (trx || knexDatabase.knexTest)('organizations').where('id', organizationId).select();
+
+  return _organizationAdapter(organization)
+
+}
+
 export default {
   createOrganization,
   verifyOrganizationName,
   inviteUserToOrganization,
   responseInvite,
   _organizationAdapter,
-  findUsersToOrganization
+  getOrganizationById,
+  findUsersToOrganization,
+  userOrganizationInviteStatus,
+  getUserOrganizationById
 }

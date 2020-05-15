@@ -38,6 +38,14 @@ const resolvers : IResolvers = {
     user: async (obj) => {
       return UserService.getUserById(obj.userId);
     }
+  },
+  UserOrganization: {
+    user: async (obj) => {
+      return UserService.getUserById(obj.userId);
+    },
+    organization: async (obj) => {
+      return service.getOrganizationById(obj.organizationId);
+    },
   }
 };
 
