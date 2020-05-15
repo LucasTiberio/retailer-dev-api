@@ -10,7 +10,8 @@ input FindUsersToOrganizationInput{
 
 type FindUsersToOrganizationPayload{
   user: User!
-  invited: Boolean!
+  inviteStatus: OrganizationInviteStatus
+  usersOrganizationsId: String
 }
 
 input VerifyOrganizationNameInput{
@@ -31,7 +32,8 @@ input ResponseOrganizationInviteInput{
 enum OrganizationInviteStatus {
     refused,
     pendent,
-    accept
+    accept,
+    exited
 }
 
 input InviteUserToOrganizationInput {

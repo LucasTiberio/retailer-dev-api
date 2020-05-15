@@ -1,3 +1,5 @@
+import { ISimpleUser } from "../users/types";
+
 export interface IOrganizationPayload{
     name: string
     contactEmail: string
@@ -59,4 +61,9 @@ export interface IResponseInvitePayload{
 export interface IFindUsersAttributes{
     name: string
     organizationId: string
+}
+
+export interface IUserOrganizationDB extends ISimpleUser{
+    invite_status?: string
+    users_organizations_id?: string
 }

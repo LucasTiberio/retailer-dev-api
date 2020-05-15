@@ -180,7 +180,7 @@ describe('services graphql', () => {
             done();
         })
 
-        test.only("user should list services availables to organization", async done => {
+        test("user should list services availables to organization", async done => {
 
             const servicesFound = await knexDatabase.knex('services').select('id', 'name');
 
