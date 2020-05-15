@@ -10,7 +10,8 @@ input FindUsersToOrganizationInput{
 
 type FindUsersToOrganizationPayload{
   user: User!
-  invited: Boolean!
+  inviteStatus: OrganizationInviteStatus
+  usersOrganizationsId: String
 }
 
 input VerifyOrganizationNameInput{
@@ -31,7 +32,8 @@ input ResponseOrganizationInviteInput{
 enum OrganizationInviteStatus {
     refused,
     pendent,
-    accept
+    accept,
+    exited
 }
 
 input InviteUserToOrganizationInput {
@@ -53,8 +55,14 @@ type Organization{
   name: String!
   contactEmail: String!
   id: String!
-  user: User! @isVerified @isAuthenticated
   active: Boolean!
+  user: User! @isVerified @isAuthenticated # TODO somente admin pode ver o founder
   updatedAt: Datetime!
   createdAt: Datetime!
+}
+
+type UserOrganization{
+  id: String!
+  organization: Organization!
+  user: User!
 }

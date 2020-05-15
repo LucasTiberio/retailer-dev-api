@@ -67,7 +67,8 @@ const CREATE_ORGANIZATION = `
 const FIND_USERS_TO_ORGANIZATION = `
     query findUsersToOrganization($input: FindUsersToOrganizationInput!) {
         findUsersToOrganization(input: $input){
-            invited
+            inviteStatus
+            usersOrganizationsId
             user{
                 id
                 email
@@ -306,21 +307,15 @@ describe('organizations graphql', () => {
 
             expect(inviteUserToOrganizationResponse.statusCode).toBe(200);
             expect(inviteUserToOrganizationResponse.body.data.inviteUserToOrganization).toBeTruthy();
-    
-            const userOrganizationRoles = await knexDatabase.knex('users_organization_roles').select();
-    
-            const organizationRoles = await knexDatabase.knex('organization_roles').select('id', 'name');
-    
-            const adminRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.ADMIN)
-            const memberRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.MEMBER)
-    
-            expect(userOrganizationRoles).toEqual(
+
+            const userOrganizations = await knexDatabase.knex('users_organizations').select();
+
+            expect(userOrganizations).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
                         id: expect.any(String),
                         user_id: userClient.id,
                         organization_id: organizationCreated.id,
-                        organization_role_id: adminRole[0].id,
                         invite_status: OrganizationInviteStatus.ACCEPT,
                         invite_hash: null,
                         updated_at: expect.any(Date),
@@ -330,13 +325,40 @@ describe('organizations graphql', () => {
                         id: expect.any(String),
                         user_id: otherSignUpCreated.id,
                         organization_id: organizationCreated.id,
-                        organization_role_id: memberRole[0].id,
                         invite_status: OrganizationInviteStatus.PENDENT,
                         invite_hash: expect.any(String),
                         updated_at: expect.any(Date),
                         created_at: expect.any(Date)
                     })
-                ]),
+                ])
+            )
+    
+            const userOrganizationRoles = await knexDatabase.knex('users_organization_roles').select();
+    
+            const organizationRoles = await knexDatabase.knex('organization_roles').select('id', 'name');
+    
+            const adminRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.ADMIN)
+            const memberRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.MEMBER)
+
+            expect(userOrganizationRoles).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: userClient.id,
+                        users_organization_id: expect.any(String),
+                        organization_role_id: adminRole[0].id,
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    }),
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: otherSignUpCreated.id,
+                        users_organization_id: expect.any(String),
+                        organization_role_id: memberRole[0].id,
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    })
+                ])
             )
     
             done();
@@ -386,6 +408,31 @@ describe('organizations graphql', () => {
 
             expect(inviteUserToOrganizationResponse.statusCode).toBe(200);
             expect(inviteUserToOrganizationResponse.body.data.inviteUserToOrganization).toBeTruthy();
+
+            const userOrganizations = await knexDatabase.knex('users_organizations').select();
+
+            expect(userOrganizations).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: userClient.id,
+                        organization_id: organizationCreated.id,
+                        invite_status: OrganizationInviteStatus.ACCEPT,
+                        invite_hash: null,
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    }),
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: expect.any(String),
+                        organization_id: organizationCreated.id,
+                        invite_status: OrganizationInviteStatus.PENDENT,
+                        invite_hash: expect.any(String),
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    })
+                ])
+            )
     
             const userOrganizationRoles = await knexDatabase.knex('users_organization_roles').select();
     
@@ -401,20 +448,16 @@ describe('organizations graphql', () => {
                     expect.objectContaining({
                         id: expect.any(String),
                         user_id: userClient.id,
-                        organization_id: organizationCreated.id,
+                        users_organization_id: expect.any(String),
                         organization_role_id: adminRole[0].id,
-                        invite_status: OrganizationInviteStatus.ACCEPT,
-                        invite_hash: null,
                         updated_at: expect.any(Date),
                         created_at: expect.any(Date)
                     }),
                     expect.objectContaining({
                         id: expect.any(String),
                         user_id: user.id,
-                        organization_id: organizationCreated.id,
+                        users_organization_id: expect.any(String),
                         organization_role_id: memberRole[0].id,
-                        invite_status: OrganizationInviteStatus.PENDENT,
-                        invite_hash: expect.any(String),
                         updated_at: expect.any(Date),
                         created_at: expect.any(Date)
                     })
@@ -481,7 +524,7 @@ describe('organizations graphql', () => {
                 }
             });
     
-            const [invitedUserToOrganization] = await knexDatabase.knex('users_organization_roles').where("user_id", otherSignUpCreated.id).select('invite_hash');
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash');
     
             const responseOrganizationInvitePayload = {
                 inviteHash: invitedUserToOrganization.invite_hash,
@@ -502,16 +545,13 @@ describe('organizations graphql', () => {
             expect(responseOrganizationInviteResponse.statusCode).toBe(200);
             expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeTruthy();
     
-            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organization_roles').where("user_id", otherSignUpCreated.id).select('*');
-    
-            const [organizationRoles] = await knexDatabase.knex('organization_roles').where('name', OrganizationRoles.MEMBER).select();
+            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('*');
     
             expect(invitedUserToOrganizationAfter).toEqual(
                 expect.objectContaining({
                     id: expect.any(String),
                     user_id: otherSignUpCreated.id,
                     organization_id: organizationCreated.id,
-                    organization_role_id: organizationRoles.id,
                     invite_status: OrganizationInviteStatus.ACCEPT,
                     updated_at: expect.any(Date),
                     created_at: expect.any(Date)
@@ -579,7 +619,7 @@ describe('organizations graphql', () => {
                 }
             });
     
-            const [invitedUserToOrganization] = await knexDatabase.knex('users_organization_roles').where("user_id", otherSignUpCreated.id).select('invite_hash');
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash');
     
             const responseOrganizationInvitePayload = {
                 inviteHash: invitedUserToOrganization.invite_hash,
@@ -600,16 +640,13 @@ describe('organizations graphql', () => {
             expect(responseOrganizationInviteResponse.statusCode).toBe(200);
             expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeTruthy();
     
-            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organization_roles').where("user_id", otherSignUpCreated.id).select('*');
-    
-            const [organizationRoles] = await knexDatabase.knex('organization_roles').where('name', OrganizationRoles.MEMBER).select();
+            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('*');
     
             expect(invitedUserToOrganizationAfter).toEqual(
                 expect.objectContaining({
                     id: expect.any(String),
                     user_id: otherSignUpCreated.id,
                     organization_id: organizationCreated.id,
-                    organization_role_id: organizationRoles.id,
                     invite_status: OrganizationInviteStatus.REFUSED,
                     updated_at: expect.any(Date),
                     created_at: expect.any(Date)
@@ -664,7 +701,7 @@ describe('organizations graphql', () => {
 
             const [userFound] = await knexDatabase.knex('users').where('email', signUpOtherMemberPayload.email).select('id')
     
-            const [invitedUserToOrganization] = await knexDatabase.knex('users_organization_roles').where("user_id", userFound.id).select('invite_hash');
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", userFound.id).select('invite_hash');
     
             const responseOrganizationInvitePayload = {
                 inviteHash: invitedUserToOrganization.invite_hash,
@@ -685,16 +722,13 @@ describe('organizations graphql', () => {
             expect(responseOrganizationInviteResponse.statusCode).toBe(200);
             expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeFalsy();
     
-            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organization_roles').where("user_id", userFound.id).select('*');
-    
-            const [organizationRoles] = await knexDatabase.knex('organization_roles').where('name', OrganizationRoles.MEMBER).select();
+            const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organizations').where("user_id", userFound.id).select('*');
     
             expect(invitedUserToOrganizationAfter).toEqual(
                 expect.objectContaining({
                     id: expect.any(String),
                     user_id: userFound.id,
                     organization_id: organizationCreated.id,
-                    organization_role_id: organizationRoles.id,
                     invite_status: OrganizationInviteStatus.PENDENT,
                     updated_at: expect.any(Date),
                     created_at: expect.any(Date)
@@ -814,12 +848,13 @@ describe('organizations graphql', () => {
             expect(findUsersToOrganizationResponse.body.data.findUsersToOrganization).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
-                        invited: false,
                         user: expect.objectContaining({
                             id: expect.any(String),
                             username: signUpPayload2.username,
                             email: signUpPayload2.email,
-                        })
+                        }),
+                        inviteStatus: null,
+                        usersOrganizationsId: null
                     }),
                     expect.objectContaining({
                         user: expect.objectContaining({
@@ -827,7 +862,8 @@ describe('organizations graphql', () => {
                             username: signUpPayload3.username,
                             email: signUpPayload3.email,
                         }),
-                        invited: false
+                        inviteStatus: null,
+                        usersOrganizationsId: null
                     })
                 ])
             )
@@ -982,7 +1018,8 @@ describe('organizations graphql', () => {
             expect(findUsersToOrganizationResponse.body.data.findUsersToOrganization).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
-                        invited: true,
+                        inviteStatus: OrganizationInviteStatus.PENDENT,
+                        usersOrganizationsId: expect.any(String),
                         user: expect.objectContaining({
                             id: expect.any(String),
                             username: signUpPayload2.username,
@@ -995,7 +1032,8 @@ describe('organizations graphql', () => {
                             username: signUpPayload3.username,
                             email: signUpPayload3.email,
                         }),
-                        invited: false
+                        inviteStatus: null,
+                        usersOrganizationsId: null
                     })
                 ])
             )

@@ -1,4 +1,4 @@
-import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes } from "./types";
+import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes, IUserOrganizationAdaptedFromDB } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
@@ -6,7 +6,7 @@ import MailService from '../mail/service';
 import UserService from '../users/service';
 import knexDatabase from "../../knex-database";
 import common from "../../common";
-import { IUsersDB } from "../users/types";
+import { IUserOrganizationDB } from "./types";
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -17,6 +17,16 @@ const _organizationAdapter = (record: IOrganizationFromDB) => ({
   createdAt: record.created_at,
   updatedAt: record.updated_at
 });
+
+const _usersOrganizationsAdapter = (record: IUserOrganizationAdaptedFromDB) => ({
+    id: record.id,
+    userId: record.user_id,
+    organizationId: record.organization_id,
+    inviteStatus: record.invite_status,
+    inviteHash: record.invite_hash,
+    createdAt: record.created_at,
+    updatedAt: record.updated_at
+})
 
 const createOrganization = async (createOrganizationPayload : IOrganizationPayload, userToken : IUserToken, trx : Transaction) => {
 
@@ -31,7 +41,7 @@ const createOrganization = async (createOrganizationPayload : IOrganizationPaylo
       user_id: userToken.id
     }).into('organizations').returning('*')
 
-    await organizationRolesAttach(userToken.id, organizationCreated.id, OrganizationRoles.ADMIN, trx);
+    await organizationRolesAttach(userToken.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx);
 
     return _organizationAdapter(organizationCreated)
   } catch(e){
@@ -48,17 +58,23 @@ const verifyOrganizationName = async (name : string, trx : Transaction) => {
 
 }
 
-const organizationRolesAttach = async (userId: string, organizationId: string, roleName: OrganizationRoles, trx: Transaction) => {
+const organizationRolesAttach = async (userId: string, organizationId: string, roleName: OrganizationRoles, inviteStatus : OrganizationInviteStatus, trx: Transaction, hashToVerify?: string) => {
 
      const organizationRole = await organizationRoleByName(roleName, trx);
 
      if(!organizationRole) throw new Error("Organization role not found.");
-     
+
+     const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations').insert({
+      user_id: userId,
+      organization_id: organizationId,
+      invite_status: inviteStatus,
+      invite_hash: hashToVerify
+     }).returning('id');
+
      await (trx || knexDatabase.knex)('users_organization_roles').insert({
       user_id: userId,
-      organization_id: organizationId, 
-      organization_role_id: organizationRole.id,
-      invite_status: OrganizationInviteStatus.ACCEPT
+      users_organization_id: userOrganizationCreatedId, 
+      organization_role_id: organizationRole.id
      });
 
 }
@@ -80,8 +96,6 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
     if(!organization) throw new Error("Organization not found.")
 
-    const [memberOrganizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', OrganizationRoles.MEMBER).select('id');
-
     await Promise.all(usersToAttach.users.map(async (user : IInviteUserToOrganizationData ) => {
 
       let hashToVerify = await common.encrypt(JSON.stringify({...user, timestamp: +new Date()}));
@@ -90,7 +104,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
       if(user.id){
 
-        userOrganizationCreated = await createUserOrganizationRoles(hashToVerify, user.id, organizationId, memberOrganizationRole.id, trx);
+        userOrganizationCreated = await organizationRolesAttach(user.id, organizationId, OrganizationRoles.MEMBER,OrganizationInviteStatus.PENDENT, trx, hashToVerify);
 
         await MailService.sendInviteUserMail({
           email: user.email,
@@ -102,7 +116,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
         const partialUserCreated = await UserService.signUpWithEmailOnly(user.email, trx);
 
-        userOrganizationCreated = await createUserOrganizationRoles(hashToVerify, partialUserCreated.id, organizationId, memberOrganizationRole.id, trx);
+        userOrganizationCreated = await await organizationRolesAttach(partialUserCreated.id, organizationId, OrganizationRoles.MEMBER,OrganizationInviteStatus.PENDENT, trx, hashToVerify);;
 
         await MailService.sendInviteNewUserMail({
           email: partialUserCreated.email,
@@ -125,22 +139,11 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
 }
 
-const createUserOrganizationRoles = async (hashToVerify: string, userId: string, organizationId: string, organizationRoleId: string, trx : Transaction ) => {
-  const [createdUserOrganizationRoles] = await (trx || knexDatabase.knex)('users_organization_roles').insert({
-    invite_hash: hashToVerify,
-    user_id: userId,
-    organization_id: organizationId,
-    organization_role_id: organizationRoleId,
-    invite_status: OrganizationInviteStatus.PENDENT
-  }).returning('*')
-  return createdUserOrganizationRoles
-}
-
 const responseInvite = async (responseInvitePayload : IResponseInvitePayload, trx : Transaction) => {
 
-  const [user] = await (trx || knexDatabase.knex)('users_organization_roles as uor')
+  const [user] = await (trx || knexDatabase.knex)('users_organizations as uo')
   .where('invite_hash', responseInvitePayload.inviteHash)
-  .innerJoin('users as usr', 'usr.id', 'uor.user_id')
+  .innerJoin('users as usr', 'usr.id', 'uo.user_id')
   .select('usr.encrypted_password', 'usr.username', 'usr.email');
 
   if(!user.encrypted_password || !user.username){
@@ -148,7 +151,7 @@ const responseInvite = async (responseInvitePayload : IResponseInvitePayload, tr
   }
 
   try {
-    await (trx || knexDatabase.knex)('users_organization_roles')
+    await (trx || knexDatabase.knex)('users_organizations')
     .update({
       invite_hash: null,
       invite_status: responseInvitePayload.response
@@ -162,35 +165,56 @@ const responseInvite = async (responseInvitePayload : IResponseInvitePayload, tr
 
 }
 
+const _usersOrganizationAdapter = (record: IUserOrganizationDB) => ({
+  user: {
+    id: record.id,
+    username: record.username,
+    email: record.email
+  },
+  inviteStatus: record.invite_status,
+  usersOrganizationsId: record.users_organizations_id
+})
+
 const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes, userToken : IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided.");
 
-  let usersFound = await UserService.getUserByNameOrEmail(findUserAttributes.name, trx);
+  const searchTerm = findUserAttributes.name.toLowerCase();
 
-  usersFound = usersFound.filter((el: IUsersDB) => el.id !== userToken.id);
+  const userFoundWithResponses = await (trx || knexDatabase.knex).raw(
+    `
+    SELECT usr.id, usr.username, usr.email, uo.invite_status, uo.id as users_organizations_id
+    FROM users AS usr
+      LEFT JOIN users_organizations AS uo
+      ON usr.id = uo.user_id
+      WHERE usr.id <> '${userToken.id}' AND (LOWER(usr.username) LIKE ? OR LOWER(usr.email) LIKE ?) `, [`%${searchTerm}%`,`%${searchTerm}%`]
+  );
 
-  const userOrganizationAccept = await userOrganizationResponse(usersFound, findUserAttributes.organizationId, trx);
-
-  return userOrganizationAccept;
+  return userFoundWithResponses.rows.map(_usersOrganizationAdapter);
 
 }
 
-const userOrganizationResponse = async (users: IUsersDB[], organizationId: string, trx: Transaction) => {
+const userOrganizationInviteStatus = async (userId: string, organizationId: string,  trx: Transaction) => {
 
-  const userIds = users.map(item => item.id);
+  const [userOrganizationInviteStatusFound] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', userId).andWhere('organization_id', organizationId).select();
 
-  const userOrganizationResponse = await (trx || knexDatabase.knex)('users_organization_roles')
-  .whereIn('user_id', userIds)
-  .where('organization_id', organizationId)
-  .select();
+  return _usersOrganizationsAdapter(userOrganizationInviteStatusFound);
 
-  let userOrganizationResponseFound = users.map(item => {
-    let organizationResponseIndex = userOrganizationResponse.findIndex(el => el.user_id === item.id);
-    return ({user: {...item}, invited: organizationResponseIndex !== -1})
-  })
+}
 
-  return userOrganizationResponseFound;
+const getUserOrganizationById = async (userOrganizationId: string, trx?: Transaction) => {
+
+  const [userOrganization] = await (trx || knexDatabase.knexTest)('users_organizations').where('id', userOrganizationId).select();
+
+  return _usersOrganizationsAdapter(userOrganization)
+
+}
+
+const getOrganizationById = async (organizationId: string, trx?: Transaction) => {
+
+  const [organization] = await (trx || knexDatabase.knexTest)('organizations').where('id', organizationId).select();
+
+  return _organizationAdapter(organization)
 
 }
 
@@ -200,5 +224,8 @@ export default {
   inviteUserToOrganization,
   responseInvite,
   _organizationAdapter,
-  findUsersToOrganization
+  getOrganizationById,
+  findUsersToOrganization,
+  userOrganizationInviteStatus,
+  getUserOrganizationById
 }

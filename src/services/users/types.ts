@@ -12,6 +12,12 @@ export interface IUsersDB{
     verification_hash: string
 }
 
+export interface ISimpleUser{
+    id: string
+    username: string
+    email: string
+}
+
 export interface ISignUpFromDB{
     id: string
     username: string
