@@ -8,7 +8,7 @@ import { GraphQLUpload } from 'graphql-upload';
 import jwt from 'jsonwebtoken';
 import knexDatabase from './knex-database';
 import { NextFunction } from 'express';
-import { IOrganizationRoleResponse } from './services/organization/types';
+import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus } from './services/organization/types';
 
 declare var process : {
 	env: {
@@ -30,7 +30,7 @@ const typeDefsBase = gql`
   directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
-  # directive @hasServiceRole(role: [String]!, service: String!) on FIELD | FIELD_DEFINITION  
+  directive @hasServiceRole(role: [String]!) on FIELD | FIELD_DEFINITION  
 `;
 
 const resolversBase : IResolvers = {
@@ -87,6 +87,63 @@ const resolversBase : IResolvers = {
 };
 
 const directiveResolvers : IDirectiveResolvers = {
+  async hasServiceRole(next, _, args : any, context, other : any): Promise<NextFunction> {
+
+    let organizationId: string;
+
+  if(process.env.NODE_ENV === 'test'){
+    organizationId = other.variableValues.input.organizationId;
+
+    if(!organizationId) throw new Error("Organization identifier invalid!")
+
+  } else {
+    const fields = other.fieldNodes[0].arguments[0].value.fields;
+    const organizationIdField = fields.filter((el : any) => el.name.value === 'organizationId');
+  
+    if(!organizationIdField.length) throw new Error("Organization identifier invalid!")
+  
+    organizationId = organizationIdField[0].value.value;
+  }
+
+  const userOrganizationRoles = await knexDatabase.knex('users as usr')
+  .where('usr.id', context.client.id)
+  .andWhere('uo.organization_id', organizationId)
+  .innerJoin('users_organizations AS uo', 'uo.user_id', 'usr.id')
+  .innerJoin('users_organization_roles as uor', 'uo.id', 'uor.users_organization_id')
+  .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
+  .select('or.name', 'uo.id AS users_organizations_id');
+
+  const hasSpecifiedRole = userOrganizationRoles.filter((role: IOrganizationRoleResponse ) => role.name === OrganizationRoles.ADMIN);
+
+  if (hasSpecifiedRole.length) return next();
+
+  let serviceName: string;
+
+  if(process.env.NODE_ENV === 'test'){
+    serviceName = other.variableValues.input.serviceName;
+
+    if(!serviceName) throw new Error("service identifier invalid!")
+
+  } else {
+    const fields = other.fieldNodes[0].arguments[0].value.fields;
+    const serviceNameField = fields.filter((el : any) => el.name.value === 'serviceName');
+  
+    if(!serviceNameField.length) throw new Error("service identifier invalid!")
+  
+    serviceName = serviceNameField[0].value.value;
+  }
+
+  if(!userOrganizationRoles.length) throw new Error("User not found in organization.")
+
+  const userServiceOrganizationRoles = await knexDatabase.knex('users_organization_service_roles as uosr')
+    .where('uosr.users_organization_id', userOrganizationRoles[0].users_organizations_id)
+  .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
+  .select('sr.name');
+
+  const hasSpecifiedServiceRole = userServiceOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
+  if (hasSpecifiedServiceRole) return next();
+  throw new Error(`Must have role: ${args.role}, you have role: ${userServiceOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
+},
   async hasOrganizationRole(next, _, args : any, context, other : any): Promise<NextFunction> {
 
     let organizationId: string;
