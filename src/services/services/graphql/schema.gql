@@ -4,8 +4,7 @@ extend type Query{
 
 extend type Mutation{
     createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    addUserInOrganizationService(input: AddUserInOrganizationServiceInput!): UserOrganizationService! @isVerified @isAuthenticated  # ADD DIRECTIVES 
-    # addUserInOrganizationService @hasOrganizationRole(role: ["ADMIN"])
+    addUserInOrganizationService(input: AddUserInOrganizationServiceInput!): UserOrganizationService! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
 
 type UserOrganizationService{
@@ -27,7 +26,11 @@ type ServiceRoles{
 input AddUserInOrganizationServiceInput{
     userId: String!
     organizationId: String!
-    serviceName: String!
+    serviceName: ServiceName!
+}
+
+enum ServiceName {
+    affiliate
 }
 
 input ListAvailableServicesInput {
