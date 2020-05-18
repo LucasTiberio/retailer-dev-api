@@ -21,7 +21,7 @@ describe('Services', () => {
     let signUpPayload = {
         username: Faker.name.firstName(),
         email: Faker.internet.email(),
-        password: Faker.internet.password()
+        password: "B8oneTeste123!"
     }
 
     const createOrganizationPayload = {
@@ -121,7 +121,7 @@ describe('Services', () => {
             let otherSignUpPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             }
 
             let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);

@@ -18,7 +18,7 @@ describe('Organizations', () => {
     let signUpPayload = {
         username: Faker.name.firstName(),
         email: Faker.internet.email(),
-        password: Faker.internet.password()
+        password: "B8oneTeste123!"
     }
     
     let userToken : IUserToken;
@@ -164,7 +164,7 @@ describe('Organizations', () => {
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         };
 
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
@@ -339,7 +339,7 @@ describe('Organizations', () => {
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         };
 
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
@@ -394,7 +394,7 @@ describe('Organizations', () => {
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         };
 
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
@@ -505,13 +505,13 @@ describe('Organizations', () => {
         const signUpPayload2 = {
             username: "User1",
             email: "user1@b8one.com",
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         const signUpPayload3 = {
             username: "User2",
             email: "user2@b8one.com",
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         let signUpCreated2 = await UserService.signUp(signUpPayload2, trx);
@@ -594,13 +594,13 @@ describe('Organizations', () => {
         const signUpPayload2 = {
             username: "User1",
             email: "user1@b8one.com",
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         const signUpPayload3 = {
             username: "User2",
             email: "user2@b8one.com",
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         let signUpCreated2 = await UserService.signUp(signUpPayload2, trx);
