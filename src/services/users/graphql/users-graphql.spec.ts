@@ -47,7 +47,7 @@ describe('users graphql', () => {
         const signUpPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         const signUpResponse = await request
@@ -96,7 +96,7 @@ describe('users graphql', () => {
             const signUpPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             }
 
             const signUpResponse = await request
@@ -199,7 +199,7 @@ describe('users graphql', () => {
 
             const [userFound] = await database.knex('users').where('id', signUpCreated.id).select();
 
-            const newPassword = Faker.internet.password();
+            const newPassword = "B8oneTeste12345!"
 
             const userPasswordChangedPayload = {
                 hash: userFound.verification_hash, 

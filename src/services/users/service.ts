@@ -156,6 +156,9 @@ const recoveryPassword = async (email: string, trx: Transaction) => {
 const changePassword = async (attrs : IChangePassword, trx : Transaction) => {
 
   try {
+
+    if(!common.verifyPassword(attrs.password)) throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
+
     const encryptedPassword = await common.encrypt(attrs.password);
 
     const [userPasswordChanged] = await (trx || database.knex)('users').where('verification_hash', attrs.hash).update({'encrypted_password': encryptedPassword, 'verification_hash': null}).returning(['email', 'username']);

@@ -32,7 +32,7 @@ describe('Users', () => {
         const signUpPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         const signUpCreated = await service.signUp(signUpPayload, trx);
@@ -66,7 +66,7 @@ describe('Users', () => {
         const signUpPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         await service.signUp(signUpPayload, trx);
@@ -104,7 +104,7 @@ describe('Users', () => {
             const signUpPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             }
 
             signUpCreated = await service.signUp(signUpPayload, trx);
@@ -159,7 +159,7 @@ describe('Users', () => {
 
             const [userFound] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select();
 
-            const newPassword = Faker.internet.password();
+            const newPassword = "B8oneTeste12345!";
 
             const userPasswordChanged = await service.changePassword({hash: userFound.verification_hash, password: newPassword}, trx)
             

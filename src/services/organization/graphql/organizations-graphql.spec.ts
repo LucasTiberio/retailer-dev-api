@@ -91,7 +91,7 @@ describe('organizations graphql', () => {
         const signUpPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         const signUpResponse = await request
@@ -271,7 +271,7 @@ describe('organizations graphql', () => {
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             };
 
             const signUpResponse = await request
@@ -490,7 +490,7 @@ describe('organizations graphql', () => {
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             };
 
             const signUpResponse = await request
@@ -585,7 +585,7 @@ describe('organizations graphql', () => {
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             };
 
             const signUpResponse = await request
@@ -762,13 +762,13 @@ describe('organizations graphql', () => {
             const signUpPayload2 = {
                 username: "User1",
                 email: "user1@b8one.com",
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             }
 
             const signUpPayload3 = {
                 username: "User2",
                 email: "user2@b8one.com",
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             }
     
             const signUpResponse2 = await request
@@ -914,13 +914,13 @@ describe('organizations graphql', () => {
             const signUpPayload2 = {
                 username: "User3",
                 email: "user3@b8one.com",
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             }
 
             const signUpPayload3 = {
                 username: "User4",
                 email: "user4@b8one.com",
-                password: Faker.internet.password()
+                password: "B8oneTeste123!"
             }
     
             const signUpResponse2 = await request

@@ -130,7 +130,7 @@ describe('services graphql', () => {
         const signUpPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         const signUpResponse = await request
@@ -298,7 +298,7 @@ describe('services graphql', () => {
                 const otherSignUpPayload = {
                     username: Faker.name.firstName(),
                     email: Faker.internet.email(),
-                    password: Faker.internet.password()
+                    password: "B8oneTeste123!"
                 }
         
                 const otherSignUpResponse = await request
