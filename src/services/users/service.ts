@@ -26,6 +26,8 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
 
   const { username, password, email } = attrs;
 
+  if(!common.verifyPassword(password)) throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
+
   const [userPreAddedFound] = await(trx || knexDatabase.knex)('users')
     .whereRaw("LOWER(email) = LOWER(?)", email) 
     .select('id', 'encrypted_password', 'username');
