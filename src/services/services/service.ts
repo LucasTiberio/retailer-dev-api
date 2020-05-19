@@ -1,9 +1,9 @@
-import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServiceDB, IServiceRolesDB } from "./types";
+import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServiceDB, IServiceRolesDB, IListAvailableUsersToServicePayload, ISimpleOrganizationServicePayload } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import OrganizationService from '../organization/service';
 import knexDatabase from "../../knex-database";
-import { OrganizationInviteStatus } from "../organization/types";
+import { OrganizationInviteStatus, OrganizationRoles } from "../organization/types";
 
 const _serviceAdapter = (record: IServiceAdaptedFromDB) => ({
   id: record.id,
@@ -79,6 +79,15 @@ const listUsedServices = async (organizationCreatedId: string ,userToken : IUser
   return availableServices.rows.map(_serviceAdapter);
 }
 
+const serviceOrganizationByName = async (organizationId: string, serviceName: Services, trx: Transaction) => {
+  return await (trx || knexDatabase.knex)('organization_services AS os')
+    .innerJoin('services AS s', 's.id', 'os.service_id')
+    .where('organization_id', organizationId)
+      .andWhere('s.name', serviceName)
+      .andWhere('s.active', true)
+    .select('os.id', 's.id AS service_id')
+}
+
 const addUserInOrganizationService = async (attrs : { userId : string, organizationId : string, serviceName: Services }, userToken: IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided!");
@@ -100,25 +109,51 @@ const addUserInOrganizationService = async (attrs : { userId : string, organizat
   if(!usersOrganizationFoundDb)
     throw new Error("User doesnt are in organization");
 
-  const [serviceOrganizationFoundDb] = await (trx || knexDatabase.knex)('organization_services AS os')
-  .innerJoin('services AS s', 's.id', 'os.service_id')
-  .where('organization_id', organizationId)
-    .andWhere('s.name', serviceName)
-    .andWhere('s.active', true)
-  .select('os.id', 's.id AS service_id');
+  const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
 
   const [userAddedInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').insert({
     service_roles_id: serviceAnalystServiceRole.id,
     users_organization_id: usersOrganizationFoundDb.id,
-    organization_services_id: serviceOrganizationFoundDb.id
+    organization_services_id: serviceOrganizationFound.id
   }).returning('*');
 
-  return {...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: serviceOrganizationFoundDb.service_id};
+  return {...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: serviceOrganizationFound.service_id};
+
+}
+
+const listAvailableUsersToService = async (listAvailableUsersToServicePayload : IListAvailableUsersToServicePayload, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided!");
+
+  const { organizationId, serviceName } = listAvailableUsersToServicePayload;
+
+  const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
+
+  const organizationRole = await OrganizationService.getOrganizationRoleId(OrganizationRoles.ADMIN, trx);
+
+  const availableServices = await (trx || knexDatabase.knex).raw(
+    `
+    SELECT uo.id, uo.user_id, uo.organization_id
+  FROM users_organizations AS uo
+     LEFT JOIN users_organization_roles AS uor
+     	ON uor.users_organization_id = uo.id
+     LEFT JOIN users_organization_service_roles AS uosr
+    	    ON uosr.users_organization_id = uo.id
+			AND uosr.organization_services_id ='${serviceOrganizationFound.id}' 
+	 LEFT JOIN organization_services AS os
+ 	 	ON os.id = uosr.organization_services_id
+      WHERE uor.organization_role_id <> '${organizationRole.id}'
+      AND uosr.ID IS NULL 
+    `
+  );
+
+  return availableServices.rows.map((item : {id: string, user_id: string, organization_id: string}) => ({ id: item.id, userId: item.user_id, organizationId: item.organization_id }))
 
 }
 
 export default {
   createServiceInOrganization,
+  listAvailableUsersToService,
   listUsedServices,
   addUserInOrganizationService,
   getServiceById,

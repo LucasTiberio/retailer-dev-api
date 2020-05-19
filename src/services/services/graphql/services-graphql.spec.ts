@@ -112,6 +112,24 @@ const ADD_USER_IN_ORGANIZATION_SERVICE = `
     }
 `
 
+const LIST_AVAILABLE_USERS_TO_SERVICE = `
+    query listAvailableUsersToService($input: ListAvailableUsersToServiceInput!) {
+        listAvailableUsersToService(input: $input){
+            id
+            user{
+                id
+                username
+                email
+            }
+            organization{
+                id
+                name
+                contactEmail
+            }
+        }
+    }
+`
+
 
 
 
@@ -420,6 +438,119 @@ describe('services graphql', () => {
                 )
         
                 done();
+            })
+
+            test('organization admin should list member available to enjoi in service', async done => {
+
+                const otherSignUpPayload = {
+                    username: Faker.name.firstName(),
+                    email: Faker.internet.email(),
+                    password: "B8oneTeste123!"
+                }
+        
+                const otherSignUpResponse = await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .send({
+                'query': SIGN_UP, 
+                'variables': {
+                        input: otherSignUpPayload
+                    }
+                });
+        
+                let otherSignUpCreated = otherSignUpResponse.body.data.signUp
+        
+                const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash');
+        
+                const userVerifyEmailPayload = {
+                    verificationHash: userFromDb.verification_hash
+                }
+        
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .send({
+                'query': USER_VERIFY_EMAIL, 
+                'variables': {
+                        input: userVerifyEmailPayload
+                    }
+                });
+    
+                const inviteUserToOrganizationPayload = {
+                    organizationId: organizationCreated.id,
+                    users: [{
+                        id: otherSignUpCreated.id,
+                        email: otherSignUpCreated.email
+                    }]
+                }
+
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': INVITE_USER_TO_ORGANIZATION, 
+                'variables': {
+                        input: inviteUserToOrganizationPayload
+                    }
+                });
+    
+                const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+    
+                const responseOrganizationInvitePayload = {
+                    inviteHash: invitedUserToOrganization.invite_hash,
+                    response: OrganizationInviteStatus.ACCEPT
+                }
+    
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': RESPONSE_INVITE, 
+                'variables': {
+                        input: responseOrganizationInvitePayload
+                    }
+                });
+    
+                const listAvailableUsersToServicePayload = {
+                    organizationId:organizationCreated.id,
+                    serviceName: Services.AFFILIATE,
+                    name: "usu"
+                }
+
+                const listAvailableUsersToServicesResponse = await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': LIST_AVAILABLE_USERS_TO_SERVICE, 
+                'variables': {
+                        input: listAvailableUsersToServicePayload
+                    }
+                });
+
+                expect(listAvailableUsersToServicesResponse.statusCode).toBe(200);
+                expect(listAvailableUsersToServicesResponse.body.data.listAvailableUsersToService).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            id: invitedUserToOrganization.id,
+                            user: expect.objectContaining({
+                                id: otherSignUpCreated.id,
+                                username: otherSignUpCreated.username,
+                                email: otherSignUpCreated.email
+                            }),
+                            organization: expect.objectContaining({
+                                id: organizationCreated.id,
+                                name: organizationCreated.name,
+                                contactEmail: organizationCreated.contactEmail
+                            })
+                        })
+                    ])
+                )
+    
+                done()
+    
             })
     
         })

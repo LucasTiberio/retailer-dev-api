@@ -1,10 +1,17 @@
 extend type Query{
     listAvailableServices(input: ListAvailableServicesInput!): [Service]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    listAvailableUsersToService(input: ListAvailableUsersToServiceInput!): [UserOrganization]! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
 }
 
 extend type Mutation{
     createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     addUserInOrganizationService(input: AddUserInOrganizationServiceInput!): UserOrganizationService! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input ListAvailableUsersToServiceInput{
+    organizationId: String!
+    serviceName: ServiceName!
+    name: String!
 }
 
 type UserOrganizationService{
@@ -31,6 +38,7 @@ input AddUserInOrganizationServiceInput{
 
 enum ServiceName {
     affiliate
+    teste
 }
 
 input ListAvailableServicesInput {
