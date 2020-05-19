@@ -56,3 +56,12 @@ export interface IServiceRolesDB{
     created_at: Date
     updated_at: Date
 }
+
+export interface ISimpleOrganizationServicePayload{
+    organizationId: string
+    serviceName: Services
+}
+
+export interface IListAvailableUsersToServicePayload extends ISimpleOrganizationServicePayload{
+    name: string
+}

@@ -218,11 +218,20 @@ const getOrganizationById = async (organizationId: string, trx?: Transaction) =>
 
 }
 
+const getOrganizationRoleId = async (organizationRoleName: OrganizationRoles, trx: Transaction) => {
+
+  const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', organizationRoleName).select();
+
+  return organizationRole;
+
+}
+
 export default {
   createOrganization,
   verifyOrganizationName,
   inviteUserToOrganization,
   responseInvite,
+  getOrganizationRoleId,
   _organizationAdapter,
   getOrganizationById,
   findUsersToOrganization,
