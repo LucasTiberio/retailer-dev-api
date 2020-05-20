@@ -46,7 +46,7 @@ const resolvers : IResolvers = {
         userOrganization: (obj) => {
             return OrganizationService.getUserOrganizationById(obj.usersOrganizationId);
         }
-      },
+    }
 };
 
 export default resolvers;
