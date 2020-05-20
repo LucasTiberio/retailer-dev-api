@@ -13,13 +13,13 @@ const encrypt = async (data : string) => {
     return encryptedPassword;
 }
 
-const passwordIsCorrect = async (password: string, encryptedPassword: string) => await bcrypt.compare(password, encryptedPassword);
+const passwordIsCorrect = (password: string, encryptedPassword: string) => bcrypt.compareSync(password, encryptedPassword);
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const lengthVerify = (word : string, min: number, max: number) => word.length > min && word.length < max;
 
-const verifyPassword = (password : string) => lengthVerify(password, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH) && !!password.match(passwordRegex)?.length
+const verifyPassword = (password : string) => lengthVerify(password, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
 
 export default {
     encrypt,
