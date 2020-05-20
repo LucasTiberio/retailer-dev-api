@@ -254,7 +254,13 @@ const inativeUserInOrganization = async (inativeUserInOrganizationPayload: {user
   const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
     .update({active: false})
     .where('id', userOrganizationFound.id)
-    .returning('*')
+    .returning('*');
+
+  const memberOrganizationRole = await getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
+
+  await (trx || knexDatabase.knex)('users_organization_roles')
+    .where('users_organization_id', userOrganizationInatived.id)
+    .update({ organization_role_id: memberOrganizationRole.id })
 
   return _usersOrganizationsAdapter(userOrganizationInatived);
 
