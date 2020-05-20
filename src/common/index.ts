@@ -19,7 +19,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const lengthVerify = (word : string, min: number, max: number) => word.length > min && word.length < max;
 
-const verifyPassword = (password : string) => lengthVerify(password, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
+const verifyPassword = (password : string) => lengthVerify(password, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH) && !!password.match(passwordRegex)?.length
 
 export default {
     encrypt,
