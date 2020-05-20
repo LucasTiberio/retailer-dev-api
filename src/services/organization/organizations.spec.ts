@@ -681,5 +681,185 @@ describe('Organizations', () => {
         done();
 
     })
+
+    test("user should inative user from organization", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await service.responseInvite(responseInvitePayload, trx);
+
+        const inativeUserInOrganizationPayload = {
+            userId: signUpOtherMemberCreated.id,
+            organizationId: organizationCreated.id
+        }
+
+        const inativedUser = await service.inativeUserInOrganization(inativeUserInOrganizationPayload, userToken, trx);
+
+        expect(inativedUser).toEqual(
+            expect.objectContaining({
+                id: invitedUserToOrganization.id,
+                userId: signUpOtherMemberCreated.id,
+                organizationId: organizationCreated.id,
+                inviteStatus: OrganizationInviteStatus.ACCEPT,
+                inviteHash: null,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
+            })
+        )
+
+        done();
+    })
+
+    test("organization admin not should inative other organization admin", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await service.responseInvite(responseInvitePayload, trx);
+
+        const organizationAdminRole = await service.getOrganizationRoleId(OrganizationRoles.ADMIN, trx);
+
+        await (trx || knexDatabase.knex)('users_organization_roles')
+            .update('organization_role_id', organizationAdminRole.id)
+            .where('users_organization_id', invitedUserToOrganization.id)
+
+        const inativeUserInOrganizationPayload = {
+            userId: signUpCreated.id,
+            organizationId: organizationCreated.id
+        }
+
+        let otherUserToken = { origin: 'user', id: signUpOtherMemberCreated.id };
+
+        try {
+            await service.inativeUserInOrganization(inativeUserInOrganizationPayload, otherUserToken, trx);
+        } catch (e) {
+            expect(e.message).toBe('Not possible inative other admins');
+        }
+
+        done();
+    })
+
+    test("founder should inative admin from organization", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        const organizationAdminRole = await service.getOrganizationRoleId(OrganizationRoles.ADMIN, trx);
+
+        await (trx || knexDatabase.knex)('users_organization_roles')
+            .update('organization_role_id', organizationAdminRole.id)
+            .where('users_organization_id', invitedUserToOrganization.id)
+
+        await service.responseInvite(responseInvitePayload, trx);
+
+        const inativeUserInOrganizationPayload = {
+            userId: signUpOtherMemberCreated.id,
+            organizationId: organizationCreated.id
+        }
+
+        const inativedUser = await service.inativeUserInOrganization(inativeUserInOrganizationPayload, userToken, trx);
+
+        expect(inativedUser).toEqual(
+            expect.objectContaining({
+                id: invitedUserToOrganization.id,
+                userId: signUpOtherMemberCreated.id,
+                organizationId: organizationCreated.id,
+                inviteStatus: OrganizationInviteStatus.ACCEPT,
+                inviteHash: null,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
+            })
+        )
+
+        done();
+    })
         
 });

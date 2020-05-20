@@ -64,6 +64,24 @@ const CREATE_ORGANIZATION = `
     }
 `
 
+const INATIVE_USER_IN_ORGANIZATION = `
+    mutation inativeUserInOrganization($input: InativeUserInOrganizationInput!) {
+        inativeUserInOrganization(input: $input){
+            id
+            inviteStatus
+            inviteHash
+            updatedAt
+            createdAt
+            user{
+                id
+            }
+            organization{
+                id
+            }
+        }
+    }
+`
+
 const FIND_USERS_TO_ORGANIZATION = `
     query findUsersToOrganization($input: FindUsersToOrganizationInput!) {
         findUsersToOrganization(input: $input){
@@ -1059,6 +1077,117 @@ describe('organizations graphql', () => {
     
             done();
     
+        })
+
+        test.only("user should inative user from organization", async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            let signUpOtherMemberPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: "B8oneTeste123!"
+            };
+
+            const signUpResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpOtherMemberPayload
+                }
+            });
+    
+            let otherSignUpCreated = signUpResponse.body.data.signUp
+    
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+    
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+    
+            const responseOrganizationInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': RESPONSE_INVITE, 
+            'variables': {
+                    input: responseOrganizationInvitePayload
+                }
+            });
+    
+            const inativeUserInOrganizationPayload = {
+                userId: otherSignUpCreated.id,
+                organizationId: organizationCreated.id
+            }
+    
+            const inativeUserInOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INATIVE_USER_IN_ORGANIZATION, 
+            'variables': {
+                    input: inativeUserInOrganizationPayload
+                }
+            });
+    
+            expect(inativeUserInOrganizationResponse.statusCode).toBe(200);
+            expect(inativeUserInOrganizationResponse.body.data.inativeUserInOrganization).toEqual(
+                expect.objectContaining({
+                    id: invitedUserToOrganization.id,
+                    user: expect.objectContaining({
+                        id: otherSignUpCreated.id
+                    }),
+                    organization: expect.objectContaining({
+                        id: organizationCreated.id
+                    }),
+                    inviteStatus: OrganizationInviteStatus.ACCEPT,
+                    inviteHash: null,
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String)
+                })
+            )
+    
+            done();
         })
 
     })
