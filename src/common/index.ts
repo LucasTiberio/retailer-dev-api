@@ -13,7 +13,7 @@ const encrypt = async (data : string) => {
     return encryptedPassword;
 }
 
-const passwordIsCorrect = (password: string, encryptedPassword: string) => bcrypt.compareSync(password, encryptedPassword);
+const passwordIsCorrect = async (password: string, encryptedPassword: string) => await bcrypt.compare(password, encryptedPassword);
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
