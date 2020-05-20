@@ -857,7 +857,15 @@ describe('Organizations', () => {
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             })
-        )
+        );
+
+        const organizationMemberRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
+
+        const [userOrganizationRoleFound] = await (trx || knexDatabase.knex)('users_organization_roles')
+        .where('users_organization_id', invitedUserToOrganization.id)
+        .select('organization_role_id');
+
+        expect(userOrganizationRoleFound.organization_role_id).toBe(organizationMemberRole.id);
 
         done();
     })
