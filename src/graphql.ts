@@ -165,6 +165,7 @@ const directiveResolvers : IDirectiveResolvers = {
   const userOrganizationRoles = await knexDatabase.knex('users as usr')
   .where('usr.id', context.client.id)
   .andWhere('uo.organization_id', organizationId)
+  .andWhere('uo.active', true)
   .innerJoin('users_organizations AS uo', 'uo.user_id', 'usr.id')
   .innerJoin('users_organization_roles as uor', 'uo.id', 'uor.users_organization_id')
   .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
