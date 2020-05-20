@@ -1345,8 +1345,6 @@ describe('organizations graphql', () => {
                 }
             });
 
-            console.log(listUsersInOrganizationResponse.body.data.listUsersInOrganization)
-    
             expect(listUsersInOrganizationResponse.statusCode).toBe(200)
     
             const [memberRole] = await knexDatabase.knex('organization_roles').where('name', OrganizationRoles.MEMBER).select('id');
