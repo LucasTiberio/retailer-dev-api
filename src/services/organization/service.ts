@@ -226,6 +226,40 @@ const getOrganizationRoleId = async (organizationRoleName: OrganizationRoles, tr
 
 }
 
+const inativeUserInOrganization = async (inativeUserInOrganizationPayload: {userId: string, organizationId: string}, userToken : IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided.");
+
+  const { userId, organizationId } = inativeUserInOrganizationPayload;
+
+  const [userOrganizationFound] = await (trx || knexDatabase.knex)('users_organizations')
+  .where('user_id', userId)
+  .andWhere('organization_id', organizationId);
+
+  if(!userOrganizationFound) throw new Error("user not found in organization!");
+
+  const [userFound] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+    .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')  
+    .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')  
+    .where('uo.id', userOrganizationFound.id)
+    .select('uo.id', 'or.name');
+
+  if(userFound.name === OrganizationRoles.ADMIN){
+    const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('user_id');
+    if(organizationFound.user_id !== userToken.id){
+      throw new Error('Not possible inative other admins');
+    }
+  }
+
+  const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
+    .update({active: false})
+    .where('id', userOrganizationFound.id)
+    .returning('*')
+
+  return _usersOrganizationsAdapter(userOrganizationInatived);
+
+}
+
 export default {
   createOrganization,
   verifyOrganizationName,
@@ -236,5 +270,6 @@ export default {
   getOrganizationById,
   findUsersToOrganization,
   userOrganizationInviteStatus,
-  getUserOrganizationById
+  getUserOrganizationById,
+  inativeUserInOrganization
 }

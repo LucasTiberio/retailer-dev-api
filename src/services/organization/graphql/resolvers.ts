@@ -20,6 +20,11 @@ const resolvers : IResolvers = {
       return database.knex.transaction((trx: Transaction) => {
         return service.responseInvite(input, trx);
       });
+    },
+    inativeUserInOrganization: (_, { input }, { client }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.inativeUserInOrganization(input, client, trx);
+      });
     }
   },
   Query: {

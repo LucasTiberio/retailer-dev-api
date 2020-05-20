@@ -22,6 +22,12 @@ extend type Mutation{
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): Boolean!
+  inativeUserInOrganization(input: InativeUserInOrganizationInput!): UserOrganization! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input InativeUserInOrganizationInput{
+  userId: String!
+  organizationId: String!
 }
 
 input ResponseOrganizationInviteInput{
@@ -63,6 +69,10 @@ type Organization{
 
 type UserOrganization{
   id: String!
+  inviteStatus: OrganizationInviteStatus!
+  inviteHash: String
+  updatedAt: Datetime!
+  createdAt: Datetime!
   organization: Organization!
   user: User!
 }
