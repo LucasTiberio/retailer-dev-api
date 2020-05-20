@@ -25,7 +25,9 @@ const _usersOrganizationsAdapter = (record: IUserOrganizationAdaptedFromDB) => (
     inviteStatus: record.invite_status,
     inviteHash: record.invite_hash,
     createdAt: record.created_at,
-    updatedAt: record.updated_at
+    updatedAt: record.updated_at,
+    active: record.active,
+    organizationRoleId: record.organization_role_id
 })
 
 const createOrganization = async (createOrganizationPayload : IOrganizationPayload, userToken : IUserToken, trx : Transaction) => {
@@ -226,6 +228,14 @@ const getOrganizationRoleId = async (organizationRoleName: OrganizationRoles, tr
 
 }
 
+const getOrganizationRoleById = async (organizationRoleId: string, trx?: Transaction) => {
+
+  const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('id', organizationRoleId).select();
+
+  return organizationRole;
+
+}
+
 const inativeUserInOrganization = async (inativeUserInOrganizationPayload: {userId: string, organizationId: string}, userToken : IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided.");
@@ -266,11 +276,36 @@ const inativeUserInOrganization = async (inativeUserInOrganizationPayload: {user
 
 }
 
+const listUsersInOrganization = async (listUsersInOrganizationPayload : { name? : string, organizationId: string }, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided.");
+
+  const { organizationId, name } = listUsersInOrganizationPayload;
+
+  let query = (trx || knexDatabase)('users_organizations AS uo')
+    .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
+    .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
+    .where('uo.organization_id', organizationId)
+    .whereNot('uo.user_id', userToken.id)
+
+  if(name) {
+    query = query.whereRaw(`LOWER(email) LIKE ?`, [`%${name.toLowerCase()}%`])
+      .orWhereRaw(`LOWER(username) LIKE ?`, [`%${name.toLowerCase()}%`])
+  }
+
+  const result = await query.select('uo.*', 'uor.organization_role_id');
+
+  return result.map(_usersOrganizationsAdapter);
+
+}
+
 export default {
+  listUsersInOrganization,
   createOrganization,
   verifyOrganizationName,
   inviteUserToOrganization,
   responseInvite,
+  getOrganizationRoleById,
   getOrganizationRoleId,
   _organizationAdapter,
   getOrganizationById,

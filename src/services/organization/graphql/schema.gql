@@ -1,6 +1,12 @@
 extend type Query{
   verifyOrganizationName(input: VerifyOrganizationNameInput!): Boolean @isAuthenticated
+  listUsersInOrganization(input: ListUsersInOrganizationInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
   findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input ListUsersInOrganizationInput{
+  name: String
+  organizationId: String!
 }
 
 input FindUsersToOrganizationInput{
@@ -75,4 +81,18 @@ type UserOrganization{
   createdAt: Datetime!
   organization: Organization!
   user: User!
+  active: Boolean!
+  organizationRole: OrganizationRole!
+}
+
+type OrganizationRole{
+    id: String!
+    name: OrganizationInviteStatus!
+    createdAt: Datetime!
+    updatedAt: Datetime!
+}
+
+enum OrganizationInviteStatus {
+    ADMIN,
+    MEMBER
 }

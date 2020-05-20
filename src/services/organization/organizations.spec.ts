@@ -869,5 +869,162 @@ describe('Organizations', () => {
 
         done();
     })
+
+    test("member/admin should list users from organization", async done => {
+
+        let signUpPayload = {
+            username: "userteste",
+            email: "userteste@b8one.com",
+            password: "B8oneTeste123!"
+        }
+
+        let signUpCreated = await UserService.signUp(signUpPayload, trx);
+        let userToken = { origin: 'user', id: signUpCreated.id };
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: `aaaaaaaaaa`,
+            email: `aaaaaaaaaa@b8one.com`,
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await service.responseInvite(responseInvitePayload, trx);
+
+        const listUsersInOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        const organizationusers = await service.listUsersInOrganization(listUsersInOrganizationPayload, userToken, trx);
+
+        const memberRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
+
+        expect(organizationusers).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    id: invitedUserToOrganization.id,
+                    userId: signUpOtherMemberCreated.id,
+                    organizationId: organizationCreated.id,
+                    inviteStatus: OrganizationInviteStatus.ACCEPT,
+                    inviteHash: null,
+                    createdAt: expect.any(Date),
+                    updatedAt: expect.any(Date),
+                    active: true,
+                    organizationRoleId: memberRole.id
+                })
+            ])
+        )
+
+        done();
+    })
+
+    test("member/admin should list users from organization by name", async done => {
+
+        let signUpPayload3 = {
+            username: "userteste",
+            email: "userteste@b8one.com",
+            password: "B8oneTeste123!"
+        }
+
+        let signUpCreated3 = await UserService.signUp(signUpPayload3, trx);
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: `aaaaaaaaaa`,
+            email: `aaaaaaaaaa@b8one.com`,
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email
+            },{
+                id: signUpCreated3.id,
+                email: signUpCreated3.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await service.responseInvite(responseInvitePayload, trx);
+
+        const [invitedUserToOrganization3] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpCreated3.id).select('invite_hash', 'id');
+
+        const responseInvitePayload3 = {
+            inviteHash: invitedUserToOrganization3.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await service.responseInvite(responseInvitePayload3, trx);
+
+        const listUsersInOrganizationPayload = {
+            name: "user",
+            organizationId: organizationCreated.id
+        }
+
+        const organizationusers = await service.listUsersInOrganization(listUsersInOrganizationPayload, userToken, trx);
+
+        const memberRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
+
+        expect(organizationusers).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    id: invitedUserToOrganization3.id,
+                    userId: signUpCreated3.id,
+                    organizationId: organizationCreated.id,
+                    inviteStatus: OrganizationInviteStatus.ACCEPT,
+                    inviteHash: null,
+                    createdAt: expect.any(Date),
+                    updatedAt: expect.any(Date),
+                    active: true,
+                    organizationRoleId: memberRole.id
+                })
+            ])
+        )
+
+        done();
+    })
+
         
 });
