@@ -1079,7 +1079,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test.only("user should inative user from organization", async done => {
+        test("user should inative user from organization", async done => {
 
             const createOrganizationPayload = {
                 name: Faker.internet.userName(),
