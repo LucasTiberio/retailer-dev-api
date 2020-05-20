@@ -33,6 +33,11 @@ const resolvers : IResolvers = {
         return service.verifyOrganizationName(input.name, trx);
       });
     },
+    listUsersInOrganization: (_, { input }, { client }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.listUsersInOrganization(input, client, trx);
+      });
+    },
     findUsersToOrganization: (_, { input }, { client }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.findUsersToOrganization(input, client, trx);
@@ -51,6 +56,9 @@ const resolvers : IResolvers = {
     organization: async (obj) => {
       return service.getOrganizationById(obj.organizationId);
     },
+    organizationRole: async (obj) => {
+      return service.getOrganizationRoleById(obj.organizationRoleId)
+    }
   }
 };
 

@@ -76,6 +76,8 @@ export interface IUserOrganizationAdaptedFromDB{
     invite_hash?: string
     created_at: Date
     updated_at: Date
+    active: boolean
+    organization_role_id?: string
 }
 
 export interface IUserOrganizationAdapted{
