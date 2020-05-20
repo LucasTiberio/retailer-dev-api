@@ -1214,7 +1214,7 @@ describe('organizations graphql', () => {
             done();
         })
 
-        test.only("member/admin should list users from organization by optional name graphql", async done => {
+        test("member/admin should list users from organization by optional name graphql", async done => {
 
             let signUpPayload3 = {
                 username: "userteste",
