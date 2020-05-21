@@ -80,6 +80,14 @@ export interface IUserOrganizationAdaptedFromDB{
     organization_role_id?: string
 }
 
+export interface IUserOrganizationRolesFromDB{
+    id: string
+    users_organization_id: string
+    created_at: Date
+    updated_at: Date
+    organization_role_id: string
+}
+
 export interface IUserOrganizationAdapted{
     id: string
     userId: string

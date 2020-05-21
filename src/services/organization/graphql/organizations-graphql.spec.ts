@@ -82,6 +82,25 @@ const INATIVE_USER_IN_ORGANIZATION = `
     }
 `
 
+const HANDLE_USER_PERMISSION_IN_ORGANIZATION = `
+    mutation handleUserPermissionInOrganization($input: HandleUserPermissionInOrganizationInput!) {
+        handleUserPermissionInOrganization(input: $input){
+            id
+            userOrganization{
+                id
+                user{
+                    id
+                }
+                organization{
+                    id
+                }
+            }
+            createdAt
+            updatedAt
+        }
+    }
+`
+
 const FIND_USERS_TO_ORGANIZATION = `
     query findUsersToOrganization($input: FindUsersToOrganizationInput!) {
         findUsersToOrganization(input: $input){
@@ -386,7 +405,6 @@ describe('organizations graphql', () => {
                 expect.arrayContaining([
                     expect.objectContaining({
                         id: expect.any(String),
-                        user_id: userClient.id,
                         users_organization_id: expect.any(String),
                         organization_role_id: adminRole[0].id,
                         updated_at: expect.any(Date),
@@ -394,7 +412,6 @@ describe('organizations graphql', () => {
                     }),
                     expect.objectContaining({
                         id: expect.any(String),
-                        user_id: otherSignUpCreated.id,
                         users_organization_id: expect.any(String),
                         organization_role_id: memberRole[0].id,
                         updated_at: expect.any(Date),
@@ -489,7 +506,6 @@ describe('organizations graphql', () => {
                 expect.arrayContaining([
                     expect.objectContaining({
                         id: expect.any(String),
-                        user_id: userClient.id,
                         users_organization_id: expect.any(String),
                         organization_role_id: adminRole[0].id,
                         updated_at: expect.any(Date),
@@ -497,7 +513,6 @@ describe('organizations graphql', () => {
                     }),
                     expect.objectContaining({
                         id: expect.any(String),
-                        user_id: user.id,
                         users_organization_id: expect.any(String),
                         organization_role_id: memberRole[0].id,
                         updated_at: expect.any(Date),
@@ -1370,6 +1385,122 @@ describe('organizations graphql', () => {
                         })
                     })
                 ])
+            )
+    
+            done();
+        })
+
+        test("organization admin should handle member permissions to admin", async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            let signUpOtherMemberPayload = {
+                username: Faker.internet.userName(),
+                email: Faker.internet.email(),
+                password: "B8oneTeste123!"
+            };
+    
+            const signUpOtherMemberCreatedResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpOtherMemberPayload
+                }
+            });
+    
+            let signUpOtherMemberCreated = signUpOtherMemberCreatedResponse.body.data.signUp
+    
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: signUpOtherMemberCreated.id,
+                    email: signUpOtherMemberCreated.email
+                }]
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+    
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+    
+            const responseOrganizationInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': RESPONSE_INVITE, 
+            'variables': {
+                    input: responseOrganizationInvitePayload
+                }
+            });
+
+            const handleUserPermissionInOrganizationPayload = {
+                userId: signUpOtherMemberCreated.id,
+                organizationId: organizationCreated.id,
+                permission: OrganizationRoles.ADMIN
+            };
+
+            const handleUserPermissionInOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': HANDLE_USER_PERMISSION_IN_ORGANIZATION, 
+            'variables': {
+                    input: handleUserPermissionInOrganizationPayload
+                }
+            });
+
+            expect(handleUserPermissionInOrganizationResponse.statusCode).toBe(200);
+    
+            const [userOrganizationRoleFound] = await knexDatabase.knex('users_organization_roles').where('users_organization_id', invitedUserToOrganization.id).select('id');
+            
+            expect(handleUserPermissionInOrganizationResponse.body.data.handleUserPermissionInOrganization).toEqual(
+                expect.objectContaining({
+                    id: userOrganizationRoleFound.id,
+                    userOrganization: expect.objectContaining({
+                        id: invitedUserToOrganization.id,
+                        user: expect.objectContaining({
+                            id: signUpOtherMemberCreated.id
+                        }),
+                        organization: expect.objectContaining({
+                            id: organizationCreated.id
+                        }),
+                    }),
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String)
+                })
             )
     
             done();
