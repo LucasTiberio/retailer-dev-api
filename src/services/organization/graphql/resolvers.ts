@@ -25,6 +25,11 @@ const resolvers : IResolvers = {
       return database.knex.transaction((trx: Transaction) => {
         return service.inativeUserInOrganization(input, client, trx);
       });
+    },
+    handleUserPermissionInOrganization: (_, { input }, { client }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.handleUserPermissionInOrganization(input, client, trx);
+      });
     }
   },
   Query: {
@@ -47,6 +52,11 @@ const resolvers : IResolvers = {
   Organization: {
     user: async (obj) => {
       return UserService.getUserById(obj.userId);
+    }
+  },
+  UserOrganizationRole: {
+    userOrganization: async (obj) => {
+      return service.getUserOrganizationById(obj.userOrganizationId);
     }
   },
   UserOrganization: {

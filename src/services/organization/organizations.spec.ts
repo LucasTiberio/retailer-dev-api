@@ -110,7 +110,6 @@ describe('Organizations', () => {
         expect(userOrganizationRoles[0]).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
-                user_id: userToken.id,
                 users_organization_id: userOrganizations[0].id,
                 organization_role_id: organizationRoles.id,
                 updated_at: expect.any(Date),
@@ -222,7 +221,6 @@ describe('Organizations', () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     id: expect.any(String),
-                    user_id: userToken.id,
                     organization_role_id: adminRole[0].id,
                     users_organization_id: userOrganizationsFounder.id,
                     updated_at: expect.any(Date),
@@ -230,7 +228,6 @@ describe('Organizations', () => {
                 }),
                 expect.objectContaining({
                     id: expect.any(String),
-                    user_id: signUpOtherMemberCreated.id,
                     organization_role_id: memberRole[0].id,
                     users_organization_id: userOtherUserOrganizations.id,
                     updated_at: expect.any(Date),
@@ -307,7 +304,6 @@ describe('Organizations', () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     id: expect.any(String),
-                    user_id: userToken.id,
                     organization_role_id: adminRole[0].id,
                     users_organization_id: userCreatedFoundDB.id,
                     updated_at: expect.any(Date),
@@ -315,7 +311,6 @@ describe('Organizations', () => {
                 }),
                 expect.objectContaining({
                     id: expect.any(String),
-                    user_id: otherUserCreatedFoundDB.user_id,
                     organization_role_id: memberRole[0].id,
                     users_organization_id: otherUserCreatedFoundDB.id,
                     updated_at: expect.any(Date),
@@ -1024,6 +1019,190 @@ describe('Organizations', () => {
         )
 
         done();
+    })
+
+    test("organization admin should handle member permissions to admin", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: Faker.internet.userName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await service.responseInvite(responseInvitePayload, trx);
+
+        const handleUserPermissionInOrganizationPayload = {
+            userId: signUpOtherMemberCreated.id,
+            organizationId: organizationCreated.id,
+            permission: OrganizationRoles.ADMIN
+        };
+
+        const userPermissionChanged = await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, userToken, trx);
+
+        const userOrganizationRoleFound = await service.getUserOrganizationRoleById(invitedUserToOrganization.id, trx);
+
+        const adminOrganizationRole = await service.getOrganizationRoleId(OrganizationRoles.ADMIN, trx);
+
+        expect(userPermissionChanged).toEqual(
+            expect.objectContaining({
+                id: userOrganizationRoleFound.id,
+                userOrganizationId: invitedUserToOrganization.id,
+                organizationRoleId: adminOrganizationRole.id,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
+            })
+        )
+
+        done();
+    })
+
+    test("organization admin should not be able to remove other admin acces", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: Faker.internet.userName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await service.responseInvite(responseInvitePayload, trx);
+
+        let handleUserPermissionInOrganizationPayload = {
+            userId: signUpOtherMemberCreated.id,
+            organizationId: organizationCreated.id,
+            permission: OrganizationRoles.ADMIN
+        };
+
+        await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, userToken, trx);
+
+        handleUserPermissionInOrganizationPayload.permission = OrganizationRoles.MEMBER;
+        handleUserPermissionInOrganizationPayload.userId = userToken.id;
+
+        try {
+            await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, {id: signUpOtherMemberCreated.id, origin: 'user'}, trx);
+        } catch(e) {
+            expect(e.message).toBe("Only founder can remove admin permission from organization.");
+        }
+
+        done();
+
+    })
+
+    test("founder should be able to remove other admin acces", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: Faker.internet.userName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await service.responseInvite(responseInvitePayload, trx);
+
+        let handleUserPermissionInOrganizationPayload = {
+            userId: signUpOtherMemberCreated.id,
+            organizationId: organizationCreated.id,
+            permission: OrganizationRoles.ADMIN
+        };
+
+        await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, userToken, trx);
+
+        handleUserPermissionInOrganizationPayload.permission = OrganizationRoles.MEMBER;
+
+        const userPermissionChanged = await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, userToken, trx);
+
+        const userOrganizationRoleFound = await service.getUserOrganizationRoleById(invitedUserToOrganization.id, trx);
+
+        const adminOrganizationRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
+
+        expect(userPermissionChanged).toEqual(
+            expect.objectContaining({
+                id: userOrganizationRoleFound.id,
+                userOrganizationId: invitedUserToOrganization.id,
+                organizationRoleId: adminOrganizationRole.id,
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date)
+            })
+        )
+
+        done();
+
     })
 
         

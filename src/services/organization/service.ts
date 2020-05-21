@@ -1,4 +1,4 @@
-import { IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes, IUserOrganizationAdaptedFromDB } from "./types";
+import { IUserOrganizationRolesFromDB, IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes, IUserOrganizationAdaptedFromDB } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
@@ -28,6 +28,14 @@ const _usersOrganizationsAdapter = (record: IUserOrganizationAdaptedFromDB) => (
     updatedAt: record.updated_at,
     active: record.active,
     organizationRoleId: record.organization_role_id
+})
+
+const _usersOrganizationsRolesAdapter = (record: IUserOrganizationRolesFromDB) => ({
+  id: record.id,
+  userOrganizationId: record.users_organization_id,
+  createdAt: record.created_at,
+  updatedAt: record.updated_at,
+  organizationRoleId: record.organization_role_id
 })
 
 const createOrganization = async (createOrganizationPayload : IOrganizationPayload, userToken : IUserToken, trx : Transaction) => {
@@ -74,7 +82,6 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
      }).returning('id');
 
      await (trx || knexDatabase.knex)('users_organization_roles').insert({
-      user_id: userId,
       users_organization_id: userOrganizationCreatedId, 
       organization_role_id: organizationRole.id
      });
@@ -299,9 +306,72 @@ const listUsersInOrganization = async (listUsersInOrganizationPayload : { name? 
 
 }
 
+const getUserOrganizationByIds = async (userId: string, organizationId: string, trx: Transaction) => {
+
+  const [userOrganization] = await (trx || knexDatabase.knex)('users_organizations')
+    .where('user_id', userId)
+    .andWhere('organization_id', organizationId)
+    .select();
+
+  return userOrganization;
+
+}
+
+const getUserOrganizationRoleById = async (userOrganizationId: string, trx: Transaction) => {
+
+  const [userOrganizationRole] = await (trx || knexDatabase.knex)('users_organization_roles')
+    .where('users_organization_id', userOrganizationId)
+    .select();
+
+  return _usersOrganizationsRolesAdapter(userOrganizationRole);
+}
+
+const isFounder = async (organizationId: string, userId: string, trx: Transaction) => {
+
+  const [organizationFound] = await (trx || knexDatabase.knex)('organizations')
+    .where('id', organizationId)
+    .select('user_id');
+
+  return organizationFound.user_id === userId;
+
+}
+
+const handleUserPermissionInOrganization = async (handleUserPermissionInOrganizationPayload: { permission: OrganizationRoles, organizationId: string, userId: string }, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided.");
+
+  const { permission, organizationId, userId } = handleUserPermissionInOrganizationPayload;
+
+  if(permission === OrganizationRoles.MEMBER && !(await isFounder(organizationId, userToken.id, trx))){
+    throw new Error("Only founder can remove admin permission from organization.")
+  }
+
+  try {
+
+    const userOrganization = await getUserOrganizationByIds(userId, organizationId, trx);
+
+    const newPermission = await getOrganizationRoleId(permission, trx);
+  
+    if(!userOrganization) throw new Error("User not found in organization!");
+  
+    const [userPermissionUpdated] = await (trx || knexDatabase.knex)('users_organization_roles')
+      .update({ organization_role_id: newPermission.id })
+      .where('users_organization_id', userOrganization.id)
+      .returning('*');
+
+    return _usersOrganizationsRolesAdapter(userPermissionUpdated)
+
+  } catch(e){
+    throw new Error(e.message)
+  }
+
+};
+
 export default {
   listUsersInOrganization,
+  handleUserPermissionInOrganization,
   createOrganization,
+  getUserOrganizationRoleById,
   verifyOrganizationName,
   inviteUserToOrganization,
   responseInvite,
