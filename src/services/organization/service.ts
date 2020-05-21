@@ -111,6 +111,21 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
       let userOrganizationCreated;
 
+      const [userInvitedOnPast] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+        .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
+        .where('usr.email', user.email)
+        .select('uo.*');
+
+      if(userInvitedOnPast){
+
+        const [userReinvited] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+          .update({ active: true, invite_status: OrganizationInviteStatus.PENDENT, invite_hash: hashToVerify })
+          .where('id', userInvitedOnPast.id)
+          .returning('id');
+
+        return userReinvited;
+      }
+
       if(user.id){
 
         userOrganizationCreated = await organizationRolesAttach(user.id, organizationId, OrganizationRoles.MEMBER,OrganizationInviteStatus.PENDENT, trx, hashToVerify);
