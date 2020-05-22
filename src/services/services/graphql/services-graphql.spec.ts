@@ -130,8 +130,27 @@ const LIST_AVAILABLE_USERS_TO_SERVICE = `
     }
 `
 
-
-
+const LIST_USERS_IN_ORGANIZATION_SERVICE = `
+    query listUsersInOrganizationService($input: ListUsersInOrganizationServiceInput!) {
+        listUsersInOrganizationService(input: $input){
+            id
+            serviceRoles{
+                id
+            }
+            userOrganization{
+                id
+                user{
+                    id
+                }
+                organization{
+                    id
+                }
+            }
+            createdAt
+            updatedAt
+        }
+    }
+`
 
 describe('services graphql', () => {
 
@@ -460,10 +479,11 @@ describe('services graphql', () => {
         
                 let otherSignUpCreated = otherSignUpResponse.body.data.signUp
         
-                const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash');
+                const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
         
                 const userVerifyEmailPayload = {
-                    verificationHash: userFromDb.verification_hash
+                    verificationHash: userFromDb.verification_hash,
+                    response: OrganizationInviteStatus.ACCEPT
                 }
         
                 await request
@@ -551,6 +571,142 @@ describe('services graphql', () => {
     
                 done()
     
+            })
+
+            test.only('organization members should list users in service', async done => {
+
+                const otherSignUpPayload = {
+                    username: Faker.name.firstName(),
+                    email: Faker.internet.email(),
+                    password: "B8oneTeste123!"
+                }
+        
+                const otherSignUpResponse = await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .send({
+                'query': SIGN_UP, 
+                'variables': {
+                        input: otherSignUpPayload
+                    }
+                });
+        
+                let otherSignUpCreated = otherSignUpResponse.body.data.signUp
+        
+                const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+        
+                const userVerifyEmailPayload = {
+                    verificationHash: userFromDb.verification_hash,
+                    response: OrganizationInviteStatus.ACCEPT
+                }
+        
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .send({
+                'query': USER_VERIFY_EMAIL, 
+                'variables': {
+                        input: userVerifyEmailPayload
+                    }
+                });
+
+                const inviteUserToOrganizationPayload = {
+                    organizationId: organizationCreated.id,
+                    users: [{
+                        id: otherSignUpCreated.id,
+                        email: otherSignUpCreated.email
+                    }]
+                }
+
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': INVITE_USER_TO_ORGANIZATION, 
+                'variables': {
+                        input: inviteUserToOrganizationPayload
+                    }
+                });
+    
+                const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+    
+                const responseOrganizationInvitePayload = {
+                    inviteHash: invitedUserToOrganization.invite_hash,
+                    response: OrganizationInviteStatus.ACCEPT
+                }
+    
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': RESPONSE_INVITE, 
+                'variables': {
+                        input: responseOrganizationInvitePayload
+                    }
+                });
+    
+                const addUserInOrganizationPayload = {
+                    userId: otherSignUpCreated.id,
+                    organizationId: organizationCreated.id,
+                    serviceName: Services.AFFILIATE
+                }
+
+                const addUserInOrganizationServiceResponse = await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
+                'variables': {
+                        input: addUserInOrganizationPayload
+                    }
+                });
+    
+                const listUsersInOrganizationServicePayload = {
+                    organizationId:organizationCreated.id,
+                    serviceName: Services.AFFILIATE 
+                }
+
+                const listUsersInOrganizationServiceResponse = await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': LIST_USERS_IN_ORGANIZATION_SERVICE,
+                'variables': {
+                        input: listUsersInOrganizationServicePayload
+                    }
+                });
+
+                expect(listUsersInOrganizationServiceResponse.statusCode).toBe(200);
+    
+                const [analystServiceRole] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+    
+                expect(listUsersInOrganizationServiceResponse.body.data.listUsersInOrganizationService).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            id: addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id,
+                            serviceRoles: expect.objectContaining({
+                                id: analystServiceRole.id
+                            }),
+                            userOrganization: expect.objectContaining({
+                                id: invitedUserToOrganization.id,
+                                user: expect.objectContaining({
+                                    id: otherSignUpCreated.id
+                                }),
+                                organization: expect.objectContaining({
+                                    id: organizationCreated.id
+                                })
+                            }),
+                            createdAt: expect.any(String),
+                            updatedAt: expect.any(String)
+                        })
+                    ])
+                )
+    
+                done();
             })
     
         })
