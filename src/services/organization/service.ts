@@ -382,8 +382,28 @@ const handleUserPermissionInOrganization = async (handleUserPermissionInOrganiza
 
 };
 
+const listMyOrganizations = async (userToken : IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided.");
+
+  try {
+
+    const organizations = await (trx || knexDatabase.knex)('users_organizations AS uo')
+      .innerJoin('organizations AS orgn', 'orgn.id', 'uo.organization_id')
+      .where('uo.user_id', userToken.id)
+      .select('orgn.*');
+
+    return organizations.map(_organizationAdapter);
+  } catch(e){
+    throw new Error(e.message)
+  }
+
+
+}
+
 export default {
   listUsersInOrganization,
+  listMyOrganizations,
   handleUserPermissionInOrganization,
   createOrganization,
   getUserOrganizationRoleById,

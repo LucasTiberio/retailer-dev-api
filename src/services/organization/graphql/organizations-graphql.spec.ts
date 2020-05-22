@@ -115,6 +115,22 @@ const FIND_USERS_TO_ORGANIZATION = `
     }
 `
 
+const LIST_MY_ORGANIZATIONS = `
+    query listMyOrganizations{
+        listMyOrganizations{
+            id
+            contactEmail
+            name
+            active
+            updatedAt
+            createdAt
+            user{
+                id
+            }
+        }
+    }
+`
+
 const LIST_USERS_IN_ORGANIZATION = `
     query listUsersInOrganization($input: ListUsersInOrganizationInput!) {
         listUsersInOrganization(input: $input){
@@ -304,6 +320,57 @@ describe('organizations graphql', () => {
     
             expect(verifiedOrganizationNameResponse.statusCode).toBe(200);
             expect(verifiedOrganizationNameResponse.body.data.verifyOrganizationName).toBeTruthy();
+    
+            done();
+    
+        })
+
+        test("user should list your organizations", async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+    
+            const listMyOrganizationsResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': LIST_MY_ORGANIZATIONS, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+    
+            expect(listMyOrganizationsResponse.statusCode).toBe(200);
+    
+            expect(listMyOrganizationsResponse.body.data.listMyOrganizations).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        id: createOrganizationResponse.body.data.createOrganization.id,
+                        name: createOrganizationPayload.name,
+                        contactEmail: createOrganizationPayload.contactEmail,
+                        user: expect.objectContaining({
+                            id: userClient.id
+                        }),
+                        active: true,
+                        updatedAt: expect.any(String),
+                        createdAt: expect.any(String)
+                    })
+                ])
+            )
     
             done();
     
