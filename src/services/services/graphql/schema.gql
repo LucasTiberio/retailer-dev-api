@@ -8,6 +8,13 @@ extend type Mutation{
     createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     addUserInOrganizationService(input: AddUserInOrganizationServiceInput!): UserOrganizationService! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
     userInServiceHandleRole(input: UserInServiceHandleRoleInput!): UserOrganizationService! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+    inativeUserFromServiceOrganization(input: InativeUserFromServiceOrganizationInput!): UserOrganizationService! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input InativeUserFromServiceOrganizationInput {
+    organizationId: String!
+    serviceName: ServiceName!
+    userId: String!
 }
 
 input UserInServiceHandleRoleInput{
@@ -32,6 +39,7 @@ type UserOrganizationService{
     id: String!
     service: Service!
     serviceRoles: ServiceRoles!
+    active: Boolean!
     userOrganization: UserOrganization!
     createdAt: Datetime!
     updatedAt: Datetime!
