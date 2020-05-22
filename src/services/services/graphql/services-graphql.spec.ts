@@ -78,6 +78,33 @@ const RESPONSE_INVITE = `
     }
 `
 
+const USER_IN_SERVICE_HANDLE_ROLE = `
+    mutation userInServiceHandleRole($input: UserInServiceHandleRoleInput!) {
+        userInServiceHandleRole(input: $input){
+            id
+            serviceRoles{
+                id
+                name
+            }
+            userOrganization{
+                id
+                user{
+                    id
+                }
+                organization{
+                    id
+                }
+            }
+            service{
+                id
+                name
+            }
+            createdAt
+            updatedAt
+        }
+    }
+`
+
 const ADD_USER_IN_ORGANIZATION_SERVICE = `
     mutation addUserInOrganizationService($input: AddUserInOrganizationServiceInput!) {
         addUserInOrganizationService(input: $input){
@@ -704,6 +731,147 @@ describe('services graphql', () => {
                             updatedAt: expect.any(String)
                         })
                     ])
+                )
+    
+                done();
+            })
+
+            test('organization admin should handle user service to admin role', async done => {
+
+                const otherSignUpPayload = {
+                    username: Faker.name.firstName(),
+                    email: Faker.internet.email(),
+                    password: "B8oneTeste123!"
+                }
+        
+                const otherSignUpResponse = await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .send({
+                'query': SIGN_UP, 
+                'variables': {
+                        input: otherSignUpPayload
+                    }
+                });
+        
+                let otherSignUpCreated = otherSignUpResponse.body.data.signUp
+        
+                const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+        
+                const userVerifyEmailPayload = {
+                    verificationHash: userFromDb.verification_hash,
+                    response: OrganizationInviteStatus.ACCEPT
+                }
+        
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .send({
+                'query': USER_VERIFY_EMAIL, 
+                'variables': {
+                        input: userVerifyEmailPayload
+                    }
+                });
+    
+                const inviteUserToOrganizationPayload = {
+                    organizationId: organizationCreated.id,
+                    users: [{
+                        id: otherSignUpCreated.id,
+                        email: otherSignUpCreated.email
+                    }]
+                }
+        
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': INVITE_USER_TO_ORGANIZATION, 
+                'variables': {
+                        input: inviteUserToOrganizationPayload
+                    }
+                });
+    
+                const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+    
+                const responseOrganizationInvitePayload = {
+                    inviteHash: invitedUserToOrganization.invite_hash,
+                    response: OrganizationInviteStatus.ACCEPT
+                }
+        
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': RESPONSE_INVITE, 
+                'variables': {
+                        input: responseOrganizationInvitePayload
+                    }
+                });
+    
+                const addUserInOrganizationServicePayload = {
+                    organizationId:organizationCreated.id,
+                    userId: otherSignUpCreated.id,
+                    serviceName: Services.AFFILIATE 
+                };
+    
+                const addUserInOrganizationServiceResponse = await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
+                'variables': {
+                        input: addUserInOrganizationServicePayload
+                    }
+                });
+    
+                const userInServiceHandleRolePayload = {
+                    organizationId:organizationCreated.id,
+                    userId: otherSignUpCreated.id,
+                    serviceName: Services.AFFILIATE,
+                    serviceRole: ServiceRoles.ADMIN
+                };
+
+                const userInServiceHandleRoleResponse = await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': USER_IN_SERVICE_HANDLE_ROLE, 
+                'variables': {
+                        input: userInServiceHandleRolePayload
+                    }
+                });
+
+                expect(userInServiceHandleRoleResponse.statusCode).toBe(200)
+    
+                const [adminServiceRoles] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ADMIN).select('id');
+    
+                expect(userInServiceHandleRoleResponse.body.data.userInServiceHandleRole).toEqual(
+                    expect.objectContaining({
+                        id: addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id,
+                        serviceRoles: expect.objectContaining({
+                            id: adminServiceRoles.id,
+                            name: ServiceRoles.ADMIN
+                        }),
+                        userOrganization: expect.objectContaining({
+                            id: invitedUserToOrganization.id,
+                            user: expect.objectContaining({
+                                id: otherSignUpCreated.id
+                            }),
+                            organization: expect.objectContaining({
+                                id: organizationCreated.id
+                            })
+                        }),
+                        service: expect.objectContaining({
+                            id: serviceFound.id,
+                            name: Services.AFFILIATE
+                        }),
+                        createdAt: expect.any(String),
+                        updatedAt: expect.any(String),
+                    })
                 )
     
                 done();
