@@ -19,6 +19,12 @@ const resolvers : IResolvers = {
                 return service.addUserInOrganizationService(input, client, trx);
             });
         },
+        inativeUserFromServiceOrganization: (_, attrs, { client }) => {
+            const { input } = attrs;
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.inativeUserFromServiceOrganization(input, client, trx);
+            });
+        },
         userInServiceHandleRole: (_, attrs, { client }) => {
             const { input } = attrs;
             return knexDatabase.knex.transaction((trx: Transaction) => {

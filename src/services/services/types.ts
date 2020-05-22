@@ -41,6 +41,7 @@ export interface IUsersOrganizationServiceDB{
     users_organization_id: string
     created_at: Date
     updated_at: Date
+    active: boolean
 }
 
 export interface IServiceRolesAdapted{

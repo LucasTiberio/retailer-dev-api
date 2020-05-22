@@ -4,6 +4,7 @@ import { Transaction } from "knex";
 import OrganizationService from '../organization/service';
 import knexDatabase from "../../knex-database";
 import { OrganizationInviteStatus, OrganizationRoles } from "../organization/types";
+import service from "../mail/service";
 
 const _serviceAdapter = (record: IServiceAdaptedFromDB) => ({
   id: record.id,
@@ -26,7 +27,8 @@ const usersOrganizationServiceAdapter = (record : IUsersOrganizationServiceDB) =
   serviceRolesId: record.service_roles_id,
   usersOrganizationId: record.users_organization_id,
   createdAt: record.created_at,
-  updatedAt: record.updated_at
+  updatedAt: record.updated_at,
+  active: record.active
 })
 
 const createServiceInOrganization = async (serviceId: string, organizationId: string, userToken: IUserToken, trx: Transaction) => {
@@ -62,6 +64,11 @@ const getServiceRolesById = async (serviceRolesId: string, trx?: Transaction) =>
   return _serviceRolesAdapter(serviceRolesFound);
 }
 
+const getServiceRolesByName = async (serviceRoleName: ServiceRoles, trx?: Transaction) => {
+  const [serviceRolesFound] = await (trx || knexDatabase.knex)('service_roles').where('name', serviceRoleName).select();
+  return _serviceRolesAdapter(serviceRolesFound);
+}
+
 const listUsedServices = async (organizationCreatedId: string ,userToken : IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided!");
@@ -88,6 +95,17 @@ const serviceOrganizationByName = async (organizationId: string, serviceName: Se
     .select('os.id', 's.id AS service_id')
 }
 
+const getUserOrganizationServiceRole = async (usersOrganizationId: string, serviceOrganizationId: string, trx: Transaction) => {
+
+  const [userReactiveInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles')
+  .where('users_organization_id', usersOrganizationId)
+  .andWhere('organization_services_id', serviceOrganizationId)
+  .select();
+
+  return userReactiveInOrganizationService;
+
+}
+
 const addUserInOrganizationService = async (attrs : { userId : string, organizationId : string, serviceName: Services }, userToken: IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided!");
@@ -110,6 +128,21 @@ const addUserInOrganizationService = async (attrs : { userId : string, organizat
     throw new Error("User doesnt are in organization");
 
   const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
+
+  const userOrganizationServiceRoleFound = await getUserOrganizationServiceRole(usersOrganizationFoundDb.id, serviceOrganizationFound.id, trx);
+
+  if(userOrganizationServiceRoleFound){
+
+    const [userReactiveInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
+      active: true
+    }).where({
+      users_organization_id: usersOrganizationFoundDb.id,
+      organization_services_id: serviceOrganizationFound.id
+    }).returning('*');
+
+    return {...usersOrganizationServiceAdapter(userReactiveInOrganizationService), serviceId: serviceOrganizationFound.service_id};
+
+  }
 
   const [userAddedInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').insert({
     service_roles_id: serviceAnalystServiceRole.id,
@@ -228,10 +261,51 @@ const userInServiceHandleRole = async (userInServiceHandleRolePayload : {
 
 }
 
+const inativeUserFromServiceOrganization = async (inativeUserFromServiceOrganizationPayload : {
+  organizationId: string,
+  serviceName: Services,
+  userId: string
+}, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided!");
+
+  const { organizationId, serviceName , userId } = inativeUserFromServiceOrganizationPayload;
+
+  const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
+
+  if(!serviceOrganizationFound) throw new Error("Service organization not found!");
+
+  const usersOrganizationFoundDb = await OrganizationService.getUserOrganizationByIds(userId, organizationId, trx);;
+
+  if(!usersOrganizationFoundDb) throw new Error("User doesnt are in organization");
+
+  if(
+    !OrganizationService.isFounder(organizationId, userToken.id, trx) &&
+    await isServiceAdmin(usersOrganizationFoundDb.id, serviceOrganizationFound.id, trx)
+    ){
+    throw new Error("Not auth to remove admin roles")
+  }
+
+  const analystRole = await getServiceRolesByName(ServiceRoles.ANALYST, trx);
+
+  const [userOrganizationServiceRoleUpdated] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
+    active: false,
+    service_roles_id: analystRole.id
+  }).where(
+    'users_organization_id',usersOrganizationFoundDb.id
+  ).andWhere(
+    'organization_services_id',serviceOrganizationFound.id
+  ).returning('*');
+
+  return {...usersOrganizationServiceAdapter(userOrganizationServiceRoleUpdated), serviceId: serviceOrganizationFound.service_id};
+
+}
+
 export default {
   createServiceInOrganization,
   listAvailableUsersToService,
   serviceOrganizationByName,
+  inativeUserFromServiceOrganization,
   userInServiceHandleRole,
   listUsersInOrganizationService,
   listUsedServices,
