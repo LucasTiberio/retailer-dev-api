@@ -151,6 +151,35 @@ describe('Organizations', () => {
 
     })
 
+    test("user should list your organizations", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email(),
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const organizations = await service.listMyOrganizations(userToken, trx);
+
+        expect(organizations).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    id: organizationCreated.id,
+                    name: createOrganizationPayload.name,
+                    contactEmail: createOrganizationPayload.contactEmail,
+                    userId: userToken.id,
+                    active: true,
+                    updatedAt: expect.any(Date),
+                    createdAt: expect.any(Date)
+                })
+            ])
+        )
+
+        done();
+
+    })
+
     test('user organization admin should invite existent members', async done => {
 
         const createOrganizationPayload = {
