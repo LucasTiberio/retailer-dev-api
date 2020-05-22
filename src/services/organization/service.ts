@@ -391,6 +391,8 @@ export default {
   inviteUserToOrganization,
   responseInvite,
   getOrganizationRoleById,
+  isFounder,
+  getUserOrganizationByIds,
   getOrganizationRoleId,
   _organizationAdapter,
   getOrganizationById,
