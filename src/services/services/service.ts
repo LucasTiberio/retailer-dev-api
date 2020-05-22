@@ -151,9 +151,33 @@ const listAvailableUsersToService = async (listAvailableUsersToServicePayload : 
 
 }
 
+const listUsersInOrganizationService = async (listUsersInOrganizationServicePayload: {
+  organizationId: string,
+  serviceName: Services
+}, userToken : IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided!");
+
+  const { organizationId, serviceName } = listUsersInOrganizationServicePayload;
+
+  const [serviceOrganization] = await serviceOrganizationByName(organizationId, serviceName, trx);
+
+  const usersInOrganizationService = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+    .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
+    .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
+    .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
+    .where('uosr.organization_services_id', serviceOrganization.id)
+    .select('uosr.*')
+    
+  return usersInOrganizationService.map(usersOrganizationServiceAdapter)
+
+};
+
 export default {
   createServiceInOrganization,
   listAvailableUsersToService,
+  serviceOrganizationByName,
+  listUsersInOrganizationService,
   listUsedServices,
   addUserInOrganizationService,
   getServiceById,
