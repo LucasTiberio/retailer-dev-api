@@ -190,7 +190,7 @@ describe('Organizations', () => {
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
 
         const organizationDetailsPayload = {
-            organizationId: organizationCreated.id
+            organizationName: organizationCreated.name
         }
 
         const organizations = await service.organizationDetails(organizationDetailsPayload, userToken, trx);

@@ -7,6 +7,7 @@ import { gql, IResolvers, IDirectiveResolvers } from 'apollo-server';
 import { GraphQLUpload } from 'graphql-upload';
 import jwt from 'jsonwebtoken';
 import knexDatabase from './knex-database';
+import OrganizationService from './services/organization/service';
 import { NextFunction } from 'express';
 import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus } from './services/organization/types';
 
@@ -136,7 +137,19 @@ const directiveResolvers : IDirectiveResolvers = {
 
   let organizationId = other.variableValues.input.organizationId;
 
-  if(!organizationId) throw new Error("Organization identifier invalid!")
+  if(!organizationId) {
+
+    let organizationName = other.variableValues.input.organizationName;
+
+    const organization = await OrganizationService.getOrganizationByName(organizationName);
+
+    if(!organization){
+      throw new Error("Organization identifier invalid!")
+    }
+    
+    organizationId = organization.id;
+
+  }
 
   const userOrganizationRoles = await knexDatabase.knex('users as usr')
   .where('usr.id', context.client.id)

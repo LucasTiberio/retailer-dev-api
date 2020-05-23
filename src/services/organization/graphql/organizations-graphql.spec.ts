@@ -411,7 +411,7 @@ describe('organizations graphql', () => {
             });
     
             const organizationDetailsPayload = {
-                organizationId: createOrganizationResponse.body.data.createOrganization.id
+                organizationName: createOrganizationResponse.body.data.createOrganization.name
             }
 
             const organizationDetailsResponse = await request
@@ -424,7 +424,7 @@ describe('organizations graphql', () => {
                     input: organizationDetailsPayload
                 }
             });
-    
+
             expect(organizationDetailsResponse.statusCode).toBe(200);
             expect(organizationDetailsResponse.body.data.organizationDetails).toEqual(
                     expect.objectContaining({

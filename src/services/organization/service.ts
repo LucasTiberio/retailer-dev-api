@@ -242,6 +242,14 @@ const getOrganizationById = async (organizationId: string, trx?: Transaction) =>
 
 }
 
+const getOrganizationByName = async (organizationName: string, trx?: Transaction) => {
+
+  const [organization] = await (trx || knexDatabase.knexTest)('organizations').where('name', organizationName).select();
+
+  return _organizationAdapter(organization)
+
+}
+
 const getOrganizationRoleId = async (organizationRoleName: OrganizationRoles, trx: Transaction) => {
 
   const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', organizationRoleName).select();
@@ -401,11 +409,11 @@ const listMyOrganizations = async (userToken : IUserToken, trx: Transaction) => 
 
 }
 
-const organizationDetails = async (organizationDetailsPayload : { organizationId: string}, userToken : IUserToken, trx: Transaction) => {
+const organizationDetails = async (organizationDetailsPayload : { organizationName: string}, userToken : IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided.");
 
-  const organization = await getOrganizationById(organizationDetailsPayload.organizationId, trx);
+  const organization = await getOrganizationByName(organizationDetailsPayload.organizationName, trx);
 
   return organization;
 
@@ -413,6 +421,7 @@ const organizationDetails = async (organizationDetailsPayload : { organizationId
 
 export default {
   listUsersInOrganization,
+  getOrganizationByName,
   organizationDetails,
   listMyOrganizations,
   handleUserPermissionInOrganization,
