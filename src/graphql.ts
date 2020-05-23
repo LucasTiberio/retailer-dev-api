@@ -89,21 +89,9 @@ const resolversBase : IResolvers = {
 const directiveResolvers : IDirectiveResolvers = {
   async hasServiceRole(next, _, args : any, context, other : any): Promise<NextFunction> {
 
-    let organizationId: string;
+  let organizationId = other.variableValues.input.organizationId;
 
-  if(process.env.NODE_ENV === 'test'){
-    organizationId = other.variableValues.input.organizationId;
-
-    if(!organizationId) throw new Error("Organization identifier invalid!")
-
-  } else {
-    const fields = other.fieldNodes[0].arguments[0].value.fields;
-    const organizationIdField = fields.filter((el : any) => el.name.value === 'organizationId');
-  
-    if(!organizationIdField.length) throw new Error("Organization identifier invalid!")
-  
-    organizationId = organizationIdField[0].value.value;
-  }
+  if(!organizationId) throw new Error("Organization identifier invalid!")
 
   const userOrganizationRoles = await knexDatabase.knex('users as usr')
   .where('usr.id', context.client.id)
@@ -143,24 +131,14 @@ const directiveResolvers : IDirectiveResolvers = {
   const hasSpecifiedServiceRole = userServiceOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
   if (hasSpecifiedServiceRole) return next();
   throw new Error(`Must have role: ${args.role}, you have role: ${userServiceOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
-},
+  },
   async hasOrganizationRole(next, _, args : any, context, other : any): Promise<NextFunction> {
 
-    let organizationId: string;
+  let organizationId = other.variableValues.input.organizationId;
 
-  if(process.env.NODE_ENV === 'test'){
-    organizationId = other.variableValues.input.organizationId;
+  if(!organizationId) throw new Error("Organization identifier invalid!")
 
-    if(!organizationId) throw new Error("Organization identifier invalid!")
-
-  } else {
-    const fields = other.fieldNodes[0].arguments[0].value.fields;
-    const organizationIdField = fields.filter((el : any) => el.name.value === 'organizationId');
-  
-    if(!organizationIdField.length) throw new Error("Organization identifier invalid!")
-  
-    organizationId = organizationIdField[0].value.value;
-  }
+  console.log("organizationId", organizationId)
 
   const userOrganizationRoles = await knexDatabase.knex('users as usr')
   .where('usr.id', context.client.id)
