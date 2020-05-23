@@ -138,8 +138,6 @@ const directiveResolvers : IDirectiveResolvers = {
 
   if(!organizationId) throw new Error("Organization identifier invalid!")
 
-  console.log("organizationId", organizationId)
-
   const userOrganizationRoles = await knexDatabase.knex('users as usr')
   .where('usr.id', context.client.id)
   .andWhere('uo.organization_id', organizationId)
