@@ -141,7 +141,9 @@ const directiveResolvers : IDirectiveResolvers = {
 
     let organizationName = other.variableValues.input.organizationName;
 
-    const organization = await OrganizationService.getOrganizationByName(organizationName);
+    const [organization] = await knexDatabase.knex('organizations')
+      .where('name', organizationName)
+      .select('id');
 
     if(!organization){
       throw new Error("Organization identifier invalid!")
