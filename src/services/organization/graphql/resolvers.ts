@@ -38,6 +38,11 @@ const resolvers : IResolvers = {
         return service.verifyOrganizationName(input.name, trx);
       });
     },
+    organizationDetails: (_, { input }, {client}) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.organizationDetails(input, client, trx);
+      });
+    },
     listMyOrganizations: (_, __, { client }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.listMyOrganizations(client, trx);

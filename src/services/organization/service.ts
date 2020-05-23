@@ -401,8 +401,19 @@ const listMyOrganizations = async (userToken : IUserToken, trx: Transaction) => 
 
 }
 
+const organizationDetails = async (organizationDetailsPayload : { organizationId: string}, userToken : IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided.");
+
+  const organization = await getOrganizationById(organizationDetailsPayload.organizationId, trx);
+
+  return organization;
+
+}
+
 export default {
   listUsersInOrganization,
+  organizationDetails,
   listMyOrganizations,
   handleUserPermissionInOrganization,
   createOrganization,
