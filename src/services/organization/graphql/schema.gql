@@ -23,7 +23,6 @@ input FindUsersToOrganizationInput{
 type FindUsersToOrganizationPayload{
   user: User!
   inviteStatus: OrganizationInviteStatus
-  usersOrganizationsId: String
 }
 
 input VerifyOrganizationNameInput{

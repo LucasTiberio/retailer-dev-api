@@ -26,6 +26,6 @@ input SignUpInput{
 
 type User{
   id: String!
-  username: String!
+  username: String
   email: String!
 }

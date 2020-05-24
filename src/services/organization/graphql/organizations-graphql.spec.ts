@@ -105,7 +105,6 @@ const FIND_USERS_TO_ORGANIZATION = `
     query findUsersToOrganization($input: FindUsersToOrganizationInput!) {
         findUsersToOrganization(input: $input){
             inviteStatus
-            usersOrganizationsId
             user{
                 id
                 email
@@ -1045,8 +1044,7 @@ describe('organizations graphql', () => {
                             username: signUpPayload2.username,
                             email: signUpPayload2.email,
                         }),
-                        inviteStatus: null,
-                        usersOrganizationsId: null
+                        inviteStatus: null
                     }),
                     expect.objectContaining({
                         user: expect.objectContaining({
@@ -1054,8 +1052,7 @@ describe('organizations graphql', () => {
                             username: signUpPayload3.username,
                             email: signUpPayload3.email,
                         }),
-                        inviteStatus: null,
-                        usersOrganizationsId: null
+                        inviteStatus: null
                     })
                 ])
             )
@@ -1211,7 +1208,6 @@ describe('organizations graphql', () => {
                 expect.arrayContaining([
                     expect.objectContaining({
                         inviteStatus: OrganizationInviteStatus.PENDENT,
-                        usersOrganizationsId: expect.any(String),
                         user: expect.objectContaining({
                             id: expect.any(String),
                             username: signUpPayload2.username,
@@ -1225,7 +1221,6 @@ describe('organizations graphql', () => {
                             email: signUpPayload3.email,
                         }),
                         inviteStatus: null,
-                        usersOrganizationsId: null
                     })
                 ])
             )

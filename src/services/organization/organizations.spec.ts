@@ -596,7 +596,6 @@ describe('Organizations', () => {
                         email: signUpPayload2.email,
                     }),
                     inviteStatus: null,
-                    usersOrganizationsId: null
                 }),
                 expect.objectContaining({
                     user: expect.objectContaining({
@@ -604,7 +603,6 @@ describe('Organizations', () => {
                         email: signUpPayload3.email,
                     }),
                     inviteStatus: null,
-                    usersOrganizationsId: null
                 })
             ])
         )
@@ -686,11 +684,6 @@ describe('Organizations', () => {
 
         const userFound = await service.findUsersToOrganization(findUsersPayload, userToken, trx);
 
-        const [usersOrganizationFound] = await (trx || knexDatabase.knex)('users_organizations')
-        .where('user_id', signUpCreated2.id)
-        .andWhere("organization_id", organizationCreated.id)
-        .select('id')
-
         expect(userFound).toHaveLength(2);
         expect(userFound).toEqual(
             expect.arrayContaining([
@@ -700,15 +693,13 @@ describe('Organizations', () => {
                         email: signUpPayload2.email,
                     }),
                     inviteStatus: OrganizationInviteStatus.PENDENT,
-                    usersOrganizationsId: usersOrganizationFound.id
                 }),
                 expect.objectContaining({
                     user: expect.objectContaining({
                         username: signUpPayload3.username,
                         email: signUpPayload3.email,
                     }),
-                    inviteStatus: null,
-                    usersOrganizationsId: null
+                    inviteStatus: null
                 })
             ])
         )

@@ -196,7 +196,6 @@ const _usersOrganizationAdapter = (record: IUserOrganizationDB) => ({
     email: record.email
   },
   inviteStatus: record.invite_status,
-  usersOrganizationsId: record.users_organizations_id
 })
 
 const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes, userToken : IUserToken, trx: Transaction) => {
@@ -207,11 +206,13 @@ const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes,
 
   const userFoundWithResponses = await (trx || knexDatabase.knex).raw(
     `
-    SELECT usr.id, usr.username, usr.email, uo.invite_status, uo.id as users_organizations_id
+    SELECT usr.id, usr.username, usr.email, uo.invite_status
     FROM users AS usr
       LEFT JOIN users_organizations AS uo
-      ON usr.id = uo.user_id
-      WHERE usr.id <> '${userToken.id}' AND (LOWER(usr.username) LIKE ? OR LOWER(usr.email) LIKE ?) `, [`%${searchTerm}%`,`%${searchTerm}%`]
+        ON usr.id = uo.user_id
+        AND uo.organization_id = '${findUserAttributes.organizationId}'
+      WHERE usr.id <> '${userToken.id}' 
+      AND (LOWER(usr.username) LIKE ? OR LOWER(usr.email) LIKE ?) `, [`%${searchTerm}%`,`%${searchTerm}%`]
   );
 
   return userFoundWithResponses.rows.map(_usersOrganizationAdapter);
