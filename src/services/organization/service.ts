@@ -114,6 +114,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
       const [userInvitedOnPast] = await (trx || knexDatabase.knex)('users_organizations AS uo')
         .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
         .where('usr.email', user.email)
+        .where('uo.organization_id', organizationId)
         .select('uo.*');
 
       if(userInvitedOnPast){
