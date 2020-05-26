@@ -29,7 +29,7 @@ const resolvers : IResolvers = {
   },
   User: {
     organizations: (obj) => {
-        return OrganizationService.getOrganizationByUserId(obj.id);
+      return OrganizationService.getOrganizationByUserId(obj.id);
     } 
   }
 };

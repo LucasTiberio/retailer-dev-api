@@ -349,8 +349,24 @@ const inativeUserFromServiceOrganization = async (inativeUserFromServiceOrganiza
 }
 
 const getOrganizationServicesByOrganizationId = async (
-  userOrganizationId: string
+  userOrganizationId: string,
+  organizationId: string
   ) => {
+
+  const [userOrganizationRole] = await OrganizationService.getUserOrganizationRole(userOrganizationId);
+
+  const isAdmin = userOrganizationRole.name === OrganizationRoles.ADMIN;
+
+  if(isAdmin){
+    const allOrganizationServices = await knexDatabase.knex('organization_services AS os')
+      .innerJoin('services AS serv', 'serv.id', 'os.service_id')
+      .where('organization_id', organizationId)
+      .select('serv.*');
+      console.log("allOrganizationServices", allOrganizationServices)
+
+    const serviceAdminRole = await getServiceRolesByName(ServiceRoles.ADMIN);
+    return allOrganizationServices.map((item : IServiceAdaptedFromDB) => _serviceAdapter({...item, service_roles_id: serviceAdminRole.id}))
+  }
 
   const organizationServices = await organizationServicesByOrganizationIdLoader().load(userOrganizationId);
 
