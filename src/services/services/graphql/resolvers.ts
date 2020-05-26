@@ -59,12 +59,17 @@ const resolvers : IResolvers = {
         service: (obj) => {
             return service.getServiceById(obj.serviceId);
         },
-        serviceRoles: (obj) => {
-            return service.getServiceRolesById(obj.serviceRolesId);
-        },
+        // serviceRoles: (obj) => {
+        //     return service.getServiceRolesById(obj.serviceRolesId);
+        // },
         userOrganization: (obj) => {
             return OrganizationService.getUserOrganizationById(obj.usersOrganizationId);
         }
+    },
+    Service: {
+        serviceRoles: (obj) => {
+            return service.getServiceRolesById(obj.serviceRolesId);
+        },
     }
 };
 

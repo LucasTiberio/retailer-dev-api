@@ -1,19 +1,21 @@
-import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServiceDB, IServiceRolesDB, IListAvailableUsersToServicePayload, ISimpleOrganizationServicePayload } from "./types";
+import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServiceDB, IServiceRolesDB, IListAvailableUsersToServicePayload, ISimpleOrganizationServicePayload, IServiceAdapted } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import OrganizationService from '../organization/service';
 import knexDatabase from "../../knex-database";
 import { OrganizationInviteStatus, OrganizationRoles } from "../organization/types";
-import service from "../mail/service";
+import store from "../../store";
 
-const _serviceAdapter = (record: IServiceAdaptedFromDB) => ({
+const _serviceAdapter = (record: IServiceAdaptedFromDB) => {
+  return {
   id: record.id,
   name: record.name,
   active: record.active,
   createdAt: record.created_at,
   updatedAt: record.updated_at,
-  hasOrganization: !!record.has_organization
-});
+  hasOrganization: !!record.has_organization,
+  serviceRolesId: record.service_roles_id
+}};
 
 const _serviceRolesAdapter = (record: IServiceRolesDB) => ({
   id: record.id,
@@ -30,6 +32,31 @@ const usersOrganizationServiceAdapter = (record : IUsersOrganizationServiceDB) =
   updatedAt: record.updated_at,
   active: record.active
 })
+
+const organizationServicesByOrganizationIdLoader = store.registerOneToManyLoader(
+  async (userOrganizationIds : string[]) => {
+    const query = await knexDatabase.knex('users_organization_service_roles AS uosr')
+    .innerJoin('organization_services AS os', 'os.id', 'uosr.organization_services_id')
+    .innerJoin('services AS serv', 'serv.id', 'os.service_id')
+    .whereIn('uosr.users_organization_id', userOrganizationIds)
+    .select('serv.*', 'uosr.service_roles_id', 'uosr.users_organization_id');
+    return query;
+  },
+    'users_organization_id',
+    _serviceAdapter
+);
+
+const organizationServicesRolesByIdLoader = store.registerOneToManyLoader(
+  async (serviceRolesId : string[]) => {
+    const query = await knexDatabase.knex('service_roles')
+    .whereIn('id', serviceRolesId)
+    .select();
+    console.log("query", query)
+    return query;
+  },
+    'id',
+    _serviceAdapter
+);
 
 const createServiceInOrganization = async (serviceId: string, organizationId: string, userToken: IUserToken, trx: Transaction) => {
 
@@ -59,9 +86,11 @@ const getServiceById = async (serviceId: string, trx?: Transaction) => {
   return _serviceAdapter(serviceFound);
 }
 
-const getServiceRolesById = async (serviceRolesId: string, trx?: Transaction) => {
-  const [serviceRolesFound] = await (trx || knexDatabase.knex)('service_roles').where('id', serviceRolesId).select();
-  return _serviceRolesAdapter(serviceRolesFound);
+const getServiceRolesById = async (serviceRolesId: string) => {
+
+  const organizationServices = await organizationServicesRolesByIdLoader().load(serviceRolesId);
+
+  return organizationServices;
 }
 
 const getServiceRolesByName = async (serviceRoleName: ServiceRoles, trx?: Transaction) => {
@@ -167,16 +196,16 @@ const listAvailableUsersToService = async (listAvailableUsersToServicePayload : 
   const availableServices = await (trx || knexDatabase.knex).raw(
     `
     SELECT uo.id, uo.user_id, uo.organization_id
-  FROM users_organizations AS uo
-     LEFT JOIN users_organization_roles AS uor
-     	ON uor.users_organization_id = uo.id
-     LEFT JOIN users_organization_service_roles AS uosr
-    	    ON uosr.users_organization_id = uo.id
-			AND uosr.organization_services_id ='${serviceOrganizationFound.id}' 
-	 LEFT JOIN organization_services AS os
- 	 	ON os.id = uosr.organization_services_id
-      WHERE uor.organization_role_id <> '${organizationRole.id}'
-      AND uosr.ID IS NULL 
+    FROM users_organizations AS uo
+       INNER JOIN users_organization_roles AS uor
+          ON uor.users_organization_id = uo.id
+        LEFT JOIN users_organization_service_roles AS uosr
+             ON uosr.users_organization_id = uo.id
+       LEFT JOIN organization_services AS os
+          ON os.id = uosr.organization_services_id
+          AND os.id = '${serviceOrganizationFound.id}'
+        WHERE uor.organization_role_id <> '${organizationRole.id}'
+      AND uo.organization_id = '${organizationId}'
     `
   );
 
@@ -301,9 +330,20 @@ const inativeUserFromServiceOrganization = async (inativeUserFromServiceOrganiza
 
 }
 
+const getOrganizationServicesByOrganizationId = async (
+  userOrganizationId: string
+  ) => {
+
+  const organizationServices = await organizationServicesByOrganizationIdLoader().load(userOrganizationId);
+
+  return organizationServices;
+
+}
+
 export default {
   createServiceInOrganization,
   listAvailableUsersToService,
+  getOrganizationServicesByOrganizationId,
   serviceOrganizationByName,
   inativeUserFromServiceOrganization,
   userInServiceHandleRole,
