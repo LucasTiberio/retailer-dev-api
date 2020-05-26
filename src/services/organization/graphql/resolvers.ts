@@ -68,7 +68,7 @@ const resolvers : IResolvers = {
       return service.getUserOrganizationRole(obj.userOrganizationId);
     },
     services: async (obj) => {
-      return ServicesService.getOrganizationServicesByOrganizationId(obj.userOrganizationId);
+      return ServicesService.getOrganizationServicesByOrganizationId(obj.userOrganizationId, obj.id);
     }
   },
   UserOrganizationRole: {
