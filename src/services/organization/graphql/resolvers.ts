@@ -3,6 +3,7 @@ import { IResolvers } from 'apollo-server';
 import { Transaction } from 'knex';
 import database from '../../../knex-database';
 import UserService from '../../users/service';
+import ServicesService from '../../services/service';
 
 const resolvers : IResolvers = {
   Mutation: {
@@ -62,6 +63,12 @@ const resolvers : IResolvers = {
   Organization: {
     user: async (obj) => {
       return UserService.getUserById(obj.userId);
+    },
+    organizationRole: async (obj) => {
+      return service.getUserOrganizationRole(obj.userOrganizationId);
+    },
+    services: async (obj) => {
+      return ServicesService.getOrganizationServicesByOrganizationId(obj.userOrganizationId);
     }
   },
   UserOrganizationRole: {

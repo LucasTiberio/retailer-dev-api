@@ -60,11 +60,16 @@ const resolvers : IResolvers = {
             return service.getServiceById(obj.serviceId);
         },
         serviceRoles: (obj) => {
-            return service.getServiceRolesById(obj.serviceRolesId);
+            return service.getServiceRolesByOneId(obj.serviceRolesId);
         },
         userOrganization: (obj) => {
             return OrganizationService.getUserOrganizationById(obj.usersOrganizationId);
         }
+    },
+    Service: {
+        serviceRoles: (obj) => {
+            return service.getServiceRolesById(obj.serviceRolesId);
+        },
     }
 };
 

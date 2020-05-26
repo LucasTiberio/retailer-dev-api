@@ -21,6 +21,14 @@ export interface IOrganizationFromDB{
     active: boolean
     updated_at: Date
     created_at: Date
+    users_organizations_id: string
+}
+
+export interface IOrganizationRoleFromDb{
+    id: string
+    name: string
+    updated_at: Date
+    created_at: Date
 }
 
 export enum OrganizationRoles {

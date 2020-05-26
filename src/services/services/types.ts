@@ -15,6 +15,7 @@ export interface IServiceAdaptedFromDB {
     updated_at: Date
     created_at: Date
     has_organization: boolean
+    service_roles_id: string
 }
 
 export interface IServiceAdapted {

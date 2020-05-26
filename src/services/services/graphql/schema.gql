@@ -80,6 +80,7 @@ type Service{
     updatedAt: Datetime!
     createdAt: Datetime!
     hasOrganization: Boolean
+    serviceRoles: [ServiceRoles]!
 }
 
 input CreateServiceInOrganizationInput{

@@ -6,7 +6,8 @@ import MailService from '../mail/service';
 import UserService from '../users/service';
 import knexDatabase from "../../knex-database";
 import common from "../../common";
-import { IUserOrganizationDB } from "./types";
+import { IUserOrganizationDB, IOrganizationRoleFromDb } from "./types";
+import store from "../../store";
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -15,8 +16,16 @@ const _organizationAdapter = (record: IOrganizationFromDB) => ({
   userId: record.user_id,
   active: record.active,
   createdAt: record.created_at,
-  updatedAt: record.updated_at
+  updatedAt: record.updated_at,
+  userOrganizationId: record.users_organizations_id
 });
+
+const _organizationRoleAdapter = (record: IOrganizationRoleFromDb) => ({
+  id: record.id,
+  name: record.name,
+  updatedAt: record.updated_at,
+  createdAt: record.created_at
+})
 
 const _usersOrganizationsAdapter = (record: IUserOrganizationAdaptedFromDB) => ({
     id: record.id,
@@ -37,6 +46,29 @@ const _usersOrganizationsRolesAdapter = (record: IUserOrganizationRolesFromDB) =
   updatedAt: record.updated_at,
   organizationRoleId: record.organization_role_id
 })
+
+const organizationRoleByUserIdLoader = store.registerOneToManyLoader(
+  async (userOrganizationIds : string[]) => {
+    return await knexDatabase.knex('users_organization_roles AS uor')
+    .innerJoin('organization_roles AS orgr', 'orgr.id', 'uor.organization_role_id')
+    .whereIn('users_organization_id', userOrganizationIds)
+    .select('orgr.*', "uor.users_organization_id")
+  },
+    'users_organization_id',
+    _organizationRoleAdapter
+);
+
+const organizationByUserIdLoader = store.registerOneToManyLoader(
+  async (userIds : string[]) => {
+    const query = await knexDatabase.knex('users_organizations AS uo')
+    .innerJoin('organizations AS org', 'org.id', 'uo.organization_id')
+    .whereIn('uo.user_id', userIds)
+    .select('org.*', 'uo.id AS users_organizations_id', 'uo.user_id')
+    return query;
+  },
+    'user_id',
+    _organizationAdapter
+);
 
 const createOrganization = async (createOrganizationPayload : IOrganizationPayload, userToken : IUserToken, trx : Transaction) => {
 
@@ -238,9 +270,17 @@ const getUserOrganizationById = async (userOrganizationId: string, trx?: Transac
 
 const getOrganizationById = async (organizationId: string, trx?: Transaction) => {
 
-  const [organization] = await (trx || knexDatabase.knexTest)('organizations').where('id', organizationId).select();
+  const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select();
 
-  return _organizationAdapter(organization)
+  return _organizationAdapter(organization);
+
+}
+
+const getOrganizationByUserId = async (userId: string) => {
+
+  const organizations = await organizationByUserIdLoader().load(userId)
+
+  return organizations;
 
 }
 
@@ -421,11 +461,21 @@ const organizationDetails = async (organizationDetailsPayload : { organizationNa
 
 }
 
+const getUserOrganizationRole = async (userOrganizationId: string) => {
+
+  const userOrganizationRole = await organizationRoleByUserIdLoader().load(userOrganizationId);
+
+  return userOrganizationRole;
+
+}
+
 export default {
   listUsersInOrganization,
   getOrganizationByName,
   organizationDetails,
+  getUserOrganizationRole,
   listMyOrganizations,
+  getOrganizationByUserId,
   handleUserPermissionInOrganization,
   createOrganization,
   getUserOrganizationRoleById,
