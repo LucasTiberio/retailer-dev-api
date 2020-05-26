@@ -481,7 +481,7 @@ describe('services graphql', () => {
                 expect(addUserInOrganizationResponse.statusCode).toBe(200);
     
                 const [serviceRoles] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
-    
+
                 expect(addUserInOrganizationResponse.body.data.addUserInOrganizationService).toEqual(
                     expect.objectContaining({
                         id: expect.any(String),

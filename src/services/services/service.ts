@@ -51,11 +51,21 @@ const organizationServicesRolesByIdLoader = store.registerOneToManyLoader(
     const query = await knexDatabase.knex('service_roles')
     .whereIn('id', serviceRolesId)
     .select();
-    console.log("query", query)
     return query;
   },
     'id',
-    _serviceAdapter
+    _serviceRolesAdapter
+);
+
+const organizationServicesRolesByIdOneToOneLoader = store.registerOneToOneLoader(
+  async (serviceRolesId : string[]) => {
+    const query = await knexDatabase.knex('service_roles')
+    .whereIn('id', serviceRolesId)
+    .select();
+    return query;
+  },
+    'id',
+    _serviceRolesAdapter
 );
 
 const createServiceInOrganization = async (serviceId: string, organizationId: string, userToken: IUserToken, trx: Transaction) => {
@@ -89,6 +99,13 @@ const getServiceById = async (serviceId: string, trx?: Transaction) => {
 const getServiceRolesById = async (serviceRolesId: string) => {
 
   const organizationServices = await organizationServicesRolesByIdLoader().load(serviceRolesId);
+
+  return organizationServices;
+}
+
+const getServiceRolesByOneId = async (serviceRolesId: string) => {
+
+  const organizationServices = await organizationServicesRolesByIdOneToOneLoader().load(serviceRolesId);
 
   return organizationServices;
 }
@@ -206,6 +223,7 @@ const listAvailableUsersToService = async (listAvailableUsersToServicePayload : 
           AND os.id = '${serviceOrganizationFound.id}'
         WHERE uor.organization_role_id <> '${organizationRole.id}'
       AND uo.organization_id = '${organizationId}'
+      AND uosr.id IS NULL
     `
   );
 
@@ -349,6 +367,7 @@ export default {
   userInServiceHandleRole,
   listUsersInOrganizationService,
   listUsedServices,
+  getServiceRolesByOneId,
   addUserInOrganizationService,
   getServiceById,
   getServiceRolesById

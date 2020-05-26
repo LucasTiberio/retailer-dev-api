@@ -59,9 +59,9 @@ const resolvers : IResolvers = {
         service: (obj) => {
             return service.getServiceById(obj.serviceId);
         },
-        // serviceRoles: (obj) => {
-        //     return service.getServiceRolesById(obj.serviceRolesId);
-        // },
+        serviceRoles: (obj) => {
+            return service.getServiceRolesByOneId(obj.serviceRolesId);
+        },
         userOrganization: (obj) => {
             return OrganizationService.getUserOrganizationById(obj.usersOrganizationId);
         }
