@@ -1,0 +1,10 @@
+extend type Mutation{
+  verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input VerifyAndAttachVtexSecretsInput{
+  xVtexApiAppKey: String!
+  xVtexApiAppToken: String!
+  accountName: String!
+  organizationId: String!
+}
