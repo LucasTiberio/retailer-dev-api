@@ -4,12 +4,14 @@ import UserService from './users';
 import AuthenticationService from './authentication';
 import OrganizationService from './organization';
 import ServicesService from './services';
+import VtexService from './vtex';
 
 let services = [
   UserService,
   AuthenticationService,
   OrganizationService,
-  ServicesService
+  ServicesService,
+  VtexService
 ];
 
 export default {
