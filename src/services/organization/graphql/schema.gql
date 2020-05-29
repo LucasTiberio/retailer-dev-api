@@ -83,6 +83,7 @@ type Organization{
   user: User! @isVerified @isAuthenticated # TODO somente admin pode ver o founder
   updatedAt: Datetime!
   createdAt: Datetime!
+  hasMember: Boolean!
   organizationRole: [OrganizationRole]!
   services: [Service]!
 }

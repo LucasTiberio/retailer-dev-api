@@ -362,8 +362,6 @@ const getOrganizationServicesByOrganizationId = async (
       .innerJoin('services AS serv', 'serv.id', 'os.service_id')
       .where('organization_id', organizationId)
       .select('serv.*');
-      console.log("allOrganizationServices", allOrganizationServices)
-
     const serviceAdminRole = await getServiceRolesByName(ServiceRoles.ADMIN);
     return allOrganizationServices.map((item : IServiceAdaptedFromDB) => _serviceAdapter({...item, service_roles_id: serviceAdminRole.id}))
   }

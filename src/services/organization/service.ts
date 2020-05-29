@@ -70,6 +70,18 @@ const organizationByUserIdLoader = store.registerOneToManyLoader(
     _organizationAdapter
 );
 
+const organizationHasMemberLoader = store.registerOneToManyLoader(
+  async (organizationIds : string[]) => {
+    const query = await knexDatabase.knex('users_organizations')
+    .whereIn('organization_id', organizationIds)
+    .limit(1)
+    .select('*')
+    return query;
+  },
+    'organization_id',
+    _organizationAdapter
+);
+
 const createOrganization = async (createOrganizationPayload : IOrganizationPayload, userToken : IUserToken, trx : Transaction) => {
 
   if(!userToken) throw new Error("invalid token");
@@ -276,7 +288,19 @@ const getOrganizationById = async (organizationId: string, trx?: Transaction) =>
 
 }
 
-const getOrganizationByUserId = async (userId: string) => {
+const getOrganizationByUserId = async (userId: string, organizationId?: string) => {
+
+  if(organizationId){
+
+    const organization = await knexDatabase.knex('users_organizations AS uo')
+    .innerJoin('organizations AS org', 'org.id', 'uo.organization_id')
+    .where('uo.user_id', userId)
+    .andWhere("uo.organization_id", organizationId)
+    .select('org.*', 'uo.id AS users_organizations_id', 'uo.user_id')
+
+    return organization.map(_organizationAdapter);
+
+  }
 
   const organizations = await organizationByUserIdLoader().load(userId)
 
@@ -469,11 +493,20 @@ const getUserOrganizationRole = async (userOrganizationId: string) => {
 
 }
 
+const verifyOrganizationHasMember = async (organizationId: string) => {
+
+  const userOrganizationRole = await organizationHasMemberLoader().load(organizationId);
+
+  return userOrganizationRole.length;
+
+}
+
 export default {
   listUsersInOrganization,
   getOrganizationByName,
   organizationDetails,
   getUserOrganizationRole,
+  verifyOrganizationHasMember,
   listMyOrganizations,
   getOrganizationByUserId,
   handleUserPermissionInOrganization,

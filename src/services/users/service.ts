@@ -4,6 +4,7 @@ import { ISignUp, ISignUpAdapted, IChangePassword, ISignUpFromDB } from './types
 import { Transaction  } from 'knex';
 import database from '../../knex-database';
 import knexDatabase from '../../knex-database';
+import { IUserToken } from '../authentication/types';
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -115,6 +116,15 @@ const getUserById = async (id: string, trx?: Transaction) => {
   return user
 }
 
+const getUser = async (client: IUserToken, trx?: Transaction) => {
+  if(!client) throw new Error("Token must be provided.");
+
+  const user = getUserById(client.id, trx);
+
+  return user;
+
+}
+
 const getUserByNameOrEmail = async (name: string, trx?: Transaction) => {
 
   const user = await (trx || database.knex)('users')
@@ -178,6 +188,7 @@ export default {
   verifyEmail,
   recoveryPassword,
   changePassword,
+  getUser,
   getUserByEmail,
   getUserById,
   signUpWithEmailOnly,

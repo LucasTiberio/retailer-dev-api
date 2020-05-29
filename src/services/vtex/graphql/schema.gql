@@ -8,3 +8,7 @@ input VerifyAndAttachVtexSecretsInput{
   accountName: String!
   organizationId: String!
 }
+
+extend type Organization{
+  vtexIntegration: Boolean!
+}

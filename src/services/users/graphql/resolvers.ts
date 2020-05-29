@@ -27,9 +27,16 @@ const resolvers : IResolvers = {
       });
     }
   },
+  Query: {
+    getUser: (_, __, { client }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.getUser(client, trx);
+      })
+    } 
+  },
   User: {
-    organizations: (obj) => {
-      return OrganizationService.getOrganizationByUserId(obj.id);
+    organizations: (obj, { organizationId }) => {
+      return OrganizationService.getOrganizationByUserId(obj.id, organizationId);
     } 
   }
 };

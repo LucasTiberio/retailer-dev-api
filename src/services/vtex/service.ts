@@ -2,6 +2,29 @@ import { Transaction  } from 'knex';
 import knexDatabase from '../../knex-database';
 import { IUserToken } from '../authentication/types';
 import axios from 'axios';
+import store from '../../store';
+import { IVtexIntegrationFromDB } from './types';
+
+const vtexAdapter = (record: IVtexIntegrationFromDB) => ({
+  id: record.id,
+  organizationId: record.organization_id,
+  storeName: record.store_name,
+  updatedAt: record.updated_at,
+  created: record.created_at,
+  vtexKey: record.vtex_key,
+  vtexToken: record.vtex_token
+})
+
+const organizationServicesByOrganizationIdLoader = store.registerOneToManyLoader(
+  async (organizationIds : string[]) => {
+    const query = await knexDatabase.knex('organization_vtex_secrets')
+    .whereIn('organization_id', organizationIds)
+    .select('*');
+    return query;
+  },
+    'organization_id',
+    vtexAdapter
+);
 
 const buildVerifyVtexSecretsUrl = (accountName : string) => 
   `https://${accountName}.vtexcommercestable.com.br/api/oms/pvt/orders`
@@ -84,6 +107,12 @@ const attachVtexSecrets = async (input: {
 
 }
 
+const verifyIntegration = async (organizationId: string) => {
+  const vtexIntegration = await organizationServicesByOrganizationIdLoader().load(organizationId);
+  return vtexIntegration.length;
+}
+
 export default {
-  verifyAndAttachVtexSecrets
+  verifyAndAttachVtexSecrets,
+  verifyIntegration
 }

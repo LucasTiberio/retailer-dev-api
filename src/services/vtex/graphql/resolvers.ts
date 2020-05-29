@@ -10,7 +10,12 @@ const resolvers : IResolvers = {
             return service.verifyAndAttachVtexSecrets(input, client, trx);
         });
     },
-  }
+  },
+  Organization: {
+    vtexIntegration: async (obj) => {
+      return service.verifyIntegration(obj.id);
+    }
+  },
 };
 
 export default resolvers;
