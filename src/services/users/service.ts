@@ -36,7 +36,7 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
   if(userPreAddedFound && (userPreAddedFound.encrypted_password || userPreAddedFound.username)) throw new Error("user already registered.");
 
   const encryptedPassword = await common.encrypt(password);
-  const encryptedHashVerification = await common.encrypt(
+  const encryptedHashVerification = await common.encryptSHA256(
     JSON.stringify({...attrs, timestamp: +new Date()})
   );
 
@@ -143,7 +143,7 @@ const recoveryPassword = async (email: string, trx: Transaction) => {
 
   try {
     
-    const encryptedHashVerification = await common.encrypt(
+    const encryptedHashVerification = await common.encryptSHA256(
       JSON.stringify({email, timestamp: +new Date()})
     );
   

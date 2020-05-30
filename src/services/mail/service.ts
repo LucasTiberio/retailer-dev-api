@@ -10,7 +10,10 @@ const sendSignUpMail = async (data: ISendMail) => {
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
             subject: 'Welcome to PlugOne!',
-            html: `Hello, ${data.username}! confirm your registration: http://localhost:3000/verification/${data.hashToVerify}`
+            html: `
+                Hello, ${data.username}! confirm your registration,
+                <a href="http://localhost:3000/verification/${data.hashToVerify}">verificar email</a>
+            `
         });
     } catch(e){
         throw new Error(e.message)
@@ -26,7 +29,8 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
             subject: 'Recovery PlugOne Password!',
-            html: `Hello, ${data.username}, Link para recuperação de senha: http://localhost:3000/recovery-password/${data.hashToVerify}`
+            html: `Hello, ${data.username}, <a href="http://localhost:3000/recovery-password/change-password/${data.hashToVerify}">click here</a> to change your password
+                 `
         });
     } catch(e){
         throw new Error(e.message)
