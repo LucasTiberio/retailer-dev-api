@@ -32,9 +32,14 @@ input VerifyOrganizationNameInput{
 extend type Mutation{
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  responseOrganizationInvite(input: ResponseOrganizationInviteInput!): Boolean!
+  responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
   inativeUserInOrganization(input: InativeUserInOrganizationInput!): UserOrganization! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+type ResponseOrganizationInvitePayload{
+  status: Boolean!
+  email: String
 }
 
 input HandleUserPermissionInOrganizationInput{

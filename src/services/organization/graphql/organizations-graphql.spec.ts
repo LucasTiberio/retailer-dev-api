@@ -44,7 +44,10 @@ const INVITE_USER_TO_ORGANIZATION = `
 
 const RESPONSE_INVITE = `
     mutation responseOrganizationInvite($input: ResponseOrganizationInviteInput!) {
-        responseOrganizationInvite(input: $input)
+        responseOrganizationInvite(input: $input){
+            status
+            email
+        }
     }
 `
 
@@ -734,7 +737,7 @@ describe('organizations graphql', () => {
             });
     
             expect(responseOrganizationInviteResponse.statusCode).toBe(200);
-            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeTruthy();
+            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite.status).toBeTruthy();
     
             const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('*');
     
@@ -829,7 +832,7 @@ describe('organizations graphql', () => {
             });
     
             expect(responseOrganizationInviteResponse.statusCode).toBe(200);
-            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeTruthy();
+            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite.status).toBeTruthy();
     
             const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('*');
     
@@ -911,7 +914,7 @@ describe('organizations graphql', () => {
             });
     
             expect(responseOrganizationInviteResponse.statusCode).toBe(200);
-            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite).toBeFalsy();
+            expect(responseOrganizationInviteResponse.body.data.responseOrganizationInvite.status).toBeFalsy();
     
             const [invitedUserToOrganizationAfter] = await knexDatabase.knex('users_organizations').where("user_id", userFound.id).select('*');
     
@@ -920,7 +923,7 @@ describe('organizations graphql', () => {
                     id: expect.any(String),
                     user_id: userFound.id,
                     organization_id: organizationCreated.id,
-                    invite_status: OrganizationInviteStatus.PENDENT,
+                    invite_status: OrganizationInviteStatus.ACCEPT,
                     updated_at: expect.any(Date),
                     created_at: expect.any(Date)
                 })

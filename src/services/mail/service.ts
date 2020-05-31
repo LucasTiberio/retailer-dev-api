@@ -63,8 +63,8 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
             to: `<${data.email}>`,
             subject: `You haas been invited to ${data.organizationName}!`,
             html: `Hello, 
-                \n to accept: http://localhost:3000/member-invited/${data.hashToVerify}?response=accept
-                \n to refuse: http://localhost:3000/member-invited/${data.hashToVerify}?response=refuse
+                    \n to <a href="http://localhost:3000/member-invited/${data.hashToVerify}/accept">accept</a>
+                    \n to <a href="http://localhost:3000/member-invited/${data.hashToVerify}/refuse">refuse</a>
                 `
         });
     } catch(e){
@@ -81,9 +81,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `<${data.email}>`,
             subject: `You haas been invited to Plugone by ${data.organizationName}!`,
-            html: `Hello, 
-                \n to accept: http://localhost:3000/member-invited/${data.hashToVerify}
-                `
+            html: `Hello, \n to accept <a href="http://localhost:3000/member-invited/${data.hashToVerify}/accept">click here</a>`
         });
     } catch(e){
         throw new Error(e.message)

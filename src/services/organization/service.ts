@@ -151,7 +151,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
     await Promise.all(usersToAttach.users.map(async (user : IInviteUserToOrganizationData ) => {
 
-      let hashToVerify = await common.encrypt(JSON.stringify({...user, timestamp: +new Date()}));
+      let hashToVerify = await common.encryptSHA256(JSON.stringify({...user, timestamp: +new Date()}));
 
       let userOrganizationCreated;
 
@@ -215,10 +215,6 @@ const responseInvite = async (responseInvitePayload : IResponseInvitePayload, tr
   .innerJoin('users as usr', 'usr.id', 'uo.user_id')
   .select('usr.encrypted_password', 'usr.username', 'usr.email');
 
-  if(!user.encrypted_password || !user.username){
-    return false
-  }
-
   try {
     await (trx || knexDatabase.knex)('users_organizations')
     .update({
@@ -227,7 +223,14 @@ const responseInvite = async (responseInvitePayload : IResponseInvitePayload, tr
     })
     .where('invite_hash', responseInvitePayload.inviteHash);
 
-    return true;
+    if(!user.encrypted_password || !user.username){
+      return {
+        status: false,
+        email: user.email
+      }
+    }
+
+    return {status: true};
   } catch (e) {
     throw new Error(e.message);
   }

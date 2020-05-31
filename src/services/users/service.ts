@@ -52,9 +52,9 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
         encrypted_password: encryptedPassword,
         verification_hash: encryptedHashVerification
       })
-      .where('id', userPreAddedFound)
+      .where('id', userPreAddedFound.id)
       .into('users').returning('*')
-    
+
     } else {
 
       signUpCreated = await (trx || database.knex)
@@ -72,6 +72,7 @@ const signUp = async (attrs : ISignUp, trx : Transaction) => {
     return _signUpAdapter(signUpCreated[0]);
 
   } catch(e){
+    console.log(e)
     trx.rollback();
     throw new Error(e.message)
   }

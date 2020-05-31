@@ -525,7 +525,7 @@ describe('Organizations', () => {
 
         const invitedAccept = await service.responseInvite(responseInvitePayload, trx);
 
-        expect(invitedAccept).toBeFalsy();
+        expect(invitedAccept.status).toBeFalsy();
 
         const [invitedUserToOrganizationAfter] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", userFound.id).select('*');
 
@@ -534,7 +534,7 @@ describe('Organizations', () => {
                 id: expect.any(String),
                 user_id: userFound.id,
                 organization_id: organizationCreated.id,
-                invite_status: OrganizationInviteStatus.PENDENT,
+                invite_status: OrganizationInviteStatus.ACCEPT,
                 updated_at: expect.any(Date),
                 created_at: expect.any(Date)
             })
