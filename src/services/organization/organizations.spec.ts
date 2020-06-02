@@ -767,23 +767,27 @@ describe('Organizations', () => {
 
         await service.responseInvite(responseInvitePayload, trx);
 
-        const inativeUserInOrganizationPayload = {
-            userId: signUpOtherMemberCreated.id,
+        const inativeUsersInOrganizationPayload = {
+            usersId: [signUpOtherMemberCreated.id],
             organizationId: organizationCreated.id
         }
 
-        const inativedUser = await service.inativeUserInOrganization(inativeUserInOrganizationPayload, userToken, trx);
+        const inativedUser = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, userToken, trx);
 
         expect(inativedUser).toEqual(
-            expect.objectContaining({
-                id: invitedUserToOrganization.id,
-                userId: signUpOtherMemberCreated.id,
-                organizationId: organizationCreated.id,
-                inviteStatus: OrganizationInviteStatus.ACCEPT,
-                inviteHash: null,
-                createdAt: expect.any(Date),
-                updatedAt: expect.any(Date)
-            })
+            expect.arrayContaining([
+                expect.objectContaining({
+                    userOrganization: expect.objectContaining({
+                        id: invitedUserToOrganization.id,
+                        userId: signUpOtherMemberCreated.id,
+                        organizationId: organizationCreated.id,
+                        inviteStatus: OrganizationInviteStatus.ACCEPT,
+                        inviteHash: null,
+                        createdAt: expect.any(Date),
+                        updatedAt: expect.any(Date)
+                    })
+                })
+            ])
         )
 
         done();
@@ -831,18 +835,25 @@ describe('Organizations', () => {
             .update('organization_role_id', organizationAdminRole.id)
             .where('users_organization_id', invitedUserToOrganization.id)
 
-        const inativeUserInOrganizationPayload = {
-            userId: signUpCreated.id,
+        const inativeUsersInOrganizationPayload = {
+            usersId: [signUpCreated.id],
             organizationId: organizationCreated.id
         }
 
         let otherUserToken = { origin: 'user', id: signUpOtherMemberCreated.id };
 
-        try {
-            await service.inativeUserInOrganization(inativeUserInOrganizationPayload, otherUserToken, trx);
-        } catch (e) {
-            expect(e.message).toBe('Not possible inative other admins');
-        }
+        const inativedUsers = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, otherUserToken, trx);
+
+        expect(inativedUsers).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    userError: expect.objectContaining({
+                        message: 'Not possible inative other admins',
+                        userId: signUpCreated.id
+                    })
+                })
+            ])
+        )
 
         done();
     })
@@ -889,23 +900,27 @@ describe('Organizations', () => {
 
         await service.responseInvite(responseInvitePayload, trx);
 
-        const inativeUserInOrganizationPayload = {
-            userId: signUpOtherMemberCreated.id,
+        const inativeUsersInOrganizationPayload = {
+            usersId: [signUpOtherMemberCreated.id],
             organizationId: organizationCreated.id
         }
 
-        const inativedUser = await service.inativeUserInOrganization(inativeUserInOrganizationPayload, userToken, trx);
+        const inativedUser = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, userToken, trx);
 
         expect(inativedUser).toEqual(
-            expect.objectContaining({
-                id: invitedUserToOrganization.id,
-                userId: signUpOtherMemberCreated.id,
-                organizationId: organizationCreated.id,
-                inviteStatus: OrganizationInviteStatus.ACCEPT,
-                inviteHash: null,
-                createdAt: expect.any(Date),
-                updatedAt: expect.any(Date)
-            })
+            expect.arrayContaining([
+                expect.objectContaining({
+                    userOrganization: expect.objectContaining({
+                        id: invitedUserToOrganization.id,
+                        userId: signUpOtherMemberCreated.id,
+                        organizationId: organizationCreated.id,
+                        inviteStatus: OrganizationInviteStatus.ACCEPT,
+                        inviteHash: null,
+                        createdAt: expect.any(Date),
+                        updatedAt: expect.any(Date)
+                    })
+                })
+            ])
         );
 
         const organizationMemberRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
@@ -973,19 +988,22 @@ describe('Organizations', () => {
         const memberRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
 
         expect(organizationusers).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    id: invitedUserToOrganization.id,
-                    userId: signUpOtherMemberCreated.id,
-                    organizationId: organizationCreated.id,
-                    inviteStatus: OrganizationInviteStatus.ACCEPT,
-                    inviteHash: null,
-                    createdAt: expect.any(Date),
-                    updatedAt: expect.any(Date),
-                    active: true,
-                    organizationRoleId: memberRole.id
-                })
-            ])
+            expect.objectContaining({
+                count: "1",
+                usersOrganizations: expect.arrayContaining([
+                    expect.objectContaining({
+                        id: invitedUserToOrganization.id,
+                        userId: signUpOtherMemberCreated.id,
+                        organizationId: organizationCreated.id,
+                        inviteStatus: OrganizationInviteStatus.ACCEPT,
+                        inviteHash: null,
+                        createdAt: expect.any(Date),
+                        updatedAt: expect.any(Date),
+                        active: true,
+                        organizationRoleId: memberRole.id
+                    })
+                ])
+            })
         )
 
         done();
@@ -1057,19 +1075,22 @@ describe('Organizations', () => {
         const memberRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
 
         expect(organizationusers).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    id: invitedUserToOrganization3.id,
-                    userId: signUpCreated3.id,
-                    organizationId: organizationCreated.id,
-                    inviteStatus: OrganizationInviteStatus.ACCEPT,
-                    inviteHash: null,
-                    createdAt: expect.any(Date),
-                    updatedAt: expect.any(Date),
-                    active: true,
-                    organizationRoleId: memberRole.id
-                })
-            ])
+            expect.objectContaining({
+                count: "1",
+                usersOrganizations: expect.arrayContaining([
+                    expect.objectContaining({
+                        id: invitedUserToOrganization3.id,
+                        userId: signUpCreated3.id,
+                        organizationId: organizationCreated.id,
+                        inviteStatus: OrganizationInviteStatus.ACCEPT,
+                        inviteHash: null,
+                        createdAt: expect.any(Date),
+                        updatedAt: expect.any(Date),
+                        active: true,
+                        organizationRoleId: memberRole.id
+                    })
+                ])
+            })
         )
 
         done();
@@ -1295,12 +1316,12 @@ describe('Organizations', () => {
 
         await service.responseInvite(responseInvitePayload, trx);
 
-        const inativeUserInOrganizationPayload = {
-            userId: signUpOtherMemberCreated.id,
+        const inativeUsersInOrganizationPayload = {
+            usersId: [signUpOtherMemberCreated.id],
             organizationId: organizationCreated.id
         }
 
-        await service.inativeUserInOrganization(inativeUserInOrganizationPayload, userToken, trx);
+        await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, userToken, trx);
 
         const inviteUserToOrganizationPayloadAgain = {
             organizationId: organizationCreated.id,

@@ -86,19 +86,25 @@ const ORGANIZATION_UPLOAD_IMAGE = `
     }
 `
 
-const INATIVE_USER_IN_ORGANIZATION = `
-    mutation inativeUserInOrganization($input: InativeUserInOrganizationInput!) {
-        inativeUserInOrganization(input: $input){
-            id
-            inviteStatus
-            inviteHash
-            updatedAt
-            createdAt
-            user{
+const INATIVE_USERS_IN_ORGANIZATION = `
+    mutation inativeUsersInOrganization($input: InativeUsersInOrganizationInput!) {
+        inativeUsersInOrganization(input: $input){
+            userOrganization{
                 id
+                inviteStatus
+                inviteHash
+                updatedAt
+                createdAt
+                user{
+                    id
+                }
+                organization{
+                    id
+                }
             }
-            organization{
-                id
+            userError{
+                message
+                userId
             }
         }
     }
@@ -171,26 +177,28 @@ const ORGANIZATION_DETAILS = `
 const LIST_USERS_IN_ORGANIZATION = `
     query listUsersInOrganization($input: ListUsersInOrganizationInput!) {
         listUsersInOrganization(input: $input){
-            id
-            user{
+            count
+            usersOrganizations{
                 id
-            }
-            organization{
-                id
-            }
-            inviteStatus
-            inviteHash
-            createdAt
-            updatedAt
-            active
-            organizationRole{
-                id
-                name
+                user{
+                    id
+                }
+                organization{
+                    id
+                }
+                inviteStatus
+                inviteHash
+                createdAt
+                updatedAt
+                active
+                organizationRole{
+                    id
+                    name
+                }
             }
         }
     }
 `
-
 
 describe('organizations graphql', () => {
 
@@ -1345,37 +1353,42 @@ describe('organizations graphql', () => {
                 }
             });
     
-            const inativeUserInOrganizationPayload = {
-                userId: otherSignUpCreated.id,
+            const inativeUsersInOrganizationPayload = {
+                usersId: [otherSignUpCreated.id],
                 organizationId: organizationCreated.id
             }
     
-            const inativeUserInOrganizationResponse = await request
+            const inativeUsersInOrganizationResponse = await request
             .post('/graphql')
             .set('content-type', 'application/json')
             .set('x-api-token', userToken)
             .send({
-            'query': INATIVE_USER_IN_ORGANIZATION, 
+            'query': INATIVE_USERS_IN_ORGANIZATION, 
             'variables': {
-                    input: inativeUserInOrganizationPayload
+                    input: inativeUsersInOrganizationPayload
                 }
             });
-    
-            expect(inativeUserInOrganizationResponse.statusCode).toBe(200);
-            expect(inativeUserInOrganizationResponse.body.data.inativeUserInOrganization).toEqual(
-                expect.objectContaining({
-                    id: invitedUserToOrganization.id,
-                    user: expect.objectContaining({
-                        id: otherSignUpCreated.id
-                    }),
-                    organization: expect.objectContaining({
-                        id: organizationCreated.id
-                    }),
-                    inviteStatus: OrganizationInviteStatus.ACCEPT,
-                    inviteHash: null,
-                    createdAt: expect.any(String),
-                    updatedAt: expect.any(String)
-                })
+
+            expect(inativeUsersInOrganizationResponse.statusCode).toBe(200);
+            expect(inativeUsersInOrganizationResponse.body.data.inativeUsersInOrganization).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        userError: null,
+                        userOrganization: expect.objectContaining({
+                            id: invitedUserToOrganization.id,
+                            user: expect.objectContaining({
+                                id: otherSignUpCreated.id
+                            }),
+                            organization: expect.objectContaining({
+                                id: organizationCreated.id
+                            }),
+                            inviteStatus: OrganizationInviteStatus.ACCEPT,
+                            inviteHash: null,
+                            createdAt: expect.any(String),
+                            updatedAt: expect.any(String)
+                        })
+                    })
+                ])
             )
     
             done();
@@ -1517,26 +1530,29 @@ describe('organizations graphql', () => {
             const [memberRole] = await knexDatabase.knex('organization_roles').where('name', OrganizationRoles.MEMBER).select('id');
     
             expect(listUsersInOrganizationResponse.body.data.listUsersInOrganization).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        id: invitedUserToOrganization2.id,
-                        user: expect.objectContaining({
-                            id: signUpCreated3.id
-                        }),
-                        organization: expect.objectContaining({
-                            id: organizationCreated.id
-                        }),
-                        inviteStatus: OrganizationInviteStatus.ACCEPT,
-                        inviteHash: null,
-                        createdAt: expect.any(String),
-                        updatedAt: expect.any(String),
-                        active: true,
-                        organizationRole: expect.objectContaining({
-                            id: memberRole.id,
-                            name: OrganizationRoles.MEMBER
+                expect.objectContaining({
+                    count: expect.any(Number),
+                    usersOrganizations: expect.arrayContaining([
+                        expect.objectContaining({
+                            id: invitedUserToOrganization2.id,
+                            user: expect.objectContaining({
+                                id: signUpCreated3.id
+                            }),
+                            organization: expect.objectContaining({
+                                id: organizationCreated.id
+                            }),
+                            inviteStatus: OrganizationInviteStatus.ACCEPT,
+                            inviteHash: null,
+                            createdAt: expect.any(String),
+                            updatedAt: expect.any(String),
+                            active: true,
+                            organizationRole: expect.objectContaining({
+                                id: memberRole.id,
+                                name: OrganizationRoles.MEMBER
+                            })
                         })
-                    })
-                ])
+                    ])
+                })
             )
     
             done();

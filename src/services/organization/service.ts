@@ -10,6 +10,7 @@ import common from "../../common";
 import { IUserOrganizationDB, IOrganizationRoleFromDb } from "./types";
 import store from "../../store";
 import sharp from 'sharp';
+import { IPagination } from "../../common/types";
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -349,66 +350,94 @@ const getOrganizationRoleById = async (organizationRoleId: string, trx?: Transac
 
 }
 
-const inativeUserInOrganization = async (inativeUserInOrganizationPayload: {userId: string, organizationId: string}, userToken : IUserToken, trx: Transaction) => {
+const inativeUsersInOrganization = async (inativeUsersInOrganizationPayload: {usersId: string[], organizationId: string}, userToken : IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided.");
 
-  const { userId, organizationId } = inativeUserInOrganizationPayload;
+  const { organizationId } = inativeUsersInOrganizationPayload;
 
-  const [userOrganizationFound] = await (trx || knexDatabase.knex)('users_organizations')
-  .where('user_id', userId)
-  .andWhere('organization_id', organizationId);
+  return await Promise.all(inativeUsersInOrganizationPayload.usersId.map(async userId => {
 
-  if(!userOrganizationFound) throw new Error("user not found in organization!");
+    const [userOrganizationFound] = await (trx || knexDatabase.knex)('users_organizations')
+    .where('user_id', userId)
+    .andWhere('organization_id', organizationId);
 
-  const [userFound] = await (trx || knexDatabase.knex)('users_organizations AS uo')
-    .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')  
-    .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')  
-    .where('uo.id', userOrganizationFound.id)
-    .select('uo.id', 'or.name');
+    if(!userOrganizationFound) return {
+      userError: {
+        message: "user not found in organization!",
+        userId
+      }
+    };
 
-  if(userFound.name === OrganizationRoles.ADMIN){
-    const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('user_id');
-    if(organizationFound.user_id !== userToken.id){
-      throw new Error('Not possible inative other admins');
+    const [userFound] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+      .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')  
+      .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')  
+      .where('uo.id', userOrganizationFound.id)
+      .select('uo.id', 'or.name');
+
+    if(userFound.name === OrganizationRoles.ADMIN){
+      const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('user_id');
+      if(organizationFound.user_id !== userToken.id){
+        return {
+          userError: {
+            message: 'Not possible inative other admins',
+            userId
+          }
+        }
+      }
     }
-  }
 
-  const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
-    .update({active: false})
-    .where('id', userOrganizationFound.id)
-    .returning('*');
+    const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
+      .update({active: false})
+      .where('id', userOrganizationFound.id)
+      .returning('*');
 
-  const memberOrganizationRole = await getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
+    const memberOrganizationRole = await getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
 
-  await (trx || knexDatabase.knex)('users_organization_roles')
-    .where('users_organization_id', userOrganizationInatived.id)
-    .update({ organization_role_id: memberOrganizationRole.id })
+    await (trx || knexDatabase.knex)('users_organization_roles')
+      .where('users_organization_id', userOrganizationInatived.id)
+      .update({ organization_role_id: memberOrganizationRole.id })
 
-  return _usersOrganizationsAdapter(userOrganizationInatived);
+    return {
+      userOrganization: _usersOrganizationsAdapter(userOrganizationInatived)
+    }
+
+  }))
 
 }
 
-const listUsersInOrganization = async (listUsersInOrganizationPayload : { name? : string, organizationId: string }, userToken: IUserToken, trx: Transaction) => {
+const listUsersInOrganization = async (listUsersInOrganizationPayload : { name? : string, organizationId: string } & IPagination, userToken: IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided.");
 
-  const { organizationId, name } = listUsersInOrganizationPayload;
+  const { organizationId, name, offset, limit } = listUsersInOrganizationPayload;
 
-  let query = (trx || knexDatabase)('users_organizations AS uo')
-    .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
-    .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
-    .where('uo.organization_id', organizationId)
-    .whereNot('uo.user_id', userToken.id)
+  let query = (trx || knexDatabase.knex)('users_organizations AS uo')
+  .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
+  .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
+  .where('uo.organization_id', organizationId)
+  .whereNot('uo.user_id', userToken.id)
 
   if(name) {
-    query = query.whereRaw(`LOWER(email) LIKE ?`, [`%${name.toLowerCase()}%`])
-      .orWhereRaw(`LOWER(username) LIKE ?`, [`%${name.toLowerCase()}%`])
+    query = query.andWhereRaw(`(LOWER(email) LIKE ? OR LOWER(username) LIKE ?)`, [`%${name.toLowerCase()}%`, `%${name.toLowerCase()}%`])
   }
 
-  const result = await query.select('uo.*', 'uor.organization_role_id');
+  var [totalCount] = await query.clone().count();
 
-  return result.map(_usersOrganizationsAdapter);
+  if(limit) {
+    query = query.limit(limit)
+  }
+
+  if(offset) {
+    query = query.offset(offset)
+  }
+
+  const result = await query.select('uo.*', 'uor.organization_role_id')
+
+  return {
+    count: totalCount.count,
+    usersOrganizations: result.map(_usersOrganizationsAdapter)
+  };
 
 }
 
@@ -585,5 +614,5 @@ export default {
   findUsersToOrganization,
   userOrganizationInviteStatus,
   getUserOrganizationById,
-  inativeUserInOrganization
+  inativeUsersInOrganization
 }

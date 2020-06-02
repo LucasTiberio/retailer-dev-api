@@ -33,9 +33,9 @@ const resolvers : IResolvers = {
         return service.responseInvite(input, trx);
       });
     },
-    inativeUserInOrganization: (_, { input }, { client }) => {
+    inativeUsersInOrganization: (_, { input }, { client }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.inativeUserInOrganization(input, client, trx);
+        return service.inativeUsersInOrganization(input, client, trx);
       });
     },
     handleUserPermissionInOrganization: (_, { input }, { client }) => {

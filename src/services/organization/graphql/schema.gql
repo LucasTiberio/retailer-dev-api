@@ -2,8 +2,13 @@ extend type Query{
   verifyOrganizationName(input: VerifyOrganizationNameInput!): Boolean @isAuthenticated
   listMyOrganizations: [Organization]! @isVerified @isAuthenticated
   organizationDetails(input: OrganizationDetailsInput!): Organization! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
-  listUsersInOrganization(input: ListUsersInOrganizationInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
+  listUsersInOrganization(input: ListUsersInOrganizationInput!): ListUsersInOrganizationPayload! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
   findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+type ListUsersInOrganizationPayload{
+  count: Int!
+  usersOrganizations: [UserOrganization]!
 }
 
 input OrganizationDetailsInput{
@@ -13,6 +18,8 @@ input OrganizationDetailsInput{
 input ListUsersInOrganizationInput{
   name: String
   organizationId: String!
+  offset: Int
+  limit: Int
 }
 
 input FindUsersToOrganizationInput{
@@ -34,8 +41,18 @@ extend type Mutation{
   organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
-  inativeUserInOrganization(input: InativeUserInOrganizationInput!): UserOrganization! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  inativeUsersInOrganization(input: InativeUsersInOrganizationInput!): [InativeUsersInOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+type InativeUsersInOrganizationPayload{
+  userOrganization: UserOrganization
+  userError: UserError
+}
+
+type UserError{
+  message: String!
+  userId: String!
 }
 
 input OrganizationUploadImageInput{
@@ -55,8 +72,8 @@ input HandleUserPermissionInOrganizationInput{
   permission: OrganizationRoleName!
 }
 
-input InativeUserInOrganizationInput{
-  userId: String!
+input InativeUsersInOrganizationInput{
+  usersId: [String]!
   organizationId: String!
 }
 
