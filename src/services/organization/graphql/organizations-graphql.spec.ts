@@ -4,8 +4,10 @@ import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import knexDatabase from '../../../knex-database';
 import { OrganizationRoles, IOrganizationSimple, OrganizationInviteStatus } from '../types';
+import common from '../../../common';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
+var imgGen = require('js-image-generator');
 
 declare var process : {
 	env: {
@@ -58,6 +60,23 @@ const CREATE_ORGANIZATION = `
             contactEmail
             name
             active
+            updatedAt
+            createdAt
+            user{
+                id
+            }
+        }
+    }
+`
+
+const ORGANIZATION_UPLOAD_IMAGE = `
+    mutation organizationUploadImage($input: OrganizationUploadImageInput!) {
+        organizationUploadImage(input: $input){
+            id
+            contactEmail
+            name
+            active
+            logo
             updatedAt
             createdAt
             user{

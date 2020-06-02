@@ -7,6 +7,10 @@ import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
 import { OrganizationRoles, OrganizationInviteStatus, IOrganizationSimple } from './types';
 import knexDatabase from '../../knex-database';
+import common from '../../common';
+import { stream } from 'file-type';
+var streamBuffers = require('stream-buffers');
+var imgGen = require('js-image-generator');
 
 describe('Organizations', () => {
 
@@ -14,7 +18,6 @@ describe('Organizations', () => {
 
     let signUpCreated: ISignUpAdapted;
 
-    
     let signUpPayload = {
         username: Faker.name.firstName(),
         email: Faker.internet.email(),
@@ -1327,6 +1330,44 @@ describe('Organizations', () => {
         )
 
         done();
+    })
+
+    test("admin should upload organization image", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email()
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        imgGen.generateImage(1, 1, 80, async function(err: Error, image : any) {
+
+            const organizationUploadImagePayload = {
+                imageName: "teste-organization-upload2",
+                mimetype: "image/jpeg",
+                data: image.data,
+                organizationId: organizationCreated.id
+            }
+
+            const organizationImageUploaded = await service.organizationUploadImage(organizationUploadImagePayload, userToken, trx);
+
+            expect(organizationImageUploaded).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    name: organizationCreated.name,
+                    contactEmail: organizationCreated.contactEmail,
+                    userId: userToken.id,
+                    active: true,
+                    createdAt: expect.any(Date),
+                    updatedAt: expect.any(Date),
+                    userOrganizationId: undefined,
+                    logo: expect.any(String)
+                  })
+            )
+            done();
+        });
+        
     })
 
         

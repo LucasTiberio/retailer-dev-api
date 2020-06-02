@@ -1,0 +1,11 @@
+# extend type Mutation {
+#   uploadImage(file: Upload!): Image
+# }
+
+type Image {
+  id: Int!
+  url: String!
+  mimetype: String!
+  createdAt: Datetime!
+  updatedAt: Datetime!
+}

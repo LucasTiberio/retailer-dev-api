@@ -12,6 +12,17 @@ const resolvers : IResolvers = {
         return service.createOrganization(input, client, trx);
       });
     },
+    organizationUploadImage: async (_, { input }, { client }) => {
+      const { createReadStream, filename, mimetype } = await input.data;
+      return database.knex.transaction((trx: Transaction) => {
+        return service.organizationUploadImage({
+          imageName: filename,
+          data: createReadStream(),
+          mimetype,
+          organizationId: input.organizationId
+        }, client, trx);
+      });
+    },
     inviteUserToOrganization: (_, { input }, { client }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.inviteUserToOrganization(input, client, trx);

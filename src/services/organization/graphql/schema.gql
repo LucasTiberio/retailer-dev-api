@@ -31,10 +31,17 @@ input VerifyOrganizationNameInput{
 
 extend type Mutation{
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
+  organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
   inativeUserInOrganization(input: InativeUserInOrganizationInput!): UserOrganization! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input OrganizationUploadImageInput{
+  mimetype: String
+  data: Upload!
+  organizationId: String!
 }
 
 type ResponseOrganizationInvitePayload{
@@ -88,6 +95,7 @@ type Organization{
   user: User! @isVerified @isAuthenticated # TODO somente admin pode ver o founder
   updatedAt: Datetime!
   createdAt: Datetime!
+  logo: String
   hasMember: Boolean!
   organizationRole: [OrganizationRole]!
   services: [Service]!

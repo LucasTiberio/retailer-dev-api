@@ -8,6 +8,11 @@ const server = new ApolloServer({
     resolvers: GraphQLAPI.resolvers,
     directiveResolvers: GraphQLAPI.directiveResolvers
   }),
+  uploads: {
+    maxFileSize: 700000,
+    maxFiles: 1,
+    maxFieldSize: 700000
+  },
   context: ({req}) => {
     store.resetStores();
     return {

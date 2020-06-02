@@ -4,10 +4,12 @@ import { Transaction } from "knex";
 import database from "../../knex-database";
 import MailService from '../mail/service';
 import UserService from '../users/service';
+import StorageService from '../storage/service';
 import knexDatabase from "../../knex-database";
 import common from "../../common";
 import { IUserOrganizationDB, IOrganizationRoleFromDb } from "./types";
 import store from "../../store";
+import sharp from 'sharp';
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -17,7 +19,8 @@ const _organizationAdapter = (record: IOrganizationFromDB) => ({
   active: record.active,
   createdAt: record.created_at,
   updatedAt: record.updated_at,
-  userOrganizationId: record.users_organizations_id
+  userOrganizationId: record.users_organizations_id,
+  logo: record.logo ? `${record.logo}?${+new Date()} ` : null
 });
 
 const _organizationRoleAdapter = (record: IOrganizationRoleFromDb) => ({
@@ -504,10 +507,54 @@ const verifyOrganizationHasMember = async (organizationId: string) => {
 
 }
 
+const organizationUploadImage = async (organizationUploadImagePayload: {
+  imageName: string
+  mimetype: string
+  data: any
+  organizationId: string
+}, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided.");
+
+  const { mimetype, data, organizationId } = organizationUploadImagePayload;
+
+  if(!mimetype.match(/\/png/ig)?.length && !mimetype.match(/\/jpg/ig)?.length && !mimetype.match(/\/jpeg/ig)?.length){
+    throw new Error("only image/png and image/jpg is supported!")
+  }
+
+  const path = common.encryptSHA256(organizationId);
+
+  const pipeline = sharp().resize(248, 160, {
+    fit: "contain"
+  });
+
+  let newData
+
+  if(process.env.NODE_ENV !== 'test')
+    newData = await data.pipe(pipeline);
+
+  const imageUploaded = await StorageService.uploadImage(
+    process.env.NODE_ENV === 'test' ? `tdd/${path}` : path,
+    process.env.NODE_ENV === 'test' ? data : newData, 
+    mimetype,
+    trx
+  );
+
+  const [organizationAttachLogo] = await (trx || knexDatabase.knex)('organizations')
+  .where('id', organizationId)
+  .update({
+    logo: imageUploaded.url
+  }).returning('*');  
+
+  return _organizationAdapter(organizationAttachLogo);
+
+}
+
 export default {
   listUsersInOrganization,
   getOrganizationByName,
   organizationDetails,
+  organizationUploadImage,
   getUserOrganizationRole,
   verifyOrganizationHasMember,
   listMyOrganizations,

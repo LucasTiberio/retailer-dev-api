@@ -22,6 +22,7 @@ export interface IOrganizationFromDB{
     updated_at: Date
     created_at: Date
     users_organizations_id: string
+    logo?: string
 }
 
 export interface IOrganizationRoleFromDb{

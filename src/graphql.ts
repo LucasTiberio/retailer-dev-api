@@ -1,13 +1,13 @@
 import { merge } from 'lodash';
 import services from './services';
 import moment from 'moment';
-import { GraphQLScalarType } from 'graphql';
+import { GraphQLScalarType, GraphQLError } from 'graphql';
 import { mergeTypes } from 'merge-graphql-schemas';
 import { gql, IResolvers, IDirectiveResolvers } from 'apollo-server';
-import { GraphQLUpload } from 'graphql-upload';
+import { FileUpload } from 'graphql-upload';
 import jwt from 'jsonwebtoken';
+import * as FileType from 'file-type'
 import knexDatabase from './knex-database';
-import OrganizationService from './services/organization/service';
 import { NextFunction } from 'express';
 import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus } from './services/organization/types';
 
@@ -41,7 +41,27 @@ const resolversBase : IResolvers = {
   Mutation: {
     _empty: () => ""
   },
-  Upload: GraphQLUpload,
+  // Upload: new GraphQLScalarType({
+  Upload: new GraphQLScalarType({
+    name: 'Upload',
+    description: 'The `Upload` scalar type represents a file upload.',
+    async parseValue(value: Promise<FileUpload>): Promise<FileUpload> {
+      const upload = await value
+      const stream = upload.createReadStream()
+      const fileType = await FileType.fromStream(stream)
+
+      if (fileType?.mime !== upload.mimetype)
+        throw new GraphQLError('Mime type does not match file content.')
+  
+      return upload
+    },
+    parseLiteral(ast): void {
+      throw new GraphQLError('Upload literal unsupported.', ast)
+    },
+    serialize(): void {
+      throw new GraphQLError('Upload serialization unsupported.')
+    },
+  }),
   Date: new GraphQLScalarType({
     name: 'Date',
     description: 'Date custom scalar type',
