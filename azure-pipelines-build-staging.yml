@@ -39,6 +39,11 @@ stages:
           --build-arg mailport=$(MAIL_PORT)
           --build-arg mailuser=$(MAIL_USER)
           --build-arg sendgridapikey=$(SEND_GRID_API_KEY)
+          --build-arg digitaloceanawsaccesskeyid=$(DIGITAL_OCEAN_AWS_ACCESS_KEY_ID)
+          --build-arg digitaloceanawssecretaccesskey=$(DIGITAL_OCEAN_AWS_SECRET_ACCESS_KEY)
+          --build-arg digitaloceanspacesendpoint=$(DIGITAL_OCEAN_SPACES_END_POINT)
+          --build-arg bucketname=$(BUCKET_NAME)
+
         includeLatestTag: true
         tags: |
           $(Build.BuildId)

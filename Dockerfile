@@ -23,5 +23,13 @@ ARG mailuser
 ENV MAIL_USER=$mailuser
 ARG sendgridapikey
 ENV SEND_GRID_API_KEY=$sendgridapikey
+ARG digitaloceanawsaccesskeyid
+ENV DIGITAL_OCEAN_AWS_ACCESS_KEY_ID=$digitaloceanawsaccesskeyid
+ARG digitaloceanawssecretaccesskey
+ENV DIGITAL_OCEAN_AWS_SECRET_ACCESS_KEY=$digitaloceanawssecretaccesskey
+ARG digitaloceanspacesendpoint
+ENV DIGITAL_OCEAN_SPACES_END_POINT=$digitaloceanspacesendpoint
+ARG bucketname
+ENV BUCKET_NAME=$bucketname
 RUN npm install && npm run build
 CMD ["/bin/sh", "-c", "npx knex migrate:latest && npm start"]
