@@ -80,6 +80,7 @@ input InviteUserToOrganizationInput {
 input InviteUsersInput {
   id: String
   email: String!
+  role: OrganizationRoleName
 }
 
 input CreateOrganizationInput{

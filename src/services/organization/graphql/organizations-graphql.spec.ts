@@ -1658,6 +1658,120 @@ describe('organizations graphql', () => {
             done();
         })
 
+        test('admin should invite member with role pre selected', async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            let signUpOtherMemberPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: "B8oneTeste123!"
+            };
+
+            const signUpResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: signUpOtherMemberPayload
+                }
+            });
+    
+            let otherSignUpCreated = signUpResponse.body.data.signUp
+    
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email,
+                    role: OrganizationRoles.ADMIN
+                }]
+            }
+
+            const inviteUserToOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+
+            expect(inviteUserToOrganizationResponse.statusCode).toBe(200);
+            expect(inviteUserToOrganizationResponse.body.data.inviteUserToOrganization).toBeTruthy();
+
+            const userOrganizations = await knexDatabase.knex('users_organizations').select();
+
+            expect(userOrganizations).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: userClient.id,
+                        organization_id: organizationCreated.id,
+                        invite_status: OrganizationInviteStatus.ACCEPT,
+                        invite_hash: null,
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    }),
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        user_id: otherSignUpCreated.id,
+                        organization_id: organizationCreated.id,
+                        invite_status: OrganizationInviteStatus.PENDENT,
+                        invite_hash: expect.any(String),
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    })
+                ])
+            )
+    
+            const userOrganizationRoles = await knexDatabase.knex('users_organization_roles').select();
+    
+            const organizationRoles = await knexDatabase.knex('organization_roles').select('id', 'name');
+    
+            const adminRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.ADMIN)
+
+            expect(userOrganizationRoles).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        users_organization_id: expect.any(String),
+                        organization_role_id: adminRole[0].id,
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    }),
+                    expect.objectContaining({
+                        id: expect.any(String),
+                        users_organization_id: expect.any(String),
+                        organization_role_id: adminRole[0].id,
+                        updated_at: expect.any(Date),
+                        created_at: expect.any(Date)
+                    })
+                ])
+            )
+    
+            done();
+        });
+
     })
 
 });

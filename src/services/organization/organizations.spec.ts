@@ -1370,5 +1370,93 @@ describe('Organizations', () => {
         
     })
 
+    test("admin should invite member with role pre selected", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email(),
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        let signUpOtherMemberPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        };
+
+        const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: signUpOtherMemberCreated.id,
+                email: signUpOtherMemberCreated.email,
+                role: OrganizationRoles.ADMIN
+            }]
+        }
+
+        const invitedUserToOrganization = await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        expect(invitedUserToOrganization).toBeTruthy();
+
+        const userOrganizations = await (trx || knexDatabase.knex)('users_organizations').select();
+
+        expect(userOrganizations).toHaveLength(2);
+        expect(userOrganizations).toEqual(
+                expect.arrayContaining([
+                expect.objectContaining({
+                    id: expect.any(String),
+                    user_id: userToken.id,
+                    organization_id: organizationCreated.id,
+                    invite_status: OrganizationInviteStatus.ACCEPT,
+                    invite_hash: null,
+                    updated_at: expect.any(Date),
+                    created_at: expect.any(Date)
+                }),
+                expect.objectContaining({
+                    id: expect.any(String),
+                    user_id: signUpOtherMemberCreated.id,
+                    organization_id: organizationCreated.id,
+                    invite_status: OrganizationInviteStatus.PENDENT,
+                    invite_hash: expect.any(String),
+                    updated_at: expect.any(Date),
+                    created_at: expect.any(Date)
+                })
+            ])
+        )
+
+        const userOrganizationRoles = await (trx || knexDatabase.knex)('users_organization_roles').select();
+
+        const organizationRoles = await(trx || knexDatabase.knex)('organization_roles').select('id', 'name');
+
+        const adminRole = organizationRoles.filter((role: IOrganizationSimple) => role.name === OrganizationRoles.ADMIN)
+
+        const [userOtherUserOrganizations] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', signUpOtherMemberCreated.id).select();
+        const [userOrganizationsFounder] = await (trx || knexDatabase.knex)('users_organizations').whereNot('user_id', signUpOtherMemberCreated.id).select();
+
+        expect(userOrganizationRoles).toHaveLength(2);
+        expect(userOrganizationRoles).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    id: expect.any(String),
+                    organization_role_id: adminRole[0].id,
+                    users_organization_id: userOrganizationsFounder.id,
+                    updated_at: expect.any(Date),
+                    created_at: expect.any(Date)
+                }),
+                expect.objectContaining({
+                    id: expect.any(String),
+                    organization_role_id: adminRole[0].id,
+                    users_organization_id: userOtherUserOrganizations.id,
+                    updated_at: expect.any(Date),
+                    created_at: expect.any(Date)
+                })
+            ]),
+        )
+
+        done();
+
+    })
         
 });

@@ -60,6 +60,7 @@ export interface IOrganizationSimple{
 export interface IInviteUserToOrganizationData{
     id?: string
     email: string
+    role?: OrganizationRoles
 }
 
 export interface IResponseInvitePayload{

@@ -150,7 +150,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
     const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('name');
 
-    if(!organization) throw new Error("Organization not found.")
+    if(!organization) throw new Error("Organization not found.");
 
     await Promise.all(usersToAttach.users.map(async (user : IInviteUserToOrganizationData ) => {
 
@@ -176,7 +176,12 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
       if(user.id){
 
-        userOrganizationCreated = await organizationRolesAttach(user.id, organizationId, OrganizationRoles.MEMBER,OrganizationInviteStatus.PENDENT, trx, hashToVerify);
+        userOrganizationCreated = await organizationRolesAttach(
+          user.id, organizationId, 
+          user.role || OrganizationRoles.MEMBER,
+          OrganizationInviteStatus.PENDENT, 
+          trx, 
+          hashToVerify);
 
         await MailService.sendInviteUserMail({
           email: user.email,
@@ -188,7 +193,13 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
         const partialUserCreated = await UserService.signUpWithEmailOnly(user.email, trx);
 
-        userOrganizationCreated = await await organizationRolesAttach(partialUserCreated.id, organizationId, OrganizationRoles.MEMBER,OrganizationInviteStatus.PENDENT, trx, hashToVerify);;
+        userOrganizationCreated = await await organizationRolesAttach(
+          partialUserCreated.id, 
+          organizationId, 
+          user.role || OrganizationRoles.MEMBER,
+          OrganizationInviteStatus.PENDENT, 
+          trx, 
+          hashToVerify);;
 
         await MailService.sendInviteNewUserMail({
           email: partialUserCreated.email,
