@@ -192,6 +192,50 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
       
       } else {
 
+        const userEmailFound = await UserService.getUserByEmail(user.email, trx);
+
+        if(userEmailFound){
+
+          const usersOrganizationFound = await getUserOrganizationByIds(userEmailFound.id, organizationId, trx);
+
+          if(usersOrganizationFound){
+
+            const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations').update({
+              invite_status: OrganizationInviteStatus.PENDENT,
+              active: true
+             }).where('id', usersOrganizationFound.id).returning('id');
+
+             await MailService.sendInviteUserMail({
+              email: user.email,
+              hashToVerify,
+              organizationName: organization.name,
+            })
+  
+            return userOrganizationCreatedId;
+
+          } else {
+
+            const userAttached = await await organizationRolesAttach(
+              userEmailFound.id, 
+              organizationId, 
+              user.role || OrganizationRoles.MEMBER,
+              OrganizationInviteStatus.PENDENT, 
+              trx, 
+              hashToVerify);
+
+
+            await MailService.sendInviteNewUserMail({
+              email: userEmailFound.email,
+              hashToVerify,
+              organizationName: organization.name
+            })
+
+            return userAttached;
+
+          }
+
+        }
+
         const partialUserCreated = await UserService.signUpWithEmailOnly(user.email, trx);
 
         userOrganizationCreated = await await organizationRolesAttach(
@@ -200,7 +244,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
           user.role || OrganizationRoles.MEMBER,
           OrganizationInviteStatus.PENDENT, 
           trx, 
-          hashToVerify);;
+          hashToVerify);
 
         await MailService.sendInviteNewUserMail({
           email: partialUserCreated.email,
