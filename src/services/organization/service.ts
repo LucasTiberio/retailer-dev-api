@@ -406,17 +406,21 @@ const inativeUsersInOrganization = async (inativeUsersInOrganizationPayload: {us
 
 }
 
-const listUsersInOrganization = async (listUsersInOrganizationPayload : { name? : string, organizationId: string } & IPagination, userToken: IUserToken, trx: Transaction) => {
+const listUsersInOrganization = async (listUsersInOrganizationPayload : { showActive?: boolean, name? : string, organizationId: string } & IPagination, userToken: IUserToken, trx: Transaction) => {
 
   if(!userToken) throw new Error("token must be provided.");
 
-  const { organizationId, name, offset, limit } = listUsersInOrganizationPayload;
+  const { organizationId, name, offset, limit, showActive } = listUsersInOrganizationPayload;
 
   let query = (trx || knexDatabase.knex)('users_organizations AS uo')
   .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
   .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
   .where('uo.organization_id', organizationId)
   .whereNot('uo.user_id', userToken.id)
+
+  if(showActive){
+    query.where('uo.active', true);
+  }
 
   if(name) {
     query = query.andWhereRaw(`(LOWER(email) LIKE ? OR LOWER(username) LIKE ?)`, [`%${name.toLowerCase()}%`, `%${name.toLowerCase()}%`])
