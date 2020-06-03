@@ -3,6 +3,7 @@ import knexDatabase from "../../knex-database";
 import { IShortenerUrlFromDB } from "./types";
 import { IUserToken } from "../authentication/types";
 import shortid from 'shortid';
+import store from '../../store';
 
 const frontUrl = process.env.FRONT_URL_STAGING;
 
@@ -14,6 +15,19 @@ const shortUrlAdapter = (record : IShortenerUrlFromDB) => ({
   createdAt: record.created_at,
   updatedAt: record.updated_at
 })
+
+
+const getShortenerUrlByLoader = store.registerOneToOneLoader(
+  async (shortenerUrlIds : string[]) => {
+    const query = await knexDatabase.knex('url_shorten')
+    .whereIn('id', shortenerUrlIds)
+    .select('*')
+    console.log(query)
+    return query;
+  },
+    'id',
+    shortUrlAdapter
+);
 
 const shortIdGenerator = async (trx: Transaction) => {
 
@@ -75,7 +89,16 @@ const getOriginalUrlByCode = async (urlCode: string, trx: Transaction) => {
 
 }
 
+const getShortenerUrlById = async (urlShortenerId: string) => {
+
+  const userOrganizationRole = await getShortenerUrlByLoader().load(urlShortenerId);
+
+  return userOrganizationRole;
+
+}
+
 export default {
   shortenerUrl,
-  getOriginalUrlByCode
+  getOriginalUrlByCode,
+  getShortenerUrlById
 };

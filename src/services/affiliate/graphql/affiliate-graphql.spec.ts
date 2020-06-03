@@ -111,15 +111,22 @@ const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
     }
 `
 
+// UserOrganizationService{
+//     id
+// }
 const AFFILIATE_GENERATE_SHORTENER_URL = `
     mutation affiliateGenerateShortenerUrl($input: AffiliateGenerateShortenerUrlInput!) {
         affiliateGenerateShortenerUrl(input: $input){
             id
-            originalUrl
-            shortUrl
-            urlCode
-            createdAt
-            updatedAt
+            
+            shortenerUrl{
+                id
+                originalUrl
+                shortUrl
+                urlCode
+                createdAt
+                updatedAt
+            }
         }
     }
 `
