@@ -43,6 +43,7 @@ stages:
           --build-arg digitaloceanawssecretaccesskey=$(DIGITAL_OCEAN_AWS_SECRET_ACCESS_KEY)
           --build-arg digitaloceanspacesendpoint=$(DIGITAL_OCEAN_SPACES_END_POINT)
           --build-arg bucketname=$(BUCKET_NAME)
+          --build-arg fronturlstaging=https://staging.plugone.io
 
         includeLatestTag: true
         tags: |

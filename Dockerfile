@@ -31,5 +31,7 @@ ARG digitaloceanspacesendpoint
 ENV DIGITAL_OCEAN_SPACES_END_POINT=$digitaloceanspacesendpoint
 ARG bucketname
 ENV BUCKET_NAME=$bucketname
+ARG fronturlstaging
+ENV FRONT_URL_STAGING=$fronturlstaging
 RUN npm install && npm run build
 CMD ["/bin/sh", "-c", "npx knex migrate:latest && npm start"]

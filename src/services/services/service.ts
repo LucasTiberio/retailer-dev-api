@@ -2,6 +2,7 @@ import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServic
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import OrganizationService from '../organization/service';
+import VtexService from '../vtex/service';
 import knexDatabase from "../../knex-database";
 import { OrganizationInviteStatus, OrganizationRoles } from "../organization/types";
 import store from "../../store";
@@ -173,6 +174,10 @@ const addUserInOrganizationService = async (attrs : { userId : string, organizat
   if(!usersOrganizationFoundDb)
     throw new Error("User doesnt are in organization");
 
+  const vtexSecrests = await VtexService.getSecretsByOrganizationId(organizationId, trx);
+
+  if(!vtexSecrests || !vtexSecrests.status) throw new Error("Vtex Integration not implemented");
+
   const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
 
   const userOrganizationServiceRoleFound = await getUserOrganizationServiceRole(usersOrganizationFoundDb.id, serviceOrganizationFound.id, trx);
@@ -195,6 +200,8 @@ const addUserInOrganizationService = async (attrs : { userId : string, organizat
     users_organization_id: usersOrganizationFoundDb.id,
     organization_services_id: serviceOrganizationFound.id
   }).returning('*');
+
+  const vtexCampaignCreated = await VtexService.createUserVtexCampaign(userAddedInOrganizationService.id, vtexSecrests, trx);
 
   return {...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: serviceOrganizationFound.service_id};
 

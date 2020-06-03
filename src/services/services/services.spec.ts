@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'test';
 import service from './service';
 import UserService from '../users/service';
 import OrganizationService from '../organization/service';
+import VtexService from '../vtex/service';
 import Faker from 'faker';
 import database from '../../knex-database';
 import { Transaction } from 'knex';
@@ -49,6 +50,8 @@ describe('Services', () => {
     });
 
     beforeEach(async () => {
+        await trx('affiliate_vtex_campaign').del();
+        await trx('organization_vtex_secrets').del();
         await trx('users_organization_service_roles').del();
         await trx('users_organization_roles').del();
         await trx('users_organizations').del();
@@ -170,6 +173,116 @@ describe('Services', () => {
 
         })
 
+        test('organization admin should added member on service', async done => {   
+
+            let otherSignUpPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: "B8oneTeste123!"
+            }
+
+            let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+            const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+            await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+    
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+            const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+            const responseInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+    
+            await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+            const addUserInOrganizationServicePayload = {
+                organizationId:organizationCreated.id,
+                userId: otherSignUpCreated.id,
+                serviceName: Services.AFFILIATE 
+            };
+
+            const newMemberOnOrgazationService = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);   
+
+            const [serviceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+
+            expect(newMemberOnOrgazationService).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    serviceRolesId:serviceRoles.id,
+                    usersOrganizationId: invitedUserToOrganization.id,
+                    serviceId: serviceFound.id,
+                    createdAt: expect.any(Date),
+                    updatedAt: expect.any(Date),
+                })
+            )
+    
+            done();
+        })
+
+        test('organization admin should not added member on service withou vtex key', async done => {   
+
+            let otherSignUpPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: "B8oneTeste123!"
+            }
+
+            let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+            const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+            await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const inviteUserToOrganizationPayload = {
+                organizationId: organizationCreated.id,
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+    
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+            const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+            const responseInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+    
+            await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+            const addUserInOrganizationServicePayload = {
+                organizationId:organizationCreated.id,
+                userId: otherSignUpCreated.id,
+                serviceName: Services.AFFILIATE 
+            };
+
+            try {
+                await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);   
+            } catch (error) {
+                expect(error.message).toBe("Vtex Integration not implemented")
+            }
+    
+            done();
+        })
+
         test('organization admin should not list member in service', async done => {
 
             let otherSignUpPayload = {
@@ -191,6 +304,15 @@ describe('Services', () => {
             let otherSignUpCreated2 = await UserService.signUp(otherSignUpPayload2, trx);
             const [userFromDb2] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated2.id).select('verification_hash');
             await UserService.verifyEmail(userFromDb2.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
 
             const inviteUserToOrganizationPayload = {
                 organizationId: organizationCreated.id,
@@ -252,61 +374,6 @@ describe('Services', () => {
             done();
         })
 
-        test('organization admin should added member on service', async done => {
-
-            let otherSignUpPayload = {
-                username: Faker.name.firstName(),
-                email: Faker.internet.email(),
-                password: "B8oneTeste123!"
-            }
-
-            let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-            const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
-            await UserService.verifyEmail(userFromDb.verification_hash, trx);
-
-            const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
-                users: [{
-                    id: otherSignUpCreated.id,
-                    email: otherSignUpCreated.email
-                }]
-            }
-    
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
-
-            const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
-
-            const responseInvitePayload = {
-                inviteHash: invitedUserToOrganization.invite_hash,
-                response: OrganizationInviteStatus.ACCEPT
-            }
-    
-            await OrganizationService.responseInvite(responseInvitePayload, trx);
-
-            const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
-                userId: otherSignUpCreated.id,
-                serviceName: Services.AFFILIATE 
-            };
-
-            const newMemberOnOrgazationService = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
-
-            const [serviceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
-
-            expect(newMemberOnOrgazationService).toEqual(
-                expect.objectContaining({
-                    id: expect.any(String),
-                    serviceRolesId:serviceRoles.id,
-                    usersOrganizationId: invitedUserToOrganization.id,
-                    serviceId: serviceFound.id,
-                    createdAt: expect.any(Date),
-                    updatedAt: expect.any(Date),
-                })
-            )
-    
-            done();
-        })
-
         test('organization members should list users in service', async done => {
 
             let otherSignUpPayload = {
@@ -318,6 +385,15 @@ describe('Services', () => {
             let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
             const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
             await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
 
             const inviteUserToOrganizationPayload = {
                 organizationId: organizationCreated.id,
@@ -381,6 +457,15 @@ describe('Services', () => {
             let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
             const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
             await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
 
             const inviteUserToOrganizationPayload = {
                 organizationId: organizationCreated.id,
@@ -447,6 +532,15 @@ describe('Services', () => {
             let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
             const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
             await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
 
             const inviteUserToOrganizationPayload = {
                 organizationId: organizationCreated.id,
@@ -521,6 +615,15 @@ describe('Services', () => {
             let otherSignUpCreated3 = await UserService.signUp(otherSignUpPayload3, trx);
             const [userFromDb3] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated3.id).select('verification_hash');
             await UserService.verifyEmail(userFromDb3.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
 
             const inviteUserToOrganizationPayload = {
                 organizationId: organizationCreated.id,
@@ -613,6 +716,15 @@ describe('Services', () => {
             let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
             const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
             await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
 
             const inviteUserToOrganizationPayload = {
                 organizationId: organizationCreated.id,
@@ -709,6 +821,15 @@ describe('Services', () => {
     
             await OrganizationService.responseInvite(responseInvitePayload, trx);
 
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+
             //add users in organization service
             const addUserInOrganizationServicePayload = {
                 organizationId:organizationCreated.id,
@@ -798,6 +919,15 @@ describe('Services', () => {
             }
     
             await OrganizationService.responseInvite(responseInvitePayload3, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
 
             //add users in organization service
             const addUserInOrganizationServicePayload = {
@@ -907,6 +1037,15 @@ describe('Services', () => {
     
             await OrganizationService.responseInvite(responseInvitePayload3, trx);
 
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+
             //add users in organization service
             const addUserInOrganizationServicePayload = {
                 organizationId:organizationCreated.id,
@@ -992,6 +1131,15 @@ describe('Services', () => {
             }
     
             await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
 
             //add users in organization service
             const addUserInOrganizationServicePayload = {

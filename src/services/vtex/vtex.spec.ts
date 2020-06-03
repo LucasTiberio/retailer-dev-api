@@ -56,7 +56,7 @@ describe('Vtex', () => {
         organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
     })
 
-    test("organization admin should add vtex secrets", async done => {
+    test("organization admin should add vtex secrets and hook attached", async done => {
 
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
@@ -144,6 +144,5 @@ describe('Vtex', () => {
 
         done();
     });
-
         
 });

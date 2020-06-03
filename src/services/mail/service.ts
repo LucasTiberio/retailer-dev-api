@@ -1,6 +1,8 @@
 import Mail from '../../lib/Mail';
 import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail } from "./types";
 
+const frontUrl = process.env.FRONT_URL_STAGING;
+
 const sendSignUpMail = async (data: ISendMail) => {
 
     if(process.env.NODE_ENV === 'test') return;
@@ -12,7 +14,7 @@ const sendSignUpMail = async (data: ISendMail) => {
             subject: 'Welcome to PlugOne!',
             html: `
                 Hello, ${data.username}! confirm your registration,
-                <a href="http://localhost:3000/verification/${data.hashToVerify}">verificar email</a>
+                <a href="${frontUrl}/verification/${data.hashToVerify}">verificar email</a>
             `
         });
     } catch(e){
@@ -29,7 +31,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
             subject: 'Recovery PlugOne Password!',
-            html: `Hello, ${data.username}, <a href="http://localhost:3000/recovery-password/change-password/${data.hashToVerify}">click here</a> to change your password
+            html: `Hello, ${data.username}, <a href="${frontUrl}/recovery-password/change-password/${data.hashToVerify}">click here</a> to change your password
                  `
         });
     } catch(e){
@@ -63,8 +65,8 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
             to: `<${data.email}>`,
             subject: `You haas been invited to ${data.organizationName}!`,
             html: `Hello, 
-                    \n to <a href="http://localhost:3000/member-invited/${data.hashToVerify}/accept">accept</a>
-                    \n to <a href="http://localhost:3000/member-invited/${data.hashToVerify}/refuse">refuse</a>
+                    \n to <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept">accept</a>
+                    \n to <a href="${frontUrl}/member-invited/${data.hashToVerify}/refuse">refuse</a>
                 `
         });
     } catch(e){
@@ -81,7 +83,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `<${data.email}>`,
             subject: `You haas been invited to Plugone by ${data.organizationName}!`,
-            html: `Hello, \n to accept <a href="http://localhost:3000/member-invited/${data.hashToVerify}/accept">click here</a>`
+            html: `Hello, \n to accept <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept">click here</a>`
         });
     } catch(e){
         throw new Error(e.message)

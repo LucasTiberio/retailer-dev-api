@@ -213,6 +213,12 @@ const LIST_USERS_IN_ORGANIZATION_SERVICE = `
     }
 `
 
+const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
+    mutation verifyAndAttachVtexSecrets($input: VerifyAndAttachVtexSecretsInput!) {
+        verifyAndAttachVtexSecrets(input: $input)
+    }
+`
+
 describe('services graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -386,6 +392,26 @@ describe('services graphql', () => {
                 'query': CREATE_SERVICE_IN_ORGANIZATION, 
                 'variables': {
                         input: createServiceInOrganizationPayload
+                    }
+                });
+
+                await knexDatabase.knex('organization_vtex_secrets').del();
+
+                const vtexSecrets = {
+                    xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                    xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                    accountName: "beightoneagency",
+                    organizationId: organizationCreated.id
+                }
+    
+                await request
+                .post('/graphql')
+                .set('content-type', 'application/json')
+                .set('x-api-token', userToken)
+                .send({
+                'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+                'variables': {
+                        input: vtexSecrets
                     }
                 });
 
@@ -707,7 +733,7 @@ describe('services graphql', () => {
                         input: responseOrganizationInvitePayload
                     }
                 });
-    
+
                 const addUserInOrganizationPayload = {
                     userId: otherSignUpCreated.id,
                     organizationId: organizationCreated.id,
@@ -744,7 +770,7 @@ describe('services graphql', () => {
                 expect(listUsersInOrganizationServiceResponse.statusCode).toBe(200);
     
                 const [analystServiceRole] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
-    
+
                 expect(listUsersInOrganizationServiceResponse.body.data.listUsersInOrganizationService).toEqual(
                     expect.arrayContaining([
                         expect.objectContaining({
