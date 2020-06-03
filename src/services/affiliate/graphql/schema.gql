@@ -1,0 +1,9 @@
+extend type Mutation{
+    affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): ShortenerUrl! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+}
+
+input AffiliateGenerateShortenerUrlInput{
+    originalUrl: String!
+    organizationId: String!
+    serviceName: ServiceName!
+}

@@ -355,6 +355,19 @@ const inativeUserFromServiceOrganization = async (inativeUserFromServiceOrganiza
 
 }
 
+const getServiceMemberById = async (userOrganizationId: string, organizationServiceId: string , trx: Transaction) => {
+
+  const [userOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles')
+    .where(
+    'users_organization_id',userOrganizationId
+  ).andWhere(
+    'organization_services_id', organizationServiceId
+  ).returning('*');
+
+  return userOrganizationService ? usersOrganizationServiceAdapter(userOrganizationService) : null
+
+}
+
 const getOrganizationServicesByOrganizationId = async (
   userOrganizationId: string,
   organizationId: string
@@ -390,6 +403,7 @@ export default {
   listUsedServices,
   getServiceRolesByOneId,
   addUserInOrganizationService,
+  getServiceMemberById,
   getServiceById,
   getServiceRolesById
 }

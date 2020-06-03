@@ -1,0 +1,16 @@
+extend type Query{
+    getOriginalUrlByCode(input: GetOriginalUrlByCodeInput!): String!
+}
+
+input GetOriginalUrlByCodeInput{
+    urlCode: String!
+}
+
+type ShortenerUrl{
+    id: String!
+    originalUrl: String!
+    shortUrl: String!
+    urlCode: String!
+    createdAt: Datetime!
+    updatedAt: Datetime!
+}

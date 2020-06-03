@@ -5,13 +5,17 @@ import AuthenticationService from './authentication';
 import OrganizationService from './organization';
 import ServicesService from './services';
 import VtexService from './vtex';
+import ShortenerUrlService from './shortener-url';
+import AffiliateService from './affiliate';
 
 let services = [
   UserService,
+  ShortenerUrlService,
   AuthenticationService,
   OrganizationService,
   ServicesService,
-  VtexService
+  VtexService,
+  AffiliateService
 ];
 
 export default {

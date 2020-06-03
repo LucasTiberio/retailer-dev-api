@@ -17,6 +17,7 @@ exports.up = async function(knex) {
         table
             .uuid('users_organization_service_roles_id')
             .notNullable()
+            .unique()
             .references('users_organization_service_roles.id');
         table
             .timestamps(true, true)
