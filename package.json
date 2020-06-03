@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpileOnly src/app.ts",
     "build": "tsc -p . && npm run copy-schemas",
-    "copy-schemas": "npx cpx src/services/authentication/graphql/*.gql dist/services/authentication/graphql && npx cpx src/services/users/graphql/*.gql dist/services/users/graphql && npx cpx src/services/organization/graphql/*.gql dist/services/organization/graphql && npx cpx src/services/services/graphql/*.gql dist/services/services/graphql && npx cpx src/services/vtex/graphql/*.gql dist/services/vtex/graphql",
+    "copy-schemas": "npx cpx src/services/authentication/graphql/*.gql dist/services/authentication/graphql && npx cpx src/services/users/graphql/*.gql dist/services/users/graphql && npx cpx src/services/organization/graphql/*.gql dist/services/organization/graphql && npx cpx src/services/services/graphql/*.gql dist/services/services/graphql && npx cpx src/services/vtex/graphql/*.gql dist/services/vtex/graphql && npx cpx src/services/shortener-url/graphql/*.gql dist/services/shortener-url/graphql && npx cpx src/services/affiliate/graphql/*.gql dist/services/affiliate/graphql",
     "start": "node ./dist/app.js",
     "test": "jest --runInBand --detectOpenHandles",
     "knex:migrate:make": "knex -x ts migrate:make",
