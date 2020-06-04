@@ -120,19 +120,97 @@ describe('Affiliate', () => {
 
         const affiliateGenerateShortenerUrl = await service.generateShortenerUrl(affiliateGenerateShortenerUrlPayload, affiliateToken, trx);
 
-        const shortUrlBefore = `${frontUrl}/${affiliateGenerateShortenerUrl.urlCode}`;
-
         const affiliateId = userInOrganizationService.id;
 
         expect(affiliateGenerateShortenerUrl).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
-                originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone&utm_campaign=${affiliateId}`,
-                shortUrl: shortUrlBefore,
-                urlCode: expect.any(String),
+                usersOrganizationServiceRolesId: affiliateId,
+                urlShortenId: expect.any(String),
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             })
+        )
+
+        done();
+    })
+
+    test('get my short codes', async done => {   
+
+        let otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+            organizationId: organizationCreated.id
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+        const addUserInOrganizationServicePayload = {
+            organizationId:organizationCreated.id,
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE 
+        };
+
+        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);   
+
+        const affiliateGenerateShortenerUrlPayload = {
+            originalUrl: Faker.internet.url(),
+            organizationId:organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        const affiliateToken = { origin: 'user', id: otherSignUpCreated.id };
+
+        await service.generateShortenerUrl(affiliateGenerateShortenerUrlPayload, affiliateToken, trx);
+
+        const affiliateId = userInOrganizationService.id;
+
+        const userOrganizationServicePayload = {
+            userOrganizationServiceId: affiliateId
+        }
+
+        const shorterUrlByUserOrganizationServiceId = await service.getShorterUrlByUserOrganizationServiceId(userOrganizationServicePayload, affiliateToken, trx);
+
+        expect(shorterUrlByUserOrganizationServiceId).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    id: expect.any(String),
+                    usersOrganizationServiceRolesId: affiliateId,
+                    urlShortenId: expect.any(String),
+                    createdAt: expect.any(Date),
+                    updatedAt: expect.any(Date)
+                })
+            ])
         )
 
         done();

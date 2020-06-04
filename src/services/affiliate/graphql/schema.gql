@@ -1,9 +1,27 @@
 extend type Mutation{
-    affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): ShortenerUrl! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+    affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+}
+
+extend type Query{
+    listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+}
+
+input ListAffiliateShorterUrlInput{
+    userOrganizationServiceId: String!
+    organizationId: String!
+    serviceName: ServiceName!
 }
 
 input AffiliateGenerateShortenerUrlInput{
     originalUrl: String!
     organizationId: String!
     serviceName: ServiceName!
+}
+
+type UserOrganizationServiceRolesUrlShortener {
+    id: String!
+    shortenerUrl: ShortenerUrl!
+    userOrganizationService: UserOrganizationService!
+    createdAt: Datetime!
+    updatedAt: Datetime!
 }
