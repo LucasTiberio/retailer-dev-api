@@ -47,6 +47,17 @@ const organizationServicesByOrganizationIdLoader = store.registerOneToManyLoader
     _serviceAdapter
 );
 
+const userOrganizationServicesByIdLoader = store.registerOneToOneLoader(
+  async (userOrganizationServiceIds : string[]) => {
+    const query = await knexDatabase.knex('users_organization_service_roles')
+    .whereIn('id', userOrganizationServiceIds)
+    .select('*');
+    return query;
+  },
+    'id',
+    usersOrganizationServiceAdapter
+);
+
 const organizationServicesRolesByIdLoader = store.registerOneToManyLoader(
   async (serviceRolesId : string[]) => {
     const query = await knexDatabase.knex('service_roles')
@@ -392,8 +403,19 @@ const getOrganizationServicesByOrganizationId = async (
 
 }
 
+const getOrganizationServicesById = async (
+  userOrganizationServiceId: string
+  ) => {
+
+  const organizationServices = await userOrganizationServicesByIdLoader().load(userOrganizationServiceId);
+
+  return organizationServices;
+
+}
+
 export default {
   createServiceInOrganization,
+  getOrganizationServicesById,
   listAvailableUsersToService,
   getOrganizationServicesByOrganizationId,
   serviceOrganizationByName,

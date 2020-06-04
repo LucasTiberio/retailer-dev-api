@@ -22,7 +22,6 @@ const getShortenerUrlByLoader = store.registerOneToOneLoader(
     const query = await knexDatabase.knex('url_shorten')
     .whereIn('id', shortenerUrlIds)
     .select('*')
-    console.log(query)
     return query;
   },
     'id',

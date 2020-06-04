@@ -111,14 +111,12 @@ const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
     }
 `
 
-// UserOrganizationService{
-//     id
-// }
 const AFFILIATE_GENERATE_SHORTENER_URL = `
     mutation affiliateGenerateShortenerUrl($input: AffiliateGenerateShortenerUrlInput!) {
         affiliateGenerateShortenerUrl(input: $input){
             id
-            
+            createdAt
+            updatedAt
             shortenerUrl{
                 id
                 originalUrl
@@ -126,6 +124,30 @@ const AFFILIATE_GENERATE_SHORTENER_URL = `
                 urlCode
                 createdAt
                 updatedAt
+            }
+            userOrganizationService{
+                id
+            }
+        }
+    }
+`
+
+const LIST_AFFILIATE_SHORTER_URL = `
+    query listAffiliateShorterUrl($input: ListAffiliateShorterUrlInput!) {
+        listAffiliateShorterUrl(input: $input){
+            id
+            createdAt
+            updatedAt
+            shortenerUrl{
+                id
+                originalUrl
+                shortUrl
+                urlCode
+                createdAt
+                updatedAt
+            }
+            userOrganizationService{
+                id
             }
         }
     }
@@ -359,19 +381,185 @@ describe('services graphql', () => {
 
         expect(affiliateGenerateShortenerUrlResponse.statusCode).toBe(200);
 
-        const shortUrlBefore = `${frontUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.urlCode}`;
+        const shortUrlBefore = `${frontUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
         const affiliateId = addUserInOrganizationResponse.body.data.addUserInOrganizationService.id;
 
         expect(affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
-                originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone&utm_campaign=${affiliateId}`,
-                shortUrl: shortUrlBefore,
-                urlCode: expect.any(String),
+                shortenerUrl: expect.objectContaining({
+                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone&utm_campaign=${affiliateId}`,
+                    shortUrl: shortUrlBefore,
+                    urlCode: expect.any(String),
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String)
+                }),
+                userOrganizationService: expect.objectContaining({
+                    id: affiliateId
+                }),
                 createdAt: expect.any(String),
                 updatedAt: expect.any(String)
             })
+        )
+
+        done();
+    })
+
+    test('get my short codes graphql', async done => {
+
+        const otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        const otherSignUpResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .send({
+        'query': SIGN_UP, 
+        'variables': {
+                input: otherSignUpPayload
+            }
+        });
+
+        let otherSignUpCreated = otherSignUpResponse.body.data.signUp
+
+        const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash');
+
+        const userVerifyEmailPayload = {
+            verificationHash: userFromDb.verification_hash
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .send({
+        'query': USER_VERIFY_EMAIL, 
+        'variables': {
+                input: userVerifyEmailPayload
+            }
+        });
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': INVITE_USER_TO_ORGANIZATION, 
+        'variables': {
+                input: inviteUserToOrganizationPayload
+            }
+        });
+
+        const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+
+        const responseOrganizationInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': RESPONSE_INVITE, 
+        'variables': {
+                input: responseOrganizationInvitePayload
+            }
+        });
+
+        const addUserInOrganizationPayload = {
+            userId: otherSignUpCreated.id,
+            organizationId: organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        const addUserInOrganizationResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
+        'variables': {
+                input: addUserInOrganizationPayload
+            }
+        });
+
+        const affiliateGenerateShortenerUrlPayload = {
+            originalUrl: Faker.internet.url(),
+            organizationId:organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        const affiliateClient = { origin: 'user', id: otherSignUpCreated.id };
+
+        const affiliateToken = await jwt.sign(affiliateClient, process.env.JWT_SECRET);
+
+        const affiliateGenerateShortenerUrlResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', affiliateToken)
+        .send({
+        'query': AFFILIATE_GENERATE_SHORTENER_URL, 
+        'variables': {
+                input: affiliateGenerateShortenerUrlPayload
+            }
+        });
+
+        expect(affiliateGenerateShortenerUrlResponse.statusCode).toBe(200);
+
+        const shortUrlBefore = `${frontUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
+
+        const affiliateId = addUserInOrganizationResponse.body.data.addUserInOrganizationService.id;
+
+        const userOrganizationServicePayload = {
+            userOrganizationServiceId: affiliateId,
+            organizationId: organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        const listAffiliateShorterUrlResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', affiliateToken)
+        .send({
+        'query': LIST_AFFILIATE_SHORTER_URL, 
+        'variables': {
+                input: userOrganizationServicePayload
+            }
+        });
+
+        expect(listAffiliateShorterUrlResponse.statusCode).toBe(200);
+
+        expect(listAffiliateShorterUrlResponse.body.data.listAffiliateShorterUrl).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    id: expect.any(String),
+                    shortenerUrl: expect.objectContaining({
+                        originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone&utm_campaign=${affiliateId}`,
+                        shortUrl: shortUrlBefore,
+                        urlCode: expect.any(String),
+                        createdAt: expect.any(String),
+                        updatedAt: expect.any(String)
+                    }),
+                    userOrganizationService: expect.objectContaining({
+                        id: affiliateId
+                    }),
+                    createdAt: expect.any(String),
+                    updatedAt: expect.any(String)
+                })
+            ])
         )
 
         done();

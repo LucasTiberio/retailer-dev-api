@@ -17,6 +17,7 @@ const affiliateShorterUrlAdapter = (record: IUsersOrganizationServiceRolesUrlSho
   updatedAt: record.updated_at
 })
 
+
 const generateShortenerUrl = async (affiliateGenerateShortenerUrlPayload: { 
   originalUrl: string
   organizationId: string,
@@ -57,6 +58,21 @@ const attachShorterUrlOnAffiliate = async (userOrganizationServiceId: string, sh
 
 }
 
+const getShorterUrlByUserOrganizationServiceId = async (input: { userOrganizationServiceId: string }, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("Token must be provided");
+
+  const { userOrganizationServiceId } = input;
+
+  const affiliateShortenerUrls = await (trx || knexDatabase.knex)('users_organization_service_roles_url_shortener')
+    .where('users_organization_service_roles_id', userOrganizationServiceId)
+    .select();
+
+  return affiliateShortenerUrls.map(affiliateShorterUrlAdapter);
+
+}
+
 export default {
-  generateShortenerUrl
+  generateShortenerUrl,
+  getShorterUrlByUserOrganizationServiceId
 }
