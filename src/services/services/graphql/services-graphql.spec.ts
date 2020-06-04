@@ -818,7 +818,7 @@ describe('services graphql', () => {
                 done();
             })
 
-            test.only('organization members should list user in service', async done => {
+            test('organization members should list user in service', async done => {
 
                 const otherSignUpPayload = {
                     username: Faker.name.firstName(),
