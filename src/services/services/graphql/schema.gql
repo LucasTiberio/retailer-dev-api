@@ -2,6 +2,12 @@ extend type Query{
     listAvailableServices(input: ListAvailableServicesInput!): [Service]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     listAvailableUsersToService(input: ListAvailableUsersToServiceInput!): [UserOrganization]! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     listUsersInOrganizationService(input: ListUsersInOrganizationServiceInput!): [UserOrganizationService]! @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE"]) @isVerified @isAuthenticated 
+    getUserInOrganizationService(input: GetUserInOrganizationServiceInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated 
+}
+
+input GetUserInOrganizationServiceInput {
+    organizationId: String!
+    userOrganizationId: String!
 }
 
 extend type Mutation{

@@ -271,6 +271,24 @@ const listUsersInOrganizationService = async (listUsersInOrganizationServicePayl
 
 }
 
+const getUserInOrganizationService = async (getUserInOrganizationServicePayload: {
+  organizationId: string,
+  userOrganizationId: string
+}, userToken : IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("token must be provided!");
+
+  const { organizationId, userOrganizationId } = getUserInOrganizationServicePayload;
+
+  const [usersInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+    .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
+    .where('uosr.users_organization_id', userOrganizationId)
+    .select('uosr.*')
+
+  return usersInOrganizationService ? usersOrganizationServiceAdapter(usersInOrganizationService) : null;
+
+}
+
 const isServiceAdmin = async (usersOrganizationId: string, serviceOrganizationId: string, trx: Transaction) => {
 
   const [organizationServiceRole] = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
@@ -427,5 +445,6 @@ export default {
   addUserInOrganizationService,
   getServiceMemberById,
   getServiceById,
-  getServiceRolesById
+  getServiceRolesById,
+  getUserInOrganizationService
 }
