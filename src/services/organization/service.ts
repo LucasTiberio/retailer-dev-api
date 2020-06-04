@@ -163,7 +163,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
         .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
         .where('usr.email', user.email)
         .where('uo.organization_id', organizationId)
-        .select('uo.*');
+        .select('uo.*', 'usr.email', 'usr.username');
 
       if(userInvitedOnPast){
 
@@ -171,6 +171,12 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
           .update({ active: true, invite_status: OrganizationInviteStatus.PENDENT, invite_hash: hashToVerify })
           .where('id', userInvitedOnPast.id)
           .returning('id');
+
+        await MailService.sendInviteUserMail({
+          email: user.email,
+          hashToVerify,
+          organizationName: organization.name,
+        })
 
         return userReinvited;
       }
@@ -215,7 +221,7 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
 
           } else {
 
-            const userAttached = await await organizationRolesAttach(
+            const userAttached = await organizationRolesAttach(
               userEmailFound.id, 
               organizationId, 
               user.role || OrganizationRoles.MEMBER,
@@ -223,11 +229,10 @@ const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganization
               trx, 
               hashToVerify);
 
-
-            await MailService.sendInviteNewUserMail({
-              email: userEmailFound.email,
+            await MailService.sendInviteUserMail({
+              email: user.email,
               hashToVerify,
-              organizationName: organization.name
+              organizationName: organization.name,
             })
 
             return userAttached;

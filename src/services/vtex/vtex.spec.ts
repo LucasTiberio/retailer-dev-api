@@ -1,5 +1,4 @@
 process.env.NODE_ENV = 'test';
-import service from './service';
 import UserService from '../users/service';
 import OrganizationService from '../organization/service';
 import Faker from 'faker';
@@ -9,6 +8,7 @@ import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
 import { IOrganizationAdapted } from '../organization/types';
 import knexDatabase from '../../knex-database';
+import service from './service';
 
 describe('Vtex', () => {
 
@@ -144,5 +144,57 @@ describe('Vtex', () => {
 
         done();
     });
+
+    test("user should get vtex integration departments", async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+            organizationId: organizationCreated.id
+        }
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+
+        const getVtexDepartmentsPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        const vtexDepartments = await service.getVtexDepartments(getVtexDepartmentsPayload, userToken, trx);
+
+        expect(vtexDepartments).toBeDefined();
+
+        done()
+
+    })
+
+    test("user should list vtex comission actived or inactived", async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+            organizationId: organizationCreated.id
+        }
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+
+        await (trx || knexDatabase.knex)('organization_vtex_comission').insert({
+            organization_id: organizationCreated.id,
+            vtex_department_id: 1,
+            vtex_commission_percentage: 15
+        })
+
+        const vtexDepartmentsCommissionsPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        const vtexCommissions = await service.getVtexDepartmentsCommissions(vtexDepartmentsCommissionsPayload, userToken, trx);
+
+        console.log("vtexCommissions", vtexCommissions) //TODO CONTINUAR DAQUI
+
+        done();
+
+    })
         
 });
