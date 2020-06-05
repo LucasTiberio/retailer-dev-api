@@ -39,11 +39,16 @@ input VerifyOrganizationNameInput{
 
 extend type Mutation{
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
+  setCurrentOrganization(input: SetCurrentOrganizationInput!): Boolean! @isVerified @isAuthenticated 
   organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
   inativeUsersInOrganization(input: InativeUsersInOrganizationInput!): [InativeUsersInOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input SetCurrentOrganizationInput{
+  organizationId: String!
 }
 
 type InativeUsersInOrganizationPayload{

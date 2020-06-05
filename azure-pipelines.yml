@@ -20,11 +20,19 @@ resources:
       POSTGRES_USER: plugone-api
       POSTGRES_DB: plugone-api
     options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+  - container: redis_integration_integration_tests
+    image: redis:latest
+    ports:
+    - 6379:6379/tcp
+    env:
+      REDIS_HOST: "127.0.0.1"
+      REDIS_PORT: 6379
 
 jobs:
 - job: Tests
   services: 
     postgres: postgres_integration_integration_tests
+    redis: redis_integration_integration_tests
   pool:
     vmImage: 'ubuntu-16.04'
   variables: 
@@ -32,6 +40,8 @@ jobs:
     DB_TEST_USER: plugone-api
     DB_TEST_DATABASE: plugone-api
     DB_TEST_PORT: 5432
+    REDIS_HOST: "127.0.0.1"
+    REDIS_PORT: 6379
     MAIL_HOST: smtp.mailtrap.io
     MAIL_PORT: 2525
     MAIL_USER: cd47bbf212775c

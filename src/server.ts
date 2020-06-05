@@ -1,6 +1,7 @@
 import GraphQLAPI from './graphql';
 import store from './store';
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-express';
+import redisClient from './lib/Redis';
 
 const server = new ApolloServer({
   schema: makeExecutableSchema({
@@ -16,7 +17,8 @@ const server = new ApolloServer({
   context: ({req}) => {
     store.resetStores();
     return {
-      headers: req.headers
+      headers: req.headers,
+      redisClient
     }
   },
   introspection: true,
