@@ -45,6 +45,7 @@ describe('Vtex', () => {
 
     beforeEach(async () => {
         await trx('organization_vtex_secrets').del();
+        await trx('organization_services').del();
         await trx('users_organization_roles').del();
         await trx('users_organizations').del();
         await trx('organizations').del();

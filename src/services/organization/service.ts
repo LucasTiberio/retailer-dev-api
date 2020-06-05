@@ -4,6 +4,7 @@ import { Transaction } from "knex";
 import database from "../../knex-database";
 import MailService from '../mail/service';
 import UserService from '../users/service';
+import ServicesService from '../services/service';
 import StorageService from '../storage/service';
 import knexDatabase from "../../knex-database";
 import common from "../../common";
@@ -11,6 +12,7 @@ import { IUserOrganizationDB, IOrganizationRoleFromDb } from "./types";
 import store from "../../store";
 import sharp from 'sharp';
 import { IPagination } from "../../common/types";
+import { Services } from "../services/types";
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -108,6 +110,12 @@ const createOrganization = async (createOrganizationPayload : IOrganizationPaylo
     }).into('organizations').returning('*')
 
     await organizationRolesAttach(userToken.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx);
+
+    const affiliateServiceFound = await ServicesService.getServiceByName(Services.AFFILIATE, trx);
+
+    if(!affiliateServiceFound) throw new Error("Affiliate service doesnt exists.");
+
+    await ServicesService.createServiceInOrganization(affiliateServiceFound.id, organizationCreated.id, userToken, trx);
 
     return _organizationAdapter(organizationCreated)
   } catch(e){

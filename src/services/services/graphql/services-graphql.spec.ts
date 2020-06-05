@@ -316,44 +316,44 @@ describe('services graphql', () => {
 
     describe("organization tests with user verified", () => {
 
-        test("user should create new service in organization graphql", async done => {
+        // test("user should create new service in organization graphql", async done => {
 
-            const [serviceFound] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id');
+        //     const [serviceFound] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id');
 
-            const createServiceInOrganizationPayload = {
-                organizationId: organizationCreated.id,
-                serviceId: serviceFound.id,
-            }
+        //     const createServiceInOrganizationPayload = {
+        //         organizationId: organizationCreated.id,
+        //         serviceId: serviceFound.id,
+        //     }
 
-            const createServiceInOrganizationResponse = await request
-            .post('/graphql')
-            .set('content-type', 'application/json')
-            .set('x-api-token', userToken)
-            .send({
-            'query': CREATE_SERVICE_IN_ORGANIZATION, 
-            'variables': {
-                    input: createServiceInOrganizationPayload
-                }
-            });
+        //     const createServiceInOrganizationResponse = await request
+        //     .post('/graphql')
+        //     .set('content-type', 'application/json')
+        //     .set('x-api-token', userToken)
+        //     .send({
+        //     'query': CREATE_SERVICE_IN_ORGANIZATION, 
+        //     'variables': {
+        //             input: createServiceInOrganizationPayload
+        //         }
+        //     });
 
-            expect(createServiceInOrganizationResponse.statusCode).toBe(200);
-            expect(createServiceInOrganizationResponse.body.data.createServiceInOrganization).toBeTruthy();
+        //     expect(createServiceInOrganizationResponse.statusCode).toBe(200);
+        //     expect(createServiceInOrganizationResponse.body.data.createServiceInOrganization).toBeTruthy();
     
-            const organizationService = await knexDatabase.knex('organization_services').select();
+        //     const organizationService = await knexDatabase.knex('organization_services').select();
             
-            expect(organizationService).toHaveLength(1);
-            expect(organizationService[0]).toEqual(
-                expect.objectContaining({
-                    id: expect.any(String),
-                    service_id: serviceFound.id,
-                    organization_id: organizationCreated.id,
-                    updated_at: expect.any(Date),
-                    created_at: expect.any(Date)
-                })
-            )
+        //     expect(organizationService).toHaveLength(1);
+        //     expect(organizationService[0]).toEqual(
+        //         expect.objectContaining({
+        //             id: expect.any(String),
+        //             service_id: serviceFound.id,
+        //             organization_id: organizationCreated.id,
+        //             updated_at: expect.any(Date),
+        //             created_at: expect.any(Date)
+        //         })
+        //     )
     
-            done();
-        })
+        //     done();
+        // })
 
         test("user should list services availables to organization", async done => {
 
@@ -401,21 +401,21 @@ describe('services graphql', () => {
                 const [serviceFoundDB] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id', 'name', 'active');
                 serviceFound = serviceFoundDB
                 
-                const createServiceInOrganizationPayload = {
-                    organizationId: organizationCreated.id,
-                    serviceId: serviceFound.id,
-                }
+                // const createServiceInOrganizationPayload = {
+                //     organizationId: organizationCreated.id,
+                //     serviceId: serviceFound.id,
+                // }
 
-                await request
-                .post('/graphql')
-                .set('content-type', 'application/json')
-                .set('x-api-token', userToken)
-                .send({
-                'query': CREATE_SERVICE_IN_ORGANIZATION, 
-                'variables': {
-                        input: createServiceInOrganizationPayload
-                    }
-                });
+                // await request
+                // .post('/graphql')
+                // .set('content-type', 'application/json')
+                // .set('x-api-token', userToken)
+                // .send({
+                // 'query': CREATE_SERVICE_IN_ORGANIZATION, 
+                // 'variables': {
+                //         input: createServiceInOrganizationPayload
+                //     }
+                // });
 
                 await knexDatabase.knex('organization_vtex_secrets').del();
 

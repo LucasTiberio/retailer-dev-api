@@ -65,27 +65,27 @@ describe('Services', () => {
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
     })
 
-    test("user should create new service in organization", async done => {
+    // test("user should create new service in organization", async done => {
 
-        const serviceInOrganizationCreated = await service.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
+    //     const serviceInOrganizationCreated = await service.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
 
-        expect(serviceInOrganizationCreated).toBeTruthy();
+    //     expect(serviceInOrganizationCreated).toBeTruthy();
 
-        const organizationService = await (trx || database.knex)('organization_services').select();
+    //     const organizationService = await (trx || database.knex)('organization_services').select();
         
-        expect(organizationService).toHaveLength(1);
-        expect(organizationService[0]).toEqual(
-            expect.objectContaining({
-                id: expect.any(String),
-                service_id: serviceFound.id,
-                organization_id: organizationCreated.id,
-                updated_at: expect.any(Date),
-                created_at: expect.any(Date)
-            })
-        )
+    //     expect(organizationService).toHaveLength(1);
+    //     expect(organizationService[0]).toEqual(
+    //         expect.objectContaining({
+    //             id: expect.any(String),
+    //             service_id: serviceFound.id,
+    //             organization_id: organizationCreated.id,
+    //             updated_at: expect.any(Date),
+    //             created_at: expect.any(Date)
+    //         })
+    //     )
 
-        done();
-    })
+    //     done();
+    // })
 
     test("organization admin should list services", async done => {
 
@@ -117,7 +117,7 @@ describe('Services', () => {
         beforeEach(async () => {
             const [serviceFoundDB] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
             serviceFound = serviceFoundDB
-            await service.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
+            // await service.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
         })
 
         test('organization admin should list member available to enjoi in service', async done => {

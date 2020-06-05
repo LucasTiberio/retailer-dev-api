@@ -50,8 +50,6 @@ describe('Affiliate', () => {
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
 
-        await ServicesService.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
-        
     });
 
     afterAll(async () => {

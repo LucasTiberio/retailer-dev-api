@@ -103,6 +103,13 @@ const createServiceInOrganization = async (serviceId: string, organizationId: st
 
 }
 
+const getServiceByName = async (serviceName: Services, trx: Transaction) => {
+
+  const [serviceFound] = await (trx || knexDatabase.knex)('services').where('name', serviceName).select();
+  return _serviceAdapter(serviceFound);
+
+}
+
 const getServiceById = async (serviceId: string, trx?: Transaction) => {
   const [serviceFound] = await (trx || knexDatabase.knex)('services').where('id', serviceId).select();
   return _serviceAdapter(serviceFound);
@@ -441,5 +448,6 @@ export default {
   getServiceMemberById,
   getServiceById,
   getServiceRolesById,
-  getUserInOrganizationService
+  getUserInOrganizationService,
+  getServiceByName
 }
