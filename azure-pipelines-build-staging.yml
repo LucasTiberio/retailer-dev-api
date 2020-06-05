@@ -44,7 +44,7 @@ stages:
           --build-arg digitaloceanspacesendpoint=$(DIGITAL_OCEAN_SPACES_END_POINT)
           --build-arg bucketname=$(BUCKET_NAME)
           --build-arg fronturlstaging=https://staging.plugone.io
-          --build-arg rediscachekey=$(REDIS_CACHE_KEY)
+          --build-arg rediscachekey=$(REDIS_CACHEKEY)
           --build-arg redishost=$(REDIS_HOST)
           --build-arg redisport=$(REDIS_PORT)
 
