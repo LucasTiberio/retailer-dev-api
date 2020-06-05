@@ -46,7 +46,7 @@ type UserOrganizationService{
     service: Service!
     serviceRoles: ServiceRoles!
     active: Boolean!
-    userOrganization: UserOrganization!
+    userOrganization: UserOrganization
     createdAt: Datetime!
     updatedAt: Datetime!
 }

@@ -338,7 +338,7 @@ const getUserOrganizationById = async (userOrganizationId: string, trx?: Transac
 
   const [userOrganization] = await (trx || knexDatabase.knexTest)('users_organizations').where('id', userOrganizationId).select();
 
-  return _usersOrganizationsAdapter(userOrganization)
+  return userOrganization ? _usersOrganizationsAdapter(userOrganization) : null;
 
 }
 
