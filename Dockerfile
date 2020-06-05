@@ -34,7 +34,7 @@ ENV BUCKET_NAME=$bucketname
 ARG fronturlstaging
 ENV FRONT_URL_STAGING=$fronturlstaging
 ARG rediscachekey
-ENV REDIS_CACHE_KEY=$rediscachekey
+ENV REDIS_CACHEKEY=$rediscachekey
 ARG redishost
 ENV REDIS_HOST=$redishost
 ARG redisport
