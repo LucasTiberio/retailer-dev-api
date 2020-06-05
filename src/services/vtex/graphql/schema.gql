@@ -1,5 +1,21 @@
+extend type Query{
+  vtexDepartmentsCommissions(input: VtexDepartmentsCommissionsInput!): [VtexDepartmentsComissions]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
 extend type Mutation{
   verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+type VtexDepartmentsComissions{
+  id: String!
+  name: String!
+  url: String!
+  active: Boolean!
+  percentage: Int
+}
+
+input VtexDepartmentsCommissionsInput{
+  organizationId: String!
 }
 
 input VerifyAndAttachVtexSecretsInput{

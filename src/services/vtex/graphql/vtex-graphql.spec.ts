@@ -4,6 +4,7 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import { IOrganizationAdapted } from '../../organization/types';
+import { mockVtexDepartments } from '../__mocks__';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -48,6 +49,18 @@ const CREATE_ORGANIZATION = `
             user{
                 id
             }
+        }
+    }
+`
+
+const VTEX_DEPARTMENTS_COMMISSIONS = `
+    query vtexDepartmentsCommissions($input: VtexDepartmentsCommissionsInput!) {
+        vtexDepartmentsCommissions(input: $input){
+            id
+            name
+            url
+            active
+            percentage
         }
     }
 `
@@ -151,6 +164,66 @@ describe('services graphql', () => {
             expect(verifyAndAttachVtexSecretsResponse.body.data.verifyAndAttachVtexSecrets).toBeTruthy();
     
             done();
+        })
+
+        test.only("user should get vtex integration departments", async done => {
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency",
+                organizationId: organizationCreated.id
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
+    
+            await knexDatabase.knex('organization_vtex_comission').insert({
+                organization_id: organizationCreated.id,
+                vtex_department_id: 1,
+                vtex_commission_percentage: 15
+            })
+    
+            const vtexDepartmentsCommissionsPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            const vtexDepartmentsCommissionsResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VTEX_DEPARTMENTS_COMMISSIONS,
+            'variables': {
+                    input: vtexDepartmentsCommissionsPayload
+                }
+            });
+    
+            expect(vtexDepartmentsCommissionsResponse.statusCode).toBe(200)
+            expect(vtexDepartmentsCommissionsResponse.body.data.vtexDepartmentsCommissions).toEqual(
+                expect.arrayContaining(
+                    mockVtexDepartments.map(item => expect.objectContaining({
+                        id: String(item.id),
+                        name: item.name,
+                        url: item.url,
+                        active: item.id === 1,
+                        percentage: item.id === 1 ? 15 : null
+                    }))
+                )
+            )
+    
+            done();
+    
+            done()
+    
         })
 
     })

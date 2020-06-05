@@ -11,6 +11,13 @@ const resolvers : IResolvers = {
         });
     },
   },
+  Query: {
+    vtexDepartmentsCommissions: (_, { input }, { client }) => {
+        return knexDatabase.knex.transaction((trx: Transaction) => {
+            return service.getVtexDepartmentsCommissions(input, client, trx);
+        });
+    },
+  },
   Organization: {
     vtexIntegration: async (obj) => {
       return service.verifyIntegration(obj.id);

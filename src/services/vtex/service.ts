@@ -5,7 +5,7 @@ import axios from 'axios';
 import store from '../../store';
 import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign, IVtexCategoryThree, IVtexCommissionFromDB } from './types';
 import moment from 'moment';
-import { mockVtexDepartments } from './__mocks__/index';
+import { mockVtexDepartments } from './__mocks__';
 
 const ORDER_MOMENTS = [
   "payment-pending",
@@ -328,8 +328,6 @@ const getVtexDepartmentsCommissions = async (input : { organizationId : string},
   const { organizationId } = input;
 
   const vtexDepartments = await getVtexDepartments({organizationId}, userToken, trx);
-
-  console.log("vtexDepartments", vtexDepartments)
 
   const commissionsDepartmentsRegistered = await getComissionsDepartmentsByOrganizationId(organizationId, trx);
 

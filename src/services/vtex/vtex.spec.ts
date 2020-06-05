@@ -9,6 +9,7 @@ import { IUserToken } from '../authentication/types';
 import { IOrganizationAdapted } from '../organization/types';
 import knexDatabase from '../../knex-database';
 import service from './service';
+import { mockVtexDepartments } from './__mocks__';
 
 describe('Vtex', () => {
 
@@ -191,7 +192,17 @@ describe('Vtex', () => {
 
         const vtexCommissions = await service.getVtexDepartmentsCommissions(vtexDepartmentsCommissionsPayload, userToken, trx);
 
-        console.log("vtexCommissions", vtexCommissions) //TODO CONTINUAR DAQUI
+        expect(vtexCommissions).toEqual(
+            expect.objectContaining(
+                mockVtexDepartments.map(item => expect.objectContaining({
+                    id: item.id,
+                    name: item.name,
+                    url: item.url,
+                    active: item.id === 1,
+                    percentage: item.id === 1 ? 15 : null
+                }))
+            )
+        )
 
         done();
 
