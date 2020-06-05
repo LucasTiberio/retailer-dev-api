@@ -31,7 +31,7 @@ const config = {
     directory: __dirname + '/seeds'
   },
   pool: {
-    max: 22,
+    max: 10,
     min: 1,
     afterCreate: function(connection, callback) {
       connection.query("SET TIME ZONE 'UTC'", function(err) {
@@ -75,7 +75,7 @@ const onUpdateTrigger = table => `
     BEFORE UPDATE ON ${table}
     FOR EACH ROW
     EXECUTE PROCEDURE on_update_timestamp();
-`
+`;
 
 module.exports.test = testConfig
 module.exports.development = config
