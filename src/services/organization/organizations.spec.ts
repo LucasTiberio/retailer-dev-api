@@ -52,7 +52,7 @@ describe('Organizations', () => {
         userToken = { origin: 'user', id: signUpCreated.id };
     })
 
-    test("user should send a current organization to redis", async done => {
+    test.only("user should send a current organization to redis", async done => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),

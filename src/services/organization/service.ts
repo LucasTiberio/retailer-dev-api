@@ -664,7 +664,7 @@ const setCurrentOrganization = async (currentOrganizationPayload : { organizatio
   if(!isUserOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION);
 
   const currentOrganization = context.redisClient.set(context.client.id, currentOrganizationPayload.organizationId);
-    
+
   return currentOrganization;
 
 }
