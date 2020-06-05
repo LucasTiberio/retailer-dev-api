@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import knexDatabase from '../../../knex-database';
 import { OrganizationRoles, IOrganizationSimple, OrganizationInviteStatus } from '../types';
 import common from '../../../common';
+import redisClient from '../../../lib/Redis';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 var imgGen = require('js-image-generator');
@@ -129,6 +130,12 @@ const HANDLE_USER_PERMISSION_IN_ORGANIZATION = `
     }
 `
 
+const SET_CURRENT_ORGANIZATION = `
+    mutation setCurrentOrganization($input: SetCurrentOrganizationInput!) {
+        setCurrentOrganization(input: $input)
+    }
+`
+
 const FIND_USERS_TO_ORGANIZATION = `
     query findUsersToOrganization($input: FindUsersToOrganizationInput!) {
         findUsersToOrganization(input: $input){
@@ -231,10 +238,13 @@ describe('organizations graphql', () => {
         userClient = { origin: 'user', id: signUpCreated.id };
 
         userToken = await jwt.sign(userClient, process.env.JWT_SECRET);
+
+        await redisClient.flushall('ASYNC');
     });
 
     afterAll(async () => {
         await knexDatabase.cleanMyTestDB();
+        redisClient.end();
     })
 
     describe("organization tests with user verified", () => {
@@ -255,6 +265,52 @@ describe('organizations graphql', () => {
                     input: userVerifyEmailPayload
                 }
             });
+        })
+
+        test.only("user should send a current organization to redis graphql", async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            const setCurrentOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+
+            expect(setCurrentOrganizationResponse.body.data.setCurrentOrganization).toBeTruthy();
+            redisClient.get(signUpCreated.id, (_, data) => {
+                expect(data).toBe(organizationCreated.id)
+                redisClient.keys('*', function (_, keys) {
+                    expect(keys).toHaveLength(1);
+                    done();  
+                  }); 
+            });
+    
         })
 
         test("user should create new organization", async done => {

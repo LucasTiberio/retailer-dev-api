@@ -33,5 +33,11 @@ ARG bucketname
 ENV BUCKET_NAME=$bucketname
 ARG fronturlstaging
 ENV FRONT_URL_STAGING=$fronturlstaging
+ARG rediscachekey
+ENV REDIS_CACHE_KEY=$rediscachekey
+ARG redishost
+ENV REDIS_HOST=$redishost
+ARG redisport
+ENV REDIS_PORT=$redisport
 RUN npm install && npm run build
 CMD ["/bin/sh", "-c", "npx knex migrate:latest && npm start"]

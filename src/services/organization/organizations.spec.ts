@@ -11,6 +11,8 @@ import common from '../../common';
 import { stream } from 'file-type';
 var streamBuffers = require('stream-buffers');
 var imgGen = require('js-image-generator');
+import redisClient from '../../lib/Redis';
+import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION } from '../../common/consts';
 
 describe('Organizations', () => {
 
@@ -33,6 +35,7 @@ describe('Organizations', () => {
     afterAll(async () => {
         await trx.rollback();
         await trx.destroy();
+        redisClient.end();
         return new Promise(resolve => {
             resolve();
         }); 
@@ -44,8 +47,113 @@ describe('Organizations', () => {
         await trx('users_organizations').del();
         await trx('organizations').del();
         await trx('users').del();
+        await redisClient.flushall('ASYNC');
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
+    })
+
+    test.only("user should send a current organization to redis", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email(),
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        const currentOrganizationAdded = await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        expect(currentOrganizationAdded).toBeTruthy();
+        redisClient.get(userToken.id, (_, data) => {
+            expect(data).toBe(organizationCreated.id)
+            redisClient.keys('*', function (_, keys) {
+                expect(keys).toHaveLength(1);
+                done();  
+              }); 
+        });
+
+    })
+
+    test("users should send a current organization to redis", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email(),
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        let otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        const otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+
+        const currentOrganizationAdded = await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        const inviteUserToOrganizationPayload = {
+            organizationId: organizationCreated.id,
+            users: [{
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+
+        const otherCurrentOrganizationAdded = await service.setCurrentOrganization(currentOrganizationPayload, { client : { origin: "user", id: otherSignUpCreated.id}, redisClient }, trx);
+
+        expect(currentOrganizationAdded).toBeTruthy();
+        expect(otherCurrentOrganizationAdded).toBeTruthy();
+        redisClient.mget([userToken.id, otherSignUpCreated.id], (_, values) => {
+            values.map(item => {
+                expect(item).toBe(organizationCreated.id)
+            })
+            redisClient.keys('*', function (_, keys) {
+                expect(keys).toHaveLength(2);
+                done();  
+              }); 
+        });
+
+    })
+
+    test("users without organization not should send a current organization to redis", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email(),
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        let otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        const otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+
+        try {
+            await service.setCurrentOrganization(currentOrganizationPayload, { client : { origin: "user", id: otherSignUpCreated.id}, redisClient }, trx);
+        } catch(e){
+            expect(e.message).toBe(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION);
+            done();
+        }
+
     })
 
     test("user should create new organization and grant admin role", async done => {

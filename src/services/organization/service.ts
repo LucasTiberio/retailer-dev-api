@@ -13,6 +13,8 @@ import store from "../../store";
 import sharp from 'sharp';
 import { IPagination } from "../../common/types";
 import { Services } from "../services/types";
+import { RedisClient } from "redis";
+import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED } from '../../common/consts';
 
 const _organizationAdapter = (record: IOrganizationFromDB) => ({
   id: record.id,
@@ -653,6 +655,19 @@ const organizationUploadImage = async (organizationUploadImagePayload: {
   return _organizationAdapter(organizationAttachLogo);
 
 }
+const setCurrentOrganization = async (currentOrganizationPayload : { organizationId: string }, context: { client: IUserToken, redisClient: RedisClient }, trx: Transaction) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  const isUserOrganization = await getUserOrganizationByIds(context.client.id, currentOrganizationPayload.organizationId, trx);
+
+  if(!isUserOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION);
+
+  const currentOrganization = context.redisClient.set(context.client.id, currentOrganizationPayload.organizationId);
+
+  return currentOrganization;
+
+}
 
 export default {
   listUsersInOrganization,
@@ -660,6 +675,7 @@ export default {
   organizationDetails,
   organizationUploadImage,
   getUserOrganizationRole,
+  setCurrentOrganization,
   verifyOrganizationHasMember,
   listMyOrganizations,
   getOrganizationByUserId,
