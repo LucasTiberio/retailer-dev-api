@@ -62,6 +62,14 @@ const organizationRoleByUserIdLoader = store.registerOneToManyLoader(
     _organizationRoleAdapter
 );
 
+const organizationByIdLoader = store.registerOneToOneLoader(
+  async (organizationIds : string[]) => {
+    return knexDatabase.knex('organizations').whereIn('id', organizationIds).select()
+  },
+    'id',
+    _organizationAdapter
+);
+
 const organizationByUserIdLoader = store.registerOneToManyLoader(
   async (userIds : string[]) => {
     const query = await knexDatabase.knex('users_organizations AS uo')
@@ -344,9 +352,9 @@ const getUserOrganizationById = async (userOrganizationId: string, trx?: Transac
 
 const getOrganizationById = async (organizationId: string, trx?: Transaction) => {
 
-  const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select();
+  const organizations = await organizationByIdLoader().load(organizationId)
 
-  return _organizationAdapter(organization);
+  return organizations;
 
 }
 
