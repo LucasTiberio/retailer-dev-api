@@ -170,11 +170,6 @@ const addUserInOrganizationService = async (attrs : { userId : string, organizat
 
   const { userId, organizationId, serviceName } = attrs;
 
-  const userOrganizationInviteStatus = await OrganizationService.userOrganizationInviteStatus(userId, organizationId, trx);
-
-  if(userOrganizationInviteStatus.inviteStatus !== OrganizationInviteStatus.ACCEPT)
-    throw new Error('Organization invite doesnt accepted by user.')
-
   const [serviceAnalystServiceRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
   if(!serviceAnalystServiceRole)
