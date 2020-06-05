@@ -354,7 +354,7 @@ const userOrganizationInviteStatus = async (userId: string, organizationId: stri
 
 const getUserOrganizationById = async (userOrganizationId: string, trx?: Transaction) => {
 
-  const [userOrganization] = await (trx || knexDatabase.knexTest)('users_organizations').where('id', userOrganizationId).select();
+  const [userOrganization] = await (trx || knexDatabase.knex)('users_organizations').where('id', userOrganizationId).select();
 
   return userOrganization ? _usersOrganizationsAdapter(userOrganization) : null;
 
