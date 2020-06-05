@@ -45,6 +45,7 @@ describe('Vtex', () => {
     });
 
     beforeEach(async () => {
+        await trx('organization_vtex_comission').del();
         await trx('organization_vtex_secrets').del();
         await trx('users_organization_roles').del();
         await trx('users_organizations').del();
@@ -207,5 +208,122 @@ describe('Vtex', () => {
         done();
 
     })
-        
+
+    test("org admin should handle vtex comission and active", async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+            organizationId: organizationCreated.id
+        }
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+
+        const handleOrganizationVtexComissionPayload = {
+            organizationId: organizationCreated.id,
+            vtexDepartmentId: "1",
+            vtexCommissionPercentage: 15,
+            active: true
+        }
+
+        const organizationVtexComissionAdded = await service.handleOrganizationVtexComission(handleOrganizationVtexComissionPayload, userToken, trx);
+
+        expect(organizationVtexComissionAdded).toEqual(
+            expect.objectContaining({
+              id: expect.any(String),
+              organizationId: organizationCreated.id,  
+              vtexDepartmentId: handleOrganizationVtexComissionPayload.vtexDepartmentId,
+              vtexCommissionPercentage: handleOrganizationVtexComissionPayload.vtexCommissionPercentage,
+              active: handleOrganizationVtexComissionPayload.active,
+              updatedAt: expect.any(Date),
+              createdAt: expect.any(Date)
+            })
+        )
+
+        const vtexDepartmentsCommissionsPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        const vtexCommissions = await service.getVtexDepartmentsCommissions(vtexDepartmentsCommissionsPayload, userToken, trx);
+
+        expect(vtexCommissions).toEqual(
+            expect.objectContaining(
+                mockVtexDepartments.map(item => expect.objectContaining({
+                    id: item.id,
+                    name: item.name,
+                    url: item.url,
+                    active: item.id === 1,
+                    percentage: item.id === 1 ? 15 : null
+                }))
+            )
+        )
+
+        done();
+
+    })
+
+    test("org admin should handle vtex comission to inactive", async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+            organizationId: organizationCreated.id
+        }
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+
+        const handleOrganizationVtexComissionPayload = {
+            organizationId: organizationCreated.id,
+            vtexDepartmentId: "1",
+            vtexCommissionPercentage: 15,
+            active: true
+        }
+
+        await service.handleOrganizationVtexComission(handleOrganizationVtexComissionPayload, userToken, trx);
+
+        const handleOrganizationVtexComissionDesactivePayload = {
+            organizationId: organizationCreated.id,
+            vtexDepartmentId: "1",
+            vtexCommissionPercentage: 15,
+            active: false
+        }
+
+        const organizationVtexComissionDesactived = await service.handleOrganizationVtexComission(handleOrganizationVtexComissionDesactivePayload, userToken, trx);
+
+        expect(organizationVtexComissionDesactived).toEqual(
+            expect.objectContaining({
+              id: expect.any(String),
+              organizationId: organizationCreated.id,  
+              vtexDepartmentId: handleOrganizationVtexComissionPayload.vtexDepartmentId,
+              vtexCommissionPercentage: handleOrganizationVtexComissionPayload.vtexCommissionPercentage,
+              active: handleOrganizationVtexComissionDesactivePayload.active,
+              updatedAt: expect.any(Date),
+              createdAt: expect.any(Date)
+            })
+        )
+
+        const vtexDepartmentsCommissionsPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        const vtexCommissions = await service.getVtexDepartmentsCommissions(vtexDepartmentsCommissionsPayload, userToken, trx);
+
+        expect(vtexCommissions).toEqual(
+            expect.objectContaining(
+                mockVtexDepartments.map(item => expect.objectContaining({
+                    id: item.id,
+                    name: item.name,
+                    url: item.url,
+                    active: false,
+                    percentage: item.id === 1 ? 15 : null
+                }))
+            )
+        )
+
+        done();
+
+    })
+  
 });

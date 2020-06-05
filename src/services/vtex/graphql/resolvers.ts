@@ -10,6 +10,11 @@ const resolvers : IResolvers = {
             return service.verifyAndAttachVtexSecrets(input, client, trx);
         });
     },
+    handleOrganizationVtexCommission: (_, { input }, { client }) => {
+        return knexDatabase.knex.transaction((trx: Transaction) => {
+            return service.handleOrganizationVtexComission(input, client, trx);
+        });
+    },
   },
   Query: {
     vtexDepartmentsCommissions: (_, { input }, { client }) => {

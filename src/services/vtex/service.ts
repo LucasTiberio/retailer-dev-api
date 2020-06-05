@@ -28,7 +28,7 @@ const vtexAdapter = (record: IVtexIntegrationFromDB) => ({
   status: record.status
 })
 
-const vtexComissionsAdapter = (record: IVtexCommissionFromDB) => ({
+const vtexCommissionsAdapter = (record: IVtexCommissionFromDB) => ({
   id: record.id,
   organizationId: record.organization_id,
   vtexDepartmentId: record.vtex_department_id,
@@ -355,7 +355,48 @@ const getComissionsDepartmentsByOrganizationId = async (organizationId: string, 
   .where('organization_id', organizationId)
   .select();
 
-  return vtexComissions.map(vtexComissionsAdapter)
+  return vtexComissions.map(vtexCommissionsAdapter)
+
+}
+
+const handleOrganizationVtexComission = async (handleOrganizationVtexComissionPayload : {
+  organizationId: string,
+  vtexDepartmentId: string,
+  vtexCommissionPercentage: number,
+  active?: boolean
+}, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("Token must be provided");
+
+  const { organizationId, vtexDepartmentId, vtexCommissionPercentage, active } = handleOrganizationVtexComissionPayload;
+
+  const [organizationVtexCommissionFound] = await (trx || knexDatabase.knex)('organization_vtex_comission')
+    .where('organization_id', organizationId)
+    .andWhere('vtex_department_id', vtexDepartmentId)
+    .select('id', 'active');
+
+  if(!organizationVtexCommissionFound){
+
+    const [organizationVtexCommission] = await (trx || knexDatabase.knex)('organization_vtex_comission').insert({
+      organization_id: organizationId,
+      vtex_department_id: vtexDepartmentId,
+      vtex_commission_percentage: vtexCommissionPercentage,
+      active: active ?? true
+    }).returning('*')
+
+    return vtexCommissionsAdapter(organizationVtexCommission)
+
+  }  
+
+  const [organizationVtexCommissionUpdated] = await (trx || knexDatabase.knex)('organization_vtex_comission').update({
+    organization_id: organizationId,
+    vtex_department_id: vtexDepartmentId,
+    vtex_commission_percentage: vtexCommissionPercentage,
+    active: active ?? organizationVtexCommissionFound.active
+  }).where('id', organizationVtexCommissionFound.id)
+  .returning('*')
+
+  return vtexCommissionsAdapter(organizationVtexCommissionUpdated)
 
 }
 
@@ -365,5 +406,6 @@ export default {
   getSecretsByOrganizationId,
   createUserVtexCampaign,
   getVtexDepartments,
-  getVtexDepartmentsCommissions
+  getVtexDepartmentsCommissions,
+  handleOrganizationVtexComission
 }
