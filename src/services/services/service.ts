@@ -134,13 +134,16 @@ const getServiceRolesByName = async (serviceRoleName: ServiceRoles, trx?: Transa
   return _serviceRolesAdapter(serviceRolesFound);
 }
 
-const listUsedServices = async (organizationCreatedId: string ,userToken : IUserToken, trx: Transaction) => {
+const listUsedServices = async (
+    context : { client: IUserToken, organizationId: string }, 
+    trx: Transaction
+  ) => {
 
-  if(!userToken) throw new Error("token must be provided!");
+  if(!context.client) throw new Error("token must be provided!");
 
   const availableServices = await (trx || knexDatabase.knex).raw(
     `
-    SELECT svc.*, os.organization_id = '${organizationCreatedId}' as has_organization
+    SELECT svc.*, os.organization_id = '${context.organizationId}' as has_organization
     FROM services AS svc
       LEFT JOIN organization_services AS os
       ON svc.id = os.service_id
@@ -171,27 +174,33 @@ const getUserOrganizationServiceRole = async (usersOrganizationId: string, servi
 
 }
 
-const addUserInOrganizationService = async (attrs : { userId : string, organizationId : string, serviceName: Services }, userToken: IUserToken, trx: Transaction) => {
+const addUserInOrganizationService = async (
+    attrs : { userId : string, serviceName: Services }, 
+    context: { organizationId: string, client: IUserToken }, 
+    trx: Transaction
+  ) => {
 
-  if(!userToken) throw new Error("token must be provided!");
+  if(!context.client) throw new Error("token must be provided!");
 
-  const { userId, organizationId, serviceName } = attrs;
+  const { userId, serviceName } = attrs;
 
   const [serviceAnalystServiceRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
   if(!serviceAnalystServiceRole)
     throw new Error('Analyst service role doesnt exist');
 
-  const [usersOrganizationFoundDb] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', userId).andWhere('organization_id', organizationId).select('id');
+  const [usersOrganizationFoundDb] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', userId).andWhere('organization_id', context.organizationId).select('id');
 
   if(!usersOrganizationFoundDb)
     throw new Error("User doesnt are in organization");
 
-  const vtexSecrests = await VtexService.getSecretsByOrganizationId(organizationId, trx);
+  const vtexSecrests = await VtexService.getSecretsByOrganizationId(context.organizationId, trx);
 
   if(!vtexSecrests || !vtexSecrests.status) throw new Error("Vtex Integration not implemented");
 
-  const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
+  const [serviceOrganizationFound] = await serviceOrganizationByName(context.organizationId, serviceName, trx);
+
+  if(!serviceOrganizationFound) throw new Error("Organization doesnt have this service");
 
   const userOrganizationServiceRoleFound = await getUserOrganizationServiceRole(usersOrganizationFoundDb.id, serviceOrganizationFound.id, trx);
 
@@ -220,13 +229,17 @@ const addUserInOrganizationService = async (attrs : { userId : string, organizat
 
 }
 
-const listAvailableUsersToService = async (listAvailableUsersToServicePayload : IListAvailableUsersToServicePayload, userToken: IUserToken, trx: Transaction) => {
+const listAvailableUsersToService = async (
+  listAvailableUsersToServicePayload : IListAvailableUsersToServicePayload, 
+  context: { organizationId: string, client: IUserToken }, 
+  trx: Transaction
+  ) => {
 
-  if(!userToken) throw new Error("token must be provided!");
+  if(!context.client) throw new Error("token must be provided!");
 
-  const { organizationId, serviceName } = listAvailableUsersToServicePayload;
+  const { serviceName } = listAvailableUsersToServicePayload;
 
-  const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
+  const [serviceOrganizationFound] = await serviceOrganizationByName(context.organizationId, serviceName, trx);
 
   const organizationRole = await OrganizationService.getOrganizationRoleId(OrganizationRoles.ADMIN, trx);
 
@@ -242,7 +255,7 @@ const listAvailableUsersToService = async (listAvailableUsersToServicePayload : 
           ON os.id = uosr.organization_services_id
           AND os.id = '${serviceOrganizationFound.id}'
         WHERE uor.organization_role_id <> '${organizationRole.id}'
-      AND uo.organization_id = '${organizationId}'
+      AND uo.organization_id = '${context.organizationId}'
       AND uosr.id IS NULL
     `
   );
@@ -252,15 +265,14 @@ const listAvailableUsersToService = async (listAvailableUsersToServicePayload : 
 }
 
 const listUsersInOrganizationService = async (listUsersInOrganizationServicePayload: {
-  organizationId: string,
   serviceName: Services
-}, userToken : IUserToken, trx: Transaction) => {
+}, context: { organizationId: string, client: IUserToken }, trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided!");
+  if(!context.client) throw new Error("token must be provided!");
 
-  const { organizationId, serviceName } = listUsersInOrganizationServicePayload;
+  const { serviceName } = listUsersInOrganizationServicePayload;
 
-  const [serviceOrganization] = await serviceOrganizationByName(organizationId, serviceName, trx);
+  const [serviceOrganization] = await serviceOrganizationByName(context.organizationId, serviceName, trx);
 
   const usersInOrganizationService = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
     .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
@@ -274,13 +286,12 @@ const listUsersInOrganizationService = async (listUsersInOrganizationServicePayl
 }
 
 const getUserInOrganizationService = async (getUserInOrganizationServicePayload: {
-  organizationId: string,
   userOrganizationId: string
-}, userToken : IUserToken, trx: Transaction) => {
+}, context: { client: IUserToken }, trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided!");
+  if(!context.client) throw new Error("token must be provided!");
 
-  const { organizationId, userOrganizationId } = getUserInOrganizationServicePayload;
+  const { userOrganizationId } = getUserInOrganizationServicePayload;
 
   const [usersInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
     .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
@@ -303,27 +314,26 @@ const isServiceAdmin = async (usersOrganizationId: string, serviceOrganizationId
 }
 
 const userInServiceHandleRole = async (userInServiceHandleRolePayload : {
-  organizationId: string,
   serviceName: Services,
   serviceRole: ServiceRoles,
   userId: string
-}, userToken : IUserToken, trx: Transaction) => {
+}, context: { client: IUserToken, organizationId: string }, trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided!");
+  if(!context.client) throw new Error("token must be provided!");
 
-  const { organizationId, serviceName , serviceRole, userId } = userInServiceHandleRolePayload;
+  const { serviceName , serviceRole, userId } = userInServiceHandleRolePayload;
 
-  const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
+  const [serviceOrganizationFound] = await serviceOrganizationByName(context.organizationId, serviceName, trx);
 
   if(!serviceOrganizationFound) throw new Error("Service organization not found!");
 
-  const usersOrganizationFoundDb = await OrganizationService.getUserOrganizationByIds(userId, organizationId, trx);;
+  const usersOrganizationFoundDb = await OrganizationService.getUserOrganizationByIds(userId, context.organizationId, trx);;
 
   if(!usersOrganizationFoundDb)
     throw new Error("User doesnt are in organization");
 
   if(
-    !OrganizationService.isFounder(organizationId, userToken.id, trx) &&
+    !OrganizationService.isFounder(context.organizationId, context.client.id, trx) &&
     await isServiceAdmin(usersOrganizationFoundDb.id, serviceOrganizationFound.id, trx)
     ){
     throw new Error("Not auth to remove admin roles")
@@ -347,25 +357,24 @@ const userInServiceHandleRole = async (userInServiceHandleRolePayload : {
 }
 
 const inativeUserFromServiceOrganization = async (inativeUserFromServiceOrganizationPayload : {
-  organizationId: string,
   serviceName: Services,
   userId: string
-}, userToken: IUserToken, trx: Transaction) => {
+}, context: { client: IUserToken, organizationId: string }, trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided!");
+  if(!context.client) throw new Error("token must be provided!");
 
-  const { organizationId, serviceName , userId } = inativeUserFromServiceOrganizationPayload;
+  const { serviceName , userId } = inativeUserFromServiceOrganizationPayload;
 
-  const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, serviceName, trx);
+  const [serviceOrganizationFound] = await serviceOrganizationByName(context.organizationId, serviceName, trx);
 
   if(!serviceOrganizationFound) throw new Error("Service organization not found!");
 
-  const usersOrganizationFoundDb = await OrganizationService.getUserOrganizationByIds(userId, organizationId, trx);;
+  const usersOrganizationFoundDb = await OrganizationService.getUserOrganizationByIds(userId, context.organizationId, trx);;
 
   if(!usersOrganizationFoundDb) throw new Error("User doesnt are in organization");
 
   if(
-    !OrganizationService.isFounder(organizationId, userToken.id, trx) &&
+    !OrganizationService.isFounder(context.organizationId, context.client.id, trx) &&
     await isServiceAdmin(usersOrganizationFoundDb.id, serviceOrganizationFound.id, trx)
     ){
     throw new Error("Not auth to remove admin roles")

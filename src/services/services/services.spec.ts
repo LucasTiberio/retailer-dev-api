@@ -8,9 +8,10 @@ import database from '../../knex-database';
 import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
-import { Services, IServiceAdaptedFromDB, IServiceAdapted, ServiceRoles } from './types';
-import { IOrganizationAdapted, OrganizationInviteStatus, IUserOrganizationAdapted } from '../organization/types';
+import { Services, IServiceAdaptedFromDB, ServiceRoles } from './types';
+import { IOrganizationAdapted, OrganizationInviteStatus } from '../organization/types';
 import knexDatabase from '../../knex-database';
+import { IContext } from '../../common/types';
 
 describe('Services', () => {
 
@@ -33,6 +34,7 @@ describe('Services', () => {
     let userToken : IUserToken;
     let organizationCreated: IOrganizationAdapted;
     let serviceFound: IServiceAdaptedFromDB;
+    let context: IContext;
 
     beforeAll(async () => {
         trx = await database.knex.transaction(); 
@@ -63,35 +65,15 @@ describe('Services', () => {
         organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
+        context = {client: userToken, organizationId: organizationCreated.id};
     })
-
-    // test("user should create new service in organization", async done => {
-
-    //     const serviceInOrganizationCreated = await service.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
-
-    //     expect(serviceInOrganizationCreated).toBeTruthy();
-
-    //     const organizationService = await (trx || database.knex)('organization_services').select();
-        
-    //     expect(organizationService).toHaveLength(1);
-    //     expect(organizationService[0]).toEqual(
-    //         expect.objectContaining({
-    //             id: expect.any(String),
-    //             service_id: serviceFound.id,
-    //             organization_id: organizationCreated.id,
-    //             updated_at: expect.any(Date),
-    //             created_at: expect.any(Date)
-    //         })
-    //     )
-
-    //     done();
-    // })
 
     test("organization admin should list services", async done => {
 
         const servicesFound = await (trx || knexDatabase.knex)('services').select('id', 'name');
 
-        const listServices = await service.listUsedServices(organizationCreated.id ,userToken, trx);
+
+        const listServices = await service.listUsedServices(context, trx);
 
         expect(listServices).toEqual(
             expect.arrayContaining(
@@ -117,7 +99,6 @@ describe('Services', () => {
         beforeEach(async () => {
             const [serviceFoundDB] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
             serviceFound = serviceFoundDB
-            // await service.createServiceInOrganization(serviceFound.id, organizationCreated.id, userToken, trx);
         })
 
         test('organization admin should list member available to enjoi in service', async done => {
@@ -133,14 +114,13 @@ describe('Services', () => {
             await UserService.verifyEmail(userFromDb.verification_hash, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -152,12 +132,11 @@ describe('Services', () => {
             await OrganizationService.responseInvite(responseInvitePayload, trx);
 
             const listAvailableUsersToServicePayload = {
-                organizationId:organizationCreated.id,
                 serviceName: Services.AFFILIATE,
                 name: "usu"
             }
 
-            const availableUsersToServiceList = await service.listAvailableUsersToService(listAvailableUsersToServicePayload, userToken, trx);
+            const availableUsersToServiceList = await service.listAvailableUsersToService(listAvailableUsersToServicePayload, context, trx);
 
             expect(availableUsersToServiceList).toEqual(
                 expect.arrayContaining([
@@ -188,21 +167,19 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -219,7 +196,7 @@ describe('Services', () => {
                 serviceName: Services.AFFILIATE 
             };
 
-            const newMemberOnOrgazationService = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);   
+            const newMemberOnOrgazationService = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
 
             const [serviceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
@@ -250,14 +227,13 @@ describe('Services', () => {
             await UserService.verifyEmail(userFromDb.verification_hash, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -269,13 +245,12 @@ describe('Services', () => {
             await OrganizationService.responseInvite(responseInvitePayload, trx);
 
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
             try {
-                await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);   
+                await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
             } catch (error) {
                 expect(error.message).toBe("Vtex Integration not implemented")
             }
@@ -312,10 +287,9 @@ describe('Services', () => {
                 organizationId: organizationCreated.id
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets, context, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
@@ -325,7 +299,7 @@ describe('Services', () => {
                 }]
             };
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
             const [invitedUserToOrganization2] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated2.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
@@ -345,20 +319,18 @@ describe('Services', () => {
             await OrganizationService.responseInvite(responseInvitePayload2, trx);
 
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const listAvailableUsersToServicePayload = {
-                organizationId:organizationCreated.id,
                 serviceName: Services.AFFILIATE,
                 name: "usu"
             }
 
-            const availableUsersToServiceList = await service.listAvailableUsersToService(listAvailableUsersToServicePayload, userToken, trx);
+            const availableUsersToServiceList = await service.listAvailableUsersToService(listAvailableUsersToServicePayload, context, trx);
 
             expect(availableUsersToServiceList).toHaveLength(1);
             expect(availableUsersToServiceList).toEqual(
@@ -389,21 +361,19 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -415,19 +385,17 @@ describe('Services', () => {
             await OrganizationService.responseInvite(responseInvitePayload, trx);
 
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            const userInOrganizationServiceAdded = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            const userInOrganizationServiceAdded = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const listUsersInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 serviceName: Services.AFFILIATE 
             }
 
-            const usersInOrganizationService = await service.listUsersInOrganizationService(listUsersInOrganizationServicePayload, userToken, trx);
+            const usersInOrganizationService = await service.listUsersInOrganizationService(listUsersInOrganizationServicePayload, context, trx);
 
             const [analystServiceRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
@@ -461,21 +429,19 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -487,19 +453,17 @@ describe('Services', () => {
             await OrganizationService.responseInvite(responseInvitePayload, trx);
 
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            const userInOrganizationServiceAdded = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            const userInOrganizationServiceAdded = await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const listUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userOrganizationId: invitedUserToOrganization.id 
             }
 
-            const usersInOrganizationService = await service.getUserInOrganizationService(listUserInOrganizationServicePayload, userToken, trx);
+            const usersInOrganizationService = await service.getUserInOrganizationService(listUserInOrganizationServicePayload, {client: userToken}, trx);
 
             const [analystServiceRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
@@ -531,21 +495,19 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -562,18 +524,15 @@ describe('Services', () => {
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const userInServiceHandleRolePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.RESPONSIBLE
             };
 
-            const userHandleRoleToResponsible = await service.userInServiceHandleRole(userInServiceHandleRolePayload, userToken, trx);
-
-            expect(userHandleRoleToResponsible)
+            const userHandleRoleToResponsible = await service.userInServiceHandleRole(userInServiceHandleRolePayload, context, trx);
 
             const [responsibleServiceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.RESPONSIBLE).select('id');
 
@@ -606,21 +565,19 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -632,21 +589,19 @@ describe('Services', () => {
             await OrganizationService.responseInvite(responseInvitePayload, trx);
 
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const userInServiceHandleRolePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.ADMIN
             };
 
-            const userHandleRoleToResponsible = await service.userInServiceHandleRole(userInServiceHandleRolePayload, userToken, trx);
+            const userHandleRoleToResponsible = await service.userInServiceHandleRole(userInServiceHandleRolePayload, context, trx);
 
             const [responsibleServiceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ADMIN).select('id');
 
@@ -689,14 +644,12 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
@@ -706,7 +659,7 @@ describe('Services', () => {
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
             const [invitedUserToOrganization3] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated3.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
@@ -726,20 +679,18 @@ describe('Services', () => {
             await OrganizationService.responseInvite(responseInvitePayload3, trx);
 
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const addUserInOrganizationServicePayload3 = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated3.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload3, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload3, context, trx);
 
             const userInServiceHandleRolePayload = {
                 organizationId:organizationCreated.id,
@@ -748,26 +699,25 @@ describe('Services', () => {
                 serviceRole: ServiceRoles.ADMIN
             };
 
-            await service.userInServiceHandleRole(userInServiceHandleRolePayload, userToken, trx);
+            await service.userInServiceHandleRole(userInServiceHandleRolePayload, context, trx);
 
             const userInServiceHandleRolePayload3 = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated3.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.ADMIN
             };
 
-            await service.userInServiceHandleRole(userInServiceHandleRolePayload3, userToken, trx);
+            await service.userInServiceHandleRole(userInServiceHandleRolePayload3, context, trx);
 
             const userInServiceHandleRoleRemoveAdminPayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.RESPONSIBLE
             };
-
             try {
-                await service.userInServiceHandleRole(userInServiceHandleRoleRemoveAdminPayload, { origin: "user", id: otherSignUpCreated3.id}, trx);
+                const otherUserToken = { origin: "user", id: otherSignUpCreated3.id};
+                const otherContext = {client: otherUserToken, organizationId: organizationCreated.id};
+                await service.userInServiceHandleRole(userInServiceHandleRoleRemoveAdminPayload, otherContext, trx);
             } catch(e){
                 expect(e.message).toBe("Not auth to remove admin roles");
             }
@@ -790,21 +740,19 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -816,30 +764,27 @@ describe('Services', () => {
             await OrganizationService.responseInvite(responseInvitePayload, trx);
 
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const userInServiceHandleRolePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.ADMIN
             };
 
-            await service.userInServiceHandleRole(userInServiceHandleRolePayload, userToken, trx);
+            await service.userInServiceHandleRole(userInServiceHandleRolePayload, context, trx);
 
             const userInServiceHandleRoleRemoveAdminPayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.ANALYST
             };
 
-            const serviceOrganizationUserRemovedAdmin = await service.userInServiceHandleRole(userInServiceHandleRoleRemoveAdminPayload, userToken, trx);
+            const serviceOrganizationUserRemovedAdmin = await service.userInServiceHandleRole(userInServiceHandleRoleRemoveAdminPayload, context, trx);
 
             const [responsibleServiceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
@@ -872,14 +817,13 @@ describe('Services', () => {
 
             //invite to org
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             //response org invites
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
@@ -894,28 +838,25 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             //add users in organization service
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const inativeUserFromServiceOrganizationPayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             }
 
-            const inativedUserFromServiceOrganization = await service.inativeUserFromServiceOrganization(inativeUserFromServiceOrganizationPayload, userToken, trx);
+            const inativedUserFromServiceOrganization = await service.inativeUserFromServiceOrganization(inativeUserFromServiceOrganizationPayload, context, trx);
 
             const [responsibleServiceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
@@ -960,7 +901,6 @@ describe('Services', () => {
 
             //invite to org
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
@@ -970,7 +910,7 @@ describe('Services', () => {
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             //response org invites
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
@@ -993,46 +933,44 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             //add users in organization service
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const addUserInOrganizationServicePayload3 = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated3.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload3, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload3, context, trx);
 
             //handle roles in org service
             const userInServiceHandleRolePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.ADMIN
             };
 
-            await service.userInServiceHandleRole(userInServiceHandleRolePayload, userToken, trx);
+            await service.userInServiceHandleRole(userInServiceHandleRolePayload, context, trx);
 
             const inativeUserFromServiceOrganizationPayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated3.id,
                 serviceName: Services.AFFILIATE 
             }
 
-            const inativedUserFromServiceOrganization = await service.inativeUserFromServiceOrganization(inativeUserFromServiceOrganizationPayload, {origin: "user", id: otherSignUpCreated.id}, trx);
+            const otherUserToken = {origin: "user", id: otherSignUpCreated.id};
+            const otherContext = {client: otherUserToken, organizationId: organizationCreated.id};
+
+            const inativedUserFromServiceOrganization = await service.inativeUserFromServiceOrganization(inativeUserFromServiceOrganizationPayload, otherContext, trx);
 
             const [responsibleServiceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
@@ -1077,7 +1015,6 @@ describe('Services', () => {
 
             //invite to org
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
@@ -1087,7 +1024,7 @@ describe('Services', () => {
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             //response org invites
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
@@ -1110,47 +1047,42 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             //add users in organization service
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const addUserInOrganizationServicePayload3 = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated3.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload3, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload3, context, trx);
 
             //handle roles in org service
             const userInServiceHandleRolePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.ADMIN
             };
 
-            await service.userInServiceHandleRole(userInServiceHandleRolePayload, userToken, trx);
+            await service.userInServiceHandleRole(userInServiceHandleRolePayload, context, trx);
 
             const userInServiceHandleRolePayload3 = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated3.id,
                 serviceName: Services.AFFILIATE,
                 serviceRole: ServiceRoles.ADMIN
             };
 
-            await service.userInServiceHandleRole(userInServiceHandleRolePayload, userToken, trx);
+            await service.userInServiceHandleRole(userInServiceHandleRolePayload3, context, trx);
 
             //inative user
             const inativeUserFromServiceOrganizationPayload = {
@@ -1160,7 +1092,9 @@ describe('Services', () => {
             }
 
             try {
-                await service.inativeUserFromServiceOrganization(inativeUserFromServiceOrganizationPayload, {origin: "user", id: otherSignUpCreated.id}, trx);
+                const otherUserToken = {origin: "user", id: otherSignUpCreated.id};
+                const otherContext = {client: otherUserToken, organizationId: organizationCreated.id};
+                await service.inativeUserFromServiceOrganization(inativeUserFromServiceOrganizationPayload, otherContext, trx);
             } catch (error) {
                 expect(error.message).toBe("Not auth to remove admin roles");
             }
@@ -1183,14 +1117,13 @@ describe('Services', () => {
 
             //invite to org
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
                 }]
             }
     
-            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
             //response org invites
             const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
@@ -1205,38 +1138,34 @@ describe('Services', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
-            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
             //add users in organization service
             const addUserInOrganizationServicePayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
 
             const inativeUserFromServiceOrganizationPayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             }
 
-            await service.inativeUserFromServiceOrganization(inativeUserFromServiceOrganizationPayload, userToken, trx);
+            await service.inativeUserFromServiceOrganization(inativeUserFromServiceOrganizationPayload, context, trx);
 
             //reinvite member
 
             const addUserInOrganizationServiceAgainPayload = {
-                organizationId:organizationCreated.id,
                 userId: otherSignUpCreated.id,
                 serviceName: Services.AFFILIATE 
             };
 
-            const MemberOnOrgazationServiceAddedAgain = await service.addUserInOrganizationService(addUserInOrganizationServiceAgainPayload, userToken, trx);
+            const MemberOnOrgazationServiceAddedAgain = await service.addUserInOrganizationService(addUserInOrganizationServiceAgainPayload, context, trx);
 
             const [serviceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 

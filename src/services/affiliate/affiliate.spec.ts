@@ -11,16 +11,14 @@ import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
 import { IOrganizationAdapted, OrganizationInviteStatus } from '../organization/types';
 import knexDatabase from '../../knex-database';
-import { IServiceAdaptedFromDB, Services, ServiceRoles } from '../services/types';
-
-const frontUrl = process.env.FRONT_URL_STAGING;
+import { IServiceAdaptedFromDB, Services } from '../services/types';
+import { IContext } from '../../common/types';
 
 describe('Affiliate', () => {
 
     let trx : Transaction;
 
     let signUpCreated: ISignUpAdapted;
-
     
     let signUpPayload = {
         username: Faker.name.firstName(),
@@ -36,6 +34,7 @@ describe('Affiliate', () => {
     let userToken : IUserToken;
     let organizationCreated: IOrganizationAdapted;
     let serviceFound: IServiceAdaptedFromDB;
+    let context: IContext;
 
     beforeAll(async () => {
 
@@ -49,6 +48,7 @@ describe('Affiliate', () => {
         organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
+        context = {client: userToken, organizationId: organizationCreated.id};
 
     });
 
@@ -75,11 +75,10 @@ describe('Affiliate', () => {
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
-        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         const inviteUserToOrganizationPayload = {
             organizationId: organizationCreated.id,
@@ -89,7 +88,7 @@ describe('Affiliate', () => {
             }]
         }
 
-        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -106,17 +105,17 @@ describe('Affiliate', () => {
             serviceName: Services.AFFILIATE 
         };
 
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);   
+        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
 
         const affiliateGenerateShortenerUrlPayload = {
             originalUrl: Faker.internet.url(),
-            organizationId:organizationCreated.id,
             serviceName: Services.AFFILIATE
         }
 
         const affiliateToken = { origin: 'user', id: otherSignUpCreated.id };
+        const affiliateContext = {client: affiliateToken, organizationId: organizationCreated.id};
 
-        const affiliateGenerateShortenerUrl = await service.generateShortenerUrl(affiliateGenerateShortenerUrlPayload, affiliateToken, trx);
+        const affiliateGenerateShortenerUrl = await service.generateShortenerUrl(affiliateGenerateShortenerUrlPayload, affiliateContext, trx);
 
         const affiliateId = userInOrganizationService.id;
 
@@ -149,10 +148,9 @@ describe('Affiliate', () => {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
             accountName: "beightoneagency",
-            organizationId: organizationCreated.id
         }
 
-        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         const inviteUserToOrganizationPayload = {
             organizationId: organizationCreated.id,
@@ -162,7 +160,7 @@ describe('Affiliate', () => {
             }]
         }
 
-        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
 
@@ -179,7 +177,7 @@ describe('Affiliate', () => {
             serviceName: Services.AFFILIATE 
         };
 
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, userToken, trx);   
+        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
 
         const affiliateGenerateShortenerUrlPayload = {
             originalUrl: Faker.internet.url(),
@@ -188,8 +186,9 @@ describe('Affiliate', () => {
         }
 
         const affiliateToken = { origin: 'user', id: otherSignUpCreated.id };
+        const affiliateContext = {client: affiliateToken, organizationId: organizationCreated.id};
 
-        await service.generateShortenerUrl(affiliateGenerateShortenerUrlPayload, affiliateToken, trx);
+        await service.generateShortenerUrl(affiliateGenerateShortenerUrlPayload, affiliateContext, trx);
 
         const affiliateId = userInOrganizationService.id;
 

@@ -6,7 +6,6 @@ input VerifyAndAttachVtexSecretsInput{
   xVtexApiAppKey: String!
   xVtexApiAppToken: String!
   accountName: String!
-  organizationId: String!
 }
 
 extend type Organization{

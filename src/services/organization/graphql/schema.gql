@@ -1,7 +1,7 @@
 extend type Query{
   verifyOrganizationName(input: VerifyOrganizationNameInput!): Boolean @isAuthenticated
   listMyOrganizations: [Organization]! @isVerified @isAuthenticated
-  organizationDetails(input: OrganizationDetailsInput!): Organization! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
+  organizationDetails: Organization! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
   listUsersInOrganization(input: ListUsersInOrganizationInput!): ListUsersInOrganizationPayload! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
   findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
@@ -11,13 +11,8 @@ type ListUsersInOrganizationPayload{
   usersOrganizations: [UserOrganization]!
 }
 
-input OrganizationDetailsInput{
-  organizationName: String!
-}
-
 input ListUsersInOrganizationInput{
   name: String
-  organizationId: String!
   offset: Int
   limit: Int
   showActive: Boolean
@@ -25,7 +20,6 @@ input ListUsersInOrganizationInput{
 
 input FindUsersToOrganizationInput{
   name: String!
-  organizationId: String!
 }
 
 type FindUsersToOrganizationPayload{
@@ -74,13 +68,11 @@ type ResponseOrganizationInvitePayload{
 
 input HandleUserPermissionInOrganizationInput{
   userId: String!
-  organizationId: String!
   permission: OrganizationRoleName!
 }
 
 input InativeUsersInOrganizationInput{
   usersId: [String]!
-  organizationId: String!
 }
 
 input ResponseOrganizationInviteInput{
@@ -96,7 +88,6 @@ enum OrganizationInviteStatus {
 }
 
 input InviteUserToOrganizationInput {
-  organizationId: String!
   users: [InviteUsersInput]!
 }
 

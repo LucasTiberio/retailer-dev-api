@@ -13,6 +13,7 @@ var streamBuffers = require('stream-buffers');
 var imgGen = require('js-image-generator');
 import redisClient from '../../lib/Redis';
 import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION } from '../../common/consts';
+import { IContext } from '../../common/types';
 
 describe('Organizations', () => {
 
@@ -52,7 +53,7 @@ describe('Organizations', () => {
         userToken = { origin: 'user', id: signUpCreated.id };
     })
 
-    test.only("user should send a current organization to redis", async done => {
+    test("user should send a current organization to redis", async done => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
@@ -86,6 +87,8 @@ describe('Organizations', () => {
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        
+        let context : IContext = {client: userToken, organizationId: organizationCreated.id};
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -102,13 +105,12 @@ describe('Organizations', () => {
         const currentOrganizationAdded = await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 email: otherSignUpCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const otherCurrentOrganizationAdded = await service.setCurrentOrganization(currentOrganizationPayload, { client : { origin: "user", id: otherSignUpCreated.id}, redisClient }, trx);
 
@@ -301,11 +303,15 @@ describe('Organizations', () => {
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
 
-        const organizationDetailsPayload = {
-            organizationName: organizationCreated.name
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
         }
 
-        const organizations = await service.organizationDetails(organizationDetailsPayload, userToken, trx);
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
+
+        const organizations = await service.organizationDetails(context, trx);
 
         expect(organizations).toEqual(
                 expect.objectContaining({
@@ -332,6 +338,14 @@ describe('Organizations', () => {
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
 
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
+
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -341,14 +355,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        const invitedUserToOrganization = await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        const invitedUserToOrganization = await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         expect(invitedUserToOrganization).toBeTruthy();
         
@@ -420,6 +433,14 @@ describe('Organizations', () => {
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
 
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
+
         let signUpOtherMemberPayload = {
             email: Faker.internet.email(),
         };
@@ -431,7 +452,7 @@ describe('Organizations', () => {
             }]
         }
 
-        const invitedUserToOrganization = await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        const invitedUserToOrganization = await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         expect(invitedUserToOrganization).toBeTruthy();
 
@@ -498,10 +519,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
@@ -519,7 +548,7 @@ describe('Organizations', () => {
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash');
 
@@ -553,10 +582,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
@@ -574,7 +611,7 @@ describe('Organizations', () => {
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash');
 
@@ -608,10 +645,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             email: Faker.internet.email(),
@@ -624,7 +669,7 @@ describe('Organizations', () => {
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [userFound] = await (trx || knexDatabase.knex)('users').where('email', signUpOtherMemberPayload.email).select('id')
 
@@ -664,10 +709,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         const signUpPayload2 = {
             username: "User1",
@@ -697,7 +750,7 @@ describe('Organizations', () => {
             organizationId: organizationCreated.id
         }
 
-        const userFound = await service.findUsersToOrganization(findUsersPayload, userToken, trx);
+        const userFound = await service.findUsersToOrganization(findUsersPayload, context, trx);
 
         expect(userFound).toHaveLength(2);
         expect(userFound).toEqual(
@@ -751,10 +804,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         const signUpPayload2 = {
             username: "User1",
@@ -780,21 +841,20 @@ describe('Organizations', () => {
         await UserService.verifyEmail(userFromDb3.verification_hash, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpCreated2.id,
                 email: signUpCreated2.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const findUsersPayload = {
             name: "user",
             organizationId: organizationCreated.id
         }
 
-        const userFound = await service.findUsersToOrganization(findUsersPayload, userToken, trx);
+        const userFound = await service.findUsersToOrganization(findUsersPayload, context, trx);
 
         expect(userFound).toHaveLength(2);
         expect(userFound).toEqual(
@@ -844,10 +904,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
@@ -858,14 +926,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -878,10 +945,9 @@ describe('Organizations', () => {
 
         const inativeUsersInOrganizationPayload = {
             usersId: [signUpOtherMemberCreated.id],
-            organizationId: organizationCreated.id
         }
 
-        const inativedUser = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, userToken, trx);
+        const inativedUser = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, context, trx);
 
         expect(inativedUser).toEqual(
             expect.arrayContaining([
@@ -906,10 +972,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
@@ -920,14 +994,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -946,12 +1019,12 @@ describe('Organizations', () => {
 
         const inativeUsersInOrganizationPayload = {
             usersId: [signUpCreated.id],
-            organizationId: organizationCreated.id
         }
 
         let otherUserToken = { origin: 'user', id: signUpOtherMemberCreated.id };
+        let otherUserContext = {client: otherUserToken, organizationId: organizationCreated.id};
 
-        const inativedUsers = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, otherUserToken, trx);
+        const inativedUsers = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, otherUserContext, trx);
 
         expect(inativedUsers).toEqual(
             expect.arrayContaining([
@@ -971,10 +1044,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
@@ -985,14 +1066,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -1010,11 +1090,10 @@ describe('Organizations', () => {
         await service.responseInvite(responseInvitePayload, trx);
 
         const inativeUsersInOrganizationPayload = {
-            usersId: [signUpOtherMemberCreated.id],
-            organizationId: organizationCreated.id
+            usersId: [signUpOtherMemberCreated.id]
         }
 
-        const inativedUser = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, userToken, trx);
+        const inativedUser = await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, context, trx);
 
         expect(inativedUser).toEqual(
             expect.arrayContaining([
@@ -1056,10 +1135,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: `aaaaaaaaaa`,
@@ -1070,14 +1157,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -1088,11 +1174,7 @@ describe('Organizations', () => {
 
         await service.responseInvite(responseInvitePayload, trx);
 
-        const listUsersInOrganizationPayload = {
-            organizationId: organizationCreated.id
-        }
-
-        const organizationusers = await service.listUsersInOrganization(listUsersInOrganizationPayload, userToken, trx);
+        const organizationusers = await service.listUsersInOrganization({}, context, trx);
 
         const memberRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
 
@@ -1130,10 +1212,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: `aaaaaaaaaa`,
@@ -1144,7 +1234,6 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
@@ -1154,7 +1243,7 @@ describe('Organizations', () => {
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -1175,11 +1264,10 @@ describe('Organizations', () => {
         await service.responseInvite(responseInvitePayload3, trx);
 
         const listUsersInOrganizationPayload = {
-            name: "user",
-            organizationId: organizationCreated.id
+            name: "user"
         }
 
-        const organizationusers = await service.listUsersInOrganization(listUsersInOrganizationPayload, userToken, trx);
+        const organizationusers = await service.listUsersInOrganization(listUsersInOrganizationPayload, context, trx);
 
         const memberRole = await service.getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
 
@@ -1209,10 +1297,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.internet.userName(),
@@ -1223,14 +1319,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -1243,11 +1338,10 @@ describe('Organizations', () => {
 
         const handleUserPermissionInOrganizationPayload = {
             userId: signUpOtherMemberCreated.id,
-            organizationId: organizationCreated.id,
             permission: OrganizationRoles.ADMIN
         };
 
-        const userPermissionChanged = await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, userToken, trx);
+        const userPermissionChanged = await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, context, trx);
 
         const userOrganizationRoleFound = await service.getUserOrganizationRoleById(invitedUserToOrganization.id, trx);
 
@@ -1270,10 +1364,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.internet.userName(),
@@ -1284,14 +1386,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -1304,17 +1405,18 @@ describe('Organizations', () => {
 
         let handleUserPermissionInOrganizationPayload = {
             userId: signUpOtherMemberCreated.id,
-            organizationId: organizationCreated.id,
             permission: OrganizationRoles.ADMIN
         };
 
-        await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, userToken, trx);
+        await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, context, trx);
 
         handleUserPermissionInOrganizationPayload.permission = OrganizationRoles.MEMBER;
         handleUserPermissionInOrganizationPayload.userId = userToken.id;
 
         try {
-            await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, {id: signUpOtherMemberCreated.id, origin: 'user'}, trx);
+            let otherUserToken = {id: signUpOtherMemberCreated.id, origin: 'user'};
+            let otherContext = {client: otherUserToken, organizationId: organizationCreated.id};
+            await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, otherContext, trx);
         } catch(e) {
             expect(e.message).toBe("Only founder can remove admin permission from organization.");
         }
@@ -1327,10 +1429,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.internet.userName(),
@@ -1341,14 +1451,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -1361,15 +1470,14 @@ describe('Organizations', () => {
 
         let handleUserPermissionInOrganizationPayload = {
             userId: signUpOtherMemberCreated.id,
-            organizationId: organizationCreated.id,
             permission: OrganizationRoles.ADMIN
         };
 
-        await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, userToken, trx);
+        await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, context, trx);
 
         handleUserPermissionInOrganizationPayload.permission = OrganizationRoles.MEMBER;
 
-        const userPermissionChanged = await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, userToken, trx);
+        const userPermissionChanged = await service.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, context, trx);
 
         const userOrganizationRoleFound = await service.getUserOrganizationRoleById(invitedUserToOrganization.id, trx);
 
@@ -1393,10 +1501,18 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
@@ -1407,14 +1523,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", signUpOtherMemberCreated.id).select('invite_hash', 'id');
 
@@ -1427,20 +1542,18 @@ describe('Organizations', () => {
 
         const inativeUsersInOrganizationPayload = {
             usersId: [signUpOtherMemberCreated.id],
-            organizationId: organizationCreated.id
         }
 
-        await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, userToken, trx);
+        await service.inativeUsersInOrganization(inativeUsersInOrganizationPayload, context, trx);
 
         const inviteUserToOrganizationPayloadAgain = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email
             }]
         }
 
-        const invitedMember = await service.inviteUserToOrganization(inviteUserToOrganizationPayloadAgain, userToken, trx);
+        const invitedMember = await service.inviteUserToOrganization(inviteUserToOrganizationPayloadAgain, context, trx);
 
         expect(invitedMember).toBeTruthy();
 
@@ -1466,21 +1579,28 @@ describe('Organizations', () => {
 
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            contactEmail: Faker.internet.email(),
         }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
 
         imgGen.generateImage(1, 1, 80, async function(err: Error, image : any) {
 
             const organizationUploadImagePayload = {
                 imageName: "teste-organization-upload2",
                 mimetype: "image/jpeg",
-                data: image.data,
-                organizationId: organizationCreated.id
+                data: image.data
             }
 
-            const organizationImageUploaded = await service.organizationUploadImage(organizationUploadImagePayload, userToken, trx);
+            const organizationImageUploaded = await service.organizationUploadImage(organizationUploadImagePayload, context, trx);
 
             expect(organizationImageUploaded).toEqual(
                 expect.objectContaining({
@@ -1493,7 +1613,7 @@ describe('Organizations', () => {
                     updatedAt: expect.any(Date),
                     userOrganizationId: undefined,
                     logo: expect.any(String)
-                  })
+                })
             )
             done();
         });
@@ -1509,6 +1629,14 @@ describe('Organizations', () => {
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
 
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
+
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -1518,7 +1646,6 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
                 email: signUpOtherMemberCreated.email,
@@ -1526,7 +1653,7 @@ describe('Organizations', () => {
             }]
         }
 
-        const invitedUserToOrganization = await service.inviteUserToOrganization(inviteUserToOrganizationPayload, userToken, trx);
+        const invitedUserToOrganization = await service.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
 
         expect(invitedUserToOrganization).toBeTruthy();
 

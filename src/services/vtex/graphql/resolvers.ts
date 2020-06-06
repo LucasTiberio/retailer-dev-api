@@ -5,9 +5,9 @@ import service from "../service";
 
 const resolvers : IResolvers = {
   Mutation: {
-    verifyAndAttachVtexSecrets: (_, { input }, { client }) => {
+    verifyAndAttachVtexSecrets: (_, { input }, { client, organizationId }) => {
         return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.verifyAndAttachVtexSecrets(input, client, trx);
+            return service.verifyAndAttachVtexSecrets(input, {client, organizationId}, trx);
         });
     },
   },

@@ -62,11 +62,14 @@ describe('Vtex', () => {
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
-        const verifyVtexOrderResource = await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        const verifyVtexOrderResource = await service.verifyAndAttachVtexSecrets(vtexSecrets, context, trx);
         
         expect(verifyVtexOrderResource).toBeTruthy();
 
@@ -92,12 +95,15 @@ describe('Vtex', () => {
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "KDOAKOD",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
         try {
-            await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+            await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
         } catch(e){
             expect(e.message).toBe("Acesso não autorizado")
         }
@@ -110,22 +116,24 @@ describe('Vtex', () => {
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
-        const verifyVtexOrderResource = await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        const verifyVtexOrderResource = await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
         
         expect(verifyVtexOrderResource).toBeTruthy();
 
         const newVtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-IQMERK",
             xVtexApiAppToken: "KLWRMMNMNBADAMKNIZJCIPXDGFTWXOLAYWDQOOQKLFVQFUUFMLVKWHFVOTLHSQOZPZFEJUYTJYQCTHYLLOJMSBEQQHCVCJSVRWBFPPWSNBAXRCCGUZVEGCGNVPNBRCRA",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
-        const verifyVtexOrderResourceChange = await service.verifyAndAttachVtexSecrets(newVtexSecrets,userToken, trx);
+        const verifyVtexOrderResourceChange = await service.verifyAndAttachVtexSecrets(newVtexSecrets,context, trx);
 
         expect(verifyVtexOrderResourceChange).toBeTruthy();
 

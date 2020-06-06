@@ -7,7 +7,7 @@ import { Services } from '../services/types';
 import knexDatabase from '../../knex-database';
 import { IUsersOrganizationServiceRolesUrlShortenerFromDB } from './types';
 
-const utmSource = "plugone";
+const utmSource = "plugone_affiliate";
 
 const affiliateShorterUrlAdapter = (record: IUsersOrganizationServiceRolesUrlShortenerFromDB) => ({
   id: record.id,
@@ -20,17 +20,16 @@ const affiliateShorterUrlAdapter = (record: IUsersOrganizationServiceRolesUrlSho
 
 const generateShortenerUrl = async (affiliateGenerateShortenerUrlPayload: { 
   originalUrl: string
-  organizationId: string,
   serviceName: Services
- } , userToken: IUserToken, trx: Transaction) => {
+ } , context: { client: IUserToken, organizationId: string }, trx: Transaction) => {
 
-  if(!userToken) throw new Error('token must be provided!');
+  if(!context.client) throw new Error('token must be provided!');
 
-  const { originalUrl, organizationId, serviceName } = affiliateGenerateShortenerUrlPayload;
+  const { originalUrl, serviceName } = affiliateGenerateShortenerUrlPayload;
 
-  const userOrganization = await OrganizationService.getUserOrganizationByIds(userToken.id, organizationId, trx);
+  const userOrganization = await OrganizationService.getUserOrganizationByIds(context.client.id, context.organizationId, trx);
 
-  const [organizationService] = await ServicesService.serviceOrganizationByName(organizationId, serviceName, trx);
+  const [organizationService] = await ServicesService.serviceOrganizationByName(context.organizationId, serviceName, trx);
 
   const affiliate = await ServicesService.getServiceMemberById(userOrganization.id, organizationService.id, trx);
 
@@ -38,7 +37,7 @@ const generateShortenerUrl = async (affiliateGenerateShortenerUrlPayload: {
 
   const urlWithMemberAttached = `${originalUrl}?utm_source=${utmSource}&utm_campaign=${affiliate.id}`;
 
-  const shorterUrl = await ShortenerUrlService.shortenerUrl(urlWithMemberAttached, userToken, trx);
+  const shorterUrl = await ShortenerUrlService.shortenerUrl(urlWithMemberAttached, context.client, trx);
 
   const attachedShorterUrlOnAffiliate = await attachShorterUrlOnAffiliate(affiliate.id, shorterUrl.id, trx);
 

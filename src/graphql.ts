@@ -10,6 +10,7 @@ import * as FileType from 'file-type'
 import knexDatabase from './knex-database';
 import { NextFunction } from 'express';
 import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus } from './services/organization/types';
+import redisClient from './lib/Redis';
 
 declare var process : {
 	env: {
@@ -110,7 +111,7 @@ const resolversBase : IResolvers = {
 const directiveResolvers : IDirectiveResolvers = {
   async hasServiceRole(next, _, args : any, context, other : any): Promise<NextFunction> {
 
-  let organizationId = other.variableValues.input.organizationId;
+  const organizationId = await redisClient.getAsync(context.client.id);
 
   if(!organizationId) throw new Error("Organization identifier invalid!")
 
@@ -124,7 +125,10 @@ const directiveResolvers : IDirectiveResolvers = {
 
   const hasSpecifiedRole = userOrganizationRoles.filter((role: IOrganizationRoleResponse ) => role.name === OrganizationRoles.ADMIN);
 
-  if (hasSpecifiedRole.length) return next();
+  if (hasSpecifiedRole.length) {
+    context.organizationId = organizationId
+    return next()
+  };
 
   let serviceName: string;
 
@@ -150,41 +154,36 @@ const directiveResolvers : IDirectiveResolvers = {
   .select('sr.name');
 
   const hasSpecifiedServiceRole = userServiceOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
-  if (hasSpecifiedServiceRole) return next();
+  if (hasSpecifiedServiceRole) {
+    context.organizationId = organizationId;
+    return next()
+  };
   throw new Error(`Must have role: ${args.role}, you have role: ${userServiceOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
   },
-  async hasOrganizationRole(next, _, args : any, context, other : any): Promise<NextFunction> {
+  async hasOrganizationRole(next, _, args : any, context): Promise<NextFunction>{
 
-  let organizationId = other.variableValues.input.organizationId;
+    const organizationId = await redisClient.getAsync(context.client.id);
 
-  if(!organizationId) {
+    if(!organizationId) throw new Error("Invalid session!");
 
-    let organizationName = other.variableValues.input.organizationName;
+    const userOrganizationRoles = await knexDatabase.knex('users as usr')
+    .where('usr.id', context.client.id)
+    .andWhere('uo.organization_id', organizationId)
+    .andWhere('uo.active', true)
+    .innerJoin('users_organizations AS uo', 'uo.user_id', 'usr.id')
+    .innerJoin('users_organization_roles as uor', 'uo.id', 'uor.users_organization_id')
+    .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
+    .select('or.name');
 
-    const [organization] = await knexDatabase.knex('organizations')
-      .where('name', organizationName)
-      .select('id');
+    const hasSpecifiedRole = userOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
+    if (hasSpecifiedRole) {
+      context.organizationId = organizationId
+      return next()
+    } else {
 
-    if(!organization){
-      throw new Error("Organization identifier invalid!")
-    }
-    
-    organizationId = organization.id;
+      throw new Error(`Must have role: ${args.role}, you have role: ${userOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
+    };
 
-  }
-
-  const userOrganizationRoles = await knexDatabase.knex('users as usr')
-  .where('usr.id', context.client.id)
-  .andWhere('uo.organization_id', organizationId)
-  .andWhere('uo.active', true)
-  .innerJoin('users_organizations AS uo', 'uo.user_id', 'usr.id')
-  .innerJoin('users_organization_roles as uor', 'uo.id', 'uor.users_organization_id')
-  .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
-  .select('or.name');
-
-  const hasSpecifiedRole = userOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
-  if (hasSpecifiedRole) return next();
-  throw new Error(`Must have role: ${args.role}, you have role: ${userOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
 },
   async isAuthenticated(next, _, __, context): Promise<NextFunction> {
     const token = context.headers['x-api-token'];

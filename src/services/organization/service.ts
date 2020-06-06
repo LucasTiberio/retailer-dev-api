@@ -159,13 +159,17 @@ const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transact
   return organizationRole;
 }
 
-const inviteUserToOrganization = async (usersToAttach: IInviteUserToOrganizationPayload, token: IUserToken, trx: Transaction) => {
+const inviteUserToOrganization = async (
+    usersToAttach: IInviteUserToOrganizationPayload, 
+    context: { organizationId: string, client: IUserToken },
+    trx: Transaction
+  ) => {
 
-  if(!token) throw new Error("Token must be provided.");
+  if(!context.client) throw new Error("Token must be provided.");
 
   try {
 
-    const organizationId = usersToAttach.organizationId;
+    const organizationId = context.organizationId;
 
     const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('name');
 
@@ -323,9 +327,13 @@ const _usersOrganizationAdapter = (record: IUserOrganizationDB) => ({
   inviteStatus: record.invite_status,
 })
 
-const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes, userToken : IUserToken, trx: Transaction) => {
+const findUsersToOrganization = async (
+    findUserAttributes: IFindUsersAttributes, 
+    context: { client: IUserToken, organizationId: string },
+    trx: Transaction
+  ) => {
 
-  if(!userToken) throw new Error("token must be provided.");
+  if(!context.client) throw new Error("token must be provided.");
 
   const searchTerm = findUserAttributes.name.toLowerCase();
 
@@ -335,8 +343,8 @@ const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes,
     FROM users AS usr
       LEFT JOIN users_organizations AS uo
         ON usr.id = uo.user_id
-        AND uo.organization_id = '${findUserAttributes.organizationId}'
-      WHERE usr.id <> '${userToken.id}' 
+        AND uo.organization_id = '${context.organizationId}'
+      WHERE usr.id <> '${context.client.id}' 
       AND (LOWER(usr.username) LIKE ? OR LOWER(usr.email) LIKE ?) `, [`%${searchTerm}%`,`%${searchTerm}%`]
   );
 
@@ -361,6 +369,12 @@ const getUserOrganizationById = async (userOrganizationId: string, trx?: Transac
 }
 
 const getOrganizationById = async (organizationId: string, trx?: Transaction) => {
+
+  if(trx){
+    const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select(); 
+
+    return _organizationAdapter(organization);
+  }
 
   const organizations = await organizationByIdLoader().load(organizationId)
 
@@ -412,17 +426,18 @@ const getOrganizationRoleById = async (organizationRoleId: string, trx?: Transac
 
 }
 
-const inativeUsersInOrganization = async (inativeUsersInOrganizationPayload: {usersId: string[], organizationId: string}, userToken : IUserToken, trx: Transaction) => {
+const inativeUsersInOrganization = async (
+  inativeUsersInOrganizationPayload: {usersId: string[]}, 
+  context: { organizationId: string, client: IUserToken },
+  trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided.");
-
-  const { organizationId } = inativeUsersInOrganizationPayload;
+  if(!context.client) throw new Error("token must be provided.");
 
   return await Promise.all(inativeUsersInOrganizationPayload.usersId.map(async userId => {
 
     const [userOrganizationFound] = await (trx || knexDatabase.knex)('users_organizations')
     .where('user_id', userId)
-    .andWhere('organization_id', organizationId);
+    .andWhere('organization_id', context.organizationId);
 
     if(!userOrganizationFound) return {
       userError: {
@@ -438,8 +453,8 @@ const inativeUsersInOrganization = async (inativeUsersInOrganizationPayload: {us
       .select('uo.id', 'or.name');
 
     if(userFound.name === OrganizationRoles.ADMIN){
-      const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('user_id');
-      if(organizationFound.user_id !== userToken.id){
+      const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', context.organizationId).select('user_id');
+      if(organizationFound.user_id !== context.client.id){
         return {
           userError: {
             message: 'Not possible inative other admins',
@@ -468,17 +483,20 @@ const inativeUsersInOrganization = async (inativeUsersInOrganizationPayload: {us
 
 }
 
-const listUsersInOrganization = async (listUsersInOrganizationPayload : { showActive?: boolean, name? : string, organizationId: string } & IPagination, userToken: IUserToken, trx: Transaction) => {
+const listUsersInOrganization = async (
+  listUsersInOrganizationPayload : { showActive?: boolean, name? : string } & IPagination, 
+  context: { client: IUserToken, organizationId: string }, 
+  trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided.");
+  if(!context.client) throw new Error("token must be provided.");
 
-  const { organizationId, name, offset, limit, showActive } = listUsersInOrganizationPayload;
+  const { name, offset, limit, showActive } = listUsersInOrganizationPayload;
 
   let query = (trx || knexDatabase.knex)('users_organizations AS uo')
   .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
   .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
-  .where('uo.organization_id', organizationId)
-  .whereNot('uo.user_id', userToken.id)
+  .where('uo.organization_id', context.organizationId)
+  .whereNot('uo.user_id', context.client.id)
 
   if(showActive){
     query.where('uo.active', true);
@@ -537,19 +555,22 @@ const isFounder = async (organizationId: string, userId: string, trx: Transactio
 
 }
 
-const handleUserPermissionInOrganization = async (handleUserPermissionInOrganizationPayload: { permission: OrganizationRoles, organizationId: string, userId: string }, userToken: IUserToken, trx: Transaction) => {
+const handleUserPermissionInOrganization = async (
+  handleUserPermissionInOrganizationPayload: { permission: OrganizationRoles, userId: string }, 
+  context: { organizationId: string, client: IUserToken }, 
+  trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided.");
+  if(!context.client) throw new Error("token must be provided.");
 
-  const { permission, organizationId, userId } = handleUserPermissionInOrganizationPayload;
+  const { permission, userId } = handleUserPermissionInOrganizationPayload;
 
-  if(permission === OrganizationRoles.MEMBER && !(await isFounder(organizationId, userToken.id, trx))){
+  if(permission === OrganizationRoles.MEMBER && !(await isFounder(context.organizationId, context.client.id, trx))){
     throw new Error("Only founder can remove admin permission from organization.")
   }
 
   try {
 
-    const userOrganization = await getUserOrganizationByIds(userId, organizationId, trx);
+    const userOrganization = await getUserOrganizationByIds(userId, context.organizationId, trx);
 
     const newPermission = await getOrganizationRoleId(permission, trx);
   
@@ -587,11 +608,13 @@ const listMyOrganizations = async (userToken : IUserToken, trx: Transaction) => 
 
 }
 
-const organizationDetails = async (organizationDetailsPayload : { organizationName: string}, userToken : IUserToken, trx: Transaction) => {
+const organizationDetails = async (
+  context: { organizationId: string, client: IUserToken },
+  trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided.");
+  if(!context.client) throw new Error("token must be provided.");
 
-  const organization = await getOrganizationByName(organizationDetailsPayload.organizationName, trx);
+  const organization = await getOrganizationById(context.organizationId, trx);
 
   return organization;
 
@@ -617,18 +640,19 @@ const organizationUploadImage = async (organizationUploadImagePayload: {
   imageName: string
   mimetype: string
   data: any
-  organizationId: string
-}, userToken: IUserToken, trx: Transaction) => {
+},
+context: { organizationId: string, client: IUserToken },
+trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided.");
+  if(!context.client) throw new Error("token must be provided.");
 
-  const { mimetype, data, organizationId } = organizationUploadImagePayload;
+  const { mimetype, data } = organizationUploadImagePayload;
 
   if(!mimetype.match(/\/png/ig)?.length && !mimetype.match(/\/jpg/ig)?.length && !mimetype.match(/\/jpeg/ig)?.length){
     throw new Error("only image/png and image/jpg is supported!")
   }
 
-  const path = common.encryptSHA256(organizationId);
+  const path = common.encryptSHA256(context.organizationId);
 
   const pipeline = sharp().resize(248, 160, {
     fit: "contain"
@@ -647,7 +671,7 @@ const organizationUploadImage = async (organizationUploadImagePayload: {
   );
 
   const [organizationAttachLogo] = await (trx || knexDatabase.knex)('organizations')
-  .where('id', organizationId)
+  .where('id', context.organizationId)
   .update({
     logo: imageUploaded.url
   }).returning('*');  
@@ -663,9 +687,9 @@ const setCurrentOrganization = async (currentOrganizationPayload : { organizatio
 
   if(!isUserOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION);
 
-  const currentOrganization = context.redisClient.set(context.client.id, currentOrganizationPayload.organizationId);
+  const currentOrganization = await context.redisClient.setAsync(context.client.id, currentOrganizationPayload.organizationId);
 
-  return currentOrganization;
+  return currentOrganization === "OK";
 
 }
 

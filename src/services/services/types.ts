@@ -64,6 +64,7 @@ export interface ISimpleOrganizationServicePayload{
     serviceName: Services
 }
 
-export interface IListAvailableUsersToServicePayload extends ISimpleOrganizationServicePayload{
+export interface IListAvailableUsersToServicePayload{
     name: string
+    serviceName: Services
 }

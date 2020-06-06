@@ -4,6 +4,7 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import { IOrganizationAdapted } from '../../organization/types';
+import redisClient from '../../../lib/Redis';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -36,6 +37,12 @@ const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
     }
 `
 
+const SET_CURRENT_ORGANIZATION = `
+    mutation setCurrentOrganization($input: SetCurrentOrganizationInput!) {
+        setCurrentOrganization(input: $input)
+    }
+`
+
 const CREATE_ORGANIZATION = `
     mutation createOrganization($input: CreateOrganizationInput!) {
         createOrganization(input: $input){
@@ -59,8 +66,6 @@ describe('services graphql', () => {
     let userClient: IUserToken;
 
     let userToken: string;
-
-    let organizationCreated: IOrganizationAdapted;
 
     beforeEach(async () => {
 
@@ -91,38 +96,56 @@ describe('services graphql', () => {
         const userVerifyEmailPayload = {
             verificationHash: userFromDb.verification_hash
         }
-
+        
         await request
         .post('/graphql')
         .set('content-type', 'application/json')
         .send({
-        'query': USER_VERIFY_EMAIL, 
-        'variables': {
+            'query': USER_VERIFY_EMAIL, 
+            'variables': {
                 input: userVerifyEmailPayload
             }
         });
-
+        
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
             contactEmail: Faker.internet.email()
         }
-
+        
         const createOrganizationResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
         .set('x-api-token', userToken)
         .send({
-        'query': CREATE_ORGANIZATION, 
-        'variables': {
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
                 input: createOrganizationPayload
             }
         });
+        
+        let organizationCreated = createOrganizationResponse.body.data.createOrganization;
 
-        organizationCreated = createOrganizationResponse.body.data.createOrganization;
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await redisClient.flushall('ASYNC');
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': SET_CURRENT_ORGANIZATION, 
+        'variables': {
+                input: currentOrganizationPayload
+            }
+        });
+
     });
 
     afterAll(async () => {
         await knexDatabase.cleanMyTestDB();
+        await redisClient.end();
     })
 
     describe("vtex secrets graphql", () => {
@@ -132,8 +155,7 @@ describe('services graphql', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
 
             const verifyAndAttachVtexSecretsResponse = await request

@@ -8,11 +8,8 @@ import moment from 'moment';
 
 const ORDER_MOMENTS = [
   "payment-pending",
-  "order-created order-completed",
   "payment-approved",
   "payment-denied",
-  "waiting-for-seller-decision",
-  "handling",
   "canceled",
 ]
 
@@ -51,10 +48,9 @@ const verifyAndAttachVtexSecrets = async (input : {
   xVtexApiAppKey: string
   xVtexApiAppToken: string,
   accountName: string,
-  organizationId: string
-}, userToken: IUserToken, trx: Transaction) => {
+}, context: { organizationId: string, client: IUserToken }, trx: Transaction) => {
 
-  if(!userToken) throw new Error("Token must be provided");
+  if(!context.client) throw new Error("Token must be provided");
 
   try {
 
@@ -95,7 +91,7 @@ const verifyAndAttachVtexSecrets = async (input : {
 
       if(hookCreated.status === 200){
 
-        await attachVtexSecrets(input, trx);
+        await attachVtexSecrets(input, context.organizationId, trx);
         
         return true
 
@@ -114,11 +110,12 @@ const verifyAndAttachVtexSecrets = async (input : {
 const attachVtexSecrets = async (input: {
   xVtexApiAppKey: string
   xVtexApiAppToken: string,
-  accountName: string,
-  organizationId: string
-}, trx: Transaction) => {
+  accountName: string
+} 
+,organizationId : string 
+,trx: Transaction) => {
 
-  const { xVtexApiAppKey, xVtexApiAppToken, accountName, organizationId } = input;
+  const { xVtexApiAppKey, xVtexApiAppToken, accountName } = input;
 
   const [verifySecretExists] = await (trx || knexDatabase)('organization_vtex_secrets')
     .where('store_name', accountName)

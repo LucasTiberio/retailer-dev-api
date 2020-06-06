@@ -7,6 +7,7 @@ import { IOrganizationAdapted, OrganizationInviteStatus } from '../../organizati
 import { Services, IServiceAdapted, IServiceAdaptedFromDB, ServiceRoles } from '../types';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
+import redisClient from '../../../lib/Redis';
 
 declare var process : {
 	env: {
@@ -54,8 +55,8 @@ const CREATE_SERVICE_IN_ORGANIZATION = `
 `
 
 const LIST_AVAILABLE_SERVICES = `
-    query listAvailableServices($input: ListAvailableServicesInput!) {
-        listAvailableServices(input: $input){
+    query listAvailableServices{
+        listAvailableServices{
             id
             name
             active
@@ -241,6 +242,12 @@ const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
     }
 `
 
+const SET_CURRENT_ORGANIZATION = `
+    mutation setCurrentOrganization($input: SetCurrentOrganizationInput!) {
+        setCurrentOrganization(input: $input)
+    }
+`
+
 describe('services graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -308,70 +315,41 @@ describe('services graphql', () => {
         });
 
         organizationCreated = createOrganizationResponse.body.data.createOrganization;
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await redisClient.flushall('ASYNC');
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': SET_CURRENT_ORGANIZATION, 
+        'variables': {
+                input: currentOrganizationPayload
+            }
+        });
     });
 
     afterAll(async () => {
         await knexDatabase.cleanMyTestDB();
+        await redisClient.end();
     })
 
     describe("organization tests with user verified", () => {
 
-        // test("user should create new service in organization graphql", async done => {
-
-        //     const [serviceFound] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id');
-
-        //     const createServiceInOrganizationPayload = {
-        //         organizationId: organizationCreated.id,
-        //         serviceId: serviceFound.id,
-        //     }
-
-        //     const createServiceInOrganizationResponse = await request
-        //     .post('/graphql')
-        //     .set('content-type', 'application/json')
-        //     .set('x-api-token', userToken)
-        //     .send({
-        //     'query': CREATE_SERVICE_IN_ORGANIZATION, 
-        //     'variables': {
-        //             input: createServiceInOrganizationPayload
-        //         }
-        //     });
-
-        //     expect(createServiceInOrganizationResponse.statusCode).toBe(200);
-        //     expect(createServiceInOrganizationResponse.body.data.createServiceInOrganization).toBeTruthy();
-    
-        //     const organizationService = await knexDatabase.knex('organization_services').select();
-            
-        //     expect(organizationService).toHaveLength(1);
-        //     expect(organizationService[0]).toEqual(
-        //         expect.objectContaining({
-        //             id: expect.any(String),
-        //             service_id: serviceFound.id,
-        //             organization_id: organizationCreated.id,
-        //             updated_at: expect.any(Date),
-        //             created_at: expect.any(Date)
-        //         })
-        //     )
-    
-        //     done();
-        // })
-
         test("user should list services availables to organization", async done => {
 
             const servicesFound = await knexDatabase.knex('services').select('id', 'name');
-
-            const listAvailableServicesPayload = {
-                organizationId: organizationCreated.id
-            }
 
             const listAvailableServicesResponse = await request
             .post('/graphql')
             .set('content-type', 'application/json')
             .set('x-api-token', userToken)
             .send({
-            'query': LIST_AVAILABLE_SERVICES, 
-            'variables': {
-                    input: listAvailableServicesPayload
-                }
+            'query': LIST_AVAILABLE_SERVICES
             });
 
             expect(listAvailableServicesResponse.statusCode).toBe(200);
@@ -400,30 +378,13 @@ describe('services graphql', () => {
             beforeEach(async () => {
                 const [serviceFoundDB] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id', 'name', 'active');
                 serviceFound = serviceFoundDB
-                
-                // const createServiceInOrganizationPayload = {
-                //     organizationId: organizationCreated.id,
-                //     serviceId: serviceFound.id,
-                // }
-
-                // await request
-                // .post('/graphql')
-                // .set('content-type', 'application/json')
-                // .set('x-api-token', userToken)
-                // .send({
-                // 'query': CREATE_SERVICE_IN_ORGANIZATION, 
-                // 'variables': {
-                //         input: createServiceInOrganizationPayload
-                //     }
-                // });
 
                 await knexDatabase.knex('organization_vtex_secrets').del();
 
                 const vtexSecrets = {
                     xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                     xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                    accountName: "beightoneagency",
-                    organizationId: organizationCreated.id
+                    accountName: "beightoneagency"
                 }
     
                 await request
@@ -458,9 +419,9 @@ describe('services graphql', () => {
                 });
         
                 let otherSignUpCreated = otherSignUpResponse.body.data.signUp
-        
+
                 const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash');
-        
+
                 const userVerifyEmailPayload = {
                     verificationHash: userFromDb.verification_hash
                 }
@@ -476,7 +437,6 @@ describe('services graphql', () => {
                 });
     
                 const inviteUserToOrganizationPayload = {
-                    organizationId: organizationCreated.id,
                     users: [{
                         id: otherSignUpCreated.id,
                         email: otherSignUpCreated.email
@@ -493,7 +453,7 @@ describe('services graphql', () => {
                         input: inviteUserToOrganizationPayload
                     }
                 });
-        
+
                 const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
     
                 const responseOrganizationInvitePayload = {
@@ -514,11 +474,10 @@ describe('services graphql', () => {
 
                 const addUserInOrganizationPayload = {
                     userId: otherSignUpCreated.id,
-                    organizationId: organizationCreated.id,
                     serviceName: Services.AFFILIATE
                 }
 
-                const addUserInOrganizationResponse = await request
+                const addUserInOrganizationServiceResponse = await request
                 .post('/graphql')
                 .set('content-type', 'application/json')
                 .set('x-api-token', userToken)
@@ -529,11 +488,11 @@ describe('services graphql', () => {
                     }
                 });
 
-                expect(addUserInOrganizationResponse.statusCode).toBe(200);
+                expect(addUserInOrganizationServiceResponse.statusCode).toBe(200);
 
                 const [serviceRoles] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
-                expect(addUserInOrganizationResponse.body.data.addUserInOrganizationService).toEqual(
+                expect(addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService).toEqual(
                     expect.objectContaining({
                         id: expect.any(String),
                         serviceRoles: expect.objectContaining({
@@ -606,7 +565,6 @@ describe('services graphql', () => {
                 });
     
                 const inviteUserToOrganizationPayload = {
-                    organizationId: organizationCreated.id,
                     users: [{
                         id: otherSignUpCreated.id,
                         email: otherSignUpCreated.email
@@ -643,7 +601,6 @@ describe('services graphql', () => {
                 });
     
                 const listAvailableUsersToServicePayload = {
-                    organizationId:organizationCreated.id,
                     serviceName: Services.AFFILIATE,
                     name: "usu"
                 }
@@ -720,7 +677,6 @@ describe('services graphql', () => {
                 });
 
                 const inviteUserToOrganizationPayload = {
-                    organizationId: organizationCreated.id,
                     users: [{
                         id: otherSignUpCreated.id,
                         email: otherSignUpCreated.email
@@ -758,7 +714,6 @@ describe('services graphql', () => {
 
                 const addUserInOrganizationPayload = {
                     userId: otherSignUpCreated.id,
-                    organizationId: organizationCreated.id,
                     serviceName: Services.AFFILIATE
                 }
 
@@ -774,7 +729,6 @@ describe('services graphql', () => {
                 });
     
                 const listUsersInOrganizationServicePayload = {
-                    organizationId:organizationCreated.id,
                     serviceName: Services.AFFILIATE 
                 }
 
@@ -856,7 +810,6 @@ describe('services graphql', () => {
                 });
 
                 const inviteUserToOrganizationPayload = {
-                    organizationId: organizationCreated.id,
                     users: [{
                         id: otherSignUpCreated.id,
                         email: otherSignUpCreated.email
@@ -894,7 +847,6 @@ describe('services graphql', () => {
 
                 const addUserInOrganizationPayload = {
                     userId: otherSignUpCreated.id,
-                    organizationId: organizationCreated.id,
                     serviceName: Services.AFFILIATE
                 }
 
@@ -910,7 +862,6 @@ describe('services graphql', () => {
                 });
     
                 const getUserInOrganizationServicePayload = {
-                    organizationId:organizationCreated.id,
                     userOrganizationId: invitedUserToOrganization.id 
                 }
 
@@ -990,7 +941,6 @@ describe('services graphql', () => {
                 });
     
                 const inviteUserToOrganizationPayload = {
-                    organizationId: organizationCreated.id,
                     users: [{
                         id: otherSignUpCreated.id,
                         email: otherSignUpCreated.email
@@ -1027,7 +977,6 @@ describe('services graphql', () => {
                 });
     
                 const addUserInOrganizationServicePayload = {
-                    organizationId:organizationCreated.id,
                     userId: otherSignUpCreated.id,
                     serviceName: Services.AFFILIATE 
                 };
@@ -1044,7 +993,6 @@ describe('services graphql', () => {
                 });
     
                 const userInServiceHandleRolePayload = {
-                    organizationId:organizationCreated.id,
                     userId: otherSignUpCreated.id,
                     serviceName: Services.AFFILIATE,
                     serviceRole: ServiceRoles.ADMIN
@@ -1131,7 +1079,6 @@ describe('services graphql', () => {
                 });
     
                 const inviteUserToOrganizationPayload = {
-                    organizationId: organizationCreated.id,
                     users: [{
                         id: otherSignUpCreated.id,
                         email: otherSignUpCreated.email
@@ -1168,7 +1115,6 @@ describe('services graphql', () => {
                 });
     
                 const addUserInOrganizationServicePayload = {
-                    organizationId:organizationCreated.id,
                     userId: otherSignUpCreated.id,
                     serviceName: Services.AFFILIATE 
                 };
@@ -1185,7 +1131,6 @@ describe('services graphql', () => {
                 });
     
                 const inativeUserFromServiceOrganizationPayload = {
-                    organizationId:organizationCreated.id,
                     userId: otherSignUpCreated.id,
                     serviceName: Services.AFFILIATE 
                 }
