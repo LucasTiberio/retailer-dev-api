@@ -161,11 +161,14 @@ describe('Vtex', () => {
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
-        await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets, context, trx);
 
         const getVtexDepartmentsPayload = {
             organizationId: organizationCreated.id
@@ -184,11 +187,14 @@ describe('Vtex', () => {
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
-        await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         await (trx || knexDatabase.knex)('organization_vtex_comission').insert({
             organization_id: organizationCreated.id,
@@ -196,11 +202,7 @@ describe('Vtex', () => {
             vtex_commission_percentage: 15
         })
 
-        const vtexDepartmentsCommissionsPayload = {
-            organizationId: organizationCreated.id
-        }
-
-        const vtexCommissions = await service.getVtexDepartmentsCommissions(vtexDepartmentsCommissionsPayload, userToken, trx);
+        const vtexCommissions = await service.getVtexDepartmentsCommissions(context, trx);
 
         expect(vtexCommissions).toEqual(
             expect.objectContaining(
@@ -223,20 +225,22 @@ describe('Vtex', () => {
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
-        await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         const handleOrganizationVtexComissionPayload = {
-            organizationId: organizationCreated.id,
             vtexDepartmentId: "1",
             vtexCommissionPercentage: 15,
             active: true
         }
 
-        const organizationVtexComissionAdded = await service.handleOrganizationVtexComission(handleOrganizationVtexComissionPayload, userToken, trx);
+        const organizationVtexComissionAdded = await service.handleOrganizationVtexComission(handleOrganizationVtexComissionPayload, context, trx);
 
         expect(organizationVtexComissionAdded).toEqual(
             expect.objectContaining({
@@ -250,11 +254,7 @@ describe('Vtex', () => {
             })
         )
 
-        const vtexDepartmentsCommissionsPayload = {
-            organizationId: organizationCreated.id
-        }
-
-        const vtexCommissions = await service.getVtexDepartmentsCommissions(vtexDepartmentsCommissionsPayload, userToken, trx);
+        const vtexCommissions = await service.getVtexDepartmentsCommissions(context, trx);
 
         expect(vtexCommissions).toEqual(
             expect.objectContaining(
@@ -277,29 +277,30 @@ describe('Vtex', () => {
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
-        await service.verifyAndAttachVtexSecrets(vtexSecrets,userToken, trx);
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         const handleOrganizationVtexComissionPayload = {
-            organizationId: organizationCreated.id,
             vtexDepartmentId: "1",
             vtexCommissionPercentage: 15,
             active: true
         }
 
-        await service.handleOrganizationVtexComission(handleOrganizationVtexComissionPayload, userToken, trx);
+        await service.handleOrganizationVtexComission(handleOrganizationVtexComissionPayload, context, trx);
 
         const handleOrganizationVtexComissionDesactivePayload = {
-            organizationId: organizationCreated.id,
             vtexDepartmentId: "1",
             vtexCommissionPercentage: 15,
             active: false
         }
 
-        const organizationVtexComissionDesactived = await service.handleOrganizationVtexComission(handleOrganizationVtexComissionDesactivePayload, userToken, trx);
+        const organizationVtexComissionDesactived = await service.handleOrganizationVtexComission(handleOrganizationVtexComissionDesactivePayload, context, trx);
 
         expect(organizationVtexComissionDesactived).toEqual(
             expect.objectContaining({
@@ -313,11 +314,7 @@ describe('Vtex', () => {
             })
         )
 
-        const vtexDepartmentsCommissionsPayload = {
-            organizationId: organizationCreated.id
-        }
-
-        const vtexCommissions = await service.getVtexDepartmentsCommissions(vtexDepartmentsCommissionsPayload, userToken, trx);
+        const vtexCommissions = await service.getVtexDepartmentsCommissions(context, trx);
 
         expect(vtexCommissions).toEqual(
             expect.objectContaining(
