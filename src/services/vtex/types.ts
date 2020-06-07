@@ -8,6 +8,15 @@ export interface IVtexIntegrationFromDB{
     created_at: Date
     updated_at: Date
 }
+export interface IVtexCommissionFromDB{
+    id: string
+    organization_id: string
+    vtex_department_id: string
+    active: boolean
+    vtex_commission_percentage: number
+    created_at: Date
+    updated_at: Date
+}
 
 export interface IVtexIntegrationAdapted{
     id: string
@@ -102,4 +111,14 @@ interface ITargetConfiguration{
 
   interface IZipCodeRanges{
     inclusive: boolean
+  }
+
+  export interface IVtexCategoryThree{
+    id: number
+    name: string
+    hasChildren: boolean
+    url: string
+    children: any
+    Title: string
+    MetaTagDescription: string
   }

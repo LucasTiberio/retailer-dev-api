@@ -1,5 +1,39 @@
+extend type Query{
+  vtexDepartmentsCommissions(input: VtexDepartmentsCommissionsInput!): [VtexDepartmentsComissionsAdapted]! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
+}
+
 extend type Mutation{
+  handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input HandleOrganizationVtexCommissionInput {
+  organizationId: String!
+  vtexDepartmentId: String!
+  vtexCommissionPercentage: Int!
+  active: Boolean!
+}
+
+type VtexDepartmentsComissions{
+  id: String!
+  organizationId: String!
+  vtexDepartmentId: String!
+  active: Boolean!
+  vtexCommissionPercentage: Int!
+  updatedAt: Datetime!
+  createdAt: Datetime!
+}
+
+type VtexDepartmentsComissionsAdapted{
+  id: String!
+  name: String!
+  url: String!
+  active: Boolean!
+  percentage: Int
+}
+
+input VtexDepartmentsCommissionsInput{
+  organizationId: String!
 }
 
 input VerifyAndAttachVtexSecretsInput{

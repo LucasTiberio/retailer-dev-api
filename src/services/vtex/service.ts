@@ -3,8 +3,9 @@ import knexDatabase from '../../knex-database';
 import { IUserToken } from '../authentication/types';
 import axios from 'axios';
 import store from '../../store';
-import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign } from './types';
+import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign, IVtexCategoryThree, IVtexCommissionFromDB } from './types';
 import moment from 'moment';
+import { mockVtexDepartments } from './__mocks__';
 
 const ORDER_MOMENTS = [
   "payment-pending",
@@ -27,6 +28,16 @@ const vtexAdapter = (record: IVtexIntegrationFromDB) => ({
   status: record.status
 })
 
+const vtexCommissionsAdapter = (record: IVtexCommissionFromDB) => ({
+  id: record.id,
+  organizationId: record.organization_id,
+  vtexDepartmentId: record.vtex_department_id,
+  active: record.active,
+  vtexCommissionPercentage: record.vtex_commission_percentage,
+  updatedAt: record.updated_at,
+  createdAt: record.created_at
+})
+
 const organizationServicesByOrganizationIdLoader = store.registerOneToManyLoader(
   async (organizationIds : string[]) => {
     const query = await knexDatabase.knex('organization_vtex_secrets')
@@ -46,6 +57,9 @@ const buildOrderHookVtexUrl = (accountName : string) =>
 
 const buildCreateCampaignVtexUrl = (accountName : string) => 
   `https://${accountName}.vtexcommercestable.com.br/api/rnb/pvt/campaignConfiguration`
+
+const buildGetCategoriesThreeVtexUrl = (accountName : string) => 
+  `https://${accountName}.vtexcommercestable.com.br/api/catalog_system/pub/category/tree/1`
 
 const verifyAndAttachVtexSecrets = async (input : {
   xVtexApiAppKey: string
@@ -282,9 +296,116 @@ const createUserVtexCampaign = async (userOrganizationServiceId: string, vtexSec
 
 }
 
+const getVtexDepartments = async (getVtexDepartmentsPayload : { organizationId: string }, userToken : IUserToken, trx: Transaction) => {
+
+  if(process.env.NODE_ENV === 'test') return mockVtexDepartments;
+
+  if(!userToken) throw new Error("Token must be provided");
+
+  const { organizationId } = getVtexDepartmentsPayload;
+
+  const storeSecrets = await getSecretsByOrganizationId(organizationId, trx);
+
+  if(!storeSecrets) throw new Error("Store integrations doesnt exists.")
+
+  const response = await axios.get(
+    buildGetCategoriesThreeVtexUrl(storeSecrets?.storeName), 
+    {
+      headers: {
+        'content-type': 'Content-Type',
+      }
+   }
+  )
+
+  return response.data;
+
+}
+
+const getVtexDepartmentsCommissions = async (input : { organizationId : string}, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("Token must be provided");
+
+  const { organizationId } = input;
+
+  const vtexDepartments = await getVtexDepartments({organizationId}, userToken, trx);
+
+  const commissionsDepartmentsRegistered = await getComissionsDepartmentsByOrganizationId(organizationId, trx);
+
+  const comissionsAttacheds = vtexDepartments.map((item: {id: number, name: string, url: string}) => {
+
+    const comissionFound = commissionsDepartmentsRegistered.filter(comissionDepartment => Number(comissionDepartment.vtexDepartmentId) === item.id)
+
+      return ({
+        id: item.id,
+        name: item.name,
+        url: item.url,
+        active: comissionFound.length ? comissionFound[0].active : false,
+        percentage: comissionFound.length ? comissionFound[0].vtexCommissionPercentage : null,
+      })
+
+  })
+
+  return comissionsAttacheds;
+
+} 
+
+const getComissionsDepartmentsByOrganizationId = async (organizationId: string, trx: Transaction) => {
+
+  const vtexComissions = await (trx || knexDatabase)('organization_vtex_comission')
+  .where('organization_id', organizationId)
+  .select();
+
+  return vtexComissions.map(vtexCommissionsAdapter)
+
+}
+
+const handleOrganizationVtexComission = async (handleOrganizationVtexComissionPayload : {
+  organizationId: string,
+  vtexDepartmentId: string,
+  vtexCommissionPercentage: number,
+  active?: boolean
+}, userToken: IUserToken, trx: Transaction) => {
+
+  if(!userToken) throw new Error("Token must be provided");
+
+  const { organizationId, vtexDepartmentId, vtexCommissionPercentage, active } = handleOrganizationVtexComissionPayload;
+
+  const [organizationVtexCommissionFound] = await (trx || knexDatabase.knex)('organization_vtex_comission')
+    .where('organization_id', organizationId)
+    .andWhere('vtex_department_id', vtexDepartmentId)
+    .select('id', 'active');
+
+  if(!organizationVtexCommissionFound){
+
+    const [organizationVtexCommission] = await (trx || knexDatabase.knex)('organization_vtex_comission').insert({
+      organization_id: organizationId,
+      vtex_department_id: vtexDepartmentId,
+      vtex_commission_percentage: vtexCommissionPercentage,
+      active: active ?? true
+    }).returning('*')
+
+    return vtexCommissionsAdapter(organizationVtexCommission)
+
+  }  
+
+  const [organizationVtexCommissionUpdated] = await (trx || knexDatabase.knex)('organization_vtex_comission').update({
+    organization_id: organizationId,
+    vtex_department_id: vtexDepartmentId,
+    vtex_commission_percentage: vtexCommissionPercentage,
+    active: active ?? organizationVtexCommissionFound.active
+  }).where('id', organizationVtexCommissionFound.id)
+  .returning('*')
+
+  return vtexCommissionsAdapter(organizationVtexCommissionUpdated)
+
+}
+
 export default {
   verifyAndAttachVtexSecrets,
   verifyIntegration,
   getSecretsByOrganizationId,
-  createUserVtexCampaign
+  createUserVtexCampaign,
+  getVtexDepartments,
+  getVtexDepartmentsCommissions,
+  handleOrganizationVtexComission
 }

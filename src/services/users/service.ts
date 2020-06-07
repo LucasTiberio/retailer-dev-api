@@ -84,8 +84,8 @@ const verifyEmail = async (hash: string, trx: Transaction) => {
   try {
       const [user] = await (trx || database.knex)('users')
           .where('verification_hash', hash)
-          .select();     
-
+          .select();    
+          
       if(!user) throw new Error("User already verified!");
 
       await (trx || database.knex)('users')
