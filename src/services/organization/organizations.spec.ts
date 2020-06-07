@@ -446,7 +446,6 @@ describe('Organizations', () => {
         };
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 email: signUpOtherMemberPayload.email
             }]
