@@ -10,4 +10,5 @@ export interface IContext{
     client: IUserToken
     organizationId: string
     redisClient?: RedisClient
+    isOrganizationAdmin?: boolean
 }

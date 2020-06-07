@@ -1,0 +1,47 @@
+extend type Query{
+    userOrganizationPermissions(input: UserOrganizationPermissionsInput): [OrganizationPermissions]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
+    userServicePermissions(input: UserServicePermissionsInput!): [ServicePermissions]! @hasServiceRole(role: ["ADMIN", "RESPONSIBLE","ANALYST"]) @isVerified @isAuthenticated
+}
+
+input UserOrganizationPermissionsInput{
+    name: PermissionName!
+}
+
+input UserServicePermissionsInput{
+    name: ServicePermissionName
+    serviceName: ServiceName!
+}
+
+type OrganizationPermissions{
+    id: String!
+    permissionName: PermissionName!
+    organizationRoleName: OrganizationRoleName!
+    grant: PermissionGrant!
+}
+
+type ServicePermissions{
+    id: String!
+    permissionName: ServicePermissionName!
+    serviceRoleName: ServiceRolesName!
+    grant: PermissionGrant!
+    service: Service!
+}
+
+enum PermissionName{
+    settings
+    members
+    integrations
+    affiliate
+}
+
+enum ServicePermissionName{
+    commission
+    orders
+    generateLink
+}
+
+enum PermissionGrant{
+    write
+    read
+    hide
+}

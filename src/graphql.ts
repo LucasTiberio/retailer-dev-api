@@ -126,7 +126,8 @@ const directiveResolvers : IDirectiveResolvers = {
   const hasSpecifiedRole = userOrganizationRoles.filter((role: IOrganizationRoleResponse ) => role.name === OrganizationRoles.ADMIN);
 
   if (hasSpecifiedRole.length) {
-    context.organizationId = organizationId
+    context.organizationId = organizationId;
+    context.isOrganizationAdmin = true;
     return next()
   };
 
@@ -156,6 +157,7 @@ const directiveResolvers : IDirectiveResolvers = {
   const hasSpecifiedServiceRole = userServiceOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
   if (hasSpecifiedServiceRole) {
     context.organizationId = organizationId;
+    context.isOrganizationAdmin = false;
     return next()
   };
   throw new Error(`Must have role: ${args.role}, you have role: ${userServiceOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)

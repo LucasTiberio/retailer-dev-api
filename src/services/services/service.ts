@@ -448,6 +448,7 @@ export default {
   listAvailableUsersToService,
   getOrganizationServicesByOrganizationId,
   serviceOrganizationByName,
+  getServiceRolesByName,
   inativeUserFromServiceOrganization,
   userInServiceHandleRole,
   listUsersInOrganizationService,
@@ -456,6 +457,7 @@ export default {
   addUserInOrganizationService,
   getServiceMemberById,
   getServiceById,
+  getUserOrganizationServiceRole,
   getServiceRolesById,
   getUserInOrganizationService,
   getServiceByName
