@@ -174,6 +174,17 @@ const getUserOrganizationServiceRole = async (usersOrganizationId: string, servi
 
 }
 
+const getUserOrganizationServiceRoleById = async (userOrganizationServiceRoleId: string, trx: Transaction) => {
+
+  const [userReactiveInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+  .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
+  .where('uosr.id', userOrganizationServiceRoleId)
+  .select('sr.*');
+
+  return _serviceRolesAdapter(userReactiveInOrganizationService);
+
+}
+
 const addUserInOrganizationService = async (
     attrs : { userId : string, serviceName: Services }, 
     context: { organizationId: string, client: IUserToken }, 
@@ -447,6 +458,7 @@ export default {
   getOrganizationServicesById,
   listAvailableUsersToService,
   getOrganizationServicesByOrganizationId,
+  getUserOrganizationServiceRoleById,
   serviceOrganizationByName,
   getServiceRolesByName,
   inativeUserFromServiceOrganization,
