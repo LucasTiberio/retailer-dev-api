@@ -7,6 +7,9 @@ import ServicesService from './services';
 import VtexService from './vtex';
 import ShortenerUrlService from './shortener-url';
 import AffiliateService from './affiliate';
+import OrganizationPermissionService from './organization-permissions';
+import ServicePermissionService from './service-permissions';
+import MenuService from './menu';
 
 let services = [
   UserService,
@@ -15,7 +18,10 @@ let services = [
   OrganizationService,
   ServicesService,
   VtexService,
-  AffiliateService
+  AffiliateService,
+  OrganizationPermissionService,
+  ServicePermissionService,
+  MenuService
 ];
 
 export default {

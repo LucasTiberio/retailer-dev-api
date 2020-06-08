@@ -17,20 +17,19 @@ const resolvers : IResolvers = {
         return service.setCurrentOrganization(input, context, trx);
       });
     },
-    organizationUploadImage: async (_, { input }, { client }) => {
+    organizationUploadImage: async (_, { input }, { client, organizationId }) => {
       const { createReadStream, filename, mimetype } = await input.data;
       return database.knex.transaction((trx: Transaction) => {
         return service.organizationUploadImage({
           imageName: filename,
           data: createReadStream(),
           mimetype,
-          organizationId: input.organizationId
-        }, client, trx);
+        }, {client, organizationId}, trx);
       });
     },
-    inviteUserToOrganization: (_, { input }, { client }) => {
+    inviteUserToOrganization: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.inviteUserToOrganization(input, client, trx);
+        return service.inviteUserToOrganization(input, {client, organizationId}, trx);
       });
     },
     responseOrganizationInvite: (_, { input }) => {
@@ -38,14 +37,14 @@ const resolvers : IResolvers = {
         return service.responseInvite(input, trx);
       });
     },
-    inativeUsersInOrganization: (_, { input }, { client }) => {
+    inativeUsersInOrganization: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.inativeUsersInOrganization(input, client, trx);
+        return service.inativeUsersInOrganization(input, {client, organizationId}, trx);
       });
     },
-    handleUserPermissionInOrganization: (_, { input }, { client }) => {
+    handleUserPermissionInOrganization: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.handleUserPermissionInOrganization(input, client, trx);
+        return service.handleUserPermissionInOrganization(input, {client, organizationId}, trx);
       });
     }
   },
@@ -55,9 +54,9 @@ const resolvers : IResolvers = {
         return service.verifyOrganizationName(input.name, trx);
       });
     },
-    organizationDetails: (_, { input }, {client}) => {
+    organizationDetails: (_, __, {client, organizationId}) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.organizationDetails(input, client, trx);
+        return service.organizationDetails({client, organizationId}, trx);
       });
     },
     listMyOrganizations: (_, __, { client }) => {
@@ -65,14 +64,14 @@ const resolvers : IResolvers = {
         return service.listMyOrganizations(client, trx);
       });
     },
-    listUsersInOrganization: (_, { input }, { client }) => {
+    listUsersInOrganization: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.listUsersInOrganization(input, client, trx);
+        return service.listUsersInOrganization(input, {client, organizationId}, trx);
       });
     },
-    findUsersToOrganization: (_, { input }, { client }) => {
+    findUsersToOrganization: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.findUsersToOrganization(input, client, trx);
+        return service.findUsersToOrganization(input, {client, organizationId}, trx);
       });
     }
   },

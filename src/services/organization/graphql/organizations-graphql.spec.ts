@@ -166,8 +166,8 @@ const LIST_MY_ORGANIZATIONS = `
 `
 
 const ORGANIZATION_DETAILS = `
-    query organizationDetails($input: OrganizationDetailsInput!){
-        organizationDetails(input: $input){
+    query organizationDetails{
+        organizationDetails{
             id
             contactEmail
             name
@@ -244,7 +244,7 @@ describe('organizations graphql', () => {
 
     afterAll(async () => {
         await knexDatabase.cleanMyTestDB();
-        redisClient.end();
+        await redisClient.end();
     })
 
     describe("organization tests with user verified", () => {
@@ -267,54 +267,8 @@ describe('organizations graphql', () => {
             });
         })
 
-        test.only("user should send a current organization to redis graphql", async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
-
-            const createOrganizationResponse = await request
-            .post('/graphql')
-            .set('content-type', 'application/json')
-            .set('x-api-token', userToken)
-            .send({
-            'query': CREATE_ORGANIZATION, 
-            'variables': {
-                    input: createOrganizationPayload
-                }
-            });
-
-            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
-    
-            const currentOrganizationPayload = {
-                organizationId: organizationCreated.id
-            }
-
-            const setCurrentOrganizationResponse = await request
-            .post('/graphql')
-            .set('content-type', 'application/json')
-            .set('x-api-token', userToken)
-            .send({
-            'query': SET_CURRENT_ORGANIZATION, 
-            'variables': {
-                    input: currentOrganizationPayload
-                }
-            });
-
-            expect(setCurrentOrganizationResponse.body.data.setCurrentOrganization).toBeTruthy();
-            redisClient.get(signUpCreated.id, (_, data) => {
-                expect(data).toBe(organizationCreated.id)
-                redisClient.keys('*', function (_, keys) {
-                    expect(keys).toHaveLength(1);
-                    done();  
-                  }); 
-            });
-    
-        })
-
         test("user should create new organization", async done => {
-
+          
             const createOrganizationPayload = {
                 name: Faker.internet.userName(),
                 contactEmail: Faker.internet.email()
@@ -363,6 +317,53 @@ describe('organizations graphql', () => {
     
             done();
         })
+
+        test("user should send a current organization to redis graphql", async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            const setCurrentOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+
+            expect(setCurrentOrganizationResponse.body.data.setCurrentOrganization).toBeTruthy();
+            redisClient.get(signUpCreated.id, (_, data) => {
+                expect(data).toBe(organizationCreated.id)
+                redisClient.keys('*', function (_, keys) {
+                    expect(keys).toHaveLength(1);
+                    done();  
+                  }); 
+            });
+    
+        })
+
 
         test("user should verify organization duplicated name before create with new organization graphql", async done => {
 
@@ -494,20 +495,30 @@ describe('organizations graphql', () => {
                     input: createOrganizationPayload
                 }
             });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
-            const organizationDetailsPayload = {
-                organizationName: createOrganizationResponse.body.data.createOrganization.name
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
             }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
 
             const organizationDetailsResponse = await request
             .post('/graphql')
             .set('content-type', 'application/json')
             .set('x-api-token', userToken)
             .send({
-            'query': ORGANIZATION_DETAILS, 
-            'variables': {
-                    input: organizationDetailsPayload
-                }
+            'query': ORGANIZATION_DETAILS
             });
 
             expect(organizationDetailsResponse.statusCode).toBe(200);
@@ -549,6 +560,21 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
@@ -568,7 +594,6 @@ describe('organizations graphql', () => {
             let otherSignUpCreated = signUpResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
@@ -663,12 +688,26 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 email: Faker.internet.email(),
             };
     
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     email: signUpOtherMemberPayload.email
                 }]
@@ -764,6 +803,21 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
@@ -783,7 +837,6 @@ describe('organizations graphql', () => {
             let otherSignUpCreated = signUpResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
@@ -859,6 +912,21 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
@@ -878,7 +946,6 @@ describe('organizations graphql', () => {
             let otherSignUpCreated = signUpResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
@@ -954,12 +1021,26 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 email: Faker.internet.email(),
             };
     
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     email: signUpOtherMemberPayload.email
                 }]
@@ -1035,6 +1116,21 @@ describe('organizations graphql', () => {
             });
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
 
             const signUpPayload2 = {
                 username: "User1",
@@ -1106,9 +1202,7 @@ describe('organizations graphql', () => {
     
             const findUsersPayload = {
                 name: "user",
-                organizationId: organizationCreated.id
             }
-
 
             const findUsersToOrganizationResponse = await request
             .post('/graphql')
@@ -1185,6 +1279,21 @@ describe('organizations graphql', () => {
             });
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
 
             const signUpPayload2 = {
                 username: "User3",
@@ -1255,7 +1364,6 @@ describe('organizations graphql', () => {
             });
 
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: signUpCreated2.id,
                     email: signUpCreated2.email
@@ -1275,7 +1383,6 @@ describe('organizations graphql', () => {
     
             const findUsersPayload = {
                 name: "user",
-                organizationId: organizationCreated.id
             }
 
             const findUsersToOrganizationResponse = await request
@@ -1354,6 +1461,21 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
@@ -1373,7 +1495,6 @@ describe('organizations graphql', () => {
             let otherSignUpCreated = signUpResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email
@@ -1411,7 +1532,6 @@ describe('organizations graphql', () => {
     
             const inativeUsersInOrganizationPayload = {
                 usersId: [otherSignUpCreated.id],
-                organizationId: organizationCreated.id
             }
     
             const inativeUsersInOrganizationResponse = await request
@@ -1488,6 +1608,21 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 username: `aaaaaaaaaa`,
                 email: `aaaaaaaaaa@b8one.com`,
@@ -1506,9 +1641,7 @@ describe('organizations graphql', () => {
     
             let signUpOtherMemberCreated = signUpOtherMemberCreatedResponse.body.data.signUp
     
-    
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: signUpOtherMemberCreated.id,
                     email: signUpOtherMemberCreated.email
@@ -1566,8 +1699,7 @@ describe('organizations graphql', () => {
             });
     
             const listUsersInOrganizationPayload = {
-                name: "user",
-                organizationId: organizationCreated.id
+                name: "user"
             }
 
             const listUsersInOrganizationResponse = await request
@@ -1634,6 +1766,21 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 username: Faker.internet.userName(),
                 email: Faker.internet.email(),
@@ -1653,7 +1800,6 @@ describe('organizations graphql', () => {
             let signUpOtherMemberCreated = signUpOtherMemberCreatedResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: signUpOtherMemberCreated.id,
                     email: signUpOtherMemberCreated.email
@@ -1691,7 +1837,6 @@ describe('organizations graphql', () => {
 
             const handleUserPermissionInOrganizationPayload = {
                 userId: signUpOtherMemberCreated.id,
-                organizationId: organizationCreated.id,
                 permission: OrganizationRoles.ADMIN
             };
 
@@ -1750,6 +1895,21 @@ describe('organizations graphql', () => {
 
             const organizationCreated = createOrganizationResponse.body.data.createOrganization;
     
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+    
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
                 email: Faker.internet.email(),
@@ -1769,7 +1929,6 @@ describe('organizations graphql', () => {
             let otherSignUpCreated = signUpResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
-                organizationId: organizationCreated.id,
                 users: [{
                     id: otherSignUpCreated.id,
                     email: otherSignUpCreated.email,

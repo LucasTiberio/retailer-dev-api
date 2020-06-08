@@ -5,6 +5,7 @@ import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import { IOrganizationAdapted, OrganizationInviteStatus } from '../../organization/types';
 import { Services, IServiceAdaptedFromDB } from '../../services/types';
+import redisClient from '../../../lib/Redis';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -153,6 +154,12 @@ const LIST_AFFILIATE_SHORTER_URL = `
     }
 `
 
+const SET_CURRENT_ORGANIZATION = `
+    mutation setCurrentOrganization($input: SetCurrentOrganizationInput!) {
+        setCurrentOrganization(input: $input)
+    }
+`
+
 describe('services graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -223,32 +230,31 @@ describe('services graphql', () => {
 
         organizationCreated = createOrganizationResponse.body.data.createOrganization;
 
-        const [serviceFoundDB] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id', 'name', 'active');
-                serviceFound = serviceFoundDB
-                
-        const createServiceInOrganizationPayload = {
-            organizationId: organizationCreated.id,
-            serviceId: serviceFound.id,
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
         }
 
+        await redisClient.flushall('ASYNC');
         await request
         .post('/graphql')
         .set('content-type', 'application/json')
         .set('x-api-token', userToken)
         .send({
-        'query': CREATE_SERVICE_IN_ORGANIZATION, 
+        'query': SET_CURRENT_ORGANIZATION, 
         'variables': {
-                input: createServiceInOrganizationPayload
+                input: currentOrganizationPayload
             }
         });
+
+        const [serviceFoundDB] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id', 'name', 'active');
+        serviceFound = serviceFoundDB
 
         await knexDatabase.knex('organization_vtex_secrets').del();
 
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
             xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-            accountName: "beightoneagency",
-            organizationId: organizationCreated.id
+            accountName: "beightoneagency"
         }
 
         await request
@@ -265,6 +271,7 @@ describe('services graphql', () => {
 
     afterAll(async () => {
         await knexDatabase.cleanMyTestDB();
+        await redisClient.end();
     })
 
     
@@ -305,7 +312,6 @@ describe('services graphql', () => {
         });
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: otherSignUpCreated.id,
                 email: otherSignUpCreated.email
@@ -343,11 +349,10 @@ describe('services graphql', () => {
 
         const addUserInOrganizationPayload = {
             userId: otherSignUpCreated.id,
-            organizationId: organizationCreated.id,
             serviceName: Services.AFFILIATE
         }
 
-        const addUserInOrganizationResponse = await request
+        const addUserInOrganizationServiceResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
         .set('x-api-token', userToken)
@@ -360,13 +365,27 @@ describe('services graphql', () => {
 
         const affiliateGenerateShortenerUrlPayload = {
             originalUrl: Faker.internet.url(),
-            organizationId:organizationCreated.id,
             serviceName: Services.AFFILIATE
         }
 
         const affiliateClient = { origin: 'user', id: otherSignUpCreated.id };
 
         const affiliateToken = await jwt.sign(affiliateClient, process.env.JWT_SECRET);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', affiliateToken)
+        .send({
+        'query': SET_CURRENT_ORGANIZATION, 
+        'variables': {
+                input: currentOrganizationPayload
+            }
+        });
 
         const affiliateGenerateShortenerUrlResponse = await request
         .post('/graphql')
@@ -383,13 +402,13 @@ describe('services graphql', () => {
 
         const shortUrlBefore = `${frontUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
-        const affiliateId = addUserInOrganizationResponse.body.data.addUserInOrganizationService.id;
+        const affiliateId = addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id;
 
         expect(affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
                 shortenerUrl: expect.objectContaining({
-                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone&utm_campaign=${affiliateId}`,
+                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}`,
                     shortUrl: shortUrlBefore,
                     urlCode: expect.any(String),
                     createdAt: expect.any(String),
@@ -443,7 +462,6 @@ describe('services graphql', () => {
         });
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: otherSignUpCreated.id,
                 email: otherSignUpCreated.email
@@ -481,7 +499,6 @@ describe('services graphql', () => {
 
         const addUserInOrganizationPayload = {
             userId: otherSignUpCreated.id,
-            organizationId: organizationCreated.id,
             serviceName: Services.AFFILIATE
         }
 
@@ -498,13 +515,27 @@ describe('services graphql', () => {
 
         const affiliateGenerateShortenerUrlPayload = {
             originalUrl: Faker.internet.url(),
-            organizationId:organizationCreated.id,
             serviceName: Services.AFFILIATE
         }
 
         const affiliateClient = { origin: 'user', id: otherSignUpCreated.id };
 
         const affiliateToken = await jwt.sign(affiliateClient, process.env.JWT_SECRET);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', affiliateToken)
+        .send({
+        'query': SET_CURRENT_ORGANIZATION, 
+        'variables': {
+                input: currentOrganizationPayload
+            }
+        });
 
         const affiliateGenerateShortenerUrlResponse = await request
         .post('/graphql')
@@ -525,7 +556,6 @@ describe('services graphql', () => {
 
         const userOrganizationServicePayload = {
             userOrganizationServiceId: affiliateId,
-            organizationId: organizationCreated.id,
             serviceName: Services.AFFILIATE
         }
 
@@ -547,7 +577,7 @@ describe('services graphql', () => {
                 expect.objectContaining({
                     id: expect.any(String),
                     shortenerUrl: expect.objectContaining({
-                        originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone&utm_campaign=${affiliateId}`,
+                        originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}`,
                         shortUrl: shortUrlBefore,
                         urlCode: expect.any(String),
                         createdAt: expect.any(String),

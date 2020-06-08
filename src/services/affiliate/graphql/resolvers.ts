@@ -7,10 +7,10 @@ import ServicesService from '../../services/service';
 
 const resolvers : IResolvers = {
     Mutation: {
-        affiliateGenerateShortenerUrl: (_, attrs, { client }) => {
+        affiliateGenerateShortenerUrl: (_, attrs, { client, organizationId }) => {
             const { input } = attrs;
             return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.generateShortenerUrl(input, client, trx);
+                return service.generateShortenerUrl(input, {client, organizationId}, trx);
             });
         }
     },

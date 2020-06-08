@@ -3,7 +3,8 @@ import knexDatabase from '../../../knex-database';
 import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
-import { IOrganizationAdapted } from '../../organization/types';
+import { IOrganizationAdapted, IOrganizationFromDB } from '../../organization/types';
+import redisClient from '../../../lib/Redis';
 import { mockVtexDepartments } from '../__mocks__';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
@@ -37,6 +38,12 @@ const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
     }
 `
 
+const SET_CURRENT_ORGANIZATION = `
+    mutation setCurrentOrganization($input: SetCurrentOrganizationInput!) {
+        setCurrentOrganization(input: $input)
+    }
+`
+
 const CREATE_ORGANIZATION = `
     mutation createOrganization($input: CreateOrganizationInput!) {
         createOrganization(input: $input){
@@ -54,8 +61,8 @@ const CREATE_ORGANIZATION = `
 `
 
 const VTEX_DEPARTMENTS_COMMISSIONS = `
-    query vtexDepartmentsCommissions($input: VtexDepartmentsCommissionsInput!) {
-        vtexDepartmentsCommissions(input: $input){
+    query vtexDepartmentsCommissions{
+        vtexDepartmentsCommissions{
             id
             name
             url
@@ -87,7 +94,7 @@ describe('services graphql', () => {
 
     let userToken: string;
 
-    let organizationCreated: IOrganizationAdapted;
+    let organizationCreated : IOrganizationAdapted;
 
     beforeEach(async () => {
 
@@ -120,38 +127,56 @@ describe('services graphql', () => {
         const userVerifyEmailPayload = {
             verificationHash: userFromDb.verification_hash
         }
-
+        
         await request
         .post('/graphql')
         .set('content-type', 'application/json')
         .send({
-        'query': USER_VERIFY_EMAIL, 
-        'variables': {
+            'query': USER_VERIFY_EMAIL, 
+            'variables': {
                 input: userVerifyEmailPayload
             }
         });
-
+        
         const createOrganizationPayload = {
             name: Faker.internet.userName(),
             contactEmail: Faker.internet.email()
         }
-
+        
         const createOrganizationResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
         .set('x-api-token', userToken)
         .send({
-        'query': CREATE_ORGANIZATION, 
-        'variables': {
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
                 input: createOrganizationPayload
             }
         });
-
+        
         organizationCreated = createOrganizationResponse.body.data.createOrganization;
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await redisClient.flushall('ASYNC');
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': SET_CURRENT_ORGANIZATION, 
+        'variables': {
+                input: currentOrganizationPayload
+            }
+        });
+
     });
 
     afterAll(async () => {
         await knexDatabase.cleanMyTestDB();
+        await redisClient.end();
     })
 
     describe("vtex secrets graphql", () => {
@@ -161,8 +186,7 @@ describe('services graphql', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
 
             const verifyAndAttachVtexSecretsResponse = await request
@@ -187,8 +211,7 @@ describe('services graphql', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
             await request
@@ -207,10 +230,6 @@ describe('services graphql', () => {
                 vtex_department_id: 1,
                 vtex_commission_percentage: 15
             })
-    
-            const vtexDepartmentsCommissionsPayload = {
-                organizationId: organizationCreated.id
-            }
 
             const vtexDepartmentsCommissionsResponse = await request
             .post('/graphql')
@@ -218,9 +237,6 @@ describe('services graphql', () => {
             .set('x-api-token', userToken)
             .send({
             'query': VTEX_DEPARTMENTS_COMMISSIONS,
-            'variables': {
-                    input: vtexDepartmentsCommissionsPayload
-                }
             });
     
             expect(vtexDepartmentsCommissionsResponse.statusCode).toBe(200)
@@ -245,8 +261,7 @@ describe('services graphql', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
             await request
@@ -261,7 +276,6 @@ describe('services graphql', () => {
             });
     
             const handleOrganizationVtexCommissionPayload = {
-                organizationId: organizationCreated.id,
                 vtexDepartmentId: "1",
                 vtexCommissionPercentage: 15,
                 active: true
@@ -327,8 +341,7 @@ describe('services graphql', () => {
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
                 xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency",
-                organizationId: organizationCreated.id
+                accountName: "beightoneagency"
             }
     
             await request
@@ -343,7 +356,6 @@ describe('services graphql', () => {
             });
     
             const handleOrganizationVtexCommissionPayload = {
-                organizationId: organizationCreated.id,
                 vtexDepartmentId: "1",
                 vtexCommissionPercentage: 15,
                 active: true
@@ -361,7 +373,6 @@ describe('services graphql', () => {
             });
     
             const handleOrganizationVtexComissionDesactivePayload = {
-                organizationId: organizationCreated.id,
                 vtexDepartmentId: "1",
                 vtexCommissionPercentage: 15,
                 active: false
@@ -392,19 +403,12 @@ describe('services graphql', () => {
                 })
             )
     
-            const vtexDepartmentsCommissionsPayload = {
-                organizationId: organizationCreated.id
-            }
-    
             const vtexDepartmentsCommissionsResponse = await request
             .post('/graphql')
             .set('content-type', 'application/json')
             .set('x-api-token', userToken)
             .send({
             'query': VTEX_DEPARTMENTS_COMMISSIONS,
-            'variables': {
-                    input: vtexDepartmentsCommissionsPayload
-                }
             });
     
             expect(vtexDepartmentsCommissionsResponse.body.data.vtexDepartmentsCommissions).toEqual(

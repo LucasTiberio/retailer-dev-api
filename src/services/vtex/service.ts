@@ -9,11 +9,8 @@ import { mockVtexDepartments } from './__mocks__';
 
 const ORDER_MOMENTS = [
   "payment-pending",
-  "order-created order-completed",
   "payment-approved",
   "payment-denied",
-  "waiting-for-seller-decision",
-  "handling",
   "canceled",
 ]
 
@@ -65,10 +62,9 @@ const verifyAndAttachVtexSecrets = async (input : {
   xVtexApiAppKey: string
   xVtexApiAppToken: string,
   accountName: string,
-  organizationId: string
-}, userToken: IUserToken, trx: Transaction) => {
+}, context: { organizationId: string, client: IUserToken }, trx: Transaction) => {
 
-  if(!userToken) throw new Error("Token must be provided");
+  if(!context.client) throw new Error("Token must be provided");
 
   try {
 
@@ -109,7 +105,7 @@ const verifyAndAttachVtexSecrets = async (input : {
 
       if(hookCreated.status === 200){
 
-        await attachVtexSecrets(input, trx);
+        await attachVtexSecrets(input, context.organizationId, trx);
         
         return true
 
@@ -128,11 +124,12 @@ const verifyAndAttachVtexSecrets = async (input : {
 const attachVtexSecrets = async (input: {
   xVtexApiAppKey: string
   xVtexApiAppToken: string,
-  accountName: string,
-  organizationId: string
-}, trx: Transaction) => {
+  accountName: string
+} 
+,organizationId : string 
+,trx: Transaction) => {
 
-  const { xVtexApiAppKey, xVtexApiAppToken, accountName, organizationId } = input;
+  const { xVtexApiAppKey, xVtexApiAppToken, accountName } = input;
 
   const [verifySecretExists] = await (trx || knexDatabase)('organization_vtex_secrets')
     .where('store_name', accountName)
@@ -321,15 +318,16 @@ const getVtexDepartments = async (getVtexDepartmentsPayload : { organizationId: 
 
 }
 
-const getVtexDepartmentsCommissions = async (input : { organizationId : string}, userToken: IUserToken, trx: Transaction) => {
+const getVtexDepartmentsCommissions = async (
+    context: { organizationId: string, client: IUserToken }, 
+    trx: Transaction
+  ) => {
 
-  if(!userToken) throw new Error("Token must be provided");
+  if(!context.client) throw new Error("Token must be provided");
 
-  const { organizationId } = input;
+  const vtexDepartments = await getVtexDepartments({organizationId: context.organizationId}, context.client, trx);
 
-  const vtexDepartments = await getVtexDepartments({organizationId}, userToken, trx);
-
-  const commissionsDepartmentsRegistered = await getComissionsDepartmentsByOrganizationId(organizationId, trx);
+  const commissionsDepartmentsRegistered = await getComissionsDepartmentsByOrganizationId(context.organizationId, trx);
 
   const comissionsAttacheds = vtexDepartments.map((item: {id: number, name: string, url: string}) => {
 
@@ -360,25 +358,24 @@ const getComissionsDepartmentsByOrganizationId = async (organizationId: string, 
 }
 
 const handleOrganizationVtexComission = async (handleOrganizationVtexComissionPayload : {
-  organizationId: string,
   vtexDepartmentId: string,
   vtexCommissionPercentage: number,
   active?: boolean
-}, userToken: IUserToken, trx: Transaction) => {
+}, context: { organizationId: string, client: IUserToken }, trx: Transaction) => {
 
-  if(!userToken) throw new Error("Token must be provided");
+  if(!context.client) throw new Error("Token must be provided");
 
-  const { organizationId, vtexDepartmentId, vtexCommissionPercentage, active } = handleOrganizationVtexComissionPayload;
+  const { vtexDepartmentId, vtexCommissionPercentage, active } = handleOrganizationVtexComissionPayload;
 
   const [organizationVtexCommissionFound] = await (trx || knexDatabase.knex)('organization_vtex_comission')
-    .where('organization_id', organizationId)
+    .where('organization_id', context.organizationId)
     .andWhere('vtex_department_id', vtexDepartmentId)
     .select('id', 'active');
 
   if(!organizationVtexCommissionFound){
 
     const [organizationVtexCommission] = await (trx || knexDatabase.knex)('organization_vtex_comission').insert({
-      organization_id: organizationId,
+      organization_id: context.organizationId,
       vtex_department_id: vtexDepartmentId,
       vtex_commission_percentage: vtexCommissionPercentage,
       active: active ?? true
@@ -389,7 +386,7 @@ const handleOrganizationVtexComission = async (handleOrganizationVtexComissionPa
   }  
 
   const [organizationVtexCommissionUpdated] = await (trx || knexDatabase.knex)('organization_vtex_comission').update({
-    organization_id: organizationId,
+    organization_id: context.organizationId,
     vtex_department_id: vtexDepartmentId,
     vtex_commission_percentage: vtexCommissionPercentage,
     active: active ?? organizationVtexCommissionFound.active

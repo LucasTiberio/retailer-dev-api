@@ -1,0 +1,27 @@
+extend type Query{
+    userOrganizationPermissions(input: UserOrganizationPermissionsInput): [OrganizationPermissions]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
+}
+
+input UserOrganizationPermissionsInput{
+    name: PermissionName!
+}
+
+type OrganizationPermissions{
+    id: String!
+    permissionName: PermissionName!
+    organizationRoleName: OrganizationRoleName!
+    grant: PermissionGrant!
+}
+
+enum PermissionName{
+    settings
+    members
+    integrations
+    affiliate
+}
+
+enum PermissionGrant{
+    write
+    read
+    hide
+}

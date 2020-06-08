@@ -1,0 +1,20 @@
+extend type Query{
+    menuTree: [MenuTree]! @hasServiceRole(role: ["ADMIN","RESPONSIBLE","ANALYST"]) @isVerified @isAuthenticated 
+}
+
+type MenuTree{
+    name: String!
+    children: [MenuChildren]
+}
+
+type MenuChildren{
+    name: String
+    children: [SubMenuChildren]
+}
+
+type SubMenuChildren{
+    name: String
+}
+
+
+

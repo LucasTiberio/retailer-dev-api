@@ -48,7 +48,6 @@ export interface IOrganizationRoleResponse {
 }
 
 export interface IInviteUserToOrganizationPayload {
-    organizationId: string
     users: IInviteUserToOrganizationData[]
 }
 
@@ -70,7 +69,6 @@ export interface IResponseInvitePayload{
 
 export interface IFindUsersAttributes{
     name: string
-    organizationId: string
 }
 
 export interface IUserOrganizationDB extends ISimpleUser{

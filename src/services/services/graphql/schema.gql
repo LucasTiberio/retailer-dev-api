@@ -1,12 +1,11 @@
 extend type Query{
-    listAvailableServices(input: ListAvailableServicesInput!): [Service]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    listAvailableServices: [Service]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     listAvailableUsersToService(input: ListAvailableUsersToServiceInput!): [UserOrganization]! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     listUsersInOrganizationService(input: ListUsersInOrganizationServiceInput!): [UserOrganizationService]! @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE"]) @isVerified @isAuthenticated 
     getUserInOrganizationService(input: GetUserInOrganizationServiceInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated 
 }
 
 input GetUserInOrganizationServiceInput {
-    organizationId: String!
     userOrganizationId: String!
 }
 
@@ -18,25 +17,21 @@ extend type Mutation{
 }
 
 input InativeUserFromServiceOrganizationInput {
-    organizationId: String!
     serviceName: ServiceName!
     userId: String!
 }
 
 input UserInServiceHandleRoleInput{
-    organizationId: String!
     serviceName: ServiceName!
     userId: String!
     serviceRole: ServiceRolesName!
 }
 
 input ListUsersInOrganizationServiceInput{
-    organizationId: String!
     serviceName: ServiceName!
 }
 
 input ListAvailableUsersToServiceInput{
-    organizationId: String!
     serviceName: ServiceName!
     name: String!
 }
@@ -60,7 +55,6 @@ type ServiceRoles{
 
 input AddUserInOrganizationServiceInput{
     userId: String!
-    organizationId: String!
     serviceName: ServiceName!
 }
 
@@ -73,10 +67,6 @@ enum ServiceRolesName {
     ADMIN,
     RESPONSIBLE,
     ANALYST
-}
-
-input ListAvailableServicesInput {
-    organizationId: String!
 }
 
 type Service{

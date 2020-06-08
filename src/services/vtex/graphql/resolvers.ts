@@ -5,21 +5,21 @@ import service from "../service";
 
 const resolvers : IResolvers = {
   Mutation: {
-    verifyAndAttachVtexSecrets: (_, { input }, { client }) => {
+    verifyAndAttachVtexSecrets: (_, { input }, { client, organizationId }) => {
         return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.verifyAndAttachVtexSecrets(input, client, trx);
+            return service.verifyAndAttachVtexSecrets(input, {client, organizationId}, trx);
         });
     },
-    handleOrganizationVtexCommission: (_, { input }, { client }) => {
+    handleOrganizationVtexCommission: (_, { input }, { client, organizationId }) => {
         return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.handleOrganizationVtexComission(input, client, trx);
+            return service.handleOrganizationVtexComission(input, {client, organizationId}, trx);
         });
     },
   },
   Query: {
-    vtexDepartmentsCommissions: (_, { input }, { client }) => {
+    vtexDepartmentsCommissions: (_, __, { client, organizationId }) => {
         return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.getVtexDepartmentsCommissions(input, client, trx);
+            return service.getVtexDepartmentsCommissions({client, organizationId}, trx);
         });
     },
   },

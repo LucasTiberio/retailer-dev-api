@@ -8,13 +8,11 @@ extend type Query{
 
 input ListAffiliateShorterUrlInput{
     userOrganizationServiceId: String!
-    organizationId: String!
     serviceName: ServiceName!
 }
 
 input AffiliateGenerateShortenerUrlInput{
     originalUrl: String!
-    organizationId: String!
     serviceName: ServiceName!
 }
 

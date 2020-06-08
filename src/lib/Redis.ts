@@ -1,6 +1,17 @@
-import redis, { RedisClient } from 'redis';
+import * as redis from 'redis';
+var bluebird = require("bluebird");
 
-let client: RedisClient;
+bluebird.promisifyAll(redis.RedisClient.prototype);
+bluebird.promisifyAll(redis.Multi.prototype);
+
+declare module 'redis' {
+  export interface RedisClient extends NodeJS.EventEmitter {
+    getAsync(...args: any[]): Promise<any>;
+    setAsync(...args: any[]): Promise<any>;
+  }
+}
+
+let client: redis.RedisClient;
 
 if(process.env.NODE_ENV === 'test'){
 
