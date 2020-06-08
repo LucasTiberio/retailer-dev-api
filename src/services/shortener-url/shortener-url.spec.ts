@@ -101,8 +101,12 @@ describe('shortener', () => {
         const shortUrl = await service.shortenerUrl(originalUrl, userToken, trx);
 
         const getOriginalUrl = await service.getOriginalUrlByCode(shortUrl.urlCode, trx);
+        const [urlShortenFoundOnDB] = await (trx || knexDatabase.knex)('url_shorten').where('id', shortUrl.id).select('count');
 
+        expect(urlShortenFoundOnDB.count).toBe(1);
         expect(getOriginalUrl).toBe(originalUrl)
+
+
 
         done();
 

@@ -80,9 +80,13 @@ const getOriginalUrlByCode = async (urlCode: string, trx: Transaction) => {
 
   const [shortIdFoundOnDb] = await (trx || knexDatabase.knex)('url_shorten')
   .where('url_code', urlCode)
-  .select('original_url');
+  .select('original_url', 'id');
 
   if(!shortIdFoundOnDb) throw new Error("Shortener url doesnt exists");
+
+  await (trx || knexDatabase.knex)('url_shorten')
+  .where('id', shortIdFoundOnDb.id)
+  .increment('count', 1)
 
   return shortIdFoundOnDb.original_url;
 
