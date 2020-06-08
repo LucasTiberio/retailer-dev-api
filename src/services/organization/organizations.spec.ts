@@ -79,6 +79,38 @@ describe('Organizations', () => {
 
     })
 
+    test("user should send a current organization null and delete to redis", async done => {
+
+        const createOrganizationPayload = {
+            name: Faker.internet.userName(),
+            contactEmail: Faker.internet.email(),
+        }
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        const currentOrganizationNullablePayload = {
+            organizationId: null
+        }
+
+        const currentOrganizationRemoved = await service.setCurrentOrganization(currentOrganizationNullablePayload, {client: userToken, redisClient}, trx);
+
+        expect(currentOrganizationRemoved).toBeTruthy();
+        redisClient.get(userToken.id, (_, data) => {
+            expect(data).toBeNull();
+            redisClient.keys('*', function (_, keys) {
+                expect(keys).toHaveLength(0);
+                done();  
+              }); 
+        });
+
+    })
+
     test("users should send a current organization to redis", async done => {
 
         const createOrganizationPayload = {

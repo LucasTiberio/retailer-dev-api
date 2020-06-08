@@ -684,9 +684,13 @@ trx: Transaction) => {
   return _organizationAdapter(organizationAttachLogo);
 
 }
-const setCurrentOrganization = async (currentOrganizationPayload : { organizationId: string }, context: { client: IUserToken, redisClient: RedisClient }, trx: Transaction) => {
+const setCurrentOrganization = async (currentOrganizationPayload : { organizationId: string | null }, context: { client: IUserToken, redisClient: RedisClient }, trx: Transaction) => {
 
   if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  if(!currentOrganizationPayload.organizationId){
+    return context.redisClient.del(context.client.id)
+  }
 
   const isUserOrganization = await getUserOrganizationByIds(context.client.id, currentOrganizationPayload.organizationId, trx);
 

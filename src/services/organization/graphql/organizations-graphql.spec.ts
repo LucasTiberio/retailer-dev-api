@@ -364,6 +364,66 @@ describe('organizations graphql', () => {
     
         })
 
+        test("user should send a nullable current organization to redis graphql", async done => {
+
+            const createOrganizationPayload = {
+                name: Faker.internet.userName(),
+                contactEmail: Faker.internet.email()
+            }
+
+            const createOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': CREATE_ORGANIZATION, 
+            'variables': {
+                    input: createOrganizationPayload
+                }
+            });
+
+            const organizationCreated = createOrganizationResponse.body.data.createOrganization;
+    
+            const currentOrganizationPayload = {
+                organizationId: organizationCreated.id
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationPayload
+                }
+            });
+
+            const currentOrganizationNullablePayload = {
+                organizationId: null
+            }
+
+            const setCurrentOrganizationResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': SET_CURRENT_ORGANIZATION, 
+            'variables': {
+                    input: currentOrganizationNullablePayload
+                }
+            });
+
+            expect(setCurrentOrganizationResponse.body.data.setCurrentOrganization).toBeTruthy();
+            redisClient.get(signUpCreated.id, (_, data) => {
+                expect(data).toBeNull();
+                redisClient.keys('*', function (_, keys) {
+                    expect(keys).toHaveLength(0);
+                    done();  
+                  }); 
+            });
+    
+        })
 
         test("user should verify organization duplicated name before create with new organization graphql", async done => {
 

@@ -42,7 +42,7 @@ extend type Mutation{
 }
 
 input SetCurrentOrganizationInput{
-  organizationId: String!
+  organizationId: String
 }
 
 type InativeUsersInOrganizationPayload{
