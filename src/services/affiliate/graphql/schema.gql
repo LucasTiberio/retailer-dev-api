@@ -4,6 +4,17 @@ extend type Mutation{
 
 extend type Query{
     listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+    createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+}
+
+input CreateAffiliateBankValuesInput{
+  name: String!
+  agency: String!
+  account: String!
+  accountDigit: String!
+  document: String!
+  brazilBankId: String!
+  serviceName: ServiceName!
 }
 
 input ListAffiliateShorterUrlInput{

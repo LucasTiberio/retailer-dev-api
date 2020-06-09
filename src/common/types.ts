@@ -11,4 +11,5 @@ export interface IContext{
     organizationId: string
     redisClient?: RedisClient
     isOrganizationAdmin?: boolean
+    userServiceOrganizationRolesId?: string
 }

@@ -43,6 +43,7 @@ export interface IUsersOrganizationServiceDB{
     created_at: Date
     updated_at: Date
     active: boolean
+    bank_data_id?: string
 }
 
 export interface IServiceRolesAdapted{

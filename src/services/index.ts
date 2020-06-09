@@ -10,6 +10,7 @@ import AffiliateService from './affiliate';
 import OrganizationPermissionService from './organization-permissions';
 import ServicePermissionService from './service-permissions';
 import MenuService from './menu';
+import BankDataService from './bank-data';
 
 let services = [
   UserService,
@@ -21,7 +22,8 @@ let services = [
   AffiliateService,
   OrganizationPermissionService,
   ServicePermissionService,
-  MenuService
+  MenuService,
+  BankDataService
 ];
 
 export default {

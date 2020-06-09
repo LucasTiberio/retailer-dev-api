@@ -1,11 +1,14 @@
 import ShortenerUrlService from '../shortener-url/service';
 import OrganizationService from '../organization/service';
 import ServicesService from '../services/service';
+import BankDataService from '../bank-data/service';
 import { IUserToken } from '../authentication/types';
 import { Transaction } from 'knex';
 import { Services } from '../services/types';
 import knexDatabase from '../../knex-database';
 import { IUsersOrganizationServiceRolesUrlShortenerFromDB } from './types';
+import { IUserBankValuesToInsert } from '../bank-data/types';
+import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE } from '../../common/consts';
 
 const utmSource = "plugone_affiliate";
 
@@ -59,7 +62,7 @@ const attachShorterUrlOnAffiliate = async (userOrganizationServiceId: string, sh
 
 const getShorterUrlByUserOrganizationServiceId = async (input: { userOrganizationServiceId: string }, userToken: IUserToken, trx: Transaction) => {
 
-  if(!userToken) throw new Error("Token must be provided");
+  if(!userToken) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
 
   const { userOrganizationServiceId } = input;
 
@@ -71,7 +74,32 @@ const getShorterUrlByUserOrganizationServiceId = async (input: { userOrganizatio
 
 }
 
+const createAffiliateBankValues = async (
+  createUserBankValuesPayload: IUserBankValuesToInsert, 
+  context: { organizationId: string, client: IUserToken, userServiceOrganizationRolesId: string }, 
+  trx: Transaction) => {
+
+    if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+    if(!context.userServiceOrganizationRolesId) throw new Error(MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE);
+
+    const [affiliateBankDataFound] = await (trx || knexDatabase.knex)('users_organization_service_roles').where('id', context.userServiceOrganizationRolesId).select('*');
+
+    if(affiliateBankDataFound.bank_data_id){
+      await BankDataService.updateBankValues({...createUserBankValuesPayload, bankDataId: affiliateBankDataFound.bank_data_id}, context, trx);
+      return ServicesService.usersOrganizationServiceAdapter(affiliateBankDataFound);
+    }
+
+    const bankData = await BankDataService.createBankValues(createUserBankValuesPayload, context, trx);
+
+    const [affiliateBankData] = await (trx || knexDatabase.knex)('users_organization_service_roles').update('bank_data_id', bankData.id).where('id', context.userServiceOrganizationRolesId).returning('*');
+
+    return ServicesService.usersOrganizationServiceAdapter(affiliateBankData);
+
+}
+
 export default {
   generateShortenerUrl,
-  getShorterUrlByUserOrganizationServiceId
+  getShorterUrlByUserOrganizationServiceId,
+  createAffiliateBankValues
 }

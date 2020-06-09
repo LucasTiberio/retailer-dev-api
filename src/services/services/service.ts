@@ -31,7 +31,8 @@ const usersOrganizationServiceAdapter = (record : IUsersOrganizationServiceDB) =
   usersOrganizationId: record.users_organization_id,
   createdAt: record.created_at,
   updatedAt: record.updated_at,
-  active: record.active
+  active: record.active,
+  bankDataId: record.bank_data_id
 })
 
 const organizationServicesByOrganizationIdLoader = store.registerOneToManyLoader(
@@ -472,5 +473,6 @@ export default {
   getUserOrganizationServiceRole,
   getServiceRolesById,
   getUserInOrganizationService,
-  getServiceByName
+  getServiceByName,
+  usersOrganizationServiceAdapter
 }

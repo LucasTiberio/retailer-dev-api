@@ -152,12 +152,13 @@ const directiveResolvers : IDirectiveResolvers = {
   const userServiceOrganizationRoles = await knexDatabase.knex('users_organization_service_roles as uosr')
     .where('uosr.users_organization_id', userOrganizationRoles[0].users_organizations_id)
   .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
-  .select('sr.name');
+  .select('sr.name', 'uosr.id');
 
   const hasSpecifiedServiceRole = userServiceOrganizationRoles.some((role: IOrganizationRoleResponse ) => args.role.includes(role.name));
   if (hasSpecifiedServiceRole) {
     context.organizationId = organizationId;
     context.isOrganizationAdmin = false;
+    context.userServiceOrganizationRolesId = userServiceOrganizationRoles[0].id;
     return next()
   };
   throw new Error(`Must have role: ${args.role}, you have role: ${userServiceOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)

@@ -160,6 +160,29 @@ const SET_CURRENT_ORGANIZATION = `
     }
 `
 
+const CREATE_AFFILIATE_BANK_VALUES = `
+    query createAffiliateBankValues($input: CreateAffiliateBankValuesInput!) {
+        createAffiliateBankValues(input: $input){
+            id
+            createdAt
+            updatedAt
+            active
+            serviceRoles{
+                id
+            }
+            userOrganization{
+                id
+            }
+            bankData{
+                id
+                brazilBank{
+                    id
+                }
+            }
+        }
+    }
+`
+
 describe('services graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -590,6 +613,149 @@ describe('services graphql', () => {
                     updatedAt: expect.any(String)
                 })
             ])
+        )
+
+        done();
+    })
+
+    test('affiliate should update bank values', async done => {
+
+        const otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        const otherSignUpResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .send({
+        'query': SIGN_UP, 
+        'variables': {
+                input: otherSignUpPayload
+            }
+        });
+
+        let otherSignUpCreated = otherSignUpResponse.body.data.signUp
+
+        const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash');
+
+        const userVerifyEmailPayload = {
+            verificationHash: userFromDb.verification_hash
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .send({
+        'query': USER_VERIFY_EMAIL, 
+        'variables': {
+                input: userVerifyEmailPayload
+            }
+        });
+
+        const inviteUserToOrganizationPayload = {
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': INVITE_USER_TO_ORGANIZATION, 
+        'variables': {
+                input: inviteUserToOrganizationPayload
+            }
+        });
+
+        const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+
+        const responseOrganizationInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': RESPONSE_INVITE, 
+        'variables': {
+                input: responseOrganizationInvitePayload
+            }
+        });
+
+        const addUserInOrganizationPayload = {
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        const addUserInOrganizationResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
+        'variables': {
+                input: addUserInOrganizationPayload
+            }
+        });
+
+        const affiliateClient = { origin: 'user', id: otherSignUpCreated.id };
+
+        const affiliateToken = await jwt.sign(affiliateClient, process.env.JWT_SECRET);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', affiliateToken)
+        .send({
+        'query': SET_CURRENT_ORGANIZATION, 
+        'variables': {
+                input: currentOrganizationPayload
+            }
+        });
+
+        const brazilBanks = await knexDatabase.knex('brazil_banks').limit(1).select();
+
+        const createUserBankValuesPayload = {
+            name: Faker.name.firstName(),
+            agency: "1111",
+            account: "11111",
+            accountDigit: "1",
+            document: "11111111",
+            brazilBankId: brazilBanks[0].id,
+            serviceName: Services.AFFILIATE
+        }
+
+        const createAffiliateBankValuesResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', affiliateToken)
+        .send({
+        'query': CREATE_AFFILIATE_BANK_VALUES, 
+        'variables': {
+                input: createUserBankValuesPayload
+            }
+        });
+
+        expect(createAffiliateBankValuesResponse.statusCode).toBe(200);
+        expect(createAffiliateBankValuesResponse.body.data.createAffiliateBankValues).toEqual(
+            expect.objectContaining({
+                id: addUserInOrganizationResponse.body.data.addUserInOrganizationService.id,
+                createdAt: expect.any(String),
+                updatedAt: expect.any(String),
+                active: true
+            })
         )
 
         done();

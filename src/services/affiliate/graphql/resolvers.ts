@@ -20,6 +20,16 @@ const resolvers : IResolvers = {
             return knexDatabase.knex.transaction((trx: Transaction) => {
                 return service.getShorterUrlByUserOrganizationServiceId(input, client, trx);
             });
+        },
+        createAffiliateBankValues: (_, attrs, { client, organizationId, userServiceOrganizationRolesId }) => {
+            const { input } = attrs;
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.createAffiliateBankValues(input, {
+                    userServiceOrganizationRolesId,
+                    client,
+                    organizationId
+                }, trx);
+            });
         }
     },
     UserOrganizationServiceRolesUrlShortener: {
