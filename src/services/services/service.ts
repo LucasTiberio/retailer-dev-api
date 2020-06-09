@@ -6,6 +6,7 @@ import VtexService from '../vtex/service';
 import knexDatabase from "../../knex-database";
 import { OrganizationInviteStatus, OrganizationRoles } from "../organization/types";
 import store from "../../store";
+import { MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES } from "../../common/consts";
 
 const _serviceAdapter = (record: IServiceAdaptedFromDB) => {
   return {
@@ -205,6 +206,10 @@ const addUserInOrganizationService = async (
 
   if(!usersOrganizationFoundDb)
     throw new Error("User doesnt are in organization");
+
+  const usersOrganizationRoleIsAdmin = await OrganizationService.isOrganizationAdmin(usersOrganizationFoundDb.id, trx);
+
+  if(usersOrganizationRoleIsAdmin) throw new Error(MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES);
 
   const vtexSecrests = await VtexService.getSecretsByOrganizationId(context.organizationId, trx);
 

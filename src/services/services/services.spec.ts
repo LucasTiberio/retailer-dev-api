@@ -9,9 +9,10 @@ import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
 import { Services, IServiceAdaptedFromDB, ServiceRoles } from './types';
-import { IOrganizationAdapted, OrganizationInviteStatus } from '../organization/types';
+import { IOrganizationAdapted, OrganizationInviteStatus, OrganizationRoles } from '../organization/types';
 import knexDatabase from '../../knex-database';
 import { IContext } from '../../common/types';
+import { MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES } from '../../common/consts';
 
 describe('Services', () => {
 
@@ -212,6 +213,66 @@ describe('Services', () => {
             )
     
             done();
+        })
+
+        test('organization admin should not added other admin on service', async done => {   
+
+            let otherSignUpPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: "B8oneTeste123!"
+            }
+
+            let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+            const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+            await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+            const inviteUserToOrganizationPayload = {
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+    
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+
+            const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+            const responseInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+    
+            await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+            const handleUserPermissionInOrganizationPayload = {
+                userId: otherSignUpCreated.id,
+                permission: OrganizationRoles.ADMIN
+            };
+    
+            const userPermissionChanged = await OrganizationService.handleUserPermissionInOrganization(handleUserPermissionInOrganizationPayload, context, trx);
+
+            const addUserInOrganizationServicePayload = {
+                organizationId:organizationCreated.id,
+                userId: otherSignUpCreated.id,
+                serviceName: Services.AFFILIATE 
+            };
+
+            try{
+                await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
+            } catch(e){
+                expect(e.message).toBe(MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES)
+                done();
+            }
+    
         })
 
         test('organization admin should not added member on service withou vtex key', async done => {   

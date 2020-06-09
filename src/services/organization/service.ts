@@ -550,6 +550,16 @@ const getUserOrganizationRoleById = async (userOrganizationId: string, trx: Tran
   return _usersOrganizationsRolesAdapter(userOrganizationRole);
 }
 
+const isOrganizationAdmin = async (userOrganizationId: string, trx: Transaction) => {
+
+  const [userOrganizationRole] = await (trx || knexDatabase.knex)('users_organization_roles AS uor')
+    .innerJoin('organization_roles AS or', 'uor.organization_role_id', 'or.id')
+    .where('uor.users_organization_id', userOrganizationId)
+    .select('or.name');
+
+  return userOrganizationRole.name === OrganizationRoles.ADMIN;
+}
+
 const isFounder = async (organizationId: string, userId: string, trx: Transaction) => {
 
   const [organizationFound] = await (trx || knexDatabase.knex)('organizations')
@@ -727,5 +737,6 @@ export default {
   findUsersToOrganization,
   userOrganizationInviteStatus,
   getUserOrganizationById,
-  inativeUsersInOrganization
+  inativeUsersInOrganization,
+  isOrganizationAdmin
 }
