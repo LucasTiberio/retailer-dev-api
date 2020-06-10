@@ -12,6 +12,12 @@ const resolvers : IResolvers = {
             return knexDatabase.knex.transaction((trx: Transaction) => {
                 return service.generateShortenerUrl(input, {client, organizationId}, trx);
             });
+        },
+        generateSalesJwt: (_, attrs, { redisClient }) => {
+            const { input } = attrs;
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.generateSalesJWT(input, {redisClient}, trx);
+            });
         }
     },
     Query: {

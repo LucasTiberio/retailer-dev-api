@@ -611,6 +611,76 @@ describe('Services', () => {
             done();
         })
 
+        test('organization admin should handle user service to sale role', async done => {
+
+            let otherSignUpPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: "B8oneTeste123!"
+            }
+
+            let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+            const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+            await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+            const inviteUserToOrganizationPayload = {
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+    
+            await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+
+            const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+            const responseInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+    
+            await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+            const addUserInOrganizationServicePayload = {
+                organizationId:organizationCreated.id,
+                userId: otherSignUpCreated.id,
+                serviceName: Services.AFFILIATE 
+            };
+
+            await service.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
+
+            const userInServiceHandleRolePayload = {
+                userId: otherSignUpCreated.id,
+                serviceName: Services.AFFILIATE,
+                serviceRole: ServiceRoles.SALE
+            };
+
+            const userHandleRoleToResponsible = await service.userInServiceHandleRole(userInServiceHandleRolePayload, context, trx);
+
+            const [responsibleServiceRoles] = await (trx || knexDatabase)('service_roles').where('name', ServiceRoles.SALE).select('id');
+
+            expect(userHandleRoleToResponsible).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    serviceRolesId:responsibleServiceRoles.id,
+                    usersOrganizationId: invitedUserToOrganization.id,
+                    serviceId: serviceFound.id,
+                    createdAt: expect.any(Date),
+                    updatedAt: expect.any(Date),
+                })
+            )
+
+            done();
+        })
+
         test('organization admin should handle user service to admin role', async done => {
 
             let otherSignUpPayload = {

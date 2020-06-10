@@ -1,5 +1,13 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+const JWT_SECRET = process.env.JWT_SECRET
+
+declare var process : {
+	env: {
+	  JWT_SECRET: string
+	}
+}
 
 const genSaltValue = 10;
 
@@ -29,11 +37,18 @@ const lengthVerify = (word : string, min: number, max: number) => word.length > 
 
 const verifyPassword = (password : string) => lengthVerify(password, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH) || !!password.match(passwordRegex)?.length
 
+const generateJwt = (id: string, origin: string, expires?: string) => {
+  return expires ? jwt.sign({ id, origin }, JWT_SECRET, {
+    expiresIn: expires
+  }) : jwt.sign({ id, origin }, JWT_SECRET) 
+}
+
 export default {
     encrypt,
     passwordIsCorrect,
     sleep,
     lengthVerify,
+    generateJwt,
     verifyPassword,
     PASSWORD_MIN_LENGTH,
     PASSWORD_MAX_LENGTH,

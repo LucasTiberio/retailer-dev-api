@@ -706,9 +706,14 @@ const setCurrentOrganization = async (currentOrganizationPayload : { organizatio
 
   if(!isUserOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION);
 
-  const currentOrganization = await context.redisClient.setAsync(context.client.id, currentOrganizationPayload.organizationId);
+  try {
+    const currentOrganization = await context.redisClient.setAsync(context.client.id, currentOrganizationPayload.organizationId);
+    return currentOrganization === "OK";
+  } catch(e){
+    throw new Error(e.message)
+  }
 
-  return currentOrganization === "OK";
+
 
 }
 

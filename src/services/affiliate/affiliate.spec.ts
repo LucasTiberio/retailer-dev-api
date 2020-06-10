@@ -9,11 +9,13 @@ import Faker from 'faker';
 import database from '../../knex-database';
 import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
+import { MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE, SALE_VTEX_PIXEL_NAMESPACE } from '../../common/consts';
 import { IUserToken } from '../authentication/types';
 import { IOrganizationAdapted, OrganizationInviteStatus } from '../organization/types';
 import knexDatabase from '../../knex-database';
-import { IServiceAdaptedFromDB, Services } from '../services/types';
+import { IServiceAdaptedFromDB, Services, ServiceRoles } from '../services/types';
 import { IContext } from '../../common/types';
+import redisClient from '../../lib/Redis';
 
 describe('Affiliate', () => {
 
@@ -41,6 +43,8 @@ describe('Affiliate', () => {
 
         trx = await database.knex.transaction(); 
 
+        await redisClient.flushall('ASYNC');
+
         const [serviceFoundDB] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
         serviceFound = serviceFoundDB
 
@@ -56,6 +60,7 @@ describe('Affiliate', () => {
     afterAll(async () => {
         await trx.rollback();
         await trx.destroy();
+        await redisClient.end;
         return new Promise(resolve => {
             resolve();
         }); 
@@ -242,7 +247,6 @@ describe('Affiliate', () => {
         await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: otherSignUpCreated.id,
                 email: otherSignUpCreated.email
@@ -267,12 +271,6 @@ describe('Affiliate', () => {
         };
 
         const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
-
-        const affiliateGenerateShortenerUrlPayload = {
-            originalUrl: Faker.internet.url(),
-            organizationId:organizationCreated.id,
-            serviceName: Services.AFFILIATE
-        }
 
         const affiliateToken = { origin: 'user', id: otherSignUpCreated.id };
         const affiliateContext = {client: affiliateToken, organizationId: organizationCreated.id, userServiceOrganizationRolesId: userInOrganizationService.id};
@@ -419,6 +417,208 @@ describe('Affiliate', () => {
         )
 
         done();
+    })
+
+    test('users admin should not consult sale email', async done => {   
+
+        let otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const inviteUserToOrganizationPayload = {
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+        const addUserInOrganizationServicePayload = {
+            organizationId:organizationCreated.id,
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE 
+        };
+
+        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
+
+        const generateSalesJWTPayload = {
+            email: signUpCreated.email,
+            organizationId: organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        try {        
+            await service.generateSalesJWT(generateSalesJWTPayload, { redisClient }, trx);
+        } catch (error) {
+            expect(error.message).toBe(MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE);
+            done();
+        }
+
+        
+    })
+
+    test('users not sale should not consult sale email', async done => {   
+
+        let otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const inviteUserToOrganizationPayload = {
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+        const addUserInOrganizationServicePayload = {
+            organizationId:organizationCreated.id,
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE 
+        };
+
+        await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
+
+        const generateSalesJWTPayload = {
+            email: otherSignUpCreated.email,
+            organizationId: organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        try {        
+            await service.generateSalesJWT(generateSalesJWTPayload, {redisClient}, trx);
+        } catch (error) {
+            expect(error.message).toBe(MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE);
+            done();
+        }
+
+        
+    })
+
+    test('users sale should consult sale email and get jwt expire token', async done => {   
+
+        let otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const inviteUserToOrganizationPayload = {
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+        const addUserInOrganizationServicePayload = {
+            organizationId:organizationCreated.id,
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE 
+        };
+
+        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
+
+        const userInServiceHandleRoleRemoveAdminPayload = {
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE,
+            serviceRole: ServiceRoles.SALE
+        };
+
+        await ServicesService.userInServiceHandleRole(userInServiceHandleRoleRemoveAdminPayload, context, trx);
+
+        const generateSalesJWTPayload = {
+            email: otherSignUpCreated.email,
+            organizationId: organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        const saleServiceUserChecked = await service.generateSalesJWT(generateSalesJWTPayload, {redisClient} ,trx);
+
+        expect(saleServiceUserChecked).toBeDefined();
+
+        redisClient.get(`${SALE_VTEX_PIXEL_NAMESPACE}_${saleServiceUserChecked}`, (_, data) => {
+            expect(data).toBe(userInOrganizationService.id)
+            redisClient.keys('*', function (_, keys) {
+                console.log(keys)
+                expect(keys).toHaveLength(1);
+                done();  
+              }); 
+        });
+
+        done();
+
+        
     })
 
         

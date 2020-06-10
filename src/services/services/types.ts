@@ -5,7 +5,8 @@ export enum Services {
 export enum ServiceRoles {
     ADMIN = 'ADMIN',
     ANALYST = 'ANALYST',
-    RESPONSIBLE = 'RESPONSIBLE'
+    RESPONSIBLE = 'RESPONSIBLE',
+    SALE = 'SALE'
 }
 
 export interface IServiceAdaptedFromDB {

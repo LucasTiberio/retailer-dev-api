@@ -1,14 +1,17 @@
 import ShortenerUrlService from '../shortener-url/service';
+import UserService from '../users/service';
 import OrganizationService from '../organization/service';
 import ServicesService from '../services/service';
 import BankDataService from '../bank-data/service';
 import { IUserToken } from '../authentication/types';
 import { Transaction } from 'knex';
-import { Services } from '../services/types';
+import { Services, ServiceRoles } from '../services/types';
 import knexDatabase from '../../knex-database';
 import { IUsersOrganizationServiceRolesUrlShortenerFromDB } from './types';
 import { IUserBankValuesToInsert } from '../bank-data/types';
-import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE } from '../../common/consts';
+import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE, MESSAGE_ERROR_USER_DOES_NOT_EXIST_IN_SYSTEM, MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE, SALE_VTEX_PIXEL_NAMESPACE } from '../../common/consts';
+import common from '../../common';
+import { RedisClient } from 'redis';
 
 const utmSource = "plugone_affiliate";
 
@@ -49,6 +52,14 @@ const generateShortenerUrl = async (affiliateGenerateShortenerUrlPayload: {
 }
 
 const attachShorterUrlOnAffiliate = async (userOrganizationServiceId: string, shorterUrlId: string, trx: Transaction) => {
+
+  const [shorterUrlFoundOnAffiliate] = await (trx || knexDatabase.knex)('users_organization_service_roles_url_shortener')
+  .where(
+    'url_shorten_id', shorterUrlId
+  ).returning('*')
+
+  if(shorterUrlFoundOnAffiliate) return affiliateShorterUrlAdapter(shorterUrlFoundOnAffiliate);
+
 
   const [attachedShorterUrlOnAffiliate] = await (trx || knexDatabase.knex)('users_organization_service_roles_url_shortener')
     .insert({
@@ -98,8 +109,47 @@ const createAffiliateBankValues = async (
 
 }
 
+const generateSalesJWT = async (generateSalesJWTPayload : {
+  organizationId: string,
+  email: string,
+  serviceName: Services
+}, context: { redisClient: RedisClient }, trx: Transaction) => {
+
+  const { organizationId, email, serviceName } = generateSalesJWTPayload;
+
+  const user = await UserService.getUserByEmail(email, trx);
+
+  if(!user) throw new Error(MESSAGE_ERROR_USER_DOES_NOT_EXIST_IN_SYSTEM);
+
+  const [serviceOrganizationFound] = await ServicesService.serviceOrganizationByName(organizationId, serviceName, trx);
+
+  if(!serviceOrganizationFound) throw new Error(MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE);
+
+  const userOrganization = await OrganizationService.getUserOrganizationByIds(user.id, organizationId, trx);
+
+  if(!userOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION);
+
+  const userRole = await ServicesService.getUserOrganizationServiceRoleName(userOrganization.id, serviceOrganizationFound.id, trx);
+
+  if(!userRole || userRole.name !== ServiceRoles.SALE) throw new Error(MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE);
+
+  const userOrganizationServiceRoleId = userRole.id;
+
+  const vtexSalePixelJwt = common.generateJwt(userOrganizationServiceRoleId, SALE_VTEX_PIXEL_NAMESPACE, '21600');
+
+  try {
+    await context.redisClient.setex(`${SALE_VTEX_PIXEL_NAMESPACE}_${vtexSalePixelJwt}`, 21600, userOrganizationServiceRoleId);
+    return vtexSalePixelJwt;
+  } catch(e){
+    throw new Error(e.message)
+  }
+
+
+}
+
 export default {
   generateShortenerUrl,
   getShorterUrlByUserOrganizationServiceId,
-  createAffiliateBankValues
+  createAffiliateBankValues,
+  generateSalesJWT
 }

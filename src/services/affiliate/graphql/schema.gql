@@ -1,5 +1,12 @@
 extend type Mutation{
     affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+    generateSalesJwt(input: GenerateSalesJwtInput!): String!
+}
+
+input GenerateSalesJwtInput{
+    email: String!
+    organizationId: String!
+    serviceName: ServiceName!
 }
 
 extend type Query{

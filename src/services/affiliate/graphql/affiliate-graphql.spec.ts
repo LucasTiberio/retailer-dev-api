@@ -4,7 +4,7 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import { IOrganizationAdapted, OrganizationInviteStatus } from '../../organization/types';
-import { Services, IServiceAdaptedFromDB } from '../../services/types';
+import { Services, IServiceAdaptedFromDB, ServiceRoles } from '../../services/types';
 import redisClient from '../../../lib/Redis';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
@@ -69,6 +69,12 @@ const RESPONSE_INVITE = `
             status
             email
         }
+    }
+`
+
+const GENERATE_SALES_JWT = `
+    mutation generateSalesJwt($input: GenerateSalesJwtInput!) {
+        generateSalesJwt(input: $input)
     }
 `
 
@@ -179,6 +185,16 @@ const CREATE_AFFILIATE_BANK_VALUES = `
                     id
                 }
             }
+        }
+    }
+`
+
+const USER_IN_SERVICE_HANDLE_ROLE = `
+    mutation userInServiceHandleRole($input: UserInServiceHandleRoleInput!) {
+        userInServiceHandleRole(input: $input){
+            id
+            createdAt
+            updatedAt
         }
     }
 `
@@ -757,6 +773,135 @@ describe('services graphql', () => {
                 active: true
             })
         )
+
+        done();
+    })
+
+    test('affiliate sale should get redis jwt tolen', async done => {
+
+
+        const otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        const otherSignUpResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .send({
+        'query': SIGN_UP, 
+        'variables': {
+                input: otherSignUpPayload
+            }
+        });
+
+        let otherSignUpCreated = otherSignUpResponse.body.data.signUp
+
+        const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+
+        const userVerifyEmailPayload = {
+            verificationHash: userFromDb.verification_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .send({
+        'query': USER_VERIFY_EMAIL, 
+        'variables': {
+                input: userVerifyEmailPayload
+            }
+        });
+
+        const inviteUserToOrganizationPayload = {
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': INVITE_USER_TO_ORGANIZATION, 
+        'variables': {
+                input: inviteUserToOrganizationPayload
+            }
+        });
+
+        const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+        const responseOrganizationInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': RESPONSE_INVITE, 
+        'variables': {
+                input: responseOrganizationInvitePayload
+            }
+        });
+
+        const addUserInOrganizationServicePayload = {
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE 
+        };
+
+        const addUserInOrganizationServiceResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
+        'variables': {
+                input: addUserInOrganizationServicePayload
+            }
+        });
+
+        const userInServiceHandleRolePayload = {
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE,
+            serviceRole: ServiceRoles.SALE
+        };
+
+        const userInServiceHandleRoleResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': USER_IN_SERVICE_HANDLE_ROLE, 
+        'variables': {
+                input: userInServiceHandleRolePayload
+            }
+        });
+
+        const generateSalesJWTPayload = {
+            email: otherSignUpCreated.email,
+            organizationId: organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        const generateSalesJWTResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .send({
+        'query': GENERATE_SALES_JWT,
+        'variables': {
+                input: generateSalesJWTPayload
+            }
+        });
+
+        expect(generateSalesJWTResponse.statusCode).toBe(200)
+        expect(generateSalesJWTResponse.body.data.generateSalesJwt).toBeDefined();
 
         done();
     })
