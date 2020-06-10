@@ -131,21 +131,9 @@ const directiveResolvers : IDirectiveResolvers = {
     return next()
   };
 
-  let serviceName: string;
+  let serviceName = other.variableValues.input.serviceName;
 
-  if(process.env.NODE_ENV === 'test'){
-    serviceName = other.variableValues.input.serviceName;
-
-    if(!serviceName) throw new Error("service identifier invalid!")
-
-  } else {
-    const fields = other.fieldNodes[0].arguments[0].value.fields;
-    const serviceNameField = fields.filter((el : any) => el.name.value === 'serviceName');
-  
-    if(!serviceNameField.length) throw new Error("service identifier invalid!")
-  
-    serviceName = serviceNameField[0].value.value;
-  }
+  if(!serviceName) throw new Error("service identifier invalid!")
 
   if(!userOrganizationRoles.length) throw new Error("User not found in organization.")
 
