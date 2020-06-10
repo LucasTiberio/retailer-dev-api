@@ -131,7 +131,13 @@ const directiveResolvers : IDirectiveResolvers = {
     return next()
   };
 
-  let serviceName = other.variableValues.input.serviceName;
+  let serviceName = other.variableValues.input?.serviceName;
+
+  if(!serviceName){
+    const fields = other.fieldNodes[0].arguments[0].value.fields;
+    const serviceNameField = fields.filter((el : any) => el.name.value === 'serviceName');
+    serviceName = serviceNameField[0].value.value;
+  }
 
   if(!serviceName) throw new Error("service identifier invalid!")
 
