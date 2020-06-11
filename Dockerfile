@@ -39,5 +39,7 @@ ARG redishost
 ENV REDIS_HOST=$redishost
 ARG redisport
 ENV REDIS_PORT=$redisport
+ARG ordersservicepassword
+ENV ORDERS_SERVICE_PASSWORD=$ordersservicepassword
 RUN npm install && npm run build
 CMD ["/bin/sh", "-c", "npx knex migrate:latest && npm start"]

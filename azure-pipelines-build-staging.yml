@@ -47,6 +47,7 @@ stages:
           --build-arg rediscachekey=$(REDIS_CACHEKEY)
           --build-arg redishost=$(REDIS_HOST)
           --build-arg redisport=$(REDIS_PORT)
+          --build-arg ordersservicepassword=$(ORDERS_SERVICE_PASSWORD)
 
         includeLatestTag: true
         tags: |
