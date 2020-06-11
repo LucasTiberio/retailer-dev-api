@@ -313,7 +313,6 @@ describe('services graphql', () => {
         await redisClient.end();
     })
 
-    
     test('organization admin should added member on service graphql', async done => {
 
         const otherSignUpPayload = {
@@ -443,11 +442,15 @@ describe('services graphql', () => {
 
         const affiliateId = addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id;
 
+        const [organizationService] = await knexDatabase.knex('organization_services')
+            .where('organization_id', organizationCreated.id)
+            .select('id');
+
         expect(affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
                 shortenerUrl: expect.objectContaining({
-                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}`,
+                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}_${organizationService.id}`,
                     shortUrl: shortUrlBefore,
                     urlCode: expect.any(String),
                     createdAt: expect.any(String),
@@ -611,12 +614,16 @@ describe('services graphql', () => {
 
         expect(listAffiliateShorterUrlResponse.statusCode).toBe(200);
 
+        const [organizationService] = await knexDatabase.knex('organization_services')
+        .where('organization_id', organizationCreated.id)
+        .select('id');
+
         expect(listAffiliateShorterUrlResponse.body.data.listAffiliateShorterUrl).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({
                     id: expect.any(String),
                     shortenerUrl: expect.objectContaining({
-                        originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}`,
+                        originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}_${organizationService.id}`,
                         shortUrl: shortUrlBefore,
                         urlCode: expect.any(String),
                         createdAt: expect.any(String),
