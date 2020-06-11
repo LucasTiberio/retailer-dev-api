@@ -1,5 +1,11 @@
 extend type Query{
   vtexDepartmentsCommissions: [VtexDepartmentsComissionsAdapted]! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
+  vtexAffiliateCommission(input: VtexAffiliateCommissionInput!): VtexDepartmentsComissions! @ordersService
+}
+
+input VtexAffiliateCommissionInput{
+  vtexDepartmentId: String!
+  affiliateId: String!
 }
 
 extend type Mutation{

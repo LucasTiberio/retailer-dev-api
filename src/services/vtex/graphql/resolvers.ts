@@ -22,6 +22,11 @@ const resolvers : IResolvers = {
             return service.getVtexDepartmentsCommissions({client, organizationId}, trx);
         });
     },
+    vtexAffiliateCommission: (_, {input}) => {
+        return knexDatabase.knex.transaction((trx: Transaction) => {
+            return service.getVtexCommissionByAffiliateIdAndDepartmentId(input, trx);
+        });
+    },
   },
   Organization: {
     vtexIntegration: async (obj) => {

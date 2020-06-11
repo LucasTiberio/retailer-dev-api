@@ -6,6 +6,9 @@ import store from '../../store';
 import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign, IVtexCategoryThree, IVtexCommissionFromDB } from './types';
 import moment from 'moment';
 import { mockVtexDepartments } from './__mocks__';
+import ServicesService from '../services/service';
+import OrganizationService from '../organization/service';
+import { MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE } from '../../common/consts';
 
 const ORDER_MOMENTS = [
   "payment-pending",
@@ -357,6 +360,17 @@ const getComissionsDepartmentsByOrganizationId = async (organizationId: string, 
 
 }
 
+const getComissionsDepartmentsByOrganizationIdAndVtexDepartmentId = async (organizationId: string, vtexDepartmentId: string, trx: Transaction) => {
+
+  const [vtexComissions] = await (trx || knexDatabase)('organization_vtex_comission')
+  .where('organization_id', organizationId)
+  .andWhere('vtex_department_id',vtexDepartmentId)
+  .select();
+
+  return vtexComissions ? vtexCommissionsAdapter(vtexComissions) : null
+
+}
+
 const handleOrganizationVtexComission = async (handleOrganizationVtexComissionPayload : {
   vtexDepartmentId: string,
   vtexCommissionPercentage: number,
@@ -397,11 +411,32 @@ const handleOrganizationVtexComission = async (handleOrganizationVtexComissionPa
 
 }
 
+const getVtexCommissionByAffiliateIdAndDepartmentId = async (
+    vtexComissionsByAffiliateIdAndDepartmentIdPayload: {
+      vtexDepartmentId: string
+      affiliateId: string
+    }, 
+    trx: Transaction
+  ) => {
+
+    const { vtexDepartmentId, affiliateId } = vtexComissionsByAffiliateIdAndDepartmentIdPayload;
+
+    const userOrganizationService = await ServicesService.getOrganizationIdByUserOrganizationServiceRoleId(affiliateId, trx);
+
+    if(!userOrganizationService) throw new Error(MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE);
+
+    const vtexCommission = await getComissionsDepartmentsByOrganizationIdAndVtexDepartmentId(userOrganizationService.organizationId, vtexDepartmentId, trx);
+
+    return vtexCommission;
+
+};
+
 export default {
   verifyAndAttachVtexSecrets,
   verifyIntegration,
   getSecretsByOrganizationId,
   createUserVtexCampaign,
+  getVtexCommissionByAffiliateIdAndDepartmentId,
   getVtexDepartments,
   getVtexDepartmentsCommissions,
   handleOrganizationVtexComission

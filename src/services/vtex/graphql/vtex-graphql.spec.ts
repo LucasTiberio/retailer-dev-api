@@ -3,9 +3,11 @@ import knexDatabase from '../../../knex-database';
 import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
-import { IOrganizationAdapted, IOrganizationFromDB } from '../../organization/types';
+import { IOrganizationAdapted, IOrganizationFromDB, OrganizationInviteStatus } from '../../organization/types';
 import redisClient from '../../../lib/Redis';
 import { mockVtexDepartments } from '../__mocks__';
+import { Services } from '../../services/types';
+import moment from 'moment';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -13,8 +15,26 @@ declare var process : {
 	env: {
       NODE_ENV: "production" | "development" | "test"
       JWT_SECRET: string
+      ORDERS_SERVICE_PASSWORD: string
 	}
 }
+
+const ADD_USER_IN_ORGANIZATION_SERVICE = `
+    mutation addUserInOrganizationService($input: AddUserInOrganizationServiceInput!) {
+        addUserInOrganizationService(input: $input){
+            id
+        }
+    }
+`
+
+const RESPONSE_INVITE = `
+    mutation responseOrganizationInvite($input: ResponseOrganizationInviteInput!) {
+        responseOrganizationInvite(input: $input){
+            status
+            email
+        }
+    }
+`
 
 const SIGN_UP = `
     mutation signUp($input: SignUpInput!) {
@@ -86,6 +106,26 @@ const HANDLE_ORGANIZATION_VTEX_COMMISSION = `
     }
 `
 
+const INVITE_USER_TO_ORGANIZATION = `
+    mutation inviteUserToOrganization($input: InviteUserToOrganizationInput!) {
+        inviteUserToOrganization(input: $input)
+    }
+`
+
+const VTEX_AFFILIATE_COMMISSION = `
+    query vtexAffiliateCommission($input: VtexAffiliateCommissionInput!) {
+        vtexAffiliateCommission(input: $input){
+            id
+            organizationId
+            vtexDepartmentId
+            active
+            vtexCommissionPercentage
+            updatedAt
+            createdAt
+        }
+    }
+`
+
 describe('services graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -99,6 +139,7 @@ describe('services graphql', () => {
     beforeEach(async () => {
 
         await knexDatabase.knex('organization_vtex_comission').del();
+        await knexDatabase.knex('organization_vtex_secrets').del();
 
         const signUpPayload = {
             username: Faker.name.firstName(),
@@ -425,6 +466,162 @@ describe('services graphql', () => {
     
             done();
     
+        })
+
+        test("get comission/(vtex department id) (id do afiliado) graphql", async done => {
+
+            const otherSignUpPayload = {
+                username: Faker.name.firstName(),
+                email: Faker.internet.email(),
+                password: "B8oneTeste123!"
+            }
+    
+            const otherSignUpResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': SIGN_UP, 
+            'variables': {
+                    input: otherSignUpPayload
+                }
+            });
+    
+            let otherSignUpCreated = otherSignUpResponse.body.data.signUp
+
+            const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash');
+
+            const userVerifyEmailPayload = {
+                verificationHash: userFromDb.verification_hash
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .send({
+            'query': USER_VERIFY_EMAIL, 
+            'variables': {
+                    input: userVerifyEmailPayload
+                }
+            });
+
+            const inviteUserToOrganizationPayload = {
+                users: [{
+                    id: otherSignUpCreated.id,
+                    email: otherSignUpCreated.email
+                }]
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': INVITE_USER_TO_ORGANIZATION, 
+            'variables': {
+                    input: inviteUserToOrganizationPayload
+                }
+            });
+
+            const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+
+            const responseOrganizationInvitePayload = {
+                inviteHash: invitedUserToOrganization.invite_hash,
+                response: OrganizationInviteStatus.ACCEPT
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': RESPONSE_INVITE, 
+            'variables': {
+                    input: responseOrganizationInvitePayload
+                }
+            });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
+
+            const addUserInOrganizationPayload = {
+                userId: otherSignUpCreated.id,
+                serviceName: Services.AFFILIATE
+            }
+
+            const addUserInOrganizationServiceResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
+            'variables': {
+                    input: addUserInOrganizationPayload
+                }
+            });
+
+            const handleOrganizationVtexCommissionPayload = {
+                vtexDepartmentId: "1",
+                vtexCommissionPercentage: 15,
+                active: true
+            }
+
+            const handleOrganizationVtexCommissionResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': HANDLE_ORGANIZATION_VTEX_COMMISSION,
+            'variables': {
+                    input: handleOrganizationVtexCommissionPayload
+                }
+            });
+
+            const organizationVtexComissionAdded = handleOrganizationVtexCommissionResponse.body.data.handleOrganizationVtexCommission;
+
+            const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
+                vtexDepartmentId: "1",
+                affiliateId: addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id
+            }
+
+            const getVtexCommissionByAffiliateIdAndDepartmentIdResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('token', process.env.ORDERS_SERVICE_PASSWORD)
+            .send({
+            'query': VTEX_AFFILIATE_COMMISSION,
+            'variables': {
+                    input: vtexComissionsByAffiliateIdAndDepartmentIdPayload
+                }
+            });
+
+            expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.statusCode).toBe(200);
+            expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.body.data.vtexAffiliateCommission).toEqual(
+                expect.objectContaining({
+                    id: organizationVtexComissionAdded.id,
+                    organizationId: organizationCreated.id,
+                    vtexDepartmentId: organizationVtexComissionAdded.vtexDepartmentId,
+                    active: organizationVtexComissionAdded.active,
+                    vtexCommissionPercentage: organizationVtexComissionAdded.vtexCommissionPercentage,
+                    updatedAt: moment(organizationVtexComissionAdded.updatedAt).toISOString(),
+                    createdAt: moment(organizationVtexComissionAdded.createdAt).toISOString()
+                  })
+            )
+
+            done();
         })
 
     })

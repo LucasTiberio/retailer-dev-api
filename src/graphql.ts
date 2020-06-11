@@ -16,6 +16,7 @@ declare var process : {
 	env: {
     JWT_SECRET: string
     NODE_ENV: 'test' | 'production' | 'staging'
+    ORDERS_SERVICE_PASSWORD: string
 	}
 }
 
@@ -31,6 +32,7 @@ const typeDefsBase = gql`
   scalar Upload
   directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
+  directive @ordersService on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
   directive @hasServiceRole(role: [String]!) on FIELD | FIELD_DEFINITION  
 `;
@@ -195,6 +197,17 @@ const directiveResolvers : IDirectiveResolvers = {
     } catch (err) {
       throw new Error("You are not authorized.");
     }
+  },
+  async ordersService(next, _, __, context): Promise<NextFunction> {
+    const token = context.headers['token'];
+    if (!token) throw new Error("token must be provided!");
+
+    if(token !== process.env.ORDERS_SERVICE_PASSWORD){
+      throw new Error("Invalid Token")
+    }
+    
+    return next();
+    
   },
   async isVerified(next, _, __, context): Promise<NextFunction> {
     const [user] = await knexDatabase.knex('users').where('id', context.client.id).select();
