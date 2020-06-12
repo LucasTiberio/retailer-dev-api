@@ -51,6 +51,7 @@ jobs:
     DIGITAL_OCEAN_AWS_SECRET_ACCESS_KEY: vCJ2TcDOLr5vwKAtUuCPAX4RGYBsswR2Z6G1KmXwl7Q
     DIGITAL_OCEAN_SPACES_END_POINT: nyc3.digitaloceanspaces.com
     BUCKET_NAME: plugone-staging
+    ORDERS_SERVICE_PASSWORD: xtABmL7gX-?jNcU5G*b5YbYFm8U&_swu2QNVRXJSA+!?t3Av5eNDE^#s4g4AVv#c38V!B!HmbW73RhEvT6t3Ma2mB4@RfKB^xg*!Bguy@9*j&Z=ye8whD*dk=Bfw2M-S
     PORT: 80
   steps:
 
