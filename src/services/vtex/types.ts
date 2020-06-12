@@ -17,7 +17,7 @@ export interface IVtexCommissionFromDB{
     created_at: Date
     updated_at: Date
 }
-}
+
 export interface ITimeToPayCommissionFromDB{
     id: string
     days: string
