@@ -126,6 +126,30 @@ const VTEX_AFFILIATE_COMMISSION = `
     }
 `
 
+const HANDLE_TIME_TO_PAY_COMMISSION = `
+    mutation handleTimeToPayCommission($input: HandleTimeToPayCommissionInput!) {
+        handleTimeToPayCommission(input: $input){
+            id
+            days
+            type
+            updatedAt
+            createdAt
+        }
+    }
+`
+
+const TIME_TO_PAY_COMMISSION = `
+    query timeToPayCommission{
+        timeToPayCommission{
+            id
+            days
+            type
+            updatedAt
+            createdAt
+        }
+    }
+`
+
 describe('services graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -621,6 +645,111 @@ describe('services graphql', () => {
                   })
             )
 
+            done();
+        })
+
+        test('service admin should be add time to pay comission in service graphql', async done => {
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
+    
+            const handleTimeToPayCommissionPayload = {
+                days: 30
+            };
+
+            const handleTimeToPayCommissionResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': HANDLE_TIME_TO_PAY_COMMISSION,
+            'variables': {
+                    input: handleTimeToPayCommissionPayload
+                }
+            });
+
+            expect(handleTimeToPayCommissionResponse.statusCode).toBe(200);
+    
+            expect(handleTimeToPayCommissionResponse.body.data.handleTimeToPayCommission).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    days: String(handleTimeToPayCommissionPayload.days),
+                    type: 'commission',
+                    updatedAt: expect.any(String),
+                    createdAt: expect.any(String)
+                })
+            )
+    
+            done();
+        })
+        test('service admin should be get time to pay comission in service graphql', async done => {
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
+    
+            const handleTimeToPayCommissionPayload = {
+                days: 30
+            };
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': HANDLE_TIME_TO_PAY_COMMISSION,
+            'variables': {
+                    input: handleTimeToPayCommissionPayload
+                }
+            });
+
+            const timeToPayCommissionResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': TIME_TO_PAY_COMMISSION,
+            });
+
+            expect(timeToPayCommissionResponse.statusCode).toBe(200);
+    
+            expect(timeToPayCommissionResponse.body.data.timeToPayCommission).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    days: String(handleTimeToPayCommissionPayload.days),
+                    type: 'commission',
+                    updatedAt: expect.any(String),
+                    createdAt: expect.any(String)
+                })
+            )
+    
             done();
         })
 

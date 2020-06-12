@@ -619,6 +619,5 @@ describe('Affiliate', () => {
 
         
     })
-
         
 });

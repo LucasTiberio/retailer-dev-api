@@ -1,6 +1,19 @@
 extend type Query{
   vtexDepartmentsCommissions: [VtexDepartmentsComissionsAdapted]! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
   vtexAffiliateCommission(input: VtexAffiliateCommissionInput!): VtexDepartmentsComissions! @ordersService
+  timeToPayCommission: TimeToPayCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
+}
+
+input HandleTimeToPayCommissionInput{
+  days: Int!
+}
+
+type TimeToPayCommission{
+    id: String!
+    days: String!
+    type: String!
+    updatedAt: Datetime!
+    createdAt: Datetime!
 }
 
 input VtexAffiliateCommissionInput{
@@ -10,6 +23,7 @@ input VtexAffiliateCommissionInput{
 
 extend type Mutation{
   handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  handleTimeToPayCommission(input: HandleTimeToPayCommissionInput!): TimeToPayCommission! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
 

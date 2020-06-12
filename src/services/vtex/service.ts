@@ -3,12 +3,13 @@ import knexDatabase from '../../knex-database';
 import { IUserToken } from '../authentication/types';
 import axios from 'axios';
 import store from '../../store';
-import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign, IVtexCategoryThree, IVtexCommissionFromDB } from './types';
+import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign, ITimeToPayCommissionFromDB, IVtexCommissionFromDB } from './types';
 import moment from 'moment';
 import { mockVtexDepartments } from './__mocks__';
 import ServicesService from '../services/service';
 import OrganizationService from '../organization/service';
-import { MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE } from '../../common/consts';
+import { MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST } from '../../common/consts';
+import { Services } from '../services/types';
 
 const ORDER_MOMENTS = [
   "payment-pending",
@@ -34,6 +35,15 @@ const vtexCommissionsAdapter = (record: IVtexCommissionFromDB) => ({
   vtexDepartmentId: record.vtex_department_id,
   active: record.active,
   vtexCommissionPercentage: record.vtex_commission_percentage,
+  updatedAt: record.updated_at,
+  createdAt: record.created_at
+})
+
+const timeToPayCommissionAdapter = (record: ITimeToPayCommissionFromDB) => ({
+  id: record.id,
+  days: record.days,
+  organizationServiceId: record.organization_service_id,
+  type: record.type,
   updatedAt: record.updated_at,
   createdAt: record.created_at
 })
@@ -431,11 +441,71 @@ const getVtexCommissionByAffiliateIdAndDepartmentId = async (
 
 };
 
+const handleTimeToPayCommission = async (handleTimeToPayCommissionPayload: {
+  days: number
+},
+context: { organizationId: string, client: IUserToken }
+, trx: Transaction) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  const { days } = handleTimeToPayCommissionPayload;
+
+  const [organizationService] = await ServicesService.serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx);
+
+  if(!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
+
+  const [timeToPayCommission] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+    .where('organization_service_id', organizationService.id)
+    .andWhere('type', 'commission')
+    .select('id');
+
+  if(timeToPayCommission){
+    const [timeToPayCommissionUpdated] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+      .update({days})
+      .returning('*');
+
+    return timeToPayCommissionAdapter(timeToPayCommissionUpdated);
+  }
+
+  const [timeToPayCommissionUpdated] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+      .insert({
+        days,
+        type: 'commission',
+        organization_service_id: organizationService.id
+      })
+      .returning('*');
+
+    return timeToPayCommissionAdapter(timeToPayCommissionUpdated);
+
+}
+
+const getTimeToPayCommission = async (
+context: { organizationId: string, client: IUserToken }
+, trx: Transaction) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  const [organizationService] = await ServicesService.serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx);
+
+  if(!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
+
+  const [timeToPayCommission] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+    .where('organization_service_id', organizationService.id)
+    .andWhere('type', 'commission')
+    .select('*');
+
+  return timeToPayCommission ? timeToPayCommissionAdapter(timeToPayCommission) : null;
+
+}
+
 export default {
   verifyAndAttachVtexSecrets,
+  handleTimeToPayCommission,
   verifyIntegration,
   getSecretsByOrganizationId,
   createUserVtexCampaign,
+  getTimeToPayCommission,
   getVtexCommissionByAffiliateIdAndDepartmentId,
   getVtexDepartments,
   getVtexDepartmentsCommissions,
