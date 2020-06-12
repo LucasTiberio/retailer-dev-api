@@ -15,11 +15,21 @@ const resolvers : IResolvers = {
             return service.handleOrganizationVtexComission(input, {client, organizationId}, trx);
         });
     },
+    handleTimeToPayCommission: (_, {input}, { organizationId, client}) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+          return service.handleTimeToPayCommission(input, { organizationId, client}, trx);
+      });
+    },
   },
   Query: {
     vtexDepartmentsCommissions: (_, __, { client, organizationId }) => {
         return knexDatabase.knex.transaction((trx: Transaction) => {
             return service.getVtexDepartmentsCommissions({client, organizationId}, trx);
+        });
+    },
+    timeToPayCommission: (_, __, { client, organizationId }) => {
+        return knexDatabase.knex.transaction((trx: Transaction) => {
+            return service.getTimeToPayCommission({client, organizationId}, trx);
         });
     },
     vtexAffiliateCommission: (_, {input}) => {

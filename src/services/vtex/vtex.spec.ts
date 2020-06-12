@@ -49,10 +49,12 @@ describe('Vtex', () => {
     });
 
     beforeEach(async () => {
+        await trx('organization_services_time_to_pay').del();
         await trx('organization_vtex_comission').del();
         await trx('organization_vtex_secrets').del();
-        await trx('organization_services').del();
         await trx('users_organization_roles').del();
+        await trx('users_organization_service_roles').del();
+        await trx('organization_services').del();
         await trx('users_organizations').del();
         await trx('organizations').del();
         await trx('users').del();
@@ -411,6 +413,128 @@ describe('Vtex', () => {
                 updatedAt: moment(organizationVtexComissionAdded.updatedAt).toDate(),
                 createdAt: moment(organizationVtexComissionAdded.createdAt).toDate()
               })
+        )
+
+        done();
+    })
+
+    test('service admin should be add time to pay comission in service', async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const handleTimeToPayCommissionPayload = {
+            days: 30
+        };
+
+        const timeToPayCommissionAdded = await service.handleTimeToPayCommission(handleTimeToPayCommissionPayload, context, trx);
+
+        const [organizationService] = await (trx || knexDatabase.knex)('organization_services')
+        .where('organization_id', organizationCreated.id)
+        .select('id');
+
+        expect(timeToPayCommissionAdded).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                days: String(handleTimeToPayCommissionPayload.days),
+                organizationServiceId: organizationService.id,
+                type: 'commission',
+                updatedAt: expect.any(Date),
+                createdAt: expect.any(Date)
+            })
+        )
+
+        done();
+    })
+
+    test('service admin should be handle time to pay comission in service', async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const handleTimeToPayCommissionPayload = {
+            days: 30
+        };
+
+        await service.handleTimeToPayCommission(handleTimeToPayCommissionPayload, context, trx);
+
+        const handleTimeToPayCommissionPayload2 = {
+            days: 30
+        };
+
+        const timeToPayCommissionHandled = await service.handleTimeToPayCommission(handleTimeToPayCommissionPayload, context, trx);
+
+        const [organizationService] = await (trx || knexDatabase.knex)('organization_services')
+        .where('organization_id', organizationCreated.id)
+        .select('id');
+
+        expect(timeToPayCommissionHandled).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                days: String(handleTimeToPayCommissionPayload2.days),
+                organizationServiceId: organizationService.id,
+                type: 'commission',
+                updatedAt: expect.any(Date),
+                createdAt: expect.any(Date)
+            })
+        )
+
+        done();
+    })
+
+    test('service admin should be get time to pay comission in service', async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const handleTimeToPayCommissionPayload = {
+            days: 30
+        };
+
+        await service.handleTimeToPayCommission(handleTimeToPayCommissionPayload, context, trx);
+
+        const [organizationService] = await (trx || knexDatabase.knex)('organization_services')
+        .where('organization_id', organizationCreated.id)
+        .select('id');
+
+        const timeToPayCommission = await service.getTimeToPayCommission(context, trx);
+
+        expect(timeToPayCommission).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                days: String(handleTimeToPayCommissionPayload.days),
+                organizationServiceId: organizationService.id,
+                type: 'commission',
+                updatedAt: expect.any(Date),
+                createdAt: expect.any(Date)
+            })
         )
 
         done();
