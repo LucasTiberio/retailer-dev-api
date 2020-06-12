@@ -3,25 +3,25 @@ import { ServiceRoles } from "../../services/types"
 export const organizationAdminMenu = [
     {
         name: 'overview',
+        slug: '/overview'
     },{
         name: 'members',
-        children: [
-            {
-                name: 'members'
-            },
-        ]
+        slug: '/members'
     },
     {
         name: 'integrations',
+        slug: '/integrations'
     },
     {
         name: 'affiliate',
         children: [
             {
                 name: 'orders',
+                slug: '/affiliate/orders'
             },
             {
                 name: 'commission',
+                slug: '/affiliate/commission'
             }
         ]
     }
@@ -30,56 +30,69 @@ export const organizationAdminMenu = [
 export const organizationMemberMenu = [
     {
         name: 'overview',
+        slug: '/overview'
     },{
         name: 'members',
-        children: [
-            {
-                name: 'members'
-            },
-        ]
+        slug: '/members'
     }
 ]
 
 export const affiliateMemberMountMenu = (serviceRole: string) => {
 
-    const affiliateAdmin =  {
+    const affiliateAdmin : any =  {
         name: 'affiliate',
         children: [
             {
                 name: 'orders',
+                slug: '/affiliate/orders'
             },
             {
                 name: 'commission',
+                slug: '/affiliate/commission'
+            },
+            {
+                name: 'payments',
+                slug: '/affiliate/payments'
             },
         ]
     }
 
-    const affiliateResponsible =  {
+    const affiliateResponsible : any =  {
         name: 'affiliate',
         children: [
             {
                 name: 'orders',
+                slug: '/affiliate/orders'
             },
             {
                 name: 'commission',
+                slug: '/affiliate/commission'
             },
             {
                 name: 'linkGenerator',
+                slug: '/affiliate/link-generator'
             },
         ]
     }
 
-    const affiliateAnalyst =  {
+    const affiliateAnalyst : any =  {
         name: 'affiliate',
         children: [
             {
                 name: 'orders',
+                slug: '/affiliate/orders'
             },
             {
                 name: 'commission',
+                slug: '/affiliate/commission'
             },
             {
                 name: 'linkGenerator',
+                slug: '/affiliate/link-generator'
+            },
+            {
+                name: 'payments',
+                slug: '/affiliate/payments'
             },
         ]
     }

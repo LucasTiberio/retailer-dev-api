@@ -52,10 +52,13 @@ const MENU_TREE = `
     query menuTree{
         menuTree{
             name
+            slug
             children{
                 name
+                slug
                 children{
                     name
+                    slug
                 }
             }
         }
@@ -172,30 +175,31 @@ describe('services graphql', () => {
         expect(menuTreeResponse.body.data.menuTree).toEqual(expect.arrayContaining([
             {
                 name: 'overview',
+                slug: '/overview',
                 children: null
             },{
                 name: 'members',
-                children: [
-                    {
-                        name: 'members',
-                        children: null
-                    },
-                ]
+                slug: '/members',
+                children: null
             },
             {
                 name: 'integrations',
+                slug: '/integrations',
                 children: null
             },
             {
                 name: 'affiliate',
+                slug: null,
                 children: [
                     {
                         name: 'orders',
-                        children: null
+                        children: null,
+                        slug: '/affiliate/orders',
                     },
                     {
                         name: 'commission',
-                        children: null
+                        children: null,
+                        slug: '/affiliate/commission',
                     }
                 ]
             }

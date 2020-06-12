@@ -4,15 +4,18 @@ extend type Query{
 
 type MenuTree{
     name: String!
+    slug: String
     children: [MenuChildren]
 }
 
 type MenuChildren{
     name: String
+    slug: String
     children: [SubMenuChildren]
 }
 
 type SubMenuChildren{
+    slug: String
     name: String
 }
 
