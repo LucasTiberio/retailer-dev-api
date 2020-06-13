@@ -52,6 +52,13 @@ const resolvers : IResolvers = {
                 return service.getUserInOrganizationService(input, {client}, trx);
             });
         },
+        getUserOrganizationByServiceName: (_, attrs, { client, userServiceOrganizationRolesId }) => {
+            const { input } = attrs;
+            if(!userServiceOrganizationRolesId) throw new Error("user service organization role id doesnt exists!");
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.getUserOrganizationServiceByServiceName(input, {client, userServiceOrganizationRolesId}, trx);
+            });
+        },
         listUsersInOrganizationService: (_, attrs, { client, organizationId }) => {
             const { input } = attrs;
 

@@ -344,6 +344,20 @@ const getUserInOrganizationService = async (getUserInOrganizationServicePayload:
 
 }
 
+const getUserOrganizationServiceByServiceName = async (input: {
+  serviceName: Services
+}, context: { client: IUserToken, userServiceOrganizationRolesId: string }, trx: Transaction) => {
+
+  if(!context.client) throw new Error("token must be provided!");
+
+  const [usersInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+    .where('uosr.id', context.userServiceOrganizationRolesId)
+    .select('uosr.*')
+
+  return usersInOrganizationService ? usersOrganizationServiceAdapter(usersInOrganizationService) : null;
+
+}
+
 const isServiceAdmin = async (usersOrganizationId: string, serviceOrganizationId: string, trx: Transaction) => {
 
   const [organizationServiceRole] = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
@@ -501,6 +515,7 @@ export default {
   getServiceMemberById,
   getUserOrganizationServiceRoleName,
   getServiceById,
+  getUserOrganizationServiceByServiceName,
   getUserOrganizationServiceRole,
   getServiceRolesById,
   getUserInOrganizationService,
