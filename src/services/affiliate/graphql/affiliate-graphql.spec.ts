@@ -167,7 +167,7 @@ const SET_CURRENT_ORGANIZATION = `
 `
 
 const CREATE_AFFILIATE_BANK_VALUES = `
-    query createAffiliateBankValues($input: CreateAffiliateBankValuesInput!) {
+    mutation createAffiliateBankValues($input: CreateAffiliateBankValuesInput!) {
         createAffiliateBankValues(input: $input){
             id
             createdAt

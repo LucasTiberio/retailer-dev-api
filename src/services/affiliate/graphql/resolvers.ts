@@ -18,14 +18,6 @@ const resolvers : IResolvers = {
             return knexDatabase.knex.transaction((trx: Transaction) => {
                 return service.generateSalesJWT(input, {redisClient}, trx);
             });
-        }
-    },
-    Query: {
-        listAffiliateShorterUrl: (_, attrs, { client }) => {
-            const { input } = attrs;
-            return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.getShorterUrlByUserOrganizationServiceId(input, client, trx);
-            });
         },
         createAffiliateBankValues: (_, attrs, { client, organizationId, userServiceOrganizationRolesId }) => {
             const { input } = attrs;
@@ -35,6 +27,14 @@ const resolvers : IResolvers = {
                     client,
                     organizationId
                 }, trx);
+            });
+        }
+    },
+    Query: {
+        listAffiliateShorterUrl: (_, attrs, { client }) => {
+            const { input } = attrs;
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.getShorterUrlByUserOrganizationServiceId(input, client, trx);
             });
         }
     },

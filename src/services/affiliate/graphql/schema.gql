@@ -1,6 +1,7 @@
 extend type Mutation{
     affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
     generateSalesJwt(input: GenerateSalesJwtInput!): String!
+    createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
 }
 
 input GenerateSalesJwtInput{
@@ -11,7 +12,6 @@ input GenerateSalesJwtInput{
 
 extend type Query{
     listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
-    createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
 }
 
 input CreateAffiliateBankValuesInput{
