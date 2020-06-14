@@ -2,6 +2,11 @@ extend type Mutation{
     affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
     generateSalesJwt(input: GenerateSalesJwtInput!): String!
     createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
+    generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl! @hasSalesToken
+}
+
+input GenerateSalesShortenInput{
+    url: String!
 }
 
 input GenerateSalesJwtInput{

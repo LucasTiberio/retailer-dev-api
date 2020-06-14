@@ -619,5 +619,102 @@ describe('Affiliate', () => {
 
         
     })
+
+    test('users sale should generate utms url and send shorter', async done => {   
+
+        let otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency",
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const inviteUserToOrganizationPayload = {
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+        const addUserInOrganizationServicePayload = {
+            organizationId:organizationCreated.id,
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE 
+        };
+
+        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
+
+        const userInServiceHandleRoleRemoveAdminPayload = {
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE,
+            serviceRole: ServiceRoles.SALE
+        };
+
+        await ServicesService.userInServiceHandleRole(userInServiceHandleRoleRemoveAdminPayload, context, trx);
+
+        const generateSalesJWTPayload = {
+            email: otherSignUpCreated.email,
+            organizationId: organizationCreated.id,
+            serviceName: Services.AFFILIATE
+        }
+
+        await service.generateSalesJWT(generateSalesJWTPayload, {redisClient} ,trx);
+
+        let generateSalesShortenPayload = {
+            url: "https://www.teste.com.br/checkout/?orderFormId=768a71136a1245e795a28ff81de99406#/cart#"
+        };
+
+        const saleShorten = await service.generateSalesShorten(generateSalesShortenPayload, {salesId: userInOrganizationService.id} ,trx);
+
+        expect(saleShorten).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                originalUrl: generateSalesShortenPayload.url,
+                shortUrl: expect.any(String),
+                urlCode: expect.any(String),
+                createdAt: expect.any(Date),
+                updatedAt: expect.any(Date),
+            })
+        )
+
+        const usersOrganizationServiceRolesUrlShorter = await (trx || knexDatabase.knex)('users_organization_service_roles_url_shortener').select();
+
+        expect(usersOrganizationServiceRolesUrlShorter).toHaveLength(1);
+        expect(usersOrganizationServiceRolesUrlShorter[0]).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                users_organization_service_roles_id: userInOrganizationService.id,
+                url_shorten_id: saleShorten.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date)
+            })
+        );
+
+        done();
+
+        
+    })
         
 });

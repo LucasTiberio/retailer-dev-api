@@ -11,6 +11,7 @@ import knexDatabase from './knex-database';
 import { NextFunction } from 'express';
 import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus } from './services/organization/types';
 import redisClient from './lib/Redis';
+import { SALE_VTEX_PIXEL_NAMESPACE, MESSAGE_ERROR_SALE_TOKEN_INVALID } from './common/consts';
 
 declare var process : {
 	env: {
@@ -33,6 +34,7 @@ const typeDefsBase = gql`
   directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
   directive @ordersService on FIELD | FIELD_DEFINITION
+  directive @hasSalesToken on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
   directive @hasServiceRole(role: [String]!) on FIELD | FIELD_DEFINITION  
 `;
@@ -206,6 +208,19 @@ const directiveResolvers : IDirectiveResolvers = {
       throw new Error("Invalid Token")
     }
     
+    return next();
+    
+  },
+  async hasSalesToken(next, _, __, context): Promise<NextFunction> {
+    
+    const salesToken = context.headers['sales-token'];
+
+    const salesVerified = await redisClient.getAsync(`${SALE_VTEX_PIXEL_NAMESPACE}_${salesToken}`);
+
+    if(!salesVerified) throw new Error(MESSAGE_ERROR_SALE_TOKEN_INVALID);
+    
+    context.salesId = salesVerified;
+
     return next();
     
   },

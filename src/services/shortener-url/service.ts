@@ -41,9 +41,9 @@ const shortIdGenerator = async (trx: Transaction) => {
   return shortId
 }
 
-const shortenerUrl = async (originalUrl: string, userToken: IUserToken, trx: Transaction) => {
+const shortenerUrl = async (originalUrl: string, trx: Transaction) => {
 
-  if(!userToken) throw new Error("token must be provided");
+  // if(!userToken) throw new Error("token must be provided");
 
     const originalUrlFound = await getShortnerUrlByOriginalUrl(originalUrl, trx);
 

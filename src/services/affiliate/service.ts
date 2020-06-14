@@ -43,7 +43,7 @@ const generateShortenerUrl = async (affiliateGenerateShortenerUrlPayload: {
 
   const urlWithMemberAttached = `${originalUrl}?utm_source=${utmSource}&utm_campaign=${affiliate.id}_${organizationService.id}`;
 
-  const shorterUrl = await ShortenerUrlService.shortenerUrl(urlWithMemberAttached, context.client, trx);
+  const shorterUrl = await ShortenerUrlService.shortenerUrl(urlWithMemberAttached, trx);
 
   const attachedShorterUrlOnAffiliate = await attachShorterUrlOnAffiliate(affiliate.id, shorterUrl.id, trx);
 
@@ -147,8 +147,23 @@ const generateSalesJWT = async (generateSalesJWTPayload : {
 
 }
 
+const generateSalesShorten = async (generateSalesShortenPayload: {
+  url: string
+}, context: {salesId: string}, trx: Transaction) => {
+
+  const shorterUrl = await ShortenerUrlService.shortenerUrl(
+    generateSalesShortenPayload.url, 
+    trx);
+
+  await attachShorterUrlOnAffiliate(context.salesId, shorterUrl.id, trx);
+
+  return shorterUrl;
+  
+}
+
 export default {
   generateShortenerUrl,
+  generateSalesShorten,
   getShorterUrlByUserOrganizationServiceId,
   createAffiliateBankValues,
   generateSalesJWT

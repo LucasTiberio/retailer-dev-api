@@ -46,7 +46,7 @@ describe('shortener', () => {
 
         const originalUrl = Faker.internet.url();
 
-        const shortUrl = await service.shortenerUrl(originalUrl, userToken, trx);
+        const shortUrl = await service.shortenerUrl(originalUrl, trx);
 
         expect(shortUrl).toEqual(
             expect.objectContaining({
@@ -77,7 +77,7 @@ describe('shortener', () => {
         })
         .returning('*');
 
-        const shortUrl = await service.shortenerUrl(originalUrl, userToken, trx);
+        const shortUrl = await service.shortenerUrl(originalUrl, trx);
 
         expect(shortUrl).toEqual(
             expect.objectContaining({
@@ -98,7 +98,7 @@ describe('shortener', () => {
 
         const originalUrl = Faker.internet.url();
 
-        const shortUrl = await service.shortenerUrl(originalUrl, userToken, trx);
+        const shortUrl = await service.shortenerUrl(originalUrl, trx);
 
         const getOriginalUrl = await service.getOriginalUrlByCode(shortUrl.urlCode, trx);
         const [urlShortenFoundOnDB] = await (trx || knexDatabase.knex)('url_shorten').where('id', shortUrl.id).select('count');
