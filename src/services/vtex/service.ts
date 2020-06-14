@@ -174,8 +174,12 @@ const attachVtexSecrets = async (input: {
 }
 
 const verifyIntegration = async (organizationId: string) => {
-  const vtexIntegration = await organizationServicesByOrganizationIdLoader().load(organizationId);
-  return vtexIntegration.length;
+  const [vtexIntegration] = await organizationServicesByOrganizationIdLoader().load(organizationId);
+  return vtexIntegration ? {
+    status: vtexIntegration.status,
+    createdAt: vtexIntegration.createdAt,
+    updatedAt: vtexIntegration.updatedAt,
+  } : null;
 }
 
 const getSecretsByOrganizationId = async (organizationId: string, trx: Transaction) => {

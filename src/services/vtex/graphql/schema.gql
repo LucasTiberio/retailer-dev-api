@@ -58,5 +58,11 @@ input VerifyAndAttachVtexSecretsInput{
 }
 
 extend type Organization{
-  vtexIntegration: Boolean!
+  vtexIntegration: VtexIntegration
+}
+
+type VtexIntegration{
+  status: Boolean!
+  createdAt: Datetime!
+  updatedAt: Datetime!
 }
