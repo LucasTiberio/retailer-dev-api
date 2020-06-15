@@ -89,8 +89,9 @@ const organizationByUserIdLoader = store.registerOneToManyLoader(
 const organizationHasMemberLoader = store.registerOneToManyLoader(
   async (organizationIds : string[]) => {
     const query = await knexDatabase.knex('users_organizations')
+    .where('active', true)
     .whereIn('organization_id', organizationIds)
-    .limit(1)
+    .limit(2)
     .select('*')
     return query;
   },
@@ -647,7 +648,7 @@ const verifyOrganizationHasMember = async (organizationId: string) => {
 
   const userOrganizationRole = await organizationHasMemberLoader().load(organizationId);
 
-  return userOrganizationRole.length;
+  return userOrganizationRole.length > 1;
 
 }
 
