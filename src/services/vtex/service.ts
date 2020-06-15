@@ -129,7 +129,10 @@ const verifyAndAttachVtexSecrets = async (input : {
     return false
 
   } catch(e) {
-    throw new Error(e.response?.data?.error?.message || e.message)
+    let errorMessage = e.response?.data?.error?.message || e.message;
+    if(errorMessage === 'An error has occurred')
+      errorMessage = "Verifique as chaves inseridas."
+    throw new Error(errorMessage)
   }
 
 }
