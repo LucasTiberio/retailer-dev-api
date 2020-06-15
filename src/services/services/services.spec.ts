@@ -13,6 +13,7 @@ import { IOrganizationAdapted, OrganizationInviteStatus, OrganizationRoles } fro
 import knexDatabase from '../../knex-database';
 import { IContext } from '../../common/types';
 import { MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES } from '../../common/consts';
+import redisClient from '../../lib/Redis';
 
 describe('Services', () => {
 
@@ -63,7 +64,7 @@ describe('Services', () => {
         await trx('users').del();
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
         context = {client: userToken, organizationId: organizationCreated.id};

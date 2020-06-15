@@ -14,6 +14,7 @@ import service from './service';
 import { mockVtexDepartments } from './__mocks__';
 import { Services } from '../services/types';
 import moment from 'moment';
+import redisClient from '../../lib/Redis';
 
 describe('Vtex', () => {
 
@@ -62,7 +63,7 @@ describe('Vtex', () => {
         userToken = { origin: 'user', id: signUpCreated.id };
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
     })
 
     test("organization admin should add vtex secrets and hook attached", async done => {

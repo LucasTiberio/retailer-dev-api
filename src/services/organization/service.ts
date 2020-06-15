@@ -99,9 +99,13 @@ const organizationHasMemberLoader = store.registerOneToManyLoader(
     _organizationAdapter
 );
 
-const createOrganization = async (createOrganizationPayload : IOrganizationPayload, userToken : IUserToken, trx : Transaction) => {
+const createOrganization = async (
+    createOrganizationPayload : IOrganizationPayload, 
+    context: { redisClient: RedisClient, client: IUserToken },
+    trx : Transaction
+  ) => {
 
-  if(!userToken) throw new Error("invalid token");
+  if(!context.client) throw new Error("invalid token");
 
   try {
 
@@ -109,16 +113,18 @@ const createOrganization = async (createOrganizationPayload : IOrganizationPaylo
     .insert({
       name: createOrganizationPayload.name,
       contact_email: createOrganizationPayload.contactEmail,
-      user_id: userToken.id
+      user_id: context.client.id
     }).into('organizations').returning('*')
 
-    await organizationRolesAttach(userToken.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx);
+    await organizationRolesAttach(context.client.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx);
 
     const affiliateServiceFound = await ServicesService.getServiceByName(Services.AFFILIATE, trx);
 
     if(!affiliateServiceFound) throw new Error("Affiliate service doesnt exists.");
 
-    await ServicesService.createServiceInOrganization(affiliateServiceFound.id, organizationCreated.id, userToken, trx);
+    await ServicesService.createServiceInOrganization(affiliateServiceFound.id, organizationCreated.id, context.client, trx);
+
+    await setCurrentOrganization({organizationId: organizationCreated.id}, { client: context.client, redisClient: context.redisClient}, trx);
 
     return _organizationAdapter(organizationCreated)
   } catch(e){

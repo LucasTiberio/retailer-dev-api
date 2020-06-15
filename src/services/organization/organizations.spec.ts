@@ -60,7 +60,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -86,7 +86,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -118,7 +118,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
         
         let context : IContext = {client: userToken, organizationId: organizationCreated.id};
 
@@ -167,7 +167,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -197,7 +197,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         expect(organizationCreated).toEqual(
             expect.objectContaining({
@@ -287,7 +287,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        await service.createOrganization(createOrganizationPayload, userToken, trx);
+        await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const verifiedOrganizationName = await service.verifyOrganizationName(createOrganizationPayload.name, trx);
 
@@ -304,7 +304,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const organizations = await service.listMyOrganizations(userToken, trx);
 
@@ -333,7 +333,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -368,7 +368,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -463,7 +463,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -553,7 +553,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -616,7 +616,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -679,7 +679,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -743,7 +743,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -838,7 +838,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -938,7 +938,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1006,7 +1006,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1078,7 +1078,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1169,7 +1169,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1246,7 +1246,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1331,7 +1331,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1398,7 +1398,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1463,7 +1463,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1535,7 +1535,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1613,7 +1613,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -1658,7 +1658,7 @@ describe('Organizations', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        const organizationCreated = await service.createOrganization(createOrganizationPayload, userToken, trx);
+        const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id

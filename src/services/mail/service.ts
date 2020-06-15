@@ -11,7 +11,7 @@ const sendSignUpMail = async (data: ISendMail) => {
         await Mail.sendMail({
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
-            subject: 'Welcome to PlugOne!',
+            subject: 'Bem vindo(a) a PlugOne!',
             html: `
             <!DOCTYPE html>
                 <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -481,7 +481,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
         await Mail.sendMail({
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
-            subject: 'Recovery PlugOne Password!',
+            subject: 'Recuperacão de senha Plugone!',
             html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -918,7 +918,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
         await Mail.sendMail({
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `${data.username} <${data.email}>`,
-            subject: 'Recovered PlugOne Password!',
+            subject: 'Senha recuperada Plugone!',
             html: `
                     <!DOCTYPE html>
                     <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -1354,7 +1354,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
         await Mail.sendMail({
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `<${data.email}>`,
-            subject: `You haas been invited to ${data.organizationName}!`,
+            subject: `Você foi convidado por ${data.organizationName}!`,
             html: `
 
 <!DOCTYPE html>
@@ -1670,7 +1670,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                               <td class="col px-16" bgcolor="#FFFFFF" align="left" width="352" style="padding: 48px 24px 32px 24px;" >
                                                 <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: center;">Você foi convidado para a ${data.organizationName}</h1>
                                                 <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em; margin-left:95px;margin-right: 95px;text-align: center;">Você foi convidado para filiar-se à organização ${data.organizationName}. Clique abaixo para aceitar o convite.</p>
-                                                <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept" class="inter btn" style="text-align: center;cursor: pointer;text-decoration: none;margin-bottom: 10px">Aceitar convite</a>
+                                                <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept" class="inter btn" style="color: #666372; text-align: center;cursor: pointer;text-decoration: none;margin-bottom: 10px">Aceitar convite</a>
                                                 <a href="${frontUrl}/member-invited/${data.hashToVerify}/refused" class="inter" style="display: block; text-align: center;cursor: pointer;text-decoration: none;">Recusar convite</a>
                     
                                               </td>
@@ -1788,7 +1788,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
         await Mail.sendMail({
             from: 'PlugOne No-reply <noreply@plugone.io>',
             to: `<${data.email}>`,
-            subject: `You haas been invited to Plugone by ${data.organizationName}!`,
+            subject: `Você foi convidado a plugone por ${data.organizationName}!`,
             html: `
 
 <!DOCTYPE html>
@@ -2104,7 +2104,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                               <td class="col px-16" bgcolor="#FFFFFF" align="left" width="352" style="padding: 48px 24px 32px 24px;" >
                                                 <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: center;">Bem vindo à Plugone!</h1>
                                                 <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em; margin-left:95px;margin-right: 95px;text-align: center;">Você foi convidado para utilizar a plataforma Plugone. Clique abaixo para aceitar o convite.</p>
-                                                <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept" class="inter btn" style="text-align: center;cursor: pointer;text-decoration: none;">Aceitar convite</a>
+                                                <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept" class="inter btn" style="color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">Aceitar convite</a>
                     
                                               </td>
                                             </tr>

@@ -14,6 +14,7 @@ import { IOrganizationAdapted, OrganizationInviteStatus } from '../organization/
 import knexDatabase from '../../knex-database';
 import { IContext } from '../../common/types';
 import { organizationAdminMenu, organizationMemberMenu, affiliateMemberMountMenu } from './helpers';
+import redisClient from '../../lib/Redis';
 
 describe('Menu', () => {
 
@@ -64,7 +65,7 @@ describe('Menu', () => {
         await trx('users').del();
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
         context = {client: userToken, organizationId: organizationCreated.id};
