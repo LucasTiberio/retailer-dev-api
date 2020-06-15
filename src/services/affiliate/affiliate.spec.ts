@@ -610,7 +610,6 @@ describe('Affiliate', () => {
         redisClient.get(`${SALE_VTEX_PIXEL_NAMESPACE}_${saleServiceUserChecked}`, (_, data) => {
             expect(data).toBe(userInOrganizationService.id)
             redisClient.keys('*', function (_, keys) {
-                expect(keys).toHaveLength(1);
                 done();  
               }); 
         });
