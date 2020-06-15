@@ -9,6 +9,7 @@ import knexDatabase from '../../knex-database';
 import { IOrganizationAdapted } from '../organization/types';
 import OrganizationService from '../organization/service';
 var imgGen = require('js-image-generator');
+import redisClient from '../../lib/Redis';
 
 describe('Storage', () => {
 
@@ -51,7 +52,7 @@ describe('Storage', () => {
         await trx('users').del();
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
     })
 
     test("should upload image", async done => {

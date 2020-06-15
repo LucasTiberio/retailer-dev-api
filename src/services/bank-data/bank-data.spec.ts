@@ -11,6 +11,7 @@ import OrganizationService from '../organization/service';
 import {brazilBanksMock} from './helpers';
 import { IServiceAdaptedFromDB, Services } from '../services/types';
 import { IContext } from '../../common/types';
+import redisClient from '../../lib/Redis';
 
 describe('Bank Data', () => {
 
@@ -61,7 +62,7 @@ describe('Bank Data', () => {
         await trx('users').del();
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
         context = {client: userToken, organizationId: organizationCreated.id};

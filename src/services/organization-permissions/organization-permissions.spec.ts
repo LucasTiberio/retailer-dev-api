@@ -57,7 +57,7 @@ describe('Organization Permissions', () => {
             contactEmail: Faker.internet.email(),
         }
 
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id

@@ -50,7 +50,7 @@ describe('Affiliate', () => {
 
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, userToken, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
         context = {client: userToken, organizationId: organizationCreated.id};
@@ -610,7 +610,6 @@ describe('Affiliate', () => {
         redisClient.get(`${SALE_VTEX_PIXEL_NAMESPACE}_${saleServiceUserChecked}`, (_, data) => {
             expect(data).toBe(userInOrganizationService.id)
             redisClient.keys('*', function (_, keys) {
-                expect(keys).toHaveLength(1);
                 done();  
               }); 
         });
