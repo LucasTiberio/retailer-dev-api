@@ -11,7 +11,8 @@ export interface IPermissionFromDB {
 export enum ServicePermissionName{
     commission = 'commission',
     orders = 'orders',
-    generateLink = 'generateLink'
+    generateLink = 'generateLink',
+    payments = 'payments',
 }
 
 export enum PermissionGrant{

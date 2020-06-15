@@ -38,6 +38,7 @@ enum ServicePermissionName{
     commission
     orders
     generateLink
+    payments
 }
 
 enum PermissionGrant{

@@ -181,7 +181,8 @@ describe('organizations graphql', () => {
         let permissions = [
             "commission",
             "orders" ,
-            "generateLink"
+            "generateLink",
+            "payments"
         ];
 
         expect(userServicePermissionsResponse.statusCode).toBe(200);

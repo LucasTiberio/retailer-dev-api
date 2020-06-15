@@ -83,7 +83,8 @@ describe('Organization Permissions', () => {
         let permissions = [
             "commission",
             "orders" ,
-            "generateLink"
+            "generateLink",
+            "payments"
         ];
 
         expect(userOrganizationPermission).toEqual(
@@ -149,7 +150,8 @@ describe('Organization Permissions', () => {
         let permissions = [
             "commission",
             "orders" ,
-            "generateLink"
+            "generateLink",
+            "payments"
         ];
 
         let otherSignUpPayload = {

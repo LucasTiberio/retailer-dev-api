@@ -1,7 +1,8 @@
 let permissions = [
   { name: "commission" },
   { name: "orders" },
-  { name: "generateLink" }
+  { name: "generateLink" },
+  { name: "payments" }
 ]
 
 const SERVICE_ADMIN = "ADMIN";
@@ -53,6 +54,11 @@ exports.seed = async function(knex) {
                           serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAdminRoleId, grant: GRANT_HIDE })
                           serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAnalystRoleId, grant: GRANT_WRITE })
                           serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceSaleRoleId, grant: GRANT_HIDE })
+                          return 
+                    case "payments":
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAdminRoleId, grant: GRANT_WRITE })
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAnalystRoleId, grant: GRANT_WRITE })
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceSaleRoleId, grant: GRANT_WRITE })
                           return 
                       default: return;
                   }
