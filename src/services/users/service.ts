@@ -153,7 +153,7 @@ const recoveryPassword = async (email: string, trx: Transaction) => {
       username: user.username, 
       hashToVerify: encryptedHashVerification
     })
-  
+
     await (trx || database.knex)('users').where('email', email).update({'verification_hash':encryptedHashVerification, verified: true});
 
     return true
