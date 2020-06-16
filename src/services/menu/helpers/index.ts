@@ -22,7 +22,11 @@ export const organizationAdminMenu = [
             {
                 name: 'commission',
                 slug: '/affiliate/commission'
-            }
+            },
+            {
+                name: 'payments',
+                slug: '/affiliate/payments'
+            },
         ]
     }
 ]
@@ -99,11 +103,11 @@ export const affiliateMemberMountMenu = (serviceRole: string) => {
 
     switch (serviceRole) {
         case ServiceRoles.ADMIN:
-            return organizationMemberMenu.slice().push(affiliateAdmin)
+            return [...organizationMemberMenu, affiliateAdmin]
         case ServiceRoles.RESPONSIBLE:
-            return organizationMemberMenu.slice().push(affiliateResponsible)
+            return [...organizationMemberMenu, affiliateResponsible]
         case ServiceRoles.ANALYST:
-            return organizationMemberMenu.slice().push(affiliateAnalyst)
+            return [...organizationMemberMenu, affiliateAnalyst]
         default: return;
     }
 

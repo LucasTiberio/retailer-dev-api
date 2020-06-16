@@ -200,6 +200,11 @@ describe('services graphql', () => {
                         name: 'commission',
                         children: null,
                         slug: '/affiliate/commission',
+                    }, 
+                    {
+                        name: 'payments',
+                        children: null,
+                        slug: '/affiliate/payments',
                     }
                 ]
             }
