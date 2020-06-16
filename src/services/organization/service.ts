@@ -316,6 +316,8 @@ const responseInvite = async (responseInvitePayload : IResponseInvitePayload, tr
     })
     .where('invite_hash', responseInvitePayload.inviteHash);
 
+    if(!user) return {status: true}
+
     if(!user.encrypted_password || !user.username){
       return {
         status: false,
