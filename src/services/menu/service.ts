@@ -36,7 +36,7 @@ const getMenuTree = async (
   if(!userOrganizationService) throw new Error(MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE);
 
   const userOrganizationServiceRole = await ServicesService.getUserOrganizationServiceRoleById(userOrganizationService.id, trx);
-      
+
   return affiliateMemberMountMenu(userOrganizationServiceRole.name)
 }
 
