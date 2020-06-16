@@ -13,12 +13,12 @@ const resolvers : IResolvers = {
   },
   UserOrganizationService: {
     bankData: async (obj) => {
-        return service.getBankDataById(obj.bankDataId);
+      return service.getBankDataById(obj.bankDataId);
     },
   },
   UserBankValues: {
     brazilBank: async (obj) => {
-        return service.getBrazilBankById(obj.brazilBankId);
+      return service.getBrazilBankById(obj.brazilBankId);
     },
   }
 };

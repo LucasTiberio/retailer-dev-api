@@ -48,6 +48,8 @@ const brazilBankByIdLoader = store.registerOneToOneLoader(
 );
 
 const getBankDataById = async (bankDataId: string) => {
+
+  if(!bankDataId) return null;
   
   const bankData = await bankDataByIdLoader().load(bankDataId);
 
