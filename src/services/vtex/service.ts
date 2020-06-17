@@ -165,7 +165,8 @@ const attachVtexSecrets = async (input: {
       .where('id', verifySecretExists.id)
       .update({
         vtex_key: xVtexApiAppKey,
-        vtex_token: xVtexApiAppToken
+        vtex_token: xVtexApiAppToken,
+        active: true
       }).select();
 
     return changeVtexSecrets;

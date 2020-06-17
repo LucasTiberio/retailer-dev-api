@@ -52,7 +52,7 @@ describe('shortener', () => {
             expect.objectContaining({
                 id: expect.any(String),
                 originalUrl,
-                shortUrl: `${backendUrl}/${shortUrl.urlCode}`,
+                shortUrl: `${backendUrl}/redirect/${shortUrl.urlCode}`,
                 urlCode: expect.any(String),
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
@@ -67,7 +67,7 @@ describe('shortener', () => {
 
         const originalUrl = Faker.internet.url();
         const fakeShortId = "123456"
-        const shortUrlBefore = `${backendUrl}/${fakeShortId}`;
+        const shortUrlBefore = `${backendUrl}/redirect/${fakeShortId}`;
 
         await (trx || knexDatabase.knex)('url_shorten')
         .insert({

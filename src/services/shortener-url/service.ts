@@ -53,7 +53,7 @@ const shortenerUrl = async (originalUrl: string, trx: Transaction) => {
       const [shortIdFoundOnDb] = await (trx || knexDatabase.knex)('url_shorten')
         .insert({
           original_url: originalUrl,
-          short_url: `${backendUrl}/${shortId}`,
+          short_url: `${backendUrl}/redirect/${shortId}`,
           url_code: shortId
         })
         .returning('*');

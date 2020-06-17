@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
     res.send('Hello B8ONE!');
 });
 
-app.get('/:shortenCode', async (req, res, next) => {
+app.get('/redirect/:shortenCode', async (req, res, next) => {
 
   const shortenCode = req.params.shortenCode;
 
