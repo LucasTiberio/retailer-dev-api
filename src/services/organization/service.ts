@@ -748,7 +748,7 @@ const verifyShowFirstSteps = async (organizationId: string) => {
 
   const hasMember = members.length > 1;
 
-  return !(!!vtexIntegration?.status && hasMember)
+  return !(!!vtexIntegration && hasMember)
 
 }
 
