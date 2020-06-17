@@ -26,6 +26,13 @@ export interface ITimeToPayCommissionFromDB{
     created_at: Date
     updated_at: Date
 }
+export interface IDefaultPayCommissionFromDB{
+    id: string
+    percentage: number
+    organization_service_id: string
+    created_at: Date
+    updated_at: Date
+}
 
 export interface IVtexIntegrationAdapted{
     id: string
