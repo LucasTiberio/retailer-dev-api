@@ -50,6 +50,7 @@ describe('Vtex', () => {
     });
 
     beforeEach(async () => {
+        await trx('organization_services_def_commission').del();
         await trx('organization_services_time_to_pay').del();
         await trx('organization_vtex_comission').del();
         await trx('organization_vtex_secrets').del();
@@ -533,6 +534,129 @@ describe('Vtex', () => {
                 days: String(handleTimeToPayCommissionPayload.days),
                 organizationServiceId: organizationService.id,
                 type: 'commission',
+                updatedAt: expect.any(Date),
+                createdAt: expect.any(Date)
+            })
+        )
+
+        done();
+    })
+
+    test('service admin should be handle default comission in service', async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const handleDefaultCommission = {
+            percentage: 10
+        };
+
+        const defaultCommission = await service.handleDefaultommission(handleDefaultCommission, context, trx);
+
+        const [organizationService] = await (trx || knexDatabase.knex)('organization_services')
+        .where('organization_id', organizationCreated.id)
+        .select('id');
+
+        expect(defaultCommission).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                percentage: handleDefaultCommission.percentage,
+                organizationServiceId: organizationService.id,
+                updatedAt: expect.any(Date),
+                createdAt: expect.any(Date)
+            })
+        )
+
+        done();
+    })
+
+    test('service admin should be handle default comission in service', async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const handleDefaultCommission = {
+            percentage: 10
+        };
+
+        await service.handleDefaultommission(handleDefaultCommission, context, trx);
+
+        const handleDefaultCommissionAgain = {
+            percentage: 20
+        };
+
+        const defaultCommission = await service.handleDefaultommission(handleDefaultCommissionAgain, context, trx);
+
+        const [organizationService] = await (trx || knexDatabase.knex)('organization_services')
+        .where('organization_id', organizationCreated.id)
+        .select('id');
+
+        expect(defaultCommission).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                percentage: handleDefaultCommissionAgain.percentage,
+                organizationServiceId: organizationService.id,
+                updatedAt: expect.any(Date),
+                createdAt: expect.any(Date)
+            })
+        )
+
+        const defComissionFoundDb = await (trx || knexDatabase.knex)('organization_services_def_commission').select();
+        
+        expect(defComissionFoundDb).toHaveLength(1);
+
+        done();
+    })
+
+    test('service admin should be get time to pay comission in service', async done => {
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        await service.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const handleDefaultCommission = {
+            percentage: 10
+        };
+
+        await service.handleDefaultommission(handleDefaultCommission, context, trx);
+
+        const [organizationService] = await (trx || knexDatabase.knex)('organization_services')
+        .where('organization_id', organizationCreated.id)
+        .select('id');
+
+        const defaultCommission = await service.getDefaultCommission(context, trx);
+
+        expect(defaultCommission).toEqual(
+            expect.objectContaining({
+                id: expect.any(String),
+                percentage: handleDefaultCommission.percentage,
+                organizationServiceId: organizationService.id,
                 updatedAt: expect.any(Date),
                 createdAt: expect.any(Date)
             })
