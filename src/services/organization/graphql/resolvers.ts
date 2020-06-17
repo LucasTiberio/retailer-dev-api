@@ -88,6 +88,9 @@ const resolvers : IResolvers = {
     hasMember: async (obj) => {
       return service.verifyOrganizationHasMember(obj.id);
     },
+    showFirstSteps: async (obj) => {
+      return service.verifyShowFirstSteps(obj.id);
+    },
   },
   UserOrganizationRole: {
     userOrganization: async (obj) => {

@@ -2,6 +2,7 @@ import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServic
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import OrganizationService from '../organization/service';
+import BankDataService from '../bank-data/service';
 import VtexService from '../vtex/service';
 import knexDatabase from "../../knex-database";
 import { OrganizationInviteStatus, OrganizationRoles } from "../organization/types";
@@ -58,6 +59,18 @@ const userOrganizationServicesByIdLoader = store.registerOneToOneLoader(
   },
     'id',
     usersOrganizationServiceAdapter
+);
+
+const userOrganizationServicesHasLinkGeneratedByIdLoader = store.registerOneToOneLoader(
+  async (userOrganizationServiceIds : string[]) => {
+    const query = await knexDatabase.knex('users_organization_service_roles_url_shortener')
+    .whereIn('users_organization_service_roles_id', userOrganizationServiceIds)
+    .limit(1)
+    .select('*');
+    return query;
+  },
+    'users_organization_service_roles_id',
+    (record: any) => record
 );
 
 const organizationServicesRolesByIdLoader = store.registerOneToManyLoader(
@@ -498,6 +511,15 @@ const getOrganizationServicesById = async (
 
 }
 
+const verifyFirstSteps = async (userServiceOrganizationId: string, bankDataId: string) => {
+
+  const bankData = await BankDataService.getBankDataById(bankDataId);
+
+  const hasLinkGenerated = await userOrganizationServicesHasLinkGeneratedByIdLoader().load(userServiceOrganizationId);
+
+  return !(!!hasLinkGenerated && !!bankData);
+}
+
 export default {
   createServiceInOrganization,
   getOrganizationServicesById,
@@ -510,6 +532,7 @@ export default {
   userInServiceHandleRole,
   listUsersInOrganizationService,
   listUsedServices,
+  verifyFirstSteps,
   getServiceRolesByOneId,
   addUserInOrganizationService,
   getServiceMemberById,

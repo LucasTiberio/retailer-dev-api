@@ -3,6 +3,7 @@ import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
 import MailService from '../mail/service';
+import VtexService from '../vtex/service';
 import UserService from '../users/service';
 import ServicesService from '../services/service';
 import StorageService from '../storage/service';
@@ -90,6 +91,18 @@ const organizationHasMemberLoader = store.registerOneToManyLoader(
   async (organizationIds : string[]) => {
     const query = await knexDatabase.knex('users_organizations')
     .where('active', true)
+    .whereIn('organization_id', organizationIds)
+    .limit(2)
+    .select('*')
+    return query;
+  },
+    'organization_id',
+    _organizationAdapter
+);
+
+const organizationHasAnyMemberLoader = store.registerOneToManyLoader(
+  async (organizationIds : string[]) => {
+    const query = await knexDatabase.knex('users_organizations')
     .whereIn('organization_id', organizationIds)
     .limit(2)
     .select('*')
@@ -622,6 +635,7 @@ const listMyOrganizations = async (userToken : IUserToken, trx: Transaction) => 
     const organizations = await (trx || knexDatabase.knex)('users_organizations AS uo')
       .innerJoin('organizations AS orgn', 'orgn.id', 'uo.organization_id')
       .where('uo.user_id', userToken.id)
+      .andWhere('uo.active', true)
       .select('orgn.*');
 
     return organizations.map(_organizationAdapter);
@@ -726,9 +740,22 @@ const setCurrentOrganization = async (currentOrganizationPayload : { organizatio
 
 }
 
+const verifyShowFirstSteps = async (organizationId: string) => {
+
+  const members = await organizationHasAnyMemberLoader().load(organizationId);
+
+  const vtexIntegration = await VtexService.verifyIntegration(organizationId)
+
+  const hasMember = members.length > 1;
+
+  return !(!!vtexIntegration?.status && hasMember)
+
+}
+
 export default {
   listUsersInOrganization,
   getOrganizationByName,
+  verifyShowFirstSteps,
   organizationDetails,
   organizationUploadImage,
   getUserOrganizationRole,

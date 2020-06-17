@@ -108,6 +108,7 @@ type Organization{
   id: String!
   active: Boolean!
   user: User! @isVerified @isAuthenticated # TODO somente admin pode ver o founder
+  showFirstSteps: Boolean!
   updatedAt: Datetime!
   createdAt: Datetime!
   logo: String

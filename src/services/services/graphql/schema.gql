@@ -43,6 +43,7 @@ input ListAvailableUsersToServiceInput{
 
 type UserOrganizationService{
     id: String!
+    showFirstSteps: Boolean!
     service: Service!
     serviceRoles: ServiceRoles!
     active: Boolean!

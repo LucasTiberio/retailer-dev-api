@@ -76,6 +76,9 @@ const resolvers : IResolvers = {
         },
         userOrganization: (obj) => {
             return OrganizationService.getUserOrganizationById(obj.usersOrganizationId);
+        },
+        showFirstSteps: (obj) => {
+            return service.verifyFirstSteps(obj.id, obj.bankDataId);
         }
     },
     Service: {
