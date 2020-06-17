@@ -1,11 +1,10 @@
 import { Transaction } from 'knex';
 import knexDatabase from "../../knex-database";
 import { IShortenerUrlFromDB } from "./types";
-import { IUserToken } from "../authentication/types";
 import shortid from 'shortid';
 import store from '../../store';
 
-const frontUrl = process.env.FRONT_URL_STAGING;
+const backendUrl = process.env.BACKEND_URL_STAGING;
 
 const shortUrlAdapter = (record : IShortenerUrlFromDB) => ({
   id: record.id,
@@ -54,7 +53,7 @@ const shortenerUrl = async (originalUrl: string, trx: Transaction) => {
       const [shortIdFoundOnDb] = await (trx || knexDatabase.knex)('url_shorten')
         .insert({
           original_url: originalUrl,
-          short_url: `${frontUrl}/${shortId}`,
+          short_url: `${backendUrl}/${shortId}`,
           url_code: shortId
         })
         .returning('*');
@@ -76,7 +75,7 @@ const getShortnerUrlByOriginalUrl = async (originalUrl: string, trx: Transaction
 
 }
 
-const getOriginalUrlByCode = async (urlCode: string, trx: Transaction) => {
+const getOriginalUrlByCode = async (urlCode: string ,trx: Transaction) => {
 
   const [shortIdFoundOnDb] = await (trx || knexDatabase.knex)('url_shorten')
   .where('url_code', urlCode)

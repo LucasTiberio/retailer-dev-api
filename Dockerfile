@@ -41,5 +41,7 @@ ARG redisport
 ENV REDIS_PORT=$redisport
 ARG ordersservicepassword
 ENV ORDERS_SERVICE_PASSWORD=$ordersservicepassword
+ARG backendurlstaging
+ENV BACKEND_URL_STAGING=$backendurlstaging
 RUN npm install && npm run build
 CMD ["/bin/sh", "-c", "npx knex migrate:latest && npm start"]

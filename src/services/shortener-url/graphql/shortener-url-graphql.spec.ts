@@ -10,7 +10,7 @@ const GET_ORIGINAL_URL_BY_CODE = `
     }
 `
 
-const frontUrl = process.env.FRONT_URL_STAGING;
+const backendUrl = process.env.BACKEND_URL_STAGING;
 
 describe('shortener graphql', () => {
 
@@ -18,7 +18,7 @@ describe('shortener graphql', () => {
 
         const originalUrl = Faker.internet.url();
         const fakeShortId = "123456"
-        const shortUrlBefore = `${frontUrl}/${fakeShortId}`;
+        const shortUrlBefore = `${backendUrl}/${fakeShortId}`;
 
         const [urlShorten] = await knexDatabase.knex('url_shorten')
             .insert({

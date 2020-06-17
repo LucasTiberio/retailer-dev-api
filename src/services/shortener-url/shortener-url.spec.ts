@@ -7,7 +7,7 @@ import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
 import knexDatabase from '../../knex-database';
 
-const frontUrl = process.env.FRONT_URL_STAGING;
+const backendUrl = process.env.BACKEND_URL_STAGING;
 
 describe('shortener', () => {
 
@@ -52,7 +52,7 @@ describe('shortener', () => {
             expect.objectContaining({
                 id: expect.any(String),
                 originalUrl,
-                shortUrl: `${frontUrl}/${shortUrl.urlCode}`,
+                shortUrl: `${backendUrl}/${shortUrl.urlCode}`,
                 urlCode: expect.any(String),
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
@@ -67,7 +67,7 @@ describe('shortener', () => {
 
         const originalUrl = Faker.internet.url();
         const fakeShortId = "123456"
-        const shortUrlBefore = `${frontUrl}/${fakeShortId}`;
+        const shortUrlBefore = `${backendUrl}/${fakeShortId}`;
 
         await (trx || knexDatabase.knex)('url_shorten')
         .insert({
