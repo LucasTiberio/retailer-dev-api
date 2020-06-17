@@ -20,6 +20,11 @@ const resolvers : IResolvers = {
           return service.handleTimeToPayCommission(input, { organizationId, client}, trx);
       });
     },
+    handleDefaultCommission: (_, {input}, { organizationId, client}) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+          return service.handleDefaultommission(input, { organizationId, client}, trx);
+      });
+    },
   },
   Query: {
     vtexDepartmentsCommissions: (_, __, { client, organizationId }) => {
@@ -30,6 +35,11 @@ const resolvers : IResolvers = {
     timeToPayCommission: (_, __, { client, organizationId }) => {
         return knexDatabase.knex.transaction((trx: Transaction) => {
             return service.getTimeToPayCommission({client, organizationId}, trx);
+        });
+    },
+    defaultCommission: (_, __, { client, organizationId }) => {
+        return knexDatabase.knex.transaction((trx: Transaction) => {
+            return service.getDefaultCommission({client, organizationId}, trx);
         });
     },
     vtexAffiliateCommission: (_, {input}) => {

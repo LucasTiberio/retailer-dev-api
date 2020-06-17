@@ -150,6 +150,28 @@ const TIME_TO_PAY_COMMISSION = `
     }
 `
 
+const HANDLE_DEFAULT_COMMISSION = `
+    mutation handleDefaultCommission($input: HandleDefaultCommissionInput!) {
+        handleDefaultCommission(input: $input){
+            id
+            percentage
+            updatedAt
+            createdAt
+        }
+    }
+`
+
+const DEFAULT_COMMISSION = `
+    query defaultCommission{
+        defaultCommission{
+            id
+            percentage
+            updatedAt
+            createdAt
+        }
+    }
+`
+
 describe('services graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -696,6 +718,7 @@ describe('services graphql', () => {
     
             done();
         })
+        
         test('service admin should be get time to pay comission in service graphql', async done => {
 
             const vtexSecrets = {
@@ -745,6 +768,110 @@ describe('services graphql', () => {
                     id: expect.any(String),
                     days: String(handleTimeToPayCommissionPayload.days),
                     type: 'commission',
+                    updatedAt: expect.any(String),
+                    createdAt: expect.any(String)
+                })
+            )
+    
+            done();
+        })
+
+        test('service admin should be add default comission in service graphql', async done => {
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
+    
+            const handleDefaultCommission = {
+                percentage: 10
+            };
+
+            const handleDefaultCommissionResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': HANDLE_DEFAULT_COMMISSION,
+            'variables': {
+                    input: handleDefaultCommission
+                }
+            });
+
+            expect(handleDefaultCommissionResponse.statusCode).toBe(200);
+    
+            expect(handleDefaultCommissionResponse.body.data.handleDefaultCommission).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    percentage: handleDefaultCommission.percentage,
+                    updatedAt: expect.any(String),
+                    createdAt: expect.any(String)
+                })
+            )
+    
+            done();
+        })
+
+        test.only('service admin should be get default comission in service graphql', async done => {
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
+    
+            const handleDefaultCommission = {
+                percentage: 10
+            };
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': HANDLE_DEFAULT_COMMISSION,
+            'variables': {
+                    input: handleDefaultCommission
+                }
+            });
+
+            const defaultCommissionResponse = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': DEFAULT_COMMISSION,
+            });
+
+            expect(defaultCommissionResponse.statusCode).toBe(200);
+    
+            expect(defaultCommissionResponse.body.data.defaultCommission).toEqual(
+                expect.objectContaining({
+                    id: expect.any(String),
+                    percentage: handleDefaultCommission.percentage,
                     updatedAt: expect.any(String),
                     createdAt: expect.any(String)
                 })

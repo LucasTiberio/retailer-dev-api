@@ -3,7 +3,7 @@ import knexDatabase from '../../knex-database';
 import { IUserToken } from '../authentication/types';
 import axios from 'axios';
 import store from '../../store';
-import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign, ITimeToPayCommissionFromDB, IVtexCommissionFromDB } from './types';
+import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign, ITimeToPayCommissionFromDB, IDefaultPayCommissionFromDB, IVtexCommissionFromDB } from './types';
 import moment from 'moment';
 import { mockVtexDepartments } from './__mocks__';
 import ServicesService from '../services/service';
@@ -35,6 +35,14 @@ const vtexCommissionsAdapter = (record: IVtexCommissionFromDB) => ({
   vtexDepartmentId: record.vtex_department_id,
   active: record.active,
   vtexCommissionPercentage: record.vtex_commission_percentage,
+  updatedAt: record.updated_at,
+  createdAt: record.created_at
+})
+
+const defaultCommissionAdapter = (record: IDefaultPayCommissionFromDB) => ({
+  id: record.id,
+  percentage: record.percentage,
+  organizationServiceId: record.organization_service_id,
   updatedAt: record.updated_at,
   createdAt: record.created_at
 })
@@ -470,6 +478,7 @@ context: { organizationId: string, client: IUserToken }
   if(timeToPayCommission){
     const [timeToPayCommissionUpdated] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
       .update({days})
+      .where('id', timeToPayCommission.id)
       .returning('*');
 
     return timeToPayCommissionAdapter(timeToPayCommissionUpdated);
@@ -488,8 +497,8 @@ context: { organizationId: string, client: IUserToken }
 }
 
 const getTimeToPayCommission = async (
-context: { organizationId: string, client: IUserToken }
-, trx: Transaction) => {
+  context: { organizationId: string, client: IUserToken }
+  , trx: Transaction) => {
 
   if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
 
@@ -506,10 +515,71 @@ context: { organizationId: string, client: IUserToken }
 
 }
 
+const getDefaultCommission = async (
+  context: { organizationId: string, client: IUserToken }
+  , trx: Transaction) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  const [organizationService] = await ServicesService.serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx);
+
+  if(!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
+
+  const [defaultCommission] = await (trx || knexDatabase.knex)('organization_services_def_commission')
+    .where('organization_service_id', organizationService.id)
+    .select('*');
+
+  return defaultCommission ? defaultCommissionAdapter(defaultCommission) : null;
+
+}
+
+const handleDefaultommission = async (
+    handleDefaultCommission: { percentage: number },
+    context: { organizationId: string, client: IUserToken }, 
+    trx: Transaction
+  ) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  const { percentage } = handleDefaultCommission;
+
+  const [organizationService] = await ServicesService.serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx);
+
+  if(!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
+
+  const [defaultCommission] = await (trx || knexDatabase.knex)('organization_services_def_commission')
+    .where('organization_service_id', organizationService.id)
+    .select('id');
+
+  if(defaultCommission){
+    const [defaultCommissionUpdated] = await (trx || knexDatabase.knex)('organization_services_def_commission')
+      .update({
+        percentage
+      })
+      .where('id', defaultCommission.id)
+      .returning('*');
+
+    return defaultCommissionAdapter(defaultCommissionUpdated);
+
+}
+
+const [defaultCommissionCreated] = await (trx || knexDatabase.knex)('organization_services_def_commission')
+.insert({
+  percentage,
+  organization_service_id: organizationService.id
+})
+.returning('*');
+
+return defaultCommissionAdapter(defaultCommissionCreated);
+
+}
+
 export default {
   verifyAndAttachVtexSecrets,
+  getDefaultCommission,
   handleTimeToPayCommission,
   verifyIntegration,
+  handleDefaultommission,
   getSecretsByOrganizationId,
   createUserVtexCampaign,
   getTimeToPayCommission,
