@@ -29,7 +29,7 @@ const getMenuTree = async (
 
   const userOrganizationService = await ServicesService.getUserInOrganizationService({userOrganizationId: userOrganization.id}, context, trx);
 
-  if(organizationRole.name === OrganizationRoles.MEMBER && !userOrganizationService){
+  if(organizationRole.name === OrganizationRoles.MEMBER && (!userOrganizationService || !userOrganizationService.active)){
     return organizationMemberMenu
   }
 
