@@ -7,11 +7,15 @@ import { IUserToken } from '../authentication/types';
 import { Transaction } from 'knex';
 import { Services, ServiceRoles } from '../services/types';
 import knexDatabase from '../../knex-database';
-import { IUsersOrganizationServiceRolesUrlShortenerFromDB } from './types';
+import { IUsersOrganizationServiceRolesUrlShortenerFromDB, IVtexStatus } from './types';
 import { IUserBankValuesToInsert } from '../bank-data/types';
 import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE, MESSAGE_ERROR_USER_DOES_NOT_EXIST_IN_SYSTEM, MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE, SALE_VTEX_PIXEL_NAMESPACE } from '../../common/consts';
 import common from '../../common';
 import { RedisClient } from 'redis';
+import Axios from 'axios';
+import moment from 'moment';
+
+const ordersServiceUrl = `https://ae7c7bbd93af.ngrok.io`
 
 const utmSource = "plugone_affiliate";
 
@@ -22,7 +26,6 @@ const affiliateShorterUrlAdapter = (record: IUsersOrganizationServiceRolesUrlSho
   createdAt: record.created_at,
   updatedAt: record.updated_at
 })
-
 
 const generateShortenerUrl = async (affiliateGenerateShortenerUrlPayload: { 
   originalUrl: string
@@ -48,6 +51,87 @@ const generateShortenerUrl = async (affiliateGenerateShortenerUrlPayload: {
   const attachedShorterUrlOnAffiliate = await attachShorterUrlOnAffiliate(affiliate.id, shorterUrl.id, trx);
 
   return attachedShorterUrlOnAffiliate;
+
+}
+
+const getAllOrganizationOrders = async (input: { 
+  limit?: string
+  startDate?: Date
+  endDate?: Date
+  name?: string
+  status?: IVtexStatus
+ } , context: { client: IUserToken, organizationId: string }) => {
+
+  if(!context.client) throw new Error('token must be provided!');
+
+  let limit = input?.limit || "10";
+  
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/order?limit=${limit}`;
+
+  if(input?.startDate){
+    url += `&startDate=${input.startDate}`
+  }
+
+  if(input?.endDate){
+    url += `&endDate=${input.endDate}`
+  }
+
+  if(input?.name){
+    url += `&name=${input.name}`
+  }
+
+  if(input?.status){
+    url += `&status=${input.status}`
+  }
+
+  try {    
+    const { data } = await Axios.get(url);
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+
+
+}
+
+const getOrganizationOrdersByAffiliateId = async (input: { 
+  limit?: string
+  startDate?: Date
+  endDate?: Date
+  name?: string
+  status?: IVtexStatus
+ } , context: { client: IUserToken, organizationId: string, userServiceOrganizationRolesId: string }) => {
+
+  if(!context.client) throw new Error('token must be provided!');
+
+  let limit = input?.limit || "10";
+
+  if(!context.userServiceOrganizationRolesId) throw new Error("Not affiliate");
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/${context.userServiceOrganizationRolesId}/order?limit=${limit}`;
+
+  if(input?.startDate){
+    url += `&startDate=${input.startDate}`
+  }
+
+  if(input?.endDate){
+    url += `&endDate=${input.endDate}`
+  }
+
+  if(input?.name){
+    url += `&name=${input.name}`
+  }
+
+  if(input?.status){
+    url += `&status=${input.status}`
+  }
+
+  try {    
+    const { data } = await Axios.get(url);
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 
 }
 
@@ -161,10 +245,163 @@ const generateSalesShorten = async (generateSalesShortenPayload: {
   
 }
 
+const getOrganizationRevenue = async (input : {
+  startDate: Date,
+  endDate: Date
+},
+  context: {client: IUserToken, organizationId: string}
+   ) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  let startDate = input?.startDate || moment("1900-01-01T00:00:00.000Z");
+  let endDate = input?.endDate || moment("2200-01-01T00:00:00.000Z");
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/revenue?startDate=${startDate}&endDate${endDate}`;
+
+  try {    
+    const { data } = await Axios.get(url);
+    console.log(data)
+    return {amount: data.amount};
+  } catch (error) {
+    throw new Error(error.message);
+  }
+  
+}
+
+const getOrganizationAverageTicket = async (input : {
+  startDate: Date,
+  endDate: Date
+},
+  context: {client: IUserToken, organizationId: string}
+   ) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  let startDate = input?.startDate || moment("1900-01-01T00:00:00.000Z");
+  let endDate = input?.endDate || moment("2200-01-01T00:00:00.000Z");
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/average/ticket?startDate=${startDate}&endDate${endDate}`;
+
+  try {    
+    const { data } = await Axios.get(url);
+    return {amount: data.amount};
+  } catch (error) {
+    throw new Error(error.message);
+  }
+  
+}
+
+const getOrganizationTotalOrders = async (input : {
+  startDate: Date,
+  endDate: Date
+},
+  context: {client: IUserToken, organizationId: string}
+   ) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  let startDate = input?.startDate || moment("1900-01-01T00:00:00.000Z");
+  let endDate = input?.endDate || moment("2200-01-01T00:00:00.000Z");
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/order/total?startDate=${startDate}&endDate${endDate}`;
+
+  try {    
+    const { data } = await Axios.get(url);
+    return {amount: data.amount};
+  } catch (error) {
+    throw new Error(error.message);
+  }
+  
+}
+
+const getOrganizationTotalOrdersByAffiliate = async (input : {
+  startDate: Date,
+  endDate: Date
+},
+  context: {client: IUserToken, organizationId: string, userServiceOrganizationRolesId: string}
+   ) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  if(!context.userServiceOrganizationRolesId) throw new Error("Not affiliate");
+
+  let startDate = input?.startDate || moment("1900-01-01T00:00:00.000Z");
+  let endDate = input?.endDate || moment("2200-01-01T00:00:00.000Z");
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/order/total?startDate=${startDate}&endDate=${endDate}&affiliateId=${context.userServiceOrganizationRolesId}`;
+
+  try {    
+    const { data } = await Axios.get(url);
+    return {amount: data.amount};
+  } catch (error) {
+    throw new Error(error.message);
+  }
+  
+}
+
+const getOrganizationCommissionByAffiliate = async (input : {
+  startDate: Date,
+  endDate: Date
+  paid: boolean
+},
+  context: {client: IUserToken, organizationId: string, userServiceOrganizationRolesId: string}
+   ) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  if(!context.userServiceOrganizationRolesId) throw new Error("Not affiliate");
+
+  let startDate = input?.startDate || moment("1900-01-01T00:00:00.000Z");
+  let endDate = input?.endDate || moment("2200-01-01T00:00:00.000Z");
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate=${endDate}&affiliateId=${context.userServiceOrganizationRolesId}&isCommissionPaid=${input?.paid || false}`;
+
+  try {    
+    const { data } = await Axios.get(url);
+    return {data};
+  } catch (error) {
+    throw new Error(error.message);
+  }
+  
+}
+
+const getOrganizationCommission = async (input : {
+  startDate: Date,
+  endDate: Date,
+  paid: boolean
+},
+  context: {client: IUserToken, organizationId: string}
+   ) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  let startDate = input?.startDate || moment("1900-01-01T00:00:00.000Z");
+  let endDate = input?.endDate || moment("2200-01-01T00:00:00.000Z");
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate${endDate}&isCommissionPaid=${input?.paid || true}`;
+
+  try {    
+    const { data } = await Axios.get(url);
+    return {data};
+  } catch (error) {
+    throw new Error(error.message);
+  }
+  
+}
+
 export default {
   generateShortenerUrl,
   generateSalesShorten,
+  getOrganizationTotalOrders,
+  getOrganizationCommission,
   getShorterUrlByUserOrganizationServiceId,
   createAffiliateBankValues,
-  generateSalesJWT
+  generateSalesJWT,
+  getAllOrganizationOrders,
+  getOrganizationOrdersByAffiliateId,
+  getOrganizationRevenue,
+  getOrganizationAverageTicket,
+  getOrganizationTotalOrdersByAffiliate,
+  getOrganizationCommissionByAffiliate
 }

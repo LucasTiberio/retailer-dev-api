@@ -5,3 +5,9 @@ export interface IUsersOrganizationServiceRolesUrlShortenerFromDB{
     created_at: Date
     updated_at: Date
 }
+
+export enum IVtexStatus {
+    approved = 'approved',
+    canceled = 'canceled',
+    reproved = 'reproved'
+}

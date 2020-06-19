@@ -17,6 +17,109 @@ input GenerateSalesJwtInput{
 
 extend type Query{
     listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+    getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): VtexAllOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    getOrganizationOrdersByAffiliateId(input: GetOrganizationOrdersByAffiliateIdInput): VtexAllOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+    # getAllCommissions(input: GetAllCommissionsInput): 
+    getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    getOrganizationAverageTicket(input: GetOrganizationAverageTicketInput): OrganizationAverageTicket! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    getOrganizationTotalOrders(input: GetOrganizationTotalOrdersInput): OrganizationTotalOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    getOrganizationCommission(input: GetOrganizationCommissionInput): OrganizationCommission! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    getOrganizationTotalOrdersByAffiliate(input: GetOrganizationTotalOrdersByAffiliateInput!): OrganizationTotalOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+    getOrganizationCommissionByAffiliate(input: GetOrganizationCommissionByAffiliateInput!): OrganizationCommission! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+}
+
+input GetOrganizationCommissionByAffiliateInput{
+    paid: Boolean
+    startDate: Datetime
+    endDate: Datetime
+    serviceName: ServiceName
+}
+
+type OrganizationCommission{
+    data: [OrganizationCommissionItem]!
+}
+
+type OrganizationCommissionItem{
+    _id: String!
+    affiliateInfo: AffiliateInfo!
+}
+
+type AffiliateInfo{
+    commission: AffiliateCommission!
+}
+
+type AffiliateCommission{
+    amount: Float!
+}
+
+type OrganizationTotalOrders{
+    amount: Int!
+}
+
+type OrganizationAverageTicket{
+    amount: Int!
+}
+
+type OrganizationRevenue{
+    amount: Int!
+}
+
+input GetOrganizationRevenueInput{
+    startDate: Datetime
+    endDate: Datetime
+}
+
+input GetOrganizationCommissionInput{
+    paid: Boolean
+    startDate: Datetime
+    endDate: Datetime
+}
+
+input GetOrganizationTotalOrdersInput{
+    startDate: Datetime
+    endDate: Datetime
+}
+
+input GetOrganizationTotalOrdersByAffiliateInput{
+    startDate: Datetime
+    endDate: Datetime
+    serviceName: ServiceName!
+}
+
+input GetOrganizationAverageTicketInput{
+    startDate: Datetime
+    endDate: Datetime
+}
+
+input GetAllCommissionsInput{
+    limit: String
+    startDate: Datetime
+    endDate: Datetime
+    name: String
+    status: OrderStatus
+}
+
+input GetOrganizationOrdersByAffiliateIdInput{
+    limit: String
+    startDate: Datetime
+    endDate: Datetime
+    name: String
+    status: OrderStatus
+    serviceName: ServiceName!
+}
+
+input GetAllOrganizationOrdersInput{
+    limit: String
+    startDate: Datetime
+    endDate: Datetime
+    name: String
+    status: OrderStatus
+}
+
+enum OrderStatus{
+    approved
+    canceled
+    reproved
 }
 
 input CreateAffiliateBankValuesInput{
@@ -45,4 +148,125 @@ type UserOrganizationServiceRolesUrlShortener {
     userOrganizationService: UserOrganizationService!
     createdAt: Datetime!
     updatedAt: Datetime!
+}
+
+# VTEX TYPES RESPONSE
+
+type VtexAllOrders{
+    offset: Int!
+    limit: Int!
+    count: Int!
+    data: [VtexOrders]!
+}
+
+type VtexOrders{
+    _id: String!
+    organizationId: String!
+    orderId: String!
+    sellerOrderId: String!
+    origin: String!
+    affiliateId: String!
+    status: String!
+    statusDescription: String!
+    value: Int!
+    creationDate: String!
+    lastChange: String!
+    totals: [TotalItems]!
+    items: [VtexItems]!
+    clientProfileData: VtexClientProfileData!
+}
+
+type TotalItems{
+    id: String!
+    name: String!
+    value: Int!
+}
+
+type VtexItems{
+    uniqueId: String!
+    id: String!
+    productId: String!
+    ean: String
+    lockId: String!
+    itemAttachment: VtexItemAttachment!
+    attachments: String
+    quantity: Int
+    seller: String!
+    name: String!
+    refId: String!
+    price: Int!
+    listPrice: Int!
+    manualPrice: String
+    priceTags: String
+    imageUrl: String!
+    detailUrl: String!
+    components: String
+    bundleItems: String
+    params: String
+    offerings: String
+    sellerSku: String!
+    priceValidUntil: String
+    commission: Int!
+    tax: Int!
+    preSaleDate: String
+    measurementUnit: String!
+    unitMultiplier: Int!
+    sellingPrice: Int!
+    isGift: Boolean!
+    shippingPrice: String
+    rewardValue: Int!
+    freightCommission: Int!
+    priceDefinitions: String
+    taxCode: String
+    parentItemIndex: String
+    parentAssemblyBinding: String
+    vtexAdditionalInfo: VtexAdditionalInfo
+    hostname: String!
+    invoiceData: String
+    orderFormId: String!
+    isCompleted: Boolean!
+    invoicedDate: String
+}
+
+type VtexClientProfileData{
+    id: String!
+    email: String!
+    firstName: String
+    lastName: String
+    documentType: String
+    document: String
+    phone: String
+    corporateName: String
+    tradeName: String
+    corporateDocument: String
+    stateInscription: String
+    corporatePhone: String
+    isCorporate: Boolean!
+    userProfileId: String!
+    customerClass: String
+}
+
+type VtexAdditionalInfo{
+    brandName: String!
+    brandId: String!
+    categoriesIds: String!
+    productClusterId: String!
+    commercialConditionId: String!
+    dimension: VtexDimension
+    offeringInfo: String
+    offeringType: String
+    offeringTypeId: String
+}
+
+type VtexDimension{
+    cubicweight: Int!
+    height: Int!
+    length: Int!
+    weight: Int!
+    width: Int!
+}
+
+type VtexItemAttachment{
+    content: String
+    name: String
 }
