@@ -217,10 +217,11 @@ const getOrganizationIdByUserOrganizationServiceRoleId = async (userOrganization
   const [userReactiveInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
   .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
   .where('uosr.id', userOrganizationServiceRoleId)
-  .select('uo.organization_id');
+  .select('uo.organization_id', 'uosr.organization_services_id');
 
   return {
-    organizationId: userReactiveInOrganizationService.organization_id
+    organizationId: userReactiveInOrganizationService.organization_id,
+    organizationServiceId: userReactiveInOrganizationService.organization_services_id
   };
 
 }

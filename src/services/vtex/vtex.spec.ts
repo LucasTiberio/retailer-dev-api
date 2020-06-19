@@ -405,17 +405,75 @@ describe('Vtex', () => {
 
         const vtexComissionsByAffiliateIdAndDepartmentId = await service.getVtexCommissionByAffiliateIdAndDepartmentId(vtexComissionsByAffiliateIdAndDepartmentIdPayload, trx);
 
-        expect(vtexComissionsByAffiliateIdAndDepartmentId).toEqual(
-            expect.objectContaining({
-                id: organizationVtexComissionAdded.id,
-                organizationId: organizationCreated.id,
-                vtexDepartmentId: organizationVtexComissionAdded.vtexDepartmentId,
-                active: organizationVtexComissionAdded.active,
-                vtexCommissionPercentage: organizationVtexComissionAdded.vtexCommissionPercentage,
-                updatedAt: moment(organizationVtexComissionAdded.updatedAt).toDate(),
-                createdAt: moment(organizationVtexComissionAdded.createdAt).toDate()
-              })
-        )
+        expect(vtexComissionsByAffiliateIdAndDepartmentId.percentage).toBe(organizationVtexComissionAdded.vtexCommissionPercentage);
+
+        done();
+    })
+
+    test("get comission/(vtex department id) (id do afiliado) -> with default commission", async done => {
+
+        const organizationId = organizationCreated.id;
+
+        const context = {client: userToken, organizationId};
+
+        let otherSignUpPayload = {
+            username: Faker.name.firstName(),
+            email: Faker.internet.email(),
+            password: "B8oneTeste123!"
+        }
+
+        let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
+        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
+        await UserService.verifyEmail(userFromDb.verification_hash, trx);
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const inviteUserToOrganizationPayload = {
+            users: [{
+                id: otherSignUpCreated.id,
+                email: otherSignUpCreated.email
+            }]
+        }
+
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+
+        const [invitedUserToOrganization] = await (trx || knexDatabase.knex)('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+
+        const responseInvitePayload = {
+            inviteHash: invitedUserToOrganization.invite_hash,
+            response: OrganizationInviteStatus.ACCEPT
+        }
+
+        await OrganizationService.responseInvite(responseInvitePayload, trx);
+
+        const addUserInOrganizationServicePayload = {
+            organizationId:organizationCreated.id,
+            userId: otherSignUpCreated.id,
+            serviceName: Services.AFFILIATE 
+        };
+
+        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
+
+        const handleDefaultCommission = {
+            percentage: 10
+        };
+
+        await service.handleDefaultommission(handleDefaultCommission, context, trx);
+
+        const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
+            vtexDepartmentId: "1",
+            affiliateId: userInOrganizationService.id
+        }
+
+        const vtexComissionsByAffiliateIdAndDepartmentId = await service.getVtexCommissionByAffiliateIdAndDepartmentId(vtexComissionsByAffiliateIdAndDepartmentIdPayload, trx);
+
+        expect(vtexComissionsByAffiliateIdAndDepartmentId.percentage).toBe(10)
 
         done();
     })

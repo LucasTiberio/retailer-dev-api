@@ -453,7 +453,15 @@ const getVtexCommissionByAffiliateIdAndDepartmentId = async (
 
     const vtexCommission = await getComissionsDepartmentsByOrganizationIdAndVtexDepartmentId(userOrganizationService.organizationId, vtexDepartmentId, trx);
 
-    return vtexCommission;
+    if(!vtexCommission){
+      const defaultCommission = await getDefaultCommissionByOrganizationServiceId(userOrganizationService.organizationServiceId, trx);
+
+      if(!defaultCommission) throw new Error("Commission doesnt exists");
+
+      return {percentage: defaultCommission.percentage}
+    }
+
+    return {percentage: vtexCommission.vtexCommissionPercentage};
 
 };
 
@@ -516,6 +524,15 @@ const getTimeToPayCommission = async (
 
 }
 
+const getDefaultCommissionByOrganizationServiceId = async (organizationServiceId: string, trx: Transaction) => {
+
+  const [defaultCommission] = await (trx || knexDatabase.knex)('organization_services_def_commission')
+    .where('organization_service_id', organizationServiceId)
+    .select('*');
+
+  return defaultCommission ? defaultCommissionAdapter(defaultCommission) : null;
+}
+
 const getDefaultCommission = async (
   context: { organizationId: string, client: IUserToken }
   , trx: Transaction) => {
@@ -526,11 +543,7 @@ const getDefaultCommission = async (
 
   if(!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
 
-  const [defaultCommission] = await (trx || knexDatabase.knex)('organization_services_def_commission')
-    .where('organization_service_id', organizationService.id)
-    .select('*');
-
-  return defaultCommission ? defaultCommissionAdapter(defaultCommission) : null;
+  return getDefaultCommissionByOrganizationServiceId(organizationService.id, trx);
 
 }
 

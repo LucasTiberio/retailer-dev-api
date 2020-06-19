@@ -115,13 +115,7 @@ const INVITE_USER_TO_ORGANIZATION = `
 const VTEX_AFFILIATE_COMMISSION = `
     query vtexAffiliateCommission($input: VtexAffiliateCommissionInput!) {
         vtexAffiliateCommission(input: $input){
-            id
-            organizationId
-            vtexDepartmentId
-            active
-            vtexCommissionPercentage
-            updatedAt
-            createdAt
+            percentage
         }
     }
 `
@@ -655,17 +649,7 @@ describe('services graphql', () => {
             });
 
             expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.statusCode).toBe(200);
-            expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.body.data.vtexAffiliateCommission).toEqual(
-                expect.objectContaining({
-                    id: organizationVtexComissionAdded.id,
-                    organizationId: organizationCreated.id,
-                    vtexDepartmentId: organizationVtexComissionAdded.vtexDepartmentId,
-                    active: organizationVtexComissionAdded.active,
-                    vtexCommissionPercentage: organizationVtexComissionAdded.vtexCommissionPercentage,
-                    updatedAt: moment(organizationVtexComissionAdded.updatedAt).toISOString(),
-                    createdAt: moment(organizationVtexComissionAdded.createdAt).toISOString()
-                  })
-            )
+            expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.body.data.vtexAffiliateCommission.percentage).toBe(organizationVtexComissionAdded.vtexCommissionPercentage)
 
             done();
         })
@@ -824,7 +808,7 @@ describe('services graphql', () => {
             done();
         })
 
-        test.only('service admin should be get default comission in service graphql', async done => {
+        test('service admin should be get default comission in service graphql', async done => {
 
             const vtexSecrets = {
                 xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
