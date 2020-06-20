@@ -17,7 +17,7 @@ input GenerateSalesJwtInput{
 
 extend type Query{
     listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
-    getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): VtexAllOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    getAllOrganizationOrders(input: GetAllOrganizationOrdersInput!): VtexAllOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     getOrganizationOrdersByAffiliateId(input: GetOrganizationOrdersByAffiliateIdInput): VtexAllOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
     # getAllCommissions(input: GetAllCommissionsInput): 
     getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
@@ -50,6 +50,7 @@ type AffiliateInfo{
 
 type AffiliateCommission{
     amount: Float!
+    payDay: String!
 }
 
 type OrganizationTotalOrders{
@@ -104,6 +105,7 @@ input GetOrganizationOrdersByAffiliateIdInput{
     startDate: Datetime
     endDate: Datetime
     name: String
+    paid: Boolean
     status: OrderStatus
     serviceName: ServiceName!
 }
@@ -166,14 +168,22 @@ type VtexOrders{
     sellerOrderId: String!
     origin: String!
     affiliateId: String!
+    plugoneAffiliateStatus: PlugoneAffiliateStatus!
     status: String!
     statusDescription: String!
     value: Int!
+    affiliateInfo: AffiliateInfo!
     creationDate: String!
     lastChange: String!
     totals: [TotalItems]!
     items: [VtexItems]!
     clientProfileData: VtexClientProfileData!
+}
+
+enum PlugoneAffiliateStatus{
+    Pending
+    Approved
+    Reproved
 }
 
 type TotalItems{

@@ -15,7 +15,7 @@ import { RedisClient } from 'redis';
 import Axios from 'axios';
 import moment from 'moment';
 
-const ordersServiceUrl = `https://ae7c7bbd93af.ngrok.io`
+const ordersServiceUrl = `https://d1eefddd4bd0.ngrok.io`
 
 const utmSource = "plugone_affiliate";
 
@@ -100,6 +100,7 @@ const getOrganizationOrdersByAffiliateId = async (input: {
   endDate?: Date
   name?: string
   status?: IVtexStatus
+  paid?: boolean
  } , context: { client: IUserToken, organizationId: string, userServiceOrganizationRolesId: string }) => {
 
   if(!context.client) throw new Error('token must be provided!');
@@ -109,6 +110,10 @@ const getOrganizationOrdersByAffiliateId = async (input: {
   if(!context.userServiceOrganizationRolesId) throw new Error("Not affiliate");
 
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/${context.userServiceOrganizationRolesId}/order?limit=${limit}`;
+
+  if(input?.paid){
+    url += `&isCommissionPaid=${input.paid}`
+  }
 
   if(input?.startDate){
     url += `&startDate=${input.startDate}`
