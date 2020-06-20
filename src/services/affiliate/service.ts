@@ -15,7 +15,7 @@ import { RedisClient } from 'redis';
 import Axios from 'axios';
 import moment from 'moment';
 
-const ordersServiceUrl = `https://d1eefddd4bd0.ngrok.io`
+const ordersServiceUrl = `https://f54c3ff994cb.ngrok.io`
 
 const utmSource = "plugone_affiliate";
 
