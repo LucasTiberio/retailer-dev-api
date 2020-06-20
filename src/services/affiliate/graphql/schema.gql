@@ -17,9 +17,8 @@ input GenerateSalesJwtInput{
 
 extend type Query{
     listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
-    getAllOrganizationOrders(input: GetAllOrganizationOrdersInput!): VtexAllOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): VtexAllOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     getOrganizationOrdersByAffiliateId(input: GetOrganizationOrdersByAffiliateIdInput): VtexAllOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
-    # getAllCommissions(input: GetAllCommissionsInput): 
     getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     getOrganizationAverageTicket(input: GetOrganizationAverageTicketInput): OrganizationAverageTicket! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     getOrganizationTotalOrders(input: GetOrganizationTotalOrdersInput): OrganizationTotalOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
