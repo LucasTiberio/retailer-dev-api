@@ -4,6 +4,7 @@ extend type Query{
     listUsersInOrganizationService(input: ListUsersInOrganizationServiceInput!): [UserOrganizationService]! @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE"]) @isVerified @isAuthenticated 
     getUserInOrganizationService(input: GetUserInOrganizationServiceInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated 
     getUserOrganizationByServiceName(input: GetUserOrganizationByServiceNameInput!): UserOrganizationService @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE"]) @isVerified @isAuthenticated 
+    getUserInOrganizationServiceById(input: GetUserInOrganizationServiceByIdInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
 }
 
 input GetUserOrganizationByServiceNameInput{
@@ -12,6 +13,10 @@ input GetUserOrganizationByServiceNameInput{
 
 input GetUserInOrganizationServiceInput {
     userOrganizationId: String!
+}
+
+input GetUserInOrganizationServiceByIdInput{
+    userOrganizationServiceId: String!
 }
 
 extend type Mutation{

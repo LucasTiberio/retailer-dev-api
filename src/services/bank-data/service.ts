@@ -44,7 +44,7 @@ const brazilBankByIdLoader = store.registerOneToOneLoader(
     return query;
   },
     'id',
-    userBanksValuesAdapter
+    brazilBanksAdapter
 );
 
 const getBankDataById = async (bankDataId: string) => {

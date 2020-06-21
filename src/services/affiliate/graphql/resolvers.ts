@@ -13,6 +13,10 @@ const resolvers : IResolvers = {
                 return service.generateShortenerUrl(input, {client, organizationId}, trx);
             });
         },
+        paidAffiliateCommission: (_, attrs, { client, organizationId }) => {
+            const { input } = attrs;
+            return service.paidAffiliateCommission(input, {client, organizationId});
+        },
         generateSalesShorten: (_, attrs, {salesId}) => {
             const { input } = attrs;
             return knexDatabase.knex.transaction((trx: Transaction) => {

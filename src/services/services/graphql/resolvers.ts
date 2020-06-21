@@ -45,6 +45,13 @@ const resolvers : IResolvers = {
                 return service.listAvailableUsersToService(input, {client, organizationId}, trx);
             });
         },
+        getUserInOrganizationServiceById: (_, attrs) => {
+            const { input } = attrs;
+
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.getUserInOrganizationServiceById(input, trx);
+            });
+        },
         getUserInOrganizationService: (_, attrs, { client }) => {
             const { input } = attrs;
 

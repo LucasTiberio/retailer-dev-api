@@ -3,6 +3,12 @@ extend type Mutation{
     generateSalesJwt(input: GenerateSalesJwtInput!): String!
     createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
     generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl! @hasSalesToken
+    paidAffiliateCommission(input: PaidAffiliateCommissionInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input PaidAffiliateCommissionInput{
+    affiliateId: String!
+    orderId: String!
 }
 
 input GenerateSalesShortenInput{
@@ -44,12 +50,14 @@ type OrganizationCommissionItem{
 }
 
 type AffiliateInfo{
+    id: String!
     commission: AffiliateCommission!
 }
 
 type AffiliateCommission{
     amount: Float!
     payDay: String!
+    isPaid: Boolean!
 }
 
 type OrganizationTotalOrders{

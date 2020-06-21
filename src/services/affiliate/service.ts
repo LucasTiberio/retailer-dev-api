@@ -15,7 +15,7 @@ import { RedisClient } from 'redis';
 import Axios from 'axios';
 import moment from 'moment';
 
-const ordersServiceUrl = `https://f54c3ff994cb.ngrok.io`
+const ordersServiceUrl = `http://10.245.25.223`
 
 const utmSource = "plugone_affiliate";
 
@@ -91,6 +91,36 @@ const getAllOrganizationOrders = async (input: {
     throw new Error(error.message);
   }
 
+
+}
+
+const paidAffiliateCommission = async (
+  input : {
+    userOrganizationServiceId: string,
+    orderId: string
+  }, 
+  context: { client: IUserToken, organizationId: string }) => {
+
+  if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/order/paid`;
+
+    try {
+
+      const { data } = await Axios({
+        method: 'post',
+        url: url,
+        data: {
+          ...input
+        },
+      });
+
+      return data.status;
+      
+    } catch (error) {
+      console.log(error)
+      throw new Error(error.message);
+    }
 
 }
 
@@ -407,5 +437,6 @@ export default {
   getOrganizationRevenue,
   getOrganizationAverageTicket,
   getOrganizationTotalOrdersByAffiliate,
-  getOrganizationCommissionByAffiliate
+  getOrganizationCommissionByAffiliate,
+  paidAffiliateCommission
 }
