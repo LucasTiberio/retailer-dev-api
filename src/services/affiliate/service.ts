@@ -15,7 +15,7 @@ import { RedisClient } from 'redis';
 import Axios from 'axios';
 import moment from 'moment';
 
-const ordersServiceUrl = `http://10.245.25.223`
+const ordersServiceUrl = `https://hook-orders-staging.plugone.io`
 
 const utmSource = "plugone_affiliate";
 
@@ -258,7 +258,10 @@ const generateSalesJWT = async (generateSalesJWTPayload : {
 
   try {
     await context.redisClient.setex(`${SALE_VTEX_PIXEL_NAMESPACE}_${vtexSalePixelJwt}`, 21600, userOrganizationServiceRoleId);
-    return vtexSalePixelJwt;
+    return {
+      salesId: userOrganizationServiceRoleId,
+      vtexSalePixelJwt
+    };
   } catch(e){
     throw new Error(e.message)
   }

@@ -74,7 +74,10 @@ const RESPONSE_INVITE = `
 
 const GENERATE_SALES_JWT = `
     mutation generateSalesJwt($input: GenerateSalesJwtInput!) {
-        generateSalesJwt(input: $input)
+        generateSalesJwt(input: $input){
+            salesId
+            vtexSalePixelJwt
+        }
     }
 `
 
@@ -451,7 +454,7 @@ describe('services graphql', () => {
 
         expect(affiliateGenerateShortenerUrlResponse.statusCode).toBe(200);
 
-        const shortUrlBefore = `${backendUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
+        const shortUrlBefore = `${backendUrl}/redirect/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
         const affiliateId = addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id;
 
@@ -605,7 +608,7 @@ describe('services graphql', () => {
 
         expect(affiliateGenerateShortenerUrlResponse.statusCode).toBe(200);
 
-        const shortUrlBefore = `${backendUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
+        const shortUrlBefore = `${backendUrl}/redirect/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
         const affiliateId = addUserInOrganizationResponse.body.data.addUserInOrganizationService.id;
 
@@ -1056,7 +1059,7 @@ describe('services graphql', () => {
         const generateSalesShortenResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
-        .set('sales-token', generateSalesJWTResponse.body.data.generateSalesJwt)
+        .set('sales-token', generateSalesJWTResponse.body.data.generateSalesJwt.vtexSalePixelJwt)
         .send({
         'query': GENERATE_SALES_SHORTEN,
         'variables': {

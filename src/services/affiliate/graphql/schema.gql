@@ -1,6 +1,6 @@
 extend type Mutation{
     affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
-    generateSalesJwt(input: GenerateSalesJwtInput!): String!
+    generateSalesJwt(input: GenerateSalesJwtInput!): SalesSession!
     createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
     generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl! @hasSalesToken
     paidAffiliateCommission(input: PaidAffiliateCommissionInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
@@ -9,6 +9,11 @@ extend type Mutation{
 input PaidAffiliateCommissionInput{
     affiliateId: String!
     orderId: String!
+}
+
+type SalesSession{
+    salesId: String!
+    vtexSalePixelJwt: String!
 }
 
 input GenerateSalesShortenInput{

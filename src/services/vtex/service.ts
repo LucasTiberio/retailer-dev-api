@@ -109,7 +109,7 @@ const verifyAndAttachVtexSecrets = async (input : {
         "filter": {
           "status": ORDER_MOMENTS
         },
-        "hook": {"url": "https://hook-orders-staging.plugone.io/vtex-hook-orders"},
+        "hook": {"url": "https://9b3c033c4b78.ngrok.io/vtex-hook-orders"},
         "visibilityTimeoutInSeconds": 250,
         "MessageRetentionPeriodInSeconds":4000000
     }
@@ -138,6 +138,7 @@ const verifyAndAttachVtexSecrets = async (input : {
 
   } catch(e) {
     let errorMessage = e.response?.data?.error?.message || e.message;
+    console.log(e.response.data)
     if(errorMessage === 'An error has occurred')
       errorMessage = "Verifique as chaves inseridas."
     throw new Error(errorMessage)

@@ -605,9 +605,14 @@ describe('Affiliate', () => {
 
         const saleServiceUserChecked = await service.generateSalesJWT(generateSalesJWTPayload, {redisClient} ,trx);
 
-        expect(saleServiceUserChecked).toBeDefined();
+        expect(saleServiceUserChecked).toEqual(
+            expect.objectContaining({
+                salesId: userInOrganizationService.id,
+                vtexSalePixelJwt: expect.any(String)
+            })
+        );
 
-        redisClient.get(`${SALE_VTEX_PIXEL_NAMESPACE}_${saleServiceUserChecked}`, (_, data) => {
+        redisClient.get(`${SALE_VTEX_PIXEL_NAMESPACE}_${saleServiceUserChecked.vtexSalePixelJwt}`, (_, data) => {
             expect(data).toBe(userInOrganizationService.id)
             redisClient.keys('*', function (_, keys) {
                 done();  
