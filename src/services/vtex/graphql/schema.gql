@@ -14,7 +14,7 @@ input HandleTimeToPayCommissionInput{
 }
 
 input HandleDefaultCommissionInput{
-  percentage: Int!
+  percentage: Float!
 }
 
 type TimeToPayCommission{
@@ -27,7 +27,7 @@ type TimeToPayCommission{
 
 type DefaultCommission{
     id: String!
-    percentage: Int!
+    percentage: Float!
     updatedAt: Datetime!
     createdAt: Datetime!
 }
