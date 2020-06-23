@@ -544,6 +544,7 @@ const listUsersInOrganization = async (
   }
 
   const result = await query.select('uo.*', 'uor.organization_role_id')
+    .orderBy('usr.username', 'asc')
 
   return {
     count: totalCount.count,
