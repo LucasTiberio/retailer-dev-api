@@ -637,7 +637,7 @@ const listMyOrganizations = async (userToken : IUserToken, trx: Transaction) => 
       .innerJoin('organizations AS orgn', 'orgn.id', 'uo.organization_id')
       .where('uo.user_id', userToken.id)
       .andWhere('uo.active', true)
-      .select('orgn.*');
+      .select('orgn.*', 'uo.id AS users_organizations_id');
 
     return organizations.map(_organizationAdapter);
   } catch(e){
