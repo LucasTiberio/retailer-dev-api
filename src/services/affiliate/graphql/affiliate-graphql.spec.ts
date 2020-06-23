@@ -466,7 +466,7 @@ describe('services graphql', () => {
             expect.objectContaining({
                 id: expect.any(String),
                 shortenerUrl: expect.objectContaining({
-                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}_${organizationService.id}`,
+                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}_${organizationCreated.id}`,
                     shortUrl: shortUrlBefore,
                     urlCode: expect.any(String),
                     createdAt: expect.any(String),
@@ -639,7 +639,7 @@ describe('services graphql', () => {
                 expect.objectContaining({
                     id: expect.any(String),
                     shortenerUrl: expect.objectContaining({
-                        originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}_${organizationService.id}`,
+                        originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}_${organizationCreated.id}`,
                         shortUrl: shortUrlBefore,
                         urlCode: expect.any(String),
                         createdAt: expect.any(String),

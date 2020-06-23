@@ -44,7 +44,7 @@ const generateShortenerUrl = async (affiliateGenerateShortenerUrlPayload: {
 
   if(!affiliate) throw new Error("Affiliate doesnt exists.");
 
-  const urlWithMemberAttached = `${originalUrl}?utm_source=${utmSource}&utm_campaign=${affiliate.id}_${organizationService.id}`;
+  const urlWithMemberAttached = `${originalUrl}?utm_source=${utmSource}&utm_campaign=${affiliate.id}_${context.organizationId}`;
 
   const shorterUrl = await ShortenerUrlService.shortenerUrl(urlWithMemberAttached, trx);
 

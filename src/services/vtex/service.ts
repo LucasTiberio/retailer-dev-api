@@ -109,7 +109,7 @@ const verifyAndAttachVtexSecrets = async (input : {
         "filter": {
           "status": ORDER_MOMENTS
         },
-        "hook": {"url": "https://9b3c033c4b78.ngrok.io/vtex-hook-orders"},
+        "hook": {"url": "https://hook-orders-staging.plugone.io/feed/affiliate/vtex/orders/sync"},
         "visibilityTimeoutInSeconds": 250,
         "MessageRetentionPeriodInSeconds":4000000
     }
