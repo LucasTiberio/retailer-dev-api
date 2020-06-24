@@ -653,9 +653,14 @@ const organizationDetails = async (
 
   if(!context.client) throw new Error("token must be provided.");
 
-  const organization = await getOrganizationById(context.organizationId, trx);
+  const [organizations] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+      .innerJoin('organizations AS orgn', 'orgn.id', 'uo.organization_id')
+      .where('uo.user_id', context.client.id)
+      .andWhere('uo.active', true)
+      .andWhere('orgn.id', context.organizationId)
+      .select('orgn.*', 'uo.id AS users_organizations_id');
 
-  return organization;
+  return _organizationAdapter(organizations);
 
 }
 
