@@ -8,7 +8,7 @@ extend type Mutation{
 
 input PaidAffiliateCommissionInput{
     affiliateId: String!
-    orderId: String!
+    orderId: [String!]!
 }
 
 type SalesSession{
@@ -55,7 +55,7 @@ type OrganizationCommissionItem{
 }
 
 type AffiliateInfo{
-    id: String!
+    affiliateId: String!
     commission: AffiliateCommission!
 }
 

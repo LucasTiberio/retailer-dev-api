@@ -97,7 +97,7 @@ const getAllOrganizationOrders = async (input: {
 const paidAffiliateCommission = async (
   input : {
     userOrganizationServiceId: string,
-    orderId: string
+    orderId: string[]
   }, 
   context: { client: IUserToken, organizationId: string }) => {
 
