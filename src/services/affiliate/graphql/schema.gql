@@ -175,11 +175,9 @@ type VtexAllOrders{
 
 type VtexOrders{
     _id: String!
-    organizationId: String!
     orderId: String!
+    organizationId: String!
     sellerOrderId: String!
-    origin: String!
-    affiliateId: String!
     plugoneAffiliateStatus: PlugoneAffiliateStatus!
     status: String!
     statusDescription: String!
