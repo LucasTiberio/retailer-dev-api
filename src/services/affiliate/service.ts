@@ -416,7 +416,11 @@ const getOrganizationCommission = async (input : {
   let startDate = input?.startDate || moment("1900-01-01T00:00:00.000Z");
   let endDate = input?.endDate || moment("2200-01-01T00:00:00.000Z");
 
-  let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate${endDate}&isCommissionPaid=${input?.paid || false}`;
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate${endDate}`;
+
+  if(input.paid){
+    url += `&${input?.paid}`
+  }
 
   try {    
     const { data } = await Axios.get(url);

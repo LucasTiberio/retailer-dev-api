@@ -62,7 +62,6 @@ type AffiliateInfo{
 type AffiliateCommission{
     amount: Float!
     payDay: String!
-    isPaid: Boolean
 }
 
 type OrganizationTotalOrders{
@@ -176,6 +175,7 @@ type VtexAllOrders{
 type VtexOrders{
     _id: String!
     orderId: String!
+    isPaid: Boolean!
     organizationId: String!
     sellerOrderId: String!
     plugoneAffiliateStatus: PlugoneAffiliateStatus!
