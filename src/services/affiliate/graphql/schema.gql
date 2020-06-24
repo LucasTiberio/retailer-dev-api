@@ -62,7 +62,7 @@ type AffiliateInfo{
 type AffiliateCommission{
     amount: Float!
     payDay: String!
-    isPaid: Boolean!
+    isPaid: Boolean
 }
 
 type OrganizationTotalOrders{
