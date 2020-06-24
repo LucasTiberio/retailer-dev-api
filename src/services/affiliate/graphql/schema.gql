@@ -7,8 +7,12 @@ extend type Mutation{
 }
 
 input PaidAffiliateCommissionInput{
+    affiliateCommissionSetPaid: [AffiliateCommissionSetPaid]!
+}
+
+input AffiliateCommissionSetPaid{
     affiliateId: String!
-    orderId: [String!]!
+    orderId: String!
 }
 
 type SalesSession{
