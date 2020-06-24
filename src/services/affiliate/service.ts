@@ -392,7 +392,11 @@ const getOrganizationCommissionByAffiliate = async (input : {
   let startDate = input?.startDate || moment("1900-01-01T00:00:00.000Z");
   let endDate = input?.endDate || moment("2200-01-01T00:00:00.000Z");
 
-  let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate=${endDate}&affiliateId=${context.userServiceOrganizationRolesId}&isCommissionPaid=${input?.paid || false}`;
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate=${endDate}&affiliateId=${context.userServiceOrganizationRolesId}`;
+
+  if(input.paid){
+    url += `&isCommissionPaid=${input?.paid}`
+  }
 
   try {    
     const { data } = await Axios.get(url);
@@ -419,7 +423,7 @@ const getOrganizationCommission = async (input : {
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate${endDate}`;
 
   if(input.paid){
-    url += `&${input?.paid}`
+    url += `&isCommissionPaid=${input?.paid}`
   }
 
   try {    
