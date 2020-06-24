@@ -44,7 +44,7 @@ const resolvers : IResolvers = {
     },
     vtexAffiliateCommission: (_, {input}) => {
         return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.getVtexCommissionByAffiliateIdAndDepartmentId(input, trx);
+            return service.getVtexCommissionInfosByAffiliateIdAndDepartmentId(input, trx);
         });
     },
   },

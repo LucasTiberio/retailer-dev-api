@@ -398,14 +398,23 @@ describe('Vtex', () => {
 
         const organizationVtexComissionAdded = await service.handleOrganizationVtexComission(handleOrganizationVtexComissionPayload, context, trx);
 
+        const handleTimeToPayCommissionPayload = {
+            days: 30
+        };
+
+        await service.handleTimeToPayCommission(handleTimeToPayCommissionPayload, context, trx);
+
         const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
             vtexDepartmentId: "1",
             affiliateId: userInOrganizationService.id
         }
 
-        const vtexComissionsByAffiliateIdAndDepartmentId = await service.getVtexCommissionByAffiliateIdAndDepartmentId(vtexComissionsByAffiliateIdAndDepartmentIdPayload, trx);
+        const vtexComissionsByAffiliateIdAndDepartmentId = await service.getVtexCommissionInfosByAffiliateIdAndDepartmentId(vtexComissionsByAffiliateIdAndDepartmentIdPayload, trx);
 
-        expect(vtexComissionsByAffiliateIdAndDepartmentId.percentage).toBe(organizationVtexComissionAdded.vtexCommissionPercentage);
+        expect(vtexComissionsByAffiliateIdAndDepartmentId).toStrictEqual(expect.objectContaining({
+            percentage: organizationVtexComissionAdded.vtexCommissionPercentage,
+            payDay: String(handleTimeToPayCommissionPayload.days)
+        }));
 
         done();
     })
@@ -471,9 +480,12 @@ describe('Vtex', () => {
             affiliateId: userInOrganizationService.id
         }
 
-        const vtexComissionsByAffiliateIdAndDepartmentId = await service.getVtexCommissionByAffiliateIdAndDepartmentId(vtexComissionsByAffiliateIdAndDepartmentIdPayload, trx);
+        const vtexComissionsByAffiliateIdAndDepartmentId = await service.getVtexCommissionInfosByAffiliateIdAndDepartmentId(vtexComissionsByAffiliateIdAndDepartmentIdPayload, trx);
 
-        expect(vtexComissionsByAffiliateIdAndDepartmentId.percentage).toBe(10)
+        expect(vtexComissionsByAffiliateIdAndDepartmentId).toStrictEqual(expect.objectContaining({
+            percentage: 10,
+            payDay: null
+        }));
 
         done();
     })

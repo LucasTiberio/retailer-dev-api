@@ -437,7 +437,7 @@ const handleOrganizationVtexComission = async (handleOrganizationVtexComissionPa
 
 }
 
-const getVtexCommissionByAffiliateIdAndDepartmentId = async (
+const getVtexCommissionInfosByAffiliateIdAndDepartmentId = async (
     vtexComissionsByAffiliateIdAndDepartmentIdPayload: {
       vtexDepartmentId: string
       affiliateId: string
@@ -451,17 +451,30 @@ const getVtexCommissionByAffiliateIdAndDepartmentId = async (
 
     if(!userOrganizationService) throw new Error(MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE);
 
+    const vtexCommissionPayDay = await getTimeToPayCommissionById({organizationId: userOrganizationService.organizationId}, trx);
+
     const vtexCommission = await getComissionsDepartmentsByOrganizationIdAndVtexDepartmentId(userOrganizationService.organizationId, vtexDepartmentId, trx);
 
     if(!vtexCommission){
       const defaultCommission = await getDefaultCommissionByOrganizationServiceId(userOrganizationService.organizationServiceId, trx);
 
-      if(!defaultCommission) throw new Error("Commission doesnt exists");
+      if(!defaultCommission) {
+        return {
+          percentage: null,
+          payDay: vtexCommissionPayDay?.days ?? null
+        }  
+      }
 
-      return {percentage: defaultCommission.percentage}
+      return {
+        percentage: defaultCommission.percentage,
+        payDay: vtexCommissionPayDay?.days ?? null
+      }
     }
 
-    return {percentage: vtexCommission.vtexCommissionPercentage};
+    return {
+      percentage: vtexCommission.vtexCommissionPercentage,
+      payDay: vtexCommissionPayDay?.days ?? null
+    };
 
 };
 
@@ -512,6 +525,23 @@ const getTimeToPayCommission = async (
   if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
 
   const [organizationService] = await ServicesService.serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx);
+
+  if(!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
+
+  const [timeToPayCommission] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+    .where('organization_service_id', organizationService.id)
+    .andWhere('type', 'commission')
+    .select('*');
+
+  return timeToPayCommission ? timeToPayCommissionAdapter(timeToPayCommission) : null;
+
+}
+
+const getTimeToPayCommissionById = async (
+  input: { organizationId: string }
+  , trx: Transaction) => {
+
+  const [organizationService] = await ServicesService.serviceOrganizationByName(input.organizationId, Services.AFFILIATE, trx);
 
   if(!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
 
@@ -597,7 +627,7 @@ export default {
   getSecretsByOrganizationId,
   createUserVtexCampaign,
   getTimeToPayCommission,
-  getVtexCommissionByAffiliateIdAndDepartmentId,
+  getVtexCommissionInfosByAffiliateIdAndDepartmentId,
   getVtexDepartments,
   getVtexDepartmentsCommissions,
   handleOrganizationVtexComission

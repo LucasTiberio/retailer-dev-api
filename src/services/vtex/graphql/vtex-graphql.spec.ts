@@ -116,6 +116,7 @@ const VTEX_AFFILIATE_COMMISSION = `
     query vtexAffiliateCommission($input: VtexAffiliateCommissionInput!) {
         vtexAffiliateCommission(input: $input){
             percentage
+            payDay
         }
     }
 `
@@ -649,7 +650,10 @@ describe('services graphql', () => {
             });
 
             expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.statusCode).toBe(200);
-            expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.body.data.vtexAffiliateCommission.percentage).toBe(organizationVtexComissionAdded.vtexCommissionPercentage)
+            expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.body.data.vtexAffiliateCommission).toStrictEqual(expect.objectContaining({
+                percentage: organizationVtexComissionAdded.vtexCommissionPercentage,
+                payDay: null
+            }))
 
             done();
         })

@@ -6,7 +6,8 @@ extend type Query{
 }
 
 type VtexDepartmentsComissionsPercentage{
-  percentage: Int!
+  percentage: Int
+  payDay: String
 }
 
 input HandleTimeToPayCommissionInput{
