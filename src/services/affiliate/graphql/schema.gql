@@ -69,15 +69,15 @@ type AffiliateCommission{
 }
 
 type OrganizationTotalOrders{
-    amount: Int!
+    amount: Float!
 }
 
 type OrganizationAverageTicket{
-    amount: Int!
+    amount: Float!
 }
 
 type OrganizationRevenue{
-    amount: Int!
+    amount: Float!
 }
 
 input GetOrganizationRevenueInput{
@@ -185,7 +185,7 @@ type VtexOrders{
     plugoneAffiliateStatus: PlugoneAffiliateStatus!
     status: String!
     statusDescription: String!
-    value: Int!
+    value: Float!
     affiliateInfo: AffiliateInfo!
     creationDate: String!
     lastChange: String!
@@ -235,7 +235,7 @@ type VtexItems{
     preSaleDate: String
     measurementUnit: String!
     unitMultiplier: Int!
-    sellingPrice: Int!
+    sellingPrice: Float!
     isGift: Boolean!
     shippingPrice: String
     rewardValue: Int!
