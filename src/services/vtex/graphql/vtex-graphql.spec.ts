@@ -115,6 +115,7 @@ const INVITE_USER_TO_ORGANIZATION = `
 const VTEX_AFFILIATE_COMMISSION = `
     query vtexAffiliateCommission($input: VtexAffiliateCommissionInput!) {
         vtexAffiliateCommission(input: $input){
+            vtexDepartmentId
             percentage
             payDay
         }
@@ -634,7 +635,7 @@ describe('services graphql', () => {
             const organizationVtexComissionAdded = handleOrganizationVtexCommissionResponse.body.data.handleOrganizationVtexCommission;
 
             const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
-                vtexDepartmentId: "1",
+                vtexDepartmentsIds: ["1"],
                 affiliateId: addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id
             }
 
@@ -650,10 +651,13 @@ describe('services graphql', () => {
             });
 
             expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.statusCode).toBe(200);
-            expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.body.data.vtexAffiliateCommission).toStrictEqual(expect.objectContaining({
-                percentage: organizationVtexComissionAdded.vtexCommissionPercentage,
-                payDay: null
-            }))
+            expect(getVtexCommissionByAffiliateIdAndDepartmentIdResponse.body.data.vtexAffiliateCommission).toStrictEqual(expect.arrayContaining([
+                expect.objectContaining({
+                    percentage: organizationVtexComissionAdded.vtexCommissionPercentage,
+                    payDay: null,
+                    vtexDepartmentId: "1"
+                })
+            ]))
 
             done();
         })

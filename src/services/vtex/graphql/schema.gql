@@ -1,11 +1,12 @@
 extend type Query{
   vtexDepartmentsCommissions: [VtexDepartmentsComissionsAdapted]! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
-  vtexAffiliateCommission(input: VtexAffiliateCommissionInput!): VtexDepartmentsComissionsPercentage! @ordersService
+  vtexAffiliateCommission(input: VtexAffiliateCommissionInput!): [VtexDepartmentsComissionsPercentage]! @ordersService
   timeToPayCommission: TimeToPayCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
   defaultCommission: DefaultCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
 }
 
 type VtexDepartmentsComissionsPercentage{
+  vtexDepartmentId: String!
   percentage: Int
   payDay: String
 }
@@ -34,7 +35,7 @@ type DefaultCommission{
 }
 
 input VtexAffiliateCommissionInput{
-  vtexDepartmentId: String!
+  vtexDepartmentsIds: [String]!
   affiliateId: String!
 }
 

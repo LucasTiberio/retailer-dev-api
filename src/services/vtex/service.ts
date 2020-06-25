@@ -386,14 +386,25 @@ const getComissionsDepartmentsByOrganizationId = async (organizationId: string, 
 
 }
 
-const getComissionsDepartmentsByOrganizationIdAndVtexDepartmentId = async (organizationId: string, vtexDepartmentId: string, trx: Transaction) => {
+const getComissionsDepartmentsByOrganizationIdAndVtexDepartmentId = async (organizationId: string, vtexDepartmentsIds: string[], trx: Transaction) => {
 
-  const [vtexComissions] = await (trx || knexDatabase)('organization_vtex_comission')
+  const vtexComissions = await (trx || knexDatabase)('organization_vtex_comission')
   .where('organization_id', organizationId)
-  .andWhere('vtex_department_id',vtexDepartmentId)
+  .whereIn('vtex_department_id',vtexDepartmentsIds)
+  .andWhere('active', true)
   .select();
 
-  return vtexComissions ? vtexCommissionsAdapter(vtexComissions) : null
+  return vtexDepartmentsIds.map(vtexDepartmentId => {
+
+    let itemFound = vtexComissions.filter(item => {
+      return item.vtex_department_id === vtexDepartmentId
+    });
+
+    return {
+      vtexDepartmentId: vtexDepartmentId,
+      percentage: itemFound.length ? itemFound[0].vtex_commission_percentage : null
+    }
+  })
 
 }
 
@@ -439,13 +450,13 @@ const handleOrganizationVtexComission = async (handleOrganizationVtexComissionPa
 
 const getVtexCommissionInfosByAffiliateIdAndDepartmentId = async (
     vtexComissionsByAffiliateIdAndDepartmentIdPayload: {
-      vtexDepartmentId: string
+      vtexDepartmentsIds: string[]
       affiliateId: string
     }, 
     trx: Transaction
   ) => {
 
-    const { vtexDepartmentId, affiliateId } = vtexComissionsByAffiliateIdAndDepartmentIdPayload;
+    const { vtexDepartmentsIds, affiliateId } = vtexComissionsByAffiliateIdAndDepartmentIdPayload;
 
     const userOrganizationService = await ServicesService.getOrganizationIdByUserOrganizationServiceRoleId(affiliateId, trx);
 
@@ -453,28 +464,21 @@ const getVtexCommissionInfosByAffiliateIdAndDepartmentId = async (
 
     const vtexCommissionPayDay = await getTimeToPayCommissionById({organizationId: userOrganizationService.organizationId}, trx);
 
-    const vtexCommission = await getComissionsDepartmentsByOrganizationIdAndVtexDepartmentId(userOrganizationService.organizationId, vtexDepartmentId, trx);
+    const vtexCommission = await getComissionsDepartmentsByOrganizationIdAndVtexDepartmentId(userOrganizationService.organizationId, vtexDepartmentsIds, trx);
 
-    if(!vtexCommission){
+    if(vtexCommission.find(item => item.percentage === null)){
       const defaultCommission = await getDefaultCommissionByOrganizationServiceId(userOrganizationService.organizationServiceId, trx);
-
-      if(!defaultCommission) {
-        return {
-          percentage: null,
-          payDay: vtexCommissionPayDay?.days ?? null
-        }  
-      }
-
-      return {
-        percentage: defaultCommission.percentage,
+      return vtexCommission.map(item => ({
+        ...item, 
+        percentage: item.percentage ? item.percentage : defaultCommission?.percentage ?? null,
         payDay: vtexCommissionPayDay?.days ?? null
-      }
+      }))
+    } else {
+      return vtexCommission.map(item => ({
+        ...item,
+        payDay: vtexCommissionPayDay?.days ?? null
+      }))
     }
-
-    return {
-      percentage: vtexCommission.vtexCommissionPercentage,
-      payDay: vtexCommissionPayDay?.days ?? null
-    };
 
 };
 

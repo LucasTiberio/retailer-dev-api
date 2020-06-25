@@ -405,16 +405,24 @@ describe('Vtex', () => {
         await service.handleTimeToPayCommission(handleTimeToPayCommissionPayload, context, trx);
 
         const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
-            vtexDepartmentId: "1",
+            vtexDepartmentsIds: ["1", "2"],
             affiliateId: userInOrganizationService.id
         }
 
         const vtexComissionsByAffiliateIdAndDepartmentId = await service.getVtexCommissionInfosByAffiliateIdAndDepartmentId(vtexComissionsByAffiliateIdAndDepartmentIdPayload, trx);
 
-        expect(vtexComissionsByAffiliateIdAndDepartmentId).toStrictEqual(expect.objectContaining({
-            percentage: organizationVtexComissionAdded.vtexCommissionPercentage,
-            payDay: String(handleTimeToPayCommissionPayload.days)
-        }));
+        expect(vtexComissionsByAffiliateIdAndDepartmentId).toStrictEqual([
+            expect.objectContaining({
+                vtexDepartmentId: "1",
+                percentage: handleOrganizationVtexComissionPayload.vtexCommissionPercentage,
+                payDay: String(handleTimeToPayCommissionPayload.days)
+            }),
+            expect.objectContaining({
+                vtexDepartmentId: "2",
+                percentage: null,
+                payDay: String(handleTimeToPayCommissionPayload.days)
+            })
+        ]);
 
         done();
     })
@@ -476,16 +484,19 @@ describe('Vtex', () => {
         await service.handleDefaultommission(handleDefaultCommission, context, trx);
 
         const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
-            vtexDepartmentId: "1",
+            vtexDepartmentsIds: ["1"],
             affiliateId: userInOrganizationService.id
         }
 
         const vtexComissionsByAffiliateIdAndDepartmentId = await service.getVtexCommissionInfosByAffiliateIdAndDepartmentId(vtexComissionsByAffiliateIdAndDepartmentIdPayload, trx);
 
-        expect(vtexComissionsByAffiliateIdAndDepartmentId).toStrictEqual(expect.objectContaining({
-            percentage: 10,
-            payDay: null
-        }));
+        expect(vtexComissionsByAffiliateIdAndDepartmentId).toStrictEqual([
+            expect.objectContaining({
+                vtexDepartmentId: "1",
+                percentage: handleDefaultCommission.percentage,
+                payDay: null
+            })
+        ]);
 
         done();
     })
