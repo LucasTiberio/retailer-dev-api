@@ -37,7 +37,7 @@ exports.seed = async function(knex) {
                             return
                         case "members":
                             organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationAdminRoleId, grant: GRANT_WRITE })
-                            organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationMemberRoleId, grant: GRANT_READ })
+                            organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationMemberRoleId, grant: GRANT_HIDE })
                             return 
                         case "integrations":
                             organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationAdminRoleId, grant: GRANT_WRITE })

@@ -101,6 +101,24 @@ export const affiliateMemberMountMenu = (serviceRole: string) => {
         ]
     }
 
+    const affiliateSale : any =  {
+        name: 'affiliate',
+        children: [
+            {
+                name: 'orders',
+                slug: '/affiliate/orders'
+            },
+            {
+                name: 'commission',
+                slug: '/affiliate/commission'
+            },
+            {
+                name: 'payments',
+                slug: '/affiliate/payments'
+            },
+        ]
+    }
+
     switch (serviceRole) {
         case ServiceRoles.ADMIN:
             return [...organizationMemberMenu, affiliateAdmin]
@@ -108,6 +126,8 @@ export const affiliateMemberMountMenu = (serviceRole: string) => {
             return [...organizationMemberMenu, affiliateResponsible]
         case ServiceRoles.ANALYST:
             return [...organizationMemberMenu, affiliateAnalyst]
+        case ServiceRoles.SALE:
+            return [...organizationMemberMenu, affiliateSale]
         default: return;
     }
 

@@ -1,9 +1,9 @@
 extend type Query{
     listAvailableServices: [Service]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     listAvailableUsersToService(input: ListAvailableUsersToServiceInput!): [UserOrganization]! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    listUsersInOrganizationService(input: ListUsersInOrganizationServiceInput!): [UserOrganizationService]! @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE"]) @isVerified @isAuthenticated 
+    listUsersInOrganizationService(input: ListUsersInOrganizationServiceInput!): [UserOrganizationService]! @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"]) @isVerified @isAuthenticated 
     getUserInOrganizationService(input: GetUserInOrganizationServiceInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated 
-    getUserOrganizationByServiceName(input: GetUserOrganizationByServiceNameInput!): UserOrganizationService @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE"]) @isVerified @isAuthenticated 
+    getUserOrganizationByServiceName(input: GetUserOrganizationByServiceNameInput!): UserOrganizationService @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"]) @isVerified @isAuthenticated 
     getUserInOrganizationServiceById(input: GetUserInOrganizationServiceByIdInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
 }
 
