@@ -14,34 +14,6 @@ app.get('/', (req, res) => {
     res.send('Hello B8ONE!');
 });
 
-app.get('/redirect/:shortenCode', async (req, res, next) => {
-
-  const shortenCode = req.params.shortenCode;
-
-  try {
-    
-    const [shortIdFoundOnDb] = await knexDatabase.knex('url_shorten')
-    .where('url_code', shortenCode)
-    .select('original_url', 'id');
-  
-    if(!shortIdFoundOnDb) throw new Error('Shortener url doesnt exists');
-  
-    await knexDatabase.knex('url_shorten')
-    .where('id', shortIdFoundOnDb.id)
-    .increment('count', 1)
-  
-    let hasPrefix = shortIdFoundOnDb.original_url.match(/https?:\/\//ig);
-  
-    res.redirect(301, hasPrefix.length ? shortIdFoundOnDb.original_url : `https://${shortIdFoundOnDb.original_url}`);
-    res.end();
-  } catch (error) {
-    res.status(400).send(error.message);
-  }
-
-
-  
-});
-
 server.applyMiddleware({app, cors: true});
 
 const port = process.env.PORT || 80;

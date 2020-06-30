@@ -48,7 +48,7 @@ stages:
           --build-arg redishost=$(REDIS_HOST)
           --build-arg redisport=$(REDIS_PORT)
           --build-arg ordersservicepassword=$(ORDERS_SERVICE_PASSWORD)
-          --build-arg backendurlstaging=https://api-staging.plugone.io
+          --build-arg REDIRECT_URL_STAGINGhttps://go-staging.plugone.io
 
         includeLatestTag: true
         tags: |
