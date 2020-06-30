@@ -37,6 +37,17 @@ export interface Customer{
     documentNumber?: string
 }
 
+export interface IUpdateSubscribe{
+    organizationId: string
+    recurrencyId?: string
+    plan: string
+    paymentMethod: PaymentMethod
+    contactEmail?: string
+    customer?: Customer
+    cardId?: string
+}
+
+
 export interface ICreateSubscribe{
     organizationId: string
     plan: number
