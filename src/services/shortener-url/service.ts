@@ -4,7 +4,7 @@ import { IShortenerUrlFromDB } from "./types";
 import shortid from 'shortid';
 import store from '../../store';
 
-const backendUrl = process.env.BACKEND_URL_STAGING;
+const backendRedirectUrl = process.env.REDIRECT_URL_STAGING;
 
 const shortUrlAdapter = (record : IShortenerUrlFromDB) => ({
   id: record.id,
@@ -53,7 +53,7 @@ const shortenerUrl = async (originalUrl: string, trx: Transaction) => {
       const [shortIdFoundOnDb] = await (trx || knexDatabase.knex)('url_shorten')
         .insert({
           original_url: originalUrl,
-          short_url: `${backendUrl}/redirect/${shortId}`,
+          short_url: `${backendRedirectUrl}/${shortId}`,
           url_code: shortId
         })
         .returning('*');

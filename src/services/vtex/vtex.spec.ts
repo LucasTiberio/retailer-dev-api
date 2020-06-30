@@ -493,7 +493,7 @@ describe('Vtex', () => {
         expect(vtexComissionsByAffiliateIdAndDepartmentId).toStrictEqual([
             expect.objectContaining({
                 vtexDepartmentId: "1",
-                percentage: handleDefaultCommission.percentage,
+                percentage: handleDefaultCommission.percentage.toFixed(2),
                 payDay: null
             })
         ]);
@@ -650,7 +650,7 @@ describe('Vtex', () => {
         expect(defaultCommission).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
-                percentage: handleDefaultCommission.percentage,
+                percentage: handleDefaultCommission.percentage.toFixed(2),
                 organizationServiceId: organizationService.id,
                 updatedAt: expect.any(Date),
                 createdAt: expect.any(Date)
@@ -693,7 +693,7 @@ describe('Vtex', () => {
         expect(defaultCommission).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
-                percentage: handleDefaultCommissionAgain.percentage,
+                percentage: handleDefaultCommissionAgain.percentage.toFixed(2),
                 organizationServiceId: organizationService.id,
                 updatedAt: expect.any(Date),
                 createdAt: expect.any(Date)
@@ -736,7 +736,7 @@ describe('Vtex', () => {
         expect(defaultCommission).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
-                percentage: handleDefaultCommission.percentage,
+                percentage: handleDefaultCommission.percentage.toFixed(2),
                 organizationServiceId: organizationService.id,
                 updatedAt: expect.any(Date),
                 createdAt: expect.any(Date)

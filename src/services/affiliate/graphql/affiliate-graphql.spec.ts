@@ -9,13 +9,13 @@ import redisClient from '../../../lib/Redis';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
-const backendUrl = process.env.BACKEND_URL_STAGING;
+const backendRedirectUrl = process.env.REDIRECT_URL_STAGING;
 
 declare var process : {
 	env: {
       NODE_ENV: "production" | "development" | "test"
       JWT_SECRET: string
-      BACKEND_URL_STAGING: string
+      REDIRECT_URL_STAGING: string
 	}
 }
 
@@ -454,7 +454,7 @@ describe('services graphql', () => {
 
         expect(affiliateGenerateShortenerUrlResponse.statusCode).toBe(200);
 
-        const shortUrlBefore = `${backendUrl}/redirect/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
+        const shortUrlBefore = `${backendRedirectUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
         const affiliateId = addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id;
 
@@ -608,7 +608,7 @@ describe('services graphql', () => {
 
         expect(affiliateGenerateShortenerUrlResponse.statusCode).toBe(200);
 
-        const shortUrlBefore = `${backendUrl}/redirect/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
+        const shortUrlBefore = `${backendRedirectUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
         const affiliateId = addUserInOrganizationResponse.body.data.addUserInOrganizationService.id;
 

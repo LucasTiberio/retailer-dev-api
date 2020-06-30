@@ -160,7 +160,7 @@ describe('Organization Permissions', () => {
                     id: expect.any(String),
                     permissionName: item,
                     organizationRoleName: OrganizationRoles.MEMBER,
-                    grant: item === 'members' ? PermissionGrant.read : PermissionGrant.hide
+                    grant: PermissionGrant.hide
                 }))
             )
         );
