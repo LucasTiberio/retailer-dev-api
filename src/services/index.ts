@@ -11,6 +11,7 @@ import OrganizationPermissionService from './organization-permissions';
 import ServicePermissionService from './service-permissions';
 import MenuService from './menu';
 import BankDataService from './bank-data';
+import PaymentsService from './payments';
 
 let services = [
   UserService,
@@ -23,7 +24,8 @@ let services = [
   OrganizationPermissionService,
   ServicePermissionService,
   MenuService,
-  BankDataService
+  BankDataService,
+  PaymentsService
 ];
 
 export default {

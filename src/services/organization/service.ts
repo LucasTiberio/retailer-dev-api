@@ -1,116 +1,24 @@
-import { IUserOrganizationRolesFromDB, IInviteUserToOrganizationData, IOrganizationFromDB, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes, IUserOrganizationAdaptedFromDB } from "./types";
+import { IInviteUserToOrganizationData, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
 import MailService from '../mail/service';
+import PaymentsService from '../payments/service';
 import VtexService from '../vtex/service';
 import UserService from '../users/service';
 import ServicesService from '../services/service';
 import StorageService from '../storage/service';
 import knexDatabase from "../../knex-database";
 import common from "../../common";
-import { IUserOrganizationDB, IOrganizationRoleFromDb } from "./types";
-import store from "../../store";
+import { IUserOrganizationDB } from "./types";
 import sharp from 'sharp';
 import { IPagination } from "../../common/types";
 import { Services } from "../services/types";
 import { RedisClient } from "redis";
 import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED } from '../../common/consts';
-
-const _organizationAdapter = (record: IOrganizationFromDB) => ({
-  id: record.id,
-  name: record.name,
-  contactEmail: record.contact_email,
-  userId: record.user_id,
-  active: record.active,
-  createdAt: record.created_at,
-  updatedAt: record.updated_at,
-  userOrganizationId: record.users_organizations_id,
-  logo: record.logo ? `${record.logo}?${+new Date()} ` : null
-});
-
-const _organizationRoleAdapter = (record: IOrganizationRoleFromDb) => ({
-  id: record.id,
-  name: record.name,
-  updatedAt: record.updated_at,
-  createdAt: record.created_at
-})
-
-const _usersOrganizationsAdapter = (record: IUserOrganizationAdaptedFromDB) => ({
-    id: record.id,
-    userId: record.user_id,
-    organizationId: record.organization_id,
-    inviteStatus: record.invite_status,
-    inviteHash: record.invite_hash,
-    createdAt: record.created_at,
-    updatedAt: record.updated_at,
-    active: record.active,
-    organizationRoleId: record.organization_role_id
-})
-
-const _usersOrganizationsRolesAdapter = (record: IUserOrganizationRolesFromDB) => ({
-  id: record.id,
-  userOrganizationId: record.users_organization_id,
-  createdAt: record.created_at,
-  updatedAt: record.updated_at,
-  organizationRoleId: record.organization_role_id
-})
-
-const organizationRoleByUserIdLoader = store.registerOneToManyLoader(
-  async (userOrganizationIds : string[]) => {
-    return await knexDatabase.knex('users_organization_roles AS uor')
-    .innerJoin('organization_roles AS orgr', 'orgr.id', 'uor.organization_role_id')
-    .whereIn('users_organization_id', userOrganizationIds)
-    .select('orgr.*', "uor.users_organization_id")
-  },
-    'users_organization_id',
-    _organizationRoleAdapter
-);
-
-const organizationByIdLoader = store.registerOneToOneLoader(
-  async (organizationIds : string[]) => {
-    return knexDatabase.knex('organizations').whereIn('id', organizationIds).select()
-  },
-    'id',
-    _organizationAdapter
-);
-
-const organizationByUserIdLoader = store.registerOneToManyLoader(
-  async (userIds : string[]) => {
-    const query = await knexDatabase.knex('users_organizations AS uo')
-    .innerJoin('organizations AS org', 'org.id', 'uo.organization_id')
-    .whereIn('uo.user_id', userIds)
-    .select('org.*', 'uo.id AS users_organizations_id', 'uo.user_id')
-    return query;
-  },
-    'user_id',
-    _organizationAdapter
-);
-
-const organizationHasMemberLoader = store.registerOneToManyLoader(
-  async (organizationIds : string[]) => {
-    const query = await knexDatabase.knex('users_organizations')
-    .where('active', true)
-    .whereIn('organization_id', organizationIds)
-    .limit(2)
-    .select('*')
-    return query;
-  },
-    'organization_id',
-    _organizationAdapter
-);
-
-const organizationHasAnyMemberLoader = store.registerOneToManyLoader(
-  async (organizationIds : string[]) => {
-    const query = await knexDatabase.knex('users_organizations')
-    .whereIn('organization_id', organizationIds)
-    .limit(2)
-    .select('*')
-    return query;
-  },
-    'organization_id',
-    _organizationAdapter
-);
+import { stringToSlug } from './helpers';
+import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from "./adapters";
+import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from "./loaders";
 
 const createOrganization = async (
     createOrganizationPayload : IOrganizationPayload, 
@@ -120,13 +28,25 @@ const createOrganization = async (
 
   if(!context.client) throw new Error("invalid token");
 
+  const { 
+    organization : { 
+      name, contactEmail
+    },
+    creditCard,
+    plan,
+    paymentMethod,
+    billing,
+    customer
+  } = createOrganizationPayload;
+
   try {
 
     const [organizationCreated] = await (trx || database.knex)
     .insert({
-      name: createOrganizationPayload.name,
-      contact_email: createOrganizationPayload.contactEmail,
-      user_id: context.client.id
+      name,
+      contact_email: contactEmail,
+      user_id: context.client.id,
+      slug: stringToSlug(name)
     }).into('organizations').returning('*')
 
     await organizationRolesAttach(context.client.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx);
@@ -138,6 +58,18 @@ const createOrganization = async (
     await ServicesService.createServiceInOrganization(affiliateServiceFound.id, organizationCreated.id, context.client, trx);
 
     await setCurrentOrganization({organizationId: organizationCreated.id}, { client: context.client, redisClient: context.redisClient}, trx);
+
+    if(process.env.NODE_ENV !== 'test'){
+      await PaymentsService.createSubscribe({
+        creditCard,
+        plan,
+        organizationId: organizationCreated.id,
+        paymentMethod,
+        contactEmail: organizationCreated.contact_email,
+        billing,
+        customer
+      })
+    }
 
     return _organizationAdapter(organizationCreated)
   } catch(e){

@@ -1,0 +1,31 @@
+input CreditCard {
+  number: String!
+  holderName: String!
+  expirationDate: String!
+  cvv: String!
+}
+
+input Billing{
+  name: String!
+  address: Address!
+}
+
+input Address{
+    street: String!
+    complementary: String
+    state: String!
+    streetNumber: String!
+    neighborhood: String!
+    city: String!
+    zipcode: String!
+    country: String!
+}
+
+input Customer{
+    documentNumber: String
+}
+
+enum PaymentMethod{
+    boleto
+    credit_card
+}

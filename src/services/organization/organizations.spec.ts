@@ -5,17 +5,17 @@ import Faker from 'faker';
 import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
-import { OrganizationRoles, OrganizationInviteStatus, IOrganizationSimple } from './types';
+import { OrganizationRoles, OrganizationInviteStatus, IOrganizationSimple, IOrganizationPayload } from './types';
 import knexDatabase from '../../knex-database';
-import common from '../../common';
-import { stream } from 'file-type';
-var streamBuffers = require('stream-buffers');
 var imgGen = require('js-image-generator');
 import redisClient from '../../lib/Redis';
 import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION } from '../../common/consts';
 import { IContext } from '../../common/types';
+import { PaymentMethod } from '../payments/types';
 
 describe('Organizations', () => {
+
+    let createOrganizationPayload: IOrganizationPayload
 
     let trx : Transaction;
 
@@ -48,17 +48,42 @@ describe('Organizations', () => {
         await trx('users_organizations').del();
         await trx('organizations').del();
         await trx('users').del();
+        createOrganizationPayload = {
+            organization: {
+              name: "Gabsss5",
+              contactEmail: "gabriel-tamura@b8one.com"
+            },
+            plan: 488346,
+            paymentMethod: PaymentMethod.credit_card,
+            billing: {
+              name: "Gabriel Tamura",
+              address:{
+                street: "Rua avare",
+                complementary: "12",
+                state: "São Paulo",
+                streetNumber: "24",
+                neighborhood: "Baeta Neves",
+                city: "São Bernardo do Campo",
+                zipcode: "09751060",
+                country: "Brazil"
+              }
+            },
+            customer: {
+              documentNumber: "37859614804"
+            },
+            creditCard: {
+              number: "4111111111111111",
+              cvv: "123",
+              expirationDate: "0922",
+              holderName: "Morpheus Fishburne"
+            }
+        }
         await redisClient.flushall('ASYNC');
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
     })
 
     test("user should send a current organization to redis", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -80,11 +105,6 @@ describe('Organizations', () => {
     })
 
     test("user should send a current organization null and delete to redis", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -112,11 +132,6 @@ describe('Organizations', () => {
     })
 
     test("users should send a current organization to redis", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
         
@@ -162,11 +177,6 @@ describe('Organizations', () => {
 
     test("users without organization not should send a current organization to redis", async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -192,18 +202,13 @@ describe('Organizations', () => {
 
     test("user should create new organization and grant admin role", async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         expect(organizationCreated).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
-                name: createOrganizationPayload.name,
-                contactEmail: createOrganizationPayload.contactEmail,
+                name: createOrganizationPayload.organization.name,
+                contactEmail: createOrganizationPayload.organization.contactEmail,
                 userId: userToken.id,
                 active: true,
                 updatedAt: expect.any(Date),
@@ -217,8 +222,8 @@ describe('Organizations', () => {
         expect(organizationOnDb[0]).toEqual(
             expect.objectContaining({
                 id: organizationCreated.id,
-                name: createOrganizationPayload.name,
-                contact_email: createOrganizationPayload.contactEmail,
+                name: createOrganizationPayload.organization.name,
+                contact_email: createOrganizationPayload.organization.contactEmail,
                 user_id: userToken.id,
                 active: true,
                 updated_at: expect.any(Date),
@@ -282,14 +287,9 @@ describe('Organizations', () => {
 
     test("user should verify organization duplicated name before create with exists organization", async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.domainName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
-        const verifiedOrganizationName = await service.verifyOrganizationName(createOrganizationPayload.name, trx);
+        const verifiedOrganizationName = await service.verifyOrganizationName(createOrganizationPayload.organization.name, trx);
 
         expect(verifiedOrganizationName).toBeTruthy();
 
@@ -299,11 +299,6 @@ describe('Organizations', () => {
 
     test("user should list your organizations", async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const organizations = await service.listMyOrganizations(userToken, trx);
@@ -312,8 +307,8 @@ describe('Organizations', () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     id: organizationCreated.id,
-                    name: createOrganizationPayload.name,
-                    contactEmail: createOrganizationPayload.contactEmail,
+                    name: createOrganizationPayload.organization.name,
+                    contactEmail: createOrganizationPayload.organization.contactEmail,
                     userId: userToken.id,
                     active: true,
                     updatedAt: expect.any(Date),
@@ -327,11 +322,6 @@ describe('Organizations', () => {
     })
 
     test("user should list your organization details", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -348,8 +338,8 @@ describe('Organizations', () => {
         expect(organizations).toEqual(
                 expect.objectContaining({
                     id: organizationCreated.id,
-                    name: createOrganizationPayload.name,
-                    contactEmail: createOrganizationPayload.contactEmail,
+                    name: createOrganizationPayload.organization.name,
+                    contactEmail: createOrganizationPayload.organization.contactEmail,
                     userId: userToken.id,
                     active: true,
                     updatedAt: expect.any(Date),
@@ -362,11 +352,6 @@ describe('Organizations', () => {
     })
 
     test('user organization admin should invite existent members', async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -458,11 +443,6 @@ describe('Organizations', () => {
 
     test('user organization admin should invite new members', async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -548,11 +528,6 @@ describe('Organizations', () => {
 
     test('existent user should refused invite', async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -610,11 +585,6 @@ describe('Organizations', () => {
     })
 
     test('existent user should accept invite', async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -674,11 +644,6 @@ describe('Organizations', () => {
 
     test('no existent user should accept invite', async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -737,11 +702,6 @@ describe('Organizations', () => {
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
 
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -832,11 +792,6 @@ describe('Organizations', () => {
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
 
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -933,11 +888,6 @@ describe('Organizations', () => {
 
     test("admin user should inative user member from organization", async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -1000,11 +950,6 @@ describe('Organizations', () => {
     })
 
     test("organization admin not should inative other organization admin", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -1072,11 +1017,6 @@ describe('Organizations', () => {
     })
 
     test("founder should inative admin from organization", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -1164,11 +1104,6 @@ describe('Organizations', () => {
         let signUpCreated = await UserService.signUp(signUpPayload, trx);
         let userToken = { origin: 'user', id: signUpCreated.id };
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -1240,11 +1175,6 @@ describe('Organizations', () => {
         }
 
         let signUpCreated3 = await UserService.signUp(signUpPayload3, trx);
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -1326,11 +1256,6 @@ describe('Organizations', () => {
 
     test("organization admin should handle member permissions to admin", async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -1393,11 +1318,6 @@ describe('Organizations', () => {
 
     test("organization admin should not be able to remove other admin acces", async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -1457,11 +1377,6 @@ describe('Organizations', () => {
     })
 
     test("founder should be able to remove other admin acces", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -1529,11 +1444,6 @@ describe('Organizations', () => {
     })
 
     test("admin user should inative user member from organization and reinvite this member", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -1608,11 +1518,6 @@ describe('Organizations', () => {
 
     test("admin should upload organization image", async done => {
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
-
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
@@ -1652,11 +1557,6 @@ describe('Organizations', () => {
     })
 
     test("admin should invite member with role pre selected", async done => {
-
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
