@@ -35,9 +35,6 @@ export const organizationMemberMenu = [
     {
         name: 'overview',
         slug: '/overview'
-    },{
-        name: 'members',
-        slug: '/members'
     }
 ]
 
