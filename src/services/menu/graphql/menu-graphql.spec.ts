@@ -8,6 +8,7 @@ const app = require('../../../app');
 const request = require('supertest').agent(app);
 import redisClient from '../../../lib/Redis';
 import { organizationAdminMenu } from '../helpers';
+import { PaymentMethod } from '../../payments/types';
 
 declare var process : {
 	env: {
@@ -122,8 +123,34 @@ describe('services graphql', () => {
         });
 
         const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            organization: {
+              name: "Gabsss5",
+              contactEmail: "gabriel-tamura@b8one.com"
+            },
+            plan: 488346,
+            paymentMethod: PaymentMethod.credit_card,
+            billing: {
+              name: "Gabriel Tamura",
+              address:{
+                street: "Rua avare",
+                complementary: "12",
+                state: "São Paulo",
+                streetNumber: "24",
+                neighborhood: "Baeta Neves",
+                city: "São Bernardo do Campo",
+                zipcode: "09751060",
+                country: "Brazil"
+              }
+            },
+            customer: {
+              documentNumber: "37859614804"
+            },
+            creditCard: {
+              number: "4111111111111111",
+              cvv: "123",
+              expirationDate: "0922",
+              holderName: "Morpheus Fishburne"
+            }
         }
 
         const createOrganizationResponse = await request

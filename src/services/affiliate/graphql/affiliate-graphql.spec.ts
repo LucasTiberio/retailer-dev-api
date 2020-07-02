@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { IOrganizationAdapted, OrganizationInviteStatus } from '../../organization/types';
 import { Services, IServiceAdaptedFromDB, ServiceRoles } from '../../services/types';
 import redisClient from '../../../lib/Redis';
+import { PaymentMethod } from '../../payments/types';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -77,40 +78,6 @@ const GENERATE_SALES_JWT = `
         generateSalesJwt(input: $input){
             salesId
             vtexSalePixelJwt
-        }
-    }
-`
-
-const ADD_USER_IN_ORGANIZATION_SERVICE = `
-    mutation addUserInOrganizationService($input: AddUserInOrganizationServiceInput!) {
-        addUserInOrganizationService(input: $input){
-            id
-            createdAt
-            updatedAt
-            service{
-                id
-                name
-                active
-                createdAt
-                updatedAt
-            }
-            serviceRoles{
-                id
-                name
-            }
-            userOrganization{
-                id
-                user{
-                    id
-                    username
-                    email
-                }
-                organization{
-                    id
-                    name
-                    contactEmail
-                }
-            }
         }
     }
 `
@@ -229,6 +196,10 @@ describe('services graphql', () => {
 
     beforeEach(async () => {
 
+        
+        await knexDatabase.knex('users_organization_service_roles_url_shortener').del();
+        await knexDatabase.knex('users_organization_service_roles').del();
+
         const signUpPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -268,8 +239,34 @@ describe('services graphql', () => {
         });
 
         const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+            organization: {
+              name: Faker.internet.domainName(),
+              contactEmail: "gabriel-tamura@b8one.com"
+            },
+            plan: 488346,
+            paymentMethod: PaymentMethod.credit_card,
+            billing: {
+              name: "Gabriel Tamura",
+              address:{
+                street: "Rua avare",
+                complementary: "12",
+                state: "São Paulo",
+                streetNumber: "24",
+                neighborhood: "Baeta Neves",
+                city: "São Bernardo do Campo",
+                zipcode: "09751060",
+                country: "Brazil"
+              }
+            },
+            customer: {
+              documentNumber: "37859614804"
+            },
+            creditCard: {
+              number: "4111111111111111",
+              cvv: "123",
+              expirationDate: "0922",
+              holderName: "Morpheus Fishburne"
+            }
         }
 
         const createOrganizationResponse = await request
@@ -368,7 +365,11 @@ describe('services graphql', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -398,22 +399,6 @@ describe('services graphql', () => {
         'query': RESPONSE_INVITE, 
         'variables': {
                 input: responseOrganizationInvitePayload
-            }
-        });
-
-        const addUserInOrganizationPayload = {
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE
-        }
-
-        const addUserInOrganizationServiceResponse = await request
-        .post('/graphql')
-        .set('content-type', 'application/json')
-        .set('x-api-token', userToken)
-        .send({
-        'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
-        'variables': {
-                input: addUserInOrganizationPayload
             }
         });
 
@@ -456,24 +441,20 @@ describe('services graphql', () => {
 
         const shortUrlBefore = `${backendRedirectUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
-        const affiliateId = addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id;
-
-        const [organizationService] = await knexDatabase.knex('organization_services')
-            .where('organization_id', organizationCreated.id)
-            .select('id');
+        const [userInOrganizationService] = await knexDatabase.knex('users_organization_service_roles').select();
 
         expect(affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl).toEqual(
             expect.objectContaining({
                 id: expect.any(String),
                 shortenerUrl: expect.objectContaining({
-                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${affiliateId}_${organizationCreated.id}`,
+                    originalUrl: `${affiliateGenerateShortenerUrlPayload.originalUrl}?utm_source=plugone_affiliate&utm_campaign=${userInOrganizationService.id}_${organizationCreated.id}`,
                     shortUrl: shortUrlBefore,
                     urlCode: expect.any(String),
                     createdAt: expect.any(String),
                     updatedAt: expect.any(String)
                 }),
                 userOrganizationService: expect.objectContaining({
-                    id: affiliateId
+                    id: userInOrganizationService.id
                 }),
                 createdAt: expect.any(String),
                 updatedAt: expect.any(String)
@@ -522,7 +503,11 @@ describe('services graphql', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -552,22 +537,6 @@ describe('services graphql', () => {
         'query': RESPONSE_INVITE, 
         'variables': {
                 input: responseOrganizationInvitePayload
-            }
-        });
-
-        const addUserInOrganizationPayload = {
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE
-        }
-
-        const addUserInOrganizationResponse = await request
-        .post('/graphql')
-        .set('content-type', 'application/json')
-        .set('x-api-token', userToken)
-        .send({
-        'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
-        'variables': {
-                input: addUserInOrganizationPayload
             }
         });
 
@@ -610,7 +579,9 @@ describe('services graphql', () => {
 
         const shortUrlBefore = `${backendRedirectUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
-        const affiliateId = addUserInOrganizationResponse.body.data.addUserInOrganizationService.id;
+        const [userInOrganizationService] = await knexDatabase.knex('users_organization_service_roles').select();
+
+        const affiliateId = userInOrganizationService.id;
 
         const userOrganizationServicePayload = {
             userOrganizationServiceId: affiliateId,
@@ -696,7 +667,11 @@ describe('services graphql', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -726,22 +701,6 @@ describe('services graphql', () => {
         'query': RESPONSE_INVITE, 
         'variables': {
                 input: responseOrganizationInvitePayload
-            }
-        });
-
-        const addUserInOrganizationPayload = {
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE
-        }
-
-        const addUserInOrganizationResponse = await request
-        .post('/graphql')
-        .set('content-type', 'application/json')
-        .set('x-api-token', userToken)
-        .send({
-        'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
-        'variables': {
-                input: addUserInOrganizationPayload
             }
         });
 
@@ -787,10 +746,12 @@ describe('services graphql', () => {
             }
         });
 
+        const [userInOrganizationService] = await knexDatabase.knex('users_organization_service_roles').select();
+
         expect(createAffiliateBankValuesResponse.statusCode).toBe(200);
         expect(createAffiliateBankValuesResponse.body.data.createAffiliateBankValues).toEqual(
             expect.objectContaining({
-                id: addUserInOrganizationResponse.body.data.addUserInOrganizationService.id,
+                id: userInOrganizationService.id,
                 createdAt: expect.any(String),
                 updatedAt: expect.any(String),
                 active: true
@@ -841,7 +802,11 @@ describe('services graphql', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -871,22 +836,6 @@ describe('services graphql', () => {
         'query': RESPONSE_INVITE, 
         'variables': {
                 input: responseOrganizationInvitePayload
-            }
-        });
-
-        const addUserInOrganizationServicePayload = {
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const addUserInOrganizationServiceResponse = await request
-        .post('/graphql')
-        .set('content-type', 'application/json')
-        .set('x-api-token', userToken)
-        .send({
-        'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
-        'variables': {
-                input: addUserInOrganizationServicePayload
             }
         });
 
@@ -970,7 +919,11 @@ describe('services graphql', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -1000,22 +953,6 @@ describe('services graphql', () => {
         'query': RESPONSE_INVITE, 
         'variables': {
                 input: responseOrganizationInvitePayload
-            }
-        });
-
-        const addUserInOrganizationServicePayload = {
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const addUserInOrganizationServiceResponse = await request
-        .post('/graphql')
-        .set('content-type', 'application/json')
-        .set('x-api-token', userToken)
-        .send({
-        'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
-        'variables': {
-                input: addUserInOrganizationServicePayload
             }
         });
 

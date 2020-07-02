@@ -14,6 +14,7 @@ import { IContext } from '../../common/types';
 import { OrganizationRoles, IOrganizationAdapted } from '../organization/types';
 import { PermissionGrant, ServicePermissionName } from './types';
 import { Services, ServiceRoles } from '../services/types';
+import { PaymentMethod } from '../payments/types';
 
 describe('Organization Permissions', () => {
 
@@ -57,8 +58,34 @@ describe('Organization Permissions', () => {
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
         const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
+            organization: {
+              name: Faker.internet.domainName(),
+              contactEmail: "gabriel-tamura@b8one.com"
+            },
+            plan: 488346,
+            paymentMethod: PaymentMethod.credit_card,
+            billing: {
+              name: "Gabriel Tamura",
+              address:{
+                street: "Rua avare",
+                complementary: "12",
+                state: "São Paulo",
+                streetNumber: "24",
+                neighborhood: "Baeta Neves",
+                city: "São Bernardo do Campo",
+                zipcode: "09751060",
+                country: "Brazil"
+              }
+            },
+            customer: {
+              documentNumber: "37859614804"
+            },
+            creditCard: {
+              number: "4111111111111111",
+              cvv: "123",
+              expirationDate: "0922",
+              holderName: "Morpheus Fishburne"
+            }
         }
 
         organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
@@ -164,14 +191,6 @@ describe('Organization Permissions', () => {
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
 
-        const inviteUserToOrganizationPayload = {
-            users: [{
-                email: otherSignUpCreated.email
-            }]
-        }
-
-        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
-        
         //add vtex secrets
 
         const vtexSecrets = {
@@ -182,13 +201,17 @@ describe('Organization Permissions', () => {
 
         await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
-        //add users in organization service
-        const addUserInOrganizationServicePayload = {
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
+        const inviteUserToOrganizationPayload = {
+            users: [{
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
+            }]
+        }
 
-        await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
+        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
         
         //set currento other organization
         const currentOrganizationPayload = {

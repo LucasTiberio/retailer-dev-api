@@ -1,4 +1,4 @@
-import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServiceDB, IServiceRolesDB, IListAvailableUsersToServicePayload, ISimpleOrganizationServicePayload, IServiceAdapted } from "./types";
+import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServiceDB, IServiceRolesDB, IListAvailableUsersToServicePayload, ISimpleOrganizationServicePayload, IServiceAdapted, ISimpleService } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import OrganizationService from '../organization/service';
@@ -279,9 +279,68 @@ const addUserInOrganizationService = async (
     organization_services_id: serviceOrganizationFound.id
   }).returning('*');
 
-  const vtexCampaignCreated = await VtexService.createUserVtexCampaign(userAddedInOrganizationService.id, vtexSecrests, trx);
+  await VtexService.createUserVtexCampaign(userAddedInOrganizationService.id, vtexSecrests, trx);
 
   return {...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: serviceOrganizationFound.service_id};
+
+}
+
+const attachUserInOrganizationServices = async (
+    input : { userOrganizationId : string, services: ISimpleService[], organizationId: string },
+    trx: Transaction
+  ) => {
+
+  const { userOrganizationId, services, organizationId } = input;
+
+  const vtexSecrests = await VtexService.getSecretsByOrganizationId(organizationId, trx); if(!vtexSecrests || !vtexSecrests.status) 
+    throw new Error("Vtex Integration not implemented");
+  
+  try {
+
+    await Promise.all(services.map(async service => {
+
+      const [serviceRoleSelected] = await (trx || knexDatabase.knex)('service_roles').where('name', service.role || ServiceRoles.ANALYST).select('id');
+
+      if(!serviceRoleSelected) throw new Error('Service role doesnt exist');
+
+      const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, service.name, trx);
+
+      if(!serviceOrganizationFound) throw new Error("Organization doesnt have this service");
+
+      const userOrganizationServiceRoleFound = await getUserOrganizationServiceRole(userOrganizationId, serviceOrganizationFound.id, trx);
+
+      if(userOrganizationServiceRoleFound){
+
+        const [userReactiveInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
+          active: true
+        }).where({
+          users_organization_id: userOrganizationId,
+          organization_services_id: serviceOrganizationFound.id
+        }).returning('*');
+
+        return {...usersOrganizationServiceAdapter(userReactiveInOrganizationService), serviceId: serviceOrganizationFound.service_id};
+
+      } else {
+
+        const [userAddedInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').insert({
+          service_roles_id: serviceRoleSelected.id,
+          users_organization_id: userOrganizationId,
+          organization_services_id: serviceOrganizationFound.id,
+          active: true
+        }).returning('*');
+    
+        if(service.name === Services.AFFILIATE){
+          await VtexService.createUserVtexCampaign(userAddedInOrganizationService.id, vtexSecrests, trx);
+        }
+    
+        return {...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: serviceOrganizationFound.service_id};
+      }
+
+      }))
+
+  } catch (error){
+    throw new Error(error.message);
+  }
 
 }
 
@@ -423,8 +482,7 @@ const userInServiceHandleRole = async (userInServiceHandleRolePayload : {
 
   const [serviceRoleFound] = await (trx || knexDatabase.knex)('service_roles').where('name', serviceRole).select('id');
 
-  if(!serviceRoleFound)
-    throw new Error(`${serviceName} service role doesnt exist`);
+  if(!serviceRoleFound) throw new Error(`${serviceName} service role doesnt exist`);
 
   const [userOrganizationServiceRoleUpdated] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
     service_roles_id: serviceRoleFound.id,
@@ -536,18 +594,18 @@ const verifyFirstSteps = async (userServiceOrganizationId: string, bankDataId: s
 export default {
   createServiceInOrganization,
   getOrganizationServicesById,
-  listAvailableUsersToService,
+  // listAvailableUsersToService,
   getOrganizationServicesByOrganizationId,
   getUserOrganizationServiceRoleById,
   serviceOrganizationByName,
   getServiceRolesByName,
-  inativeUserFromServiceOrganization,
+  // inativeUserFromServiceOrganization,
   userInServiceHandleRole,
-  listUsersInOrganizationService,
+  // listUsersInOrganizationService,
   listUsedServices,
   verifyFirstSteps,
   getServiceRolesByOneId,
-  addUserInOrganizationService,
+  // addUserInOrganizationService,
   getServiceMemberById,
   getUserOrganizationServiceRoleName,
   getServiceById,
@@ -558,5 +616,6 @@ export default {
   getUserInOrganizationService,
   getServiceByName,
   usersOrganizationServiceAdapter,
-  getOrganizationIdByUserOrganizationServiceRoleId
+  getOrganizationIdByUserOrganizationServiceRoleId,
+  attachUserInOrganizationServices
 }

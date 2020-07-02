@@ -16,6 +16,7 @@ import knexDatabase from '../../knex-database';
 import { IServiceAdaptedFromDB, Services, ServiceRoles } from '../services/types';
 import { IContext } from '../../common/types';
 import redisClient from '../../lib/Redis';
+import { PaymentMethod } from '../payments/types';
 
 describe('Affiliate', () => {
 
@@ -30,8 +31,34 @@ describe('Affiliate', () => {
     }
 
     const createOrganizationPayload = {
-        name: Faker.internet.userName(),
-        contactEmail: Faker.internet.email(),
+        organization: {
+          name: "Gabsss5",
+          contactEmail: "gabriel-tamura@b8one.com"
+        },
+        plan: 488346,
+        paymentMethod: PaymentMethod.credit_card,
+        billing: {
+          name: "Gabriel Tamura",
+          address:{
+            street: "Rua avare",
+            complementary: "12",
+            state: "São Paulo",
+            streetNumber: "24",
+            neighborhood: "Baeta Neves",
+            city: "São Bernardo do Campo",
+            zipcode: "09751060",
+            country: "Brazil"
+          }
+        },
+        customer: {
+          documentNumber: "37859614804"
+        },
+        creditCard: {
+          number: "4111111111111111",
+          cvv: "123",
+          expirationDate: "0922",
+          holderName: "Morpheus Fishburne"
+        }
     }
     
     let userToken : IUserToken;
@@ -94,10 +121,13 @@ describe('Affiliate', () => {
         await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -112,14 +142,6 @@ describe('Affiliate', () => {
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
 
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
-
         const affiliateGenerateShortenerUrlPayload = {
             originalUrl: Faker.internet.url(),
             serviceName: Services.AFFILIATE
@@ -129,6 +151,8 @@ describe('Affiliate', () => {
         const affiliateContext = {client: affiliateToken, organizationId: organizationCreated.id};
 
         const affiliateGenerateShortenerUrl = await service.generateShortenerUrl(affiliateGenerateShortenerUrlPayload, affiliateContext, trx);
+
+        const [userInOrganizationService] = await (trx || knexDatabase)('users_organization_service_roles').select();        
 
         const affiliateId = userInOrganizationService.id;
 
@@ -166,10 +190,13 @@ describe('Affiliate', () => {
         await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -182,15 +209,7 @@ describe('Affiliate', () => {
             response: OrganizationInviteStatus.ACCEPT
         }
 
-        await OrganizationService.responseInvite(responseInvitePayload, trx);
-
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
+        await OrganizationService.responseInvite(responseInvitePayload, trx);  
 
         const affiliateGenerateShortenerUrlPayload = {
             originalUrl: Faker.internet.url(),
@@ -202,6 +221,8 @@ describe('Affiliate', () => {
         const affiliateContext = {client: affiliateToken, organizationId: organizationCreated.id};
 
         await service.generateShortenerUrl(affiliateGenerateShortenerUrlPayload, affiliateContext, trx);
+
+        const [userInOrganizationService] = await (trx || knexDatabase)('users_organization_service_roles').select();
 
         const affiliateId = userInOrganizationService.id;
 
@@ -249,7 +270,11 @@ describe('Affiliate', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -264,13 +289,7 @@ describe('Affiliate', () => {
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
 
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
+        const [userInOrganizationService] = await (trx || knexDatabase)('users_organization_service_roles').select();
 
         const affiliateToken = { origin: 'user', id: otherSignUpCreated.id };
         const affiliateContext = {client: affiliateToken, organizationId: organizationCreated.id, userServiceOrganizationRolesId: userInOrganizationService.id};
@@ -294,7 +313,7 @@ describe('Affiliate', () => {
 
         expect(affiliateBankValuesCreated).toEqual(
             expect.objectContaining({
-                id: userInOrganizationService.id,
+                id: expect.any(String),
                 serviceRolesId: expect.any(String),
                 usersOrganizationId: expect.any(String),
                 createdAt: expect.any(Date),
@@ -328,10 +347,13 @@ describe('Affiliate', () => {
         await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -346,13 +368,7 @@ describe('Affiliate', () => {
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
 
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
+        const [userInOrganizationService] = await (trx || knexDatabase)('users_organization_service_roles').select();
 
         const affiliateToken = { origin: 'user', id: otherSignUpCreated.id };
         const affiliateContext = {client: affiliateToken, organizationId: organizationCreated.id, userServiceOrganizationRolesId: userInOrganizationService.id};
@@ -442,7 +458,11 @@ describe('Affiliate', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -456,14 +476,6 @@ describe('Affiliate', () => {
         }
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
-
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
 
         const generateSalesJWTPayload = {
             email: signUpCreated.email,
@@ -504,7 +516,11 @@ describe('Affiliate', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -519,13 +535,7 @@ describe('Affiliate', () => {
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
 
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);   
+        const [userInOrganizationService] = await (trx || knexDatabase)('users_organization_service_roles').select(); 
 
         const generateSalesJWTPayload = {
             email: otherSignUpCreated.email,
@@ -566,7 +576,11 @@ describe('Affiliate', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.SALE
+                }]
             }]
         }
 
@@ -581,21 +595,7 @@ describe('Affiliate', () => {
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
 
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
-
-        const userInServiceHandleRoleRemoveAdminPayload = {
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE,
-            serviceRole: ServiceRoles.SALE
-        };
-
-        await ServicesService.userInServiceHandleRole(userInServiceHandleRoleRemoveAdminPayload, context, trx);
+        const [userInOrganizationService] = await (trx || knexDatabase)('users_organization_service_roles').select();
 
         const generateSalesJWTPayload = {
             email: otherSignUpCreated.email,
@@ -647,7 +647,11 @@ describe('Affiliate', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.SALE
+                }]
             }]
         }
 
@@ -662,21 +666,7 @@ describe('Affiliate', () => {
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
 
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
-
-        const userInServiceHandleRoleRemoveAdminPayload = {
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE,
-            serviceRole: ServiceRoles.SALE
-        };
-
-        await ServicesService.userInServiceHandleRole(userInServiceHandleRoleRemoveAdminPayload, context, trx);
+        const [userInOrganizationService] = await (trx || knexDatabase)('users_organization_service_roles').select();
 
         const generateSalesJWTPayload = {
             email: otherSignUpCreated.email,

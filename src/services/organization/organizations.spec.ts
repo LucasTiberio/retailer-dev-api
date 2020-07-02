@@ -1,6 +1,7 @@
 process.env.NODE_ENV = 'test';
 import service from './service';
 import UserService from '../users/service';
+import VtexService from '../vtex/service';
 import Faker from 'faker';
 import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
@@ -12,6 +13,7 @@ import redisClient from '../../lib/Redis';
 import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION } from '../../common/consts';
 import { IContext } from '../../common/types';
 import { PaymentMethod } from '../payments/types';
+import { Services, ServiceRoles } from '../services/types';
 
 describe('Organizations', () => {
 
@@ -43,6 +45,8 @@ describe('Organizations', () => {
     });
 
     beforeEach(async () => {
+        await trx('organization_vtex_secrets').del();
+        await trx('users_organization_service_roles').del();
         await trx('organization_services').del();
         await trx('users_organization_roles').del();
         await trx('users_organizations').del();
@@ -371,10 +375,21 @@ describe('Organizations', () => {
 
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         const inviteUserToOrganizationPayload = {
             users: [{
-                id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -438,6 +453,26 @@ describe('Organizations', () => {
             ]),
         )
 
+        const userOrganizationServiceRoles = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
+
+        const [serviceAnalystRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+        const [affiliateService] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [affiliateOrganizationService] = await (trx || knexDatabase.knex)('organization_services').where('organization_id', organizationCreated.id).andWhere('service_id', affiliateService.id).select('id');
+
+        expect(userOrganizationServiceRoles).toHaveLength(1);
+        expect(userOrganizationServiceRoles).toStrictEqual([
+            expect.objectContaining({
+                id: expect.any(String),
+                service_roles_id: serviceAnalystRole.id,
+                users_organization_id: userOtherUserOrganizations.id,
+                organization_services_id: affiliateOrganizationService.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date),
+                active: true,
+                bank_data_id: null
+            })
+        ])
+
         done();
     })
 
@@ -453,13 +488,25 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             email: Faker.internet.email(),
         };
 
         const inviteUserToOrganizationPayload = {
             users: [{
-                email: signUpOtherMemberPayload.email
+                email: signUpOtherMemberPayload.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -523,10 +570,32 @@ describe('Organizations', () => {
             ]),
         )
 
+        const userOrganizationServiceRoles = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
+
+        const [serviceAnalystRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+        const [affiliateService] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [affiliateOrganizationService] = await (trx || knexDatabase.knex)('organization_services').where('organization_id', organizationCreated.id).andWhere('service_id', affiliateService.id).select('id');
+        const [otherUser] = await (trx || knexDatabase.knex)('users').where('email', signUpOtherMemberPayload.email).select('id');
+        const [userOtherUserOrganizations] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', otherUser.id).andWhere('organization_id', organizationCreated.id).select('id');
+
+        expect(userOrganizationServiceRoles).toHaveLength(1);
+        expect(userOrganizationServiceRoles).toStrictEqual([
+            expect.objectContaining({
+                id: expect.any(String),
+                service_roles_id: serviceAnalystRole.id,
+                users_organization_id: userOtherUserOrganizations.id,
+                organization_services_id: affiliateOrganizationService.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date),
+                active: true,
+                bank_data_id: null
+            })
+        ])
+
         done();
     })
 
-    test('existent user should refused invite', async done => {
+    test('existent user should accept invite', async done => {
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -538,6 +607,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -547,10 +624,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -580,11 +660,33 @@ describe('Organizations', () => {
             })
         )
 
+        const userOrganizationServiceRoles = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
+
+        const [serviceAnalystRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+        const [affiliateService] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [affiliateOrganizationService] = await (trx || knexDatabase.knex)('organization_services').where('organization_id', organizationCreated.id).andWhere('service_id', affiliateService.id).select('id');
+        const [otherUser] = await (trx || knexDatabase.knex)('users').where('email', signUpOtherMemberPayload.email).select('id');
+        const [userOtherUserOrganizations] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', otherUser.id).andWhere('organization_id', organizationCreated.id).select('id');
+
+        expect(userOrganizationServiceRoles).toHaveLength(1);
+        expect(userOrganizationServiceRoles).toStrictEqual([
+            expect.objectContaining({
+                id: expect.any(String),
+                service_roles_id: serviceAnalystRole.id,
+                users_organization_id: userOtherUserOrganizations.id,
+                organization_services_id: affiliateOrganizationService.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date),
+                active: true,
+                bank_data_id: null
+            })
+        ])
+
         done();
 
     })
 
-    test('existent user should accept invite', async done => {
+    test('existent user should refuse invite', async done => {
 
         const organizationCreated = await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
@@ -596,6 +698,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -605,10 +715,13 @@ describe('Organizations', () => {
         const signUpOtherMemberCreated = await UserService.signUp(signUpOtherMemberPayload, trx);
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -638,6 +751,28 @@ describe('Organizations', () => {
             })
         )
 
+        const userOrganizationServiceRoles = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
+
+        const [serviceAnalystRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+        const [affiliateService] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [affiliateOrganizationService] = await (trx || knexDatabase.knex)('organization_services').where('organization_id', organizationCreated.id).andWhere('service_id', affiliateService.id).select('id');
+        const [otherUser] = await (trx || knexDatabase.knex)('users').where('email', signUpOtherMemberPayload.email).select('id');
+        const [userOtherUserOrganizations] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', otherUser.id).andWhere('organization_id', organizationCreated.id).select('id');
+
+        expect(userOrganizationServiceRoles).toHaveLength(1);
+        expect(userOrganizationServiceRoles).toStrictEqual([
+            expect.objectContaining({
+                id: expect.any(String),
+                service_roles_id: serviceAnalystRole.id,
+                users_organization_id: userOtherUserOrganizations.id,
+                organization_services_id: affiliateOrganizationService.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date),
+                active: false,
+                bank_data_id: null
+            })
+        ])
+
         done();
 
     })
@@ -654,14 +789,25 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             email: Faker.internet.email(),
         };
 
         const inviteUserToOrganizationPayload = {
-            organizationId: organizationCreated.id,
             users: [{
-                email: signUpOtherMemberPayload.email
+                email: signUpOtherMemberPayload.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -692,6 +838,28 @@ describe('Organizations', () => {
                 created_at: expect.any(Date)
             })
         )
+
+        const userOrganizationServiceRoles = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
+
+        const [serviceAnalystRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+        const [affiliateService] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [affiliateOrganizationService] = await (trx || knexDatabase.knex)('organization_services').where('organization_id', organizationCreated.id).andWhere('service_id', affiliateService.id).select('id');
+        const [otherUser] = await (trx || knexDatabase.knex)('users').where('email', signUpOtherMemberPayload.email).select('id');
+        const [userOtherUserOrganizations] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', otherUser.id).andWhere('organization_id', organizationCreated.id).select('id');
+
+        expect(userOrganizationServiceRoles).toHaveLength(1);
+        expect(userOrganizationServiceRoles).toStrictEqual([
+            expect.objectContaining({
+                id: expect.any(String),
+                service_roles_id: serviceAnalystRole.id,
+                users_organization_id: userOtherUserOrganizations.id,
+                organization_services_id: affiliateOrganizationService.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date),
+                active: true,
+                bank_data_id: null
+            })
+        ])
 
         done();
 
@@ -898,6 +1066,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -908,8 +1084,11 @@ describe('Organizations', () => {
 
         const inviteUserToOrganizationPayload = {
             users: [{
-                id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -946,6 +1125,28 @@ describe('Organizations', () => {
             ])
         )
 
+        const userOrganizationServiceRoles = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
+
+        const [serviceAnalystRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+        const [affiliateService] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [affiliateOrganizationService] = await (trx || knexDatabase.knex)('organization_services').where('organization_id', organizationCreated.id).andWhere('service_id', affiliateService.id).select('id');
+        const [otherUser] = await (trx || knexDatabase.knex)('users').where('email', signUpOtherMemberPayload.email).select('id');
+        const [userOtherUserOrganizations] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', otherUser.id).andWhere('organization_id', organizationCreated.id).select('id');
+
+        expect(userOrganizationServiceRoles).toHaveLength(1);
+        expect(userOrganizationServiceRoles).toStrictEqual([
+            expect.objectContaining({
+                id: expect.any(String),
+                service_roles_id: serviceAnalystRole.id,
+                users_organization_id: userOtherUserOrganizations.id,
+                organization_services_id: affiliateOrganizationService.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date),
+                active: false,
+                bank_data_id: null
+            })
+        ])
+
         done();
     })
 
@@ -961,6 +1162,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -972,7 +1181,11 @@ describe('Organizations', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -1028,6 +1241,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -1039,7 +1260,11 @@ describe('Organizations', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -1114,6 +1339,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: `aaaaaaaaaa`,
             email: `aaaaaaaaaa@b8one.com`,
@@ -1125,7 +1358,11 @@ describe('Organizations', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -1186,6 +1423,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: `aaaaaaaaaa`,
             email: `aaaaaaaaaa@b8one.com`,
@@ -1197,10 +1442,18 @@ describe('Organizations', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             },{
                 id: signUpCreated3.id,
-                email: signUpCreated3.email
+                email: signUpCreated3.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -1266,6 +1519,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: Faker.internet.userName(),
             email: Faker.internet.email(),
@@ -1277,7 +1538,11 @@ describe('Organizations', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -1313,6 +1578,26 @@ describe('Organizations', () => {
             })
         )
 
+        const userOrganizationServiceRoles = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
+
+        const [serviceAnalystRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+        const [affiliateService] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [affiliateOrganizationService] = await (trx || knexDatabase.knex)('organization_services').where('organization_id', organizationCreated.id).andWhere('service_id', affiliateService.id).select('id');
+
+        expect(userOrganizationServiceRoles).toHaveLength(1);
+        expect(userOrganizationServiceRoles).toStrictEqual([
+            expect.objectContaining({
+                id: expect.any(String),
+                service_roles_id: serviceAnalystRole.id,
+                users_organization_id: invitedUserToOrganization.id,
+                organization_services_id: affiliateOrganizationService.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date),
+                active: false,
+                bank_data_id: null
+            })
+        ])
+
         done();
     })
 
@@ -1328,6 +1613,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: Faker.internet.userName(),
             email: Faker.internet.email(),
@@ -1339,7 +1632,11 @@ describe('Organizations', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -1455,6 +1752,14 @@ describe('Organizations', () => {
 
         let context = {client: userToken, organizationId: organizationCreated.id};
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
         let signUpOtherMemberPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
@@ -1466,7 +1771,11 @@ describe('Organizations', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: signUpOtherMemberCreated.id,
-                email: signUpOtherMemberCreated.email
+                email: signUpOtherMemberCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -1512,6 +1821,28 @@ describe('Organizations', () => {
                 created_at: expect.any(Date)
             })
         )
+
+        const userOrganizationServiceRoles = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
+
+        const [serviceAnalystRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+        const [affiliateService] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [affiliateOrganizationService] = await (trx || knexDatabase.knex)('organization_services').where('organization_id', organizationCreated.id).andWhere('service_id', affiliateService.id).select('id');
+        const [otherUser] = await (trx || knexDatabase.knex)('users').where('email', signUpOtherMemberPayload.email).select('id');
+        const [userOtherUserOrganizations] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', otherUser.id).andWhere('organization_id', organizationCreated.id).select('id');
+
+        expect(userOrganizationServiceRoles).toHaveLength(1);
+        expect(userOrganizationServiceRoles).toStrictEqual([
+            expect.objectContaining({
+                id: expect.any(String),
+                service_roles_id: serviceAnalystRole.id,
+                users_organization_id: userOtherUserOrganizations.id,
+                organization_services_id: affiliateOrganizationService.id,
+                created_at: expect.any(Date),
+                updated_at: expect.any(Date),
+                active: false,
+                bank_data_id: null
+            })
+        ])
 
         done();
     })

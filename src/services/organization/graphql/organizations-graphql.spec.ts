@@ -7,6 +7,7 @@ import { OrganizationRoles, IOrganizationSimple, OrganizationInviteStatus, IOrga
 import redisClient from '../../../lib/Redis';
 import { PaymentMethod } from '../../payments/types';
 import { stringToSlug } from '../helpers';
+import { Services, ServiceRoles } from '../../services/types';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -16,6 +17,12 @@ declare var process : {
       JWT_SECRET: string
 	}
 }
+
+const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
+    mutation verifyAndAttachVtexSecrets($input: VerifyAndAttachVtexSecretsInput!) {
+        verifyAndAttachVtexSecrets(input: $input)
+    }
+`
 
 const SIGN_UP = `
     mutation signUp($input: SignUpInput!) {
@@ -268,6 +275,8 @@ describe('organizations graphql', () => {
                     input: userVerifyEmailPayload
                 }
             });
+
+            await knexDatabase.knex('organization_vtex_secrets').del();
 
             createOrganizationPayload = {
                 organization: {
@@ -634,6 +643,23 @@ describe('organizations graphql', () => {
                     input: currentOrganizationPayload
                 }
             });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
     
             let signUpOtherMemberPayload = {
                 username: Faker.name.firstName(),
@@ -656,7 +682,11 @@ describe('organizations graphql', () => {
             const inviteUserToOrganizationPayload = {
                 users: [{
                     id: otherSignUpCreated.id,
-                    email: otherSignUpCreated.email
+                    email: otherSignUpCreated.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
 
@@ -757,6 +787,23 @@ describe('organizations graphql', () => {
                     input: currentOrganizationPayload
                 }
             });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+    
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
     
             let signUpOtherMemberPayload = {
                 email: Faker.internet.email(),
@@ -764,7 +811,11 @@ describe('organizations graphql', () => {
     
             const inviteUserToOrganizationPayload = {
                 users: [{
-                    email: signUpOtherMemberPayload.email
+                    email: signUpOtherMemberPayload.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
 
@@ -883,13 +934,34 @@ describe('organizations graphql', () => {
                     input: signUpOtherMemberPayload
                 }
             });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
     
+            const teste = await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
+
             let otherSignUpCreated = signUpResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
                 users: [{
                     id: otherSignUpCreated.id,
-                    email: otherSignUpCreated.email
+                    email: otherSignUpCreated.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
     
@@ -987,13 +1059,34 @@ describe('organizations graphql', () => {
                     input: signUpOtherMemberPayload
                 }
             });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+            
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
     
             let otherSignUpCreated = signUpResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
                 users: [{
                     id: otherSignUpCreated.id,
-                    email: otherSignUpCreated.email
+                    email: otherSignUpCreated.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
     
@@ -1075,6 +1168,23 @@ describe('organizations graphql', () => {
                     input: currentOrganizationPayload
                 }
             });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+            
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
     
             let signUpOtherMemberPayload = {
                 email: Faker.internet.email(),
@@ -1082,7 +1192,11 @@ describe('organizations graphql', () => {
     
             const inviteUserToOrganizationPayload = {
                 users: [{
-                    email: signUpOtherMemberPayload.email
+                    email: signUpOtherMemberPayload.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
     
@@ -1516,13 +1630,34 @@ describe('organizations graphql', () => {
                     input: signUpOtherMemberPayload
                 }
             });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+            
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
     
             let otherSignUpCreated = signUpResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
                 users: [{
                     id: otherSignUpCreated.id,
-                    email: otherSignUpCreated.email
+                    email: otherSignUpCreated.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
     
@@ -1658,16 +1793,41 @@ describe('organizations graphql', () => {
                     input: signUpOtherMemberPayload
                 }
             });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+            
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
     
             let signUpOtherMemberCreated = signUpOtherMemberCreatedResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
                 users: [{
                     id: signUpOtherMemberCreated.id,
-                    email: signUpOtherMemberCreated.email
+                    email: signUpOtherMemberCreated.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 },{
                     id: signUpCreated3.id,
-                    email: signUpCreated3.email
+                    email: signUpCreated3.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
     
@@ -1811,13 +1971,34 @@ describe('organizations graphql', () => {
                     input: signUpOtherMemberPayload
                 }
             });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+            
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
     
             let signUpOtherMemberCreated = signUpOtherMemberCreatedResponse.body.data.signUp
     
             const inviteUserToOrganizationPayload = {
                 users: [{
                     id: signUpOtherMemberCreated.id,
-                    email: signUpOtherMemberCreated.email
+                    email: signUpOtherMemberCreated.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
     
@@ -1933,6 +2114,23 @@ describe('organizations graphql', () => {
             'query': SIGN_UP, 
             'variables': {
                     input: signUpOtherMemberPayload
+                }
+            });
+
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+            
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
                 }
             });
     

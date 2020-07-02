@@ -6,8 +6,9 @@ import jwt from 'jsonwebtoken';
 import { IOrganizationAdapted, IOrganizationFromDB, OrganizationInviteStatus } from '../../organization/types';
 import redisClient from '../../../lib/Redis';
 import { mockVtexDepartments } from '../__mocks__';
-import { Services } from '../../services/types';
+import { Services, ServiceRoles } from '../../services/types';
 import moment from 'moment';
+import { PaymentMethod } from '../../payments/types';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -18,14 +19,6 @@ declare var process : {
       ORDERS_SERVICE_PASSWORD: string
 	}
 }
-
-const ADD_USER_IN_ORGANIZATION_SERVICE = `
-    mutation addUserInOrganizationService($input: AddUserInOrganizationServiceInput!) {
-        addUserInOrganizationService(input: $input){
-            id
-        }
-    }
-`
 
 const RESPONSE_INVITE = `
     mutation responseOrganizationInvite($input: ResponseOrganizationInviteInput!) {
@@ -221,9 +214,35 @@ describe('services graphql', () => {
             }
         });
         
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
+        const createOrganizationInput = {
+            organization: {
+              name: Faker.internet.domainName(),
+              contactEmail: "gabriel-tamura@b8one.com"
+            },
+            plan: 488346,
+            paymentMethod: PaymentMethod.credit_card,
+            billing: {
+              name: "Gabriel Tamura",
+              address:{
+                street: "Rua avare",
+                complementary: "12",
+                state: "São Paulo",
+                streetNumber: "24",
+                neighborhood: "Baeta Neves",
+                city: "São Bernardo do Campo",
+                zipcode: "09751060",
+                country: "Brazil"
+              }
+            },
+            customer: {
+              documentNumber: "37859614804"
+            },
+            creditCard: {
+              number: "4111111111111111",
+              cvv: "123",
+              expirationDate: "0922",
+              holderName: "Morpheus Fishburne"
+            }
         }
         
         const createOrganizationResponse = await request
@@ -233,10 +252,10 @@ describe('services graphql', () => {
         .send({
             'query': CREATE_ORGANIZATION, 
             'variables': {
-                input: createOrganizationPayload
+                input: createOrganizationInput
             }
         });
-        
+
         organizationCreated = createOrganizationResponse.body.data.createOrganization;
 
         const currentOrganizationPayload = {
@@ -546,10 +565,31 @@ describe('services graphql', () => {
                 }
             });
 
+            const vtexSecrets = {
+                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+                accountName: "beightoneagency"
+            }
+
+            await request
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('x-api-token', userToken)
+            .send({
+            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+            'variables': {
+                    input: vtexSecrets
+                }
+            });
+
             const inviteUserToOrganizationPayload = {
                 users: [{
                     id: otherSignUpCreated.id,
-                    email: otherSignUpCreated.email
+                    email: otherSignUpCreated.email,
+                    services: [{
+                        name: Services.AFFILIATE,
+                        role: ServiceRoles.ANALYST
+                    }]
                 }]
             }
 
@@ -582,39 +622,6 @@ describe('services graphql', () => {
                 }
             });
 
-            const vtexSecrets = {
-                xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
-                xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-                accountName: "beightoneagency"
-            }
-    
-            await request
-            .post('/graphql')
-            .set('content-type', 'application/json')
-            .set('x-api-token', userToken)
-            .send({
-            'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
-            'variables': {
-                    input: vtexSecrets
-                }
-            });
-
-            const addUserInOrganizationPayload = {
-                userId: otherSignUpCreated.id,
-                serviceName: Services.AFFILIATE
-            }
-
-            const addUserInOrganizationServiceResponse = await request
-            .post('/graphql')
-            .set('content-type', 'application/json')
-            .set('x-api-token', userToken)
-            .send({
-            'query': ADD_USER_IN_ORGANIZATION_SERVICE, 
-            'variables': {
-                    input: addUserInOrganizationPayload
-                }
-            });
-
             const handleOrganizationVtexCommissionPayload = {
                 vtexDepartmentId: "1",
                 vtexCommissionPercentage: 15,
@@ -634,9 +641,11 @@ describe('services graphql', () => {
 
             const organizationVtexComissionAdded = handleOrganizationVtexCommissionResponse.body.data.handleOrganizationVtexCommission;
 
+            const [userInOrganizationService] = await knexDatabase.knex('users_organization_service_roles').select();
+
             const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
                 vtexDepartmentsIds: ["1"],
-                affiliateId: addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService.id
+                affiliateId: userInOrganizationService.id
             }
 
             const getVtexCommissionByAffiliateIdAndDepartmentIdResponse = await request

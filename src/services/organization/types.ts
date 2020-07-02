@@ -1,5 +1,6 @@
 import { ISimpleUser } from "../users/types";
 import { ICreditCard, PaymentMethod, Billing, Customer } from "../payments/types";
+import { ISimpleService } from "../services/types";
 
 export interface IOrganizationPayload{
     organization: {
@@ -13,7 +14,7 @@ export interface IOrganizationPayload{
     customer?: Customer
 }
 
-export interface IOrganizationAdapted extends IOrganizationPayload{
+export interface IOrganizationAdapted{
     id: string
     userId: string
     active: boolean
@@ -66,9 +67,9 @@ export interface IOrganizationSimple{
 }
 
 export interface IInviteUserToOrganizationData{
-    id?: string
     email: string
     role?: OrganizationRoles
+    services?: ISimpleService[]
 }
 
 export interface IResponseInvitePayload{

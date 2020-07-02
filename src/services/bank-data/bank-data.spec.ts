@@ -12,6 +12,7 @@ import {brazilBanksMock} from './helpers';
 import { IServiceAdaptedFromDB, Services } from '../services/types';
 import { IContext } from '../../common/types';
 import redisClient from '../../lib/Redis';
+import { PaymentMethod } from '../payments/types';
 
 describe('Bank Data', () => {
 
@@ -27,8 +28,34 @@ describe('Bank Data', () => {
     }
 
     const createOrganizationPayload = {
-        name: Faker.internet.userName(),
-        contactEmail: Faker.internet.email(),
+        organization: {
+          name: "Gabsss5",
+          contactEmail: "gabriel-tamura@b8one.com"
+        },
+        plan: 488346,
+        paymentMethod: PaymentMethod.credit_card,
+        billing: {
+          name: "Gabriel Tamura",
+          address:{
+            street: "Rua avare",
+            complementary: "12",
+            state: "São Paulo",
+            streetNumber: "24",
+            neighborhood: "Baeta Neves",
+            city: "São Bernardo do Campo",
+            zipcode: "09751060",
+            country: "Brazil"
+          }
+        },
+        customer: {
+          documentNumber: "37859614804"
+        },
+        creditCard: {
+          number: "4111111111111111",
+          cvv: "123",
+          expirationDate: "0922",
+          holderName: "Morpheus Fishburne"
+        }
     }
     
     let userToken : IUserToken;

@@ -92,17 +92,20 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
 
      if(!organizationRole) throw new Error("Organization role not found.");
 
-     const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations').insert({
+     const [userOrganizationCreated] = await (trx || knexDatabase.knex)('users_organizations').insert({
       user_id: userId,
       organization_id: organizationId,
       invite_status: inviteStatus,
       invite_hash: hashToVerify
-     }).returning('id');
+     }).returning('*');
 
      await (trx || knexDatabase.knex)('users_organization_roles').insert({
-      users_organization_id: userOrganizationCreatedId, 
+      users_organization_id: userOrganizationCreated.id, 
       organization_role_id: organizationRole.id
      });
+     
+
+     return _usersOrganizationsAdapter(userOrganizationCreated);
 
 }
 
@@ -129,9 +132,11 @@ const inviteUserToOrganization = async (
 
     await Promise.all(usersToAttach.users.map(async (user : IInviteUserToOrganizationData ) => {
 
-      let hashToVerify = await common.encryptSHA256(JSON.stringify({...user, timestamp: +new Date()}));
+      if(user.services && !user.services.length && user.role !== OrganizationRoles.ADMIN){
+        throw new Error("Users not admin should be added only with services attached.")
+      }
 
-      let userOrganizationCreated;
+      let hashToVerify = await common.encryptSHA256(JSON.stringify({...user, timestamp: +new Date()}));
 
       const [userInvitedOnPast] = await (trx || knexDatabase.knex)('users_organizations AS uo')
         .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
@@ -139,12 +144,16 @@ const inviteUserToOrganization = async (
         .where('uo.organization_id', organizationId)
         .select('uo.*', 'usr.email', 'usr.username');
 
-      if(userInvitedOnPast){
+      if(userInvitedOnPast){ 
 
         const [userReinvited] = await (trx || knexDatabase.knex)('users_organizations AS uo')
           .update({ active: true, invite_status: OrganizationInviteStatus.PENDENT, invite_hash: hashToVerify })
           .where('id', userInvitedOnPast.id)
           .returning('id');
+
+        await (trx || knexDatabase.knex)('users_organization_service_roles')
+          .update({ active: false})
+          .where('users_organization_id', userInvitedOnPast.id);
 
         await MailService.sendInviteUserMail({
           email: user.email,
@@ -155,83 +164,56 @@ const inviteUserToOrganization = async (
         return userReinvited;
       }
 
-      if(user.id){
+      const userEmailFound = await UserService.getUserByEmail(user.email, trx);
 
-        userOrganizationCreated = await organizationRolesAttach(
-          user.id, organizationId, 
-          user.role || OrganizationRoles.MEMBER,
-          OrganizationInviteStatus.PENDENT, 
-          trx, 
-          hashToVerify);
+      if(userEmailFound){
 
-        await MailService.sendInviteUserMail({
-          email: user.email,
-          hashToVerify,
-          organizationName: organization.name,
-        })
-      
-      } else {
+        const usersOrganizationFound = await getUserOrganizationByIds(userEmailFound.id, organizationId, trx);
 
-        const userEmailFound = await UserService.getUserByEmail(user.email, trx);
+        if(usersOrganizationFound){
 
-        if(userEmailFound){
-
-          const usersOrganizationFound = await getUserOrganizationByIds(userEmailFound.id, organizationId, trx);
-
-          if(usersOrganizationFound){
-
-            const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations').update({
-              invite_status: OrganizationInviteStatus.PENDENT,
-              active: true
-             }).where('id', usersOrganizationFound.id).returning('id');
-
-             await MailService.sendInviteUserMail({
-              email: user.email,
-              hashToVerify,
-              organizationName: organization.name,
-            })
-  
-            return userOrganizationCreatedId;
-
-          } else {
-
-            const userAttached = await organizationRolesAttach(
-              userEmailFound.id, 
-              organizationId, 
-              user.role || OrganizationRoles.MEMBER,
-              OrganizationInviteStatus.PENDENT, 
-              trx, 
-              hashToVerify);
+          const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations').update({
+            invite_status: OrganizationInviteStatus.PENDENT,
+            active: true
+            }).where('id', usersOrganizationFound.id).returning('id');
 
             await MailService.sendInviteUserMail({
-              email: user.email,
-              hashToVerify,
-              organizationName: organization.name,
-            })
+            email: user.email,
+            hashToVerify,
+            organizationName: organization.name,
+          })
 
-            return userAttached;
+          return userOrganizationCreatedId;
 
+        } else {
+
+          const userAttached = await organizationRolesAttach(userEmailFound.id, organizationId, user.role || OrganizationRoles.MEMBER, OrganizationInviteStatus.PENDENT, trx, hashToVerify);
+
+          if(user.services && user.role !== OrganizationRoles.ADMIN){
+            await ServicesService.attachUserInOrganizationServices({ userOrganizationId: userAttached.id , services: user.services, organizationId: context.organizationId }, trx);
           }
+
+          await MailService.sendInviteUserMail({ email: user.email, hashToVerify, organizationName: organization.name})
+
+          return userAttached;
 
         }
 
-        const partialUserCreated = await UserService.signUpWithEmailOnly(user.email, trx);
-
-        userOrganizationCreated = await await organizationRolesAttach(
-          partialUserCreated.id, 
-          organizationId, 
-          user.role || OrganizationRoles.MEMBER,
-          OrganizationInviteStatus.PENDENT, 
-          trx, 
-          hashToVerify);
-
-        await MailService.sendInviteNewUserMail({
-          email: partialUserCreated.email,
-          hashToVerify,
-          organizationName: organization.name
-        })
-
       }
+
+      const partialUserCreated = await UserService.signUpWithEmailOnly(user.email, trx);
+
+      const userOrganizationCreated = await organizationRolesAttach(partialUserCreated.id, organizationId, user.role || OrganizationRoles.MEMBER, OrganizationInviteStatus.PENDENT, trx, hashToVerify);
+
+      if(user.services && user.role !== OrganizationRoles.ADMIN){
+        await ServicesService.attachUserInOrganizationServices({ userOrganizationId: userOrganizationCreated.id , services: user.services, organizationId: context.organizationId }, trx);
+      }
+
+      await MailService.sendInviteNewUserMail({
+        email: partialUserCreated.email,
+        hashToVerify,
+        organizationName: organization.name
+      })
 
       return userOrganizationCreated;
 
@@ -248,10 +230,10 @@ const inviteUserToOrganization = async (
 
 const responseInvite = async (responseInvitePayload : IResponseInvitePayload, trx : Transaction) => {
 
-  const [user] = await (trx || knexDatabase.knex)('users_organizations as uo')
+  const [user] = await (trx || knexDatabase.knex)('users_organizations AS uo')
   .where('invite_hash', responseInvitePayload.inviteHash)
-  .innerJoin('users as usr', 'usr.id', 'uo.user_id')
-  .select('usr.encrypted_password', 'usr.username', 'usr.email');
+  .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
+  .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id');
 
   try {
     await (trx || knexDatabase.knex)('users_organizations')
@@ -260,6 +242,10 @@ const responseInvite = async (responseInvitePayload : IResponseInvitePayload, tr
       invite_status: responseInvitePayload.response
     })
     .where('invite_hash', responseInvitePayload.inviteHash);
+
+    await (trx || knexDatabase.knex)('users_organization_service_roles')
+      .update({ active: responseInvitePayload.response === OrganizationInviteStatus.ACCEPT})
+      .where('users_organization_id', user.user_organization_id);
 
     if(!user) return {status: true}
 
@@ -424,9 +410,13 @@ const inativeUsersInOrganization = async (
     }
 
     const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
-      .update({active: false})
+      .update({active: false, invite_hash: null})
       .where('id', userOrganizationFound.id)
       .returning('*');
+
+    await (trx || knexDatabase.knex)('users_organization_service_roles')
+      .update({ active: false})
+      .where('users_organization_id', userOrganizationInatived.id);
 
     const memberOrganizationRole = await getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
 
@@ -550,6 +540,16 @@ const handleUserPermissionInOrganization = async (
       .update({ organization_role_id: newPermission.id })
       .where('users_organization_id', userOrganization.id)
       .returning('*');
+
+    if(permission === OrganizationRoles.MEMBER){
+      await (trx || knexDatabase.knex)('users_organization_service_roles')
+      .update({ active: true})
+      .where('users_organization_id', userOrganization.id);
+    } else if(permission === OrganizationRoles.ADMIN){
+      await (trx || knexDatabase.knex)('users_organization_service_roles')
+      .update({ active: false})
+      .where('users_organization_id', userOrganization.id);
+    }
 
     return _usersOrganizationsRolesAdapter(userPermissionUpdated)
 
