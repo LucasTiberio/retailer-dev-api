@@ -20,6 +20,9 @@ const resolvers : IResolvers = {
     saveOrganizationCreditCard: (_, { input }, { organizationId }) => {
       return service.saveOrganizationCreditCard(input, { organizationId });
     },
+    createOrganizationSubscribe: (_, { input }, { organizationId }) => {
+      return service.createOrganizationSubscribe(input, { organizationId });
+    },
     updateRecurrencyTransaction: (_, { input }, { organizationId }) => {
       return service.updateRecurrencyTransaction(input, { organizationId });
     },

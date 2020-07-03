@@ -10,7 +10,7 @@ import { OrganizationRoles, OrganizationInviteStatus, IOrganizationSimple, IOrga
 import knexDatabase from '../../knex-database';
 var imgGen = require('js-image-generator');
 import redisClient from '../../lib/Redis';
-import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION } from '../../common/consts';
+import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME } from '../../common/consts';
 import { IContext } from '../../common/types';
 import { PaymentMethod } from '../payments/types';
 import { Services, ServiceRoles } from '../services/types';
@@ -56,35 +56,125 @@ describe('Organizations', () => {
             organization: {
               name: "Gabsss5",
               contactEmail: "gabriel-tamura@b8one.com"
-            },
-            plan: 488346,
-            paymentMethod: PaymentMethod.credit_card,
-            billing: {
-              name: "Gabriel Tamura",
-              address:{
-                street: "Rua avare",
-                complementary: "12",
-                state: "São Paulo",
-                streetNumber: "24",
-                neighborhood: "Baeta Neves",
-                city: "São Bernardo do Campo",
-                zipcode: "09751060",
-                country: "Brazil"
-              }
-            },
-            customer: {
-              documentNumber: "37859614804"
-            },
-            creditCard: {
-              number: "4111111111111111",
-              cvv: "123",
-              expirationDate: "0922",
-              holderName: "Morpheus Fishburne"
             }
         }
         await redisClient.flushall('ASYNC');
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
+    })
+
+    test("user only create 1 free trial organization", async done => {
+
+        let otherCreateOrganizationPayload = {
+            organization: {
+              name: "Gabsss6",
+              contactEmail: "gabriel-tamura@b8one.com"
+            }
+        }
+
+        try{
+            await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
+        }catch(e){
+            expect(e.message).toBe(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
+        }
+
+        done();
+
+    })
+
+    test("user should create 1 free trial organization and 1 paid", async done => {
+
+        await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let otherCreateOrganizationPayload = {
+            organization: {
+              name: "Gabsss6",
+              contactEmail: "gabriel-tamura@b8one.com"
+            },
+            payment: {
+                plan: "488346",
+                paymentMethod: PaymentMethod.credit_card,
+                billing: {
+                name: "Gabriel Tamura",
+                address:{
+                    street: "Rua avare",
+                    complementary: "12",
+                    state: "São Paulo",
+                    streetNumber: "24",
+                    neighborhood: "Baeta Neves",
+                    city: "São Bernardo do Campo",
+                    zipcode: "09751060",
+                    country: "Brazil"
+                }
+                },
+                customer: {
+                documentNumber: "37859614804"
+                },
+                creditCard: {
+                number: "4111111111111111",
+                cvv: "123",
+                expirationDate: "0922",
+                holderName: "Morpheus Fishburne"
+                }
+            }
+        }
+
+        const organizationCreated = await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        expect(organizationCreated).toBeDefined();
+
+        const organizations = await (trx || knexDatabase.knex)('organizations').select();
+
+        expect(organizations).toHaveLength(2);
+        done();
+
+    })
+
+    test("user not should create 1 free trial after organization paid created", async done => {
+
+        let otherCreateOrganizationPayload = {
+            organization: {
+              name: "Gabsss6",
+              contactEmail: "gabriel-tamura@b8one.com"
+            },
+            payment: {
+                plan: "488346",
+                paymentMethod: PaymentMethod.credit_card,
+                billing: {
+                name: "Gabriel Tamura",
+                address:{
+                    street: "Rua avare",
+                    complementary: "12",
+                    state: "São Paulo",
+                    streetNumber: "24",
+                    neighborhood: "Baeta Neves",
+                    city: "São Bernardo do Campo",
+                    zipcode: "09751060",
+                    country: "Brazil"
+                }
+                },
+                customer: {
+                documentNumber: "37859614804"
+                },
+                creditCard: {
+                number: "4111111111111111",
+                cvv: "123",
+                expirationDate: "0922",
+                holderName: "Morpheus Fishburne"
+                }
+            }
+        }
+
+        await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        try {
+            await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+        } catch (error) {
+            expect(error.message).toBe(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
+        }
+
+        done();
+
     })
 
     test("user should send a current organization to redis", async done => {

@@ -5,6 +5,10 @@ export enum Plans{
     ENTERPRISE = "enterprise"
 }
 
+export enum PaymentServiceStatus{
+    PAID = "paid"
+}
+
 export enum PaymentMethod {
     boleto = "boleto",
     credit_card = "credit_card"
@@ -47,10 +51,9 @@ export interface IUpdateSubscribe{
     cardId?: string
 }
 
-
 export interface ICreateSubscribe{
     organizationId: string
-    plan: number
+    plan: string
     creditCard: ICreditCard 
     paymentMethod: PaymentMethod
     contactEmail: string

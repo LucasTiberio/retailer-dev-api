@@ -32,29 +32,31 @@ describe('Storage', () => {
           name: Faker.internet.domainName(),
           contactEmail: "gabriel-tamura@b8one.com"
         },
-        plan: 488346,
-        paymentMethod: PaymentMethod .credit_card,
-        billing: {
-          name: "Gabriel Tamura",
-          address:{
-            street: "Rua avare",
-            complementary: "12",
-            state: "São Paulo",
-            streetNumber: "24",
-            neighborhood: "Baeta Neves",
-            city: "São Bernardo do Campo",
-            zipcode: "09751060",
-            country: "Brazil"
+        payment: {
+          plan: "488346",
+          paymentMethod: PaymentMethod .credit_card,
+          billing: {
+            name: "Gabriel Tamura",
+            address:{
+              street: "Rua avare",
+              complementary: "12",
+              state: "São Paulo",
+              streetNumber: "24",
+              neighborhood: "Baeta Neves",
+              city: "São Bernardo do Campo",
+              zipcode: "09751060",
+              country: "Brazil"
+            }
+          },
+          customer: {
+            documentNumber: "37859614804"
+          },
+          creditCard: {
+            number: "4111111111111111",
+            cvv: "123",
+            expirationDate: "0922",
+            holderName: "Morpheus Fishburne"
           }
-        },
-        customer: {
-          documentNumber: "37859614804"
-        },
-        creditCard: {
-          number: "4111111111111111",
-          cvv: "123",
-          expirationDate: "0922",
-          holderName: "Morpheus Fishburne"
         }
     }
     

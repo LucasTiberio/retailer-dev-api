@@ -15,10 +15,11 @@ import sharp from 'sharp';
 import { IPagination } from "../../common/types";
 import { Services } from "../services/types";
 import { RedisClient } from "redis";
-import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED } from '../../common/consts';
+import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME } from '../../common/consts';
 import { stringToSlug } from './helpers';
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from "./adapters";
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from "./loaders";
+import moment from "moment";
 
 const createOrganization = async (
     createOrganizationPayload : IOrganizationPayload, 
@@ -28,15 +29,19 @@ const createOrganization = async (
 
   if(!context.client) throw new Error("invalid token");
 
+  const organizationFound = await (trx || database.knex)('organizations')
+    .where('user_id', context.client.id)
+    .first()
+    .select('id')
+
+  if(organizationFound && !createOrganizationPayload.payment){
+    throw new Error(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
+  }
+
   const { 
     organization : { 
       name, contactEmail
-    },
-    creditCard,
-    plan,
-    paymentMethod,
-    billing,
-    customer
+    }
   } = createOrganizationPayload;
 
   try {
@@ -46,7 +51,9 @@ const createOrganization = async (
       name,
       contact_email: contactEmail,
       user_id: context.client.id,
-      slug: stringToSlug(name)
+      slug: stringToSlug(name),
+      free_trial: true,
+      free_trial_expires: moment().add(FREE_TRIAL_DAYS, 'days')
     }).into('organizations').returning('*')
 
     await organizationRolesAttach(context.client.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx);
@@ -60,19 +67,37 @@ const createOrganization = async (
     await setCurrentOrganization({organizationId: organizationCreated.id}, { client: context.client, redisClient: context.redisClient}, trx);
 
     if(process.env.NODE_ENV !== 'test'){
-      await PaymentsService.createSubscribe({
-        creditCard,
-        plan,
-        organizationId: organizationCreated.id,
-        paymentMethod,
-        contactEmail: organizationCreated.contact_email,
-        billing,
-        customer
-      })
+      if(createOrganizationPayload.payment){
+
+        const {
+          creditCard,
+          plan,
+          paymentMethod,
+          billing,
+          customer
+        } = createOrganizationPayload.payment;
+
+        await PaymentsService.createSubscribe({
+          creditCard,
+          plan,
+          paymentMethod,
+          contactEmail: organizationCreated.contact_email,
+          billing,
+          customer,
+          organizationId: organizationCreated.id
+        })
+
+        await (trx || database.knex)
+        .update({
+          free_trial: false,
+          free_trial_expires: null
+        }).where('id', organizationCreated.id).into('organizations').returning('*')
+      }
     }
 
     return _organizationAdapter(organizationCreated)
   } catch(e){
+    console.log(e.response.data)
     throw new Error(e.message);
   }
 

@@ -12,6 +12,7 @@ import { NextFunction } from 'express';
 import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus } from './services/organization/types';
 import redisClient from './lib/Redis';
 import { SALE_VTEX_PIXEL_NAMESPACE, MESSAGE_ERROR_SALE_TOKEN_INVALID } from './common/consts';
+import PaymentService from './services/payments/service';
 
 declare var process : {
 	env: {
@@ -33,6 +34,7 @@ const typeDefsBase = gql`
   scalar Upload
   directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
+  directive @organizationPaidVerify on FIELD | FIELD_DEFINITION
   directive @ordersService on FIELD | FIELD_DEFINITION
   directive @hasSalesToken on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
@@ -199,6 +201,37 @@ const directiveResolvers : IDirectiveResolvers = {
     } catch (err) {
       throw new Error("You are not authorized.");
     }
+  },
+  async organizationPaidVerify(next, _, __, context): Promise<NextFunction> {
+
+    const organizationId = await redisClient.getAsync(context.client.id);
+
+    if(!organizationId) throw new Error("Invalid session!");
+
+    const organization = await knexDatabase.knex('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires');
+
+    if(!organization) throw new Error("Organization not found.");
+
+    if(organization.free_trial && moment(organization.free_trial_expires).isBefore(moment())){
+      return next();
+    } else {
+      const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId);
+
+      console.log("(moment(paymentServiceStatus.currentPeriodEnd).isBefore(moment())", (moment(paymentServiceStatus.currentPeriodEnd).isBefore(moment())));
+
+      console.log("paymentServiceStatus", paymentServiceStatus)
+
+      if(paymentServiceStatus.currentTransaction.status === 'paid'){
+        return next();
+      } else if(moment(paymentServiceStatus.currentPeriodEnd).isBefore(moment())){
+        return next();
+      }
+    }
+
+    
+
+    throw new Error("Organization has billing pendency.")
+    
   },
   async ordersService(next, _, __, context): Promise<NextFunction> {
     const token = context.headers['token'];

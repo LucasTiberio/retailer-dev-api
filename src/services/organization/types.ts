@@ -7,11 +7,13 @@ export interface IOrganizationPayload{
         name: string;
         contactEmail: string;
     };
-    plan: number
-    creditCard: ICreditCard
-    paymentMethod: PaymentMethod
-    billing?: Billing
-    customer?: Customer
+    payment?: {
+        plan: string
+        creditCard: ICreditCard
+        paymentMethod: PaymentMethod
+        billing?: Billing
+        customer?: Customer
+    }
 }
 
 export interface IOrganizationAdapted{

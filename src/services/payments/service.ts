@@ -1,38 +1,46 @@
 import { ICreateSubscribe, PaymentMethod, ISaveCreditCard, ICreditCard, Billing, Customer } from './types';
 import { paymentFactory, fetchPaymentsService, updatePaymentsFactory } from './helpers';
-import payments from '.';
-import { getOperationAST } from 'graphql';
+
+const sendRecurrencyQuery = `
+mutation sendRecurrencyTransaction($input: SendRecurrencyTransactionInput!) {
+    sendRecurrencyTransaction(input: $input){
+        status
+    }
+}`
 
 const createSubscribe = async (createSubscribeInput: ICreateSubscribe) => {
 
-  const query = `
-    mutation sendRecurrencyTransaction($input: SendRecurrencyTransactionInput!) {
-        sendRecurrencyTransaction(input: $input){
-            status
-        }
-    }`
+  const payment = paymentFactory(createSubscribeInput)
 
-    const payment = paymentFactory(createSubscribeInput)
+  let variables = {
+      input: {
+          ...payment
+      }
+  };
 
-    let variables = {
-        input: {
-            ...payment
-        }
-    };
+  if(createSubscribeInput.paymentMethod === PaymentMethod.credit_card){
+    const creditCardSaved = await saveCreditCard({
+      ...createSubscribeInput.creditCard,
+      externalId: createSubscribeInput.organizationId
+    })
+    variables.input.cardId = creditCardSaved.id
+  }
 
-    if(createSubscribeInput.paymentMethod === PaymentMethod.credit_card){
-      const creditCardSaved = await saveCreditCard({
-        ...createSubscribeInput.creditCard,
-        externalId: createSubscribeInput.organizationId
-      })
-      variables.input.cardId = creditCardSaved.id
-    }
+  const res = await fetchPaymentsService(sendRecurrencyQuery, variables);
 
-    const res = await fetchPaymentsService(query, variables);
+  if(res.data.errors){
+    throw new Error(res.data.errors[0].message)
+  }
 
-    if(res.data.errors){
-      throw new Error(res.data.errors[0].message)
-    }
+  return res;
+}
+
+const createOrganizationSubscribe = async (
+    createSubscribeInput: ICreateSubscribe,
+    context: { organizationId: string }
+  ) => {
+
+  await createSubscribe({...createSubscribeInput, organizationId: context.organizationId});
   
 }
 
@@ -90,6 +98,24 @@ const listAvailablePlans = async () => {
           name
           paymentMethods
           installments
+          affiliateRules{
+            maxAnalysts
+            maxSales
+            maxTeammates
+            maxTransactionTax
+          }
+          suport{
+            type
+            time
+            measure
+          }
+          benefits{
+            training
+            sso
+          }
+          flags{
+            bestPrice
+          }
         }
     }`
 
@@ -366,10 +392,11 @@ const updateRecurrencyTransaction = async (
 }
 
 export default {
-  createSubscribe,
+  createOrganizationSubscribe,
   removeCardById,
   getSubscriptionTransactions,
   getSubscriptionByOrganizationId,
+  createSubscribe,
   updateRecurrencyTransaction,
   saveOrganizationCreditCard,
   listAvailablePlans,

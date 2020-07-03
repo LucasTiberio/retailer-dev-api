@@ -35,7 +35,7 @@ describe('Affiliate', () => {
           name: "Gabsss5",
           contactEmail: "gabriel-tamura@b8one.com"
         },
-        plan: 488346,
+        plan: "488346",
         paymentMethod: PaymentMethod.credit_card,
         billing: {
           name: "Gabriel Tamura",

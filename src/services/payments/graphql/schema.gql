@@ -9,6 +9,15 @@ extend type Mutation{
   saveOrganizationCreditCard(input: SaveOrganizationCreditCardInput!): CreditCard! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   removeCardById(input: RemoveCardByIdInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   updateRecurrencyTransaction(input: UpdateRecurrencyTransactionInput!): RecurrencyTransaction! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  createOrganizationSubscribe(input: CreateOrganizationSubscribeInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input CreateOrganizationSubscribeInput{
+  plan: String!
+  creditCard: CreditCardInput
+  paymentMethod: PaymentMethod!
+  billing: Billing
+  customer: Customer
 }
 
 input UpdateRecurrencyTransactionInput{
@@ -36,15 +45,6 @@ input SaveOrganizationCreditCardInput{
 
 input ListCardsByOrganizationIdInput{
   organizationId: String!
-}
-
-type Plan{
-  id: String!
-  amount: Int!
-  days: Int!
-  name: String!
-  paymentMethods: [String!]!
-  installments: Int!
 }
 
 type CreditCard{
@@ -110,4 +110,39 @@ type Transaction{
   boletoUrl: String
   paymentMethod: String!
   postbackUrl: String
+}
+
+type Plan{
+  id: String!
+  amount: Int!
+  days: Int!
+  name: String!
+  paymentMethods: [String!]!
+  installments: Int!
+  affiliateRules: AffiliateRules
+  suport: PlanSuport
+  benefits: PlanBenefits
+  flags: PlanFlags
+}
+
+type PlanSuport {
+    type: String!
+    time: Int!
+    measure: String!
+}
+
+type PlanBenefits {
+    training: Boolean!
+    sso: Boolean!
+}
+
+type PlanFlags {
+    bestPrice: Boolean!
+}
+
+type AffiliateRules{
+  maxAnalysts: Int!
+  maxSales: Int!
+  maxTeammates: Int!
+  maxTransactionTax: Int!
 }

@@ -100,11 +100,7 @@ input InviteUsersInput {
 
 input CreateOrganizationInput{
   organization: OrganizationInput!
-  plan: Int!
-  creditCard: CreditCardInput
-  paymentMethod: PaymentMethod!
-  billing: Billing
-  customer: Customer
+  payment: CreateOrganizationSubscribeInput
 }
 
 input OrganizationInput{

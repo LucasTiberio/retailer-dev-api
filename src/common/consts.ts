@@ -13,5 +13,8 @@ export const MESSAGE_ERROR_USER_DOES_NOT_EXIST_IN_SYSTEM = "'User doesnt exists 
 export const MESSAGE_ERROR_SALE_TOKEN_INVALID = "Invalid Sale Token";
 export const SALE_VTEX_PIXEL_NAMESPACE = 'sale_vtex_pixel';
 export const MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST = 'Organization service does not exist';
+export const MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME = 'User used free trial time.';
 
 export const PAYMENTS_URL = process.env.PAYMENTS_URL;
+
+export const FREE_TRIAL_DAYS = 10;

@@ -6,8 +6,9 @@ import service from '../service';
 const resolvers : IResolvers = {
     Query: {
         menuTree: (_, __, { client, organizationId }) => {
-            return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.getMenuTree({client, organizationId}, trx);
+            return knexDatabase.knex.transaction(async (trx: Transaction) => {
+                const menuTree = await service.getMenuTree({client, organizationId}, trx);
+                return menuTree;
             });
         }
     }
