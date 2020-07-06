@@ -66,35 +66,6 @@ const createOrganization = async (
 
     await setCurrentOrganization({organizationId: organizationCreated.id}, { client: context.client, redisClient: context.redisClient}, trx);
 
-    if(process.env.NODE_ENV !== 'test'){
-      if(createOrganizationPayload.payment){
-
-        const {
-          creditCard,
-          plan,
-          paymentMethod,
-          billing,
-          customer
-        } = createOrganizationPayload.payment;
-
-        await PaymentsService.createSubscribe({
-          creditCard,
-          plan,
-          paymentMethod,
-          contactEmail: organizationCreated.contact_email,
-          billing,
-          customer,
-          organizationId: organizationCreated.id
-        })
-
-        await (trx || database.knex)
-        .update({
-          free_trial: false,
-          free_trial_expires: null
-        }).where('id', organizationCreated.id).into('organizations').returning('*')
-      }
-    }
-
     return _organizationAdapter(organizationCreated)
   } catch(e){
     console.log(e.response.data)

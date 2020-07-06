@@ -100,7 +100,6 @@ input InviteUsersInput {
 
 input CreateOrganizationInput{
   organization: OrganizationInput!
-  payment: CreateOrganizationSubscribeInput
 }
 
 input OrganizationInput{

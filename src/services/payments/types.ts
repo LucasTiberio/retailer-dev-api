@@ -10,7 +10,7 @@ export enum PaymentServiceStatus{
 }
 
 export enum PaymentMethod {
-    boleto = "boleto",
+    boleto = "bank_slip",
     credit_card = "credit_card"
 }
 
