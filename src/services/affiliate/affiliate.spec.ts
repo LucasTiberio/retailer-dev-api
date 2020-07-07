@@ -5,6 +5,7 @@ import UserService from '../users/service';
 import OrganizationService from '../organization/service';
 import BankDataService from '../bank-data/service';
 import VtexService from '../vtex/service';
+import { createOrganizationPayload } from '../../__mocks__';
 import Faker from 'faker';
 import database from '../../knex-database';
 import { Transaction } from 'knex';
@@ -29,37 +30,6 @@ describe('Affiliate', () => {
         email: Faker.internet.email(),
         password: "B8oneTeste123!"
     }
-
-    const createOrganizationPayload = {
-        organization: {
-          name: "Gabsss5",
-          contactEmail: "gabriel-tamura@b8one.com"
-        },
-        plan: "488346",
-        paymentMethod: PaymentMethod.credit_card,
-        billing: {
-          name: "Gabriel Tamura",
-          address:{
-            street: "Rua avare",
-            complementary: "12",
-            state: "São Paulo",
-            streetNumber: "24",
-            neighborhood: "Baeta Neves",
-            city: "São Bernardo do Campo",
-            zipcode: "09751060",
-            country: "Brazil"
-          }
-        },
-        customer: {
-          documentNumber: "37859614804"
-        },
-        creditCard: {
-          number: "4111111111111111",
-          cvv: "123",
-          expirationDate: "0922",
-          holderName: "Morpheus Fishburne"
-        }
-    }
     
     let userToken : IUserToken;
     let organizationCreated: IOrganizationAdapted;
@@ -77,7 +47,7 @@ describe('Affiliate', () => {
 
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
         context = {client: userToken, organizationId: organizationCreated.id};

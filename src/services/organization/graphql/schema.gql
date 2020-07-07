@@ -100,10 +100,19 @@ input InviteUsersInput {
 
 input CreateOrganizationInput{
   organization: OrganizationInput!
+  additionalInfos: AdditionalInfos!
+}
+
+input AdditionalInfos{
+  segment: String!
+  resellersEstimate: Int!
+  reason: String!
+  plataform: String!
 }
 
 input OrganizationInput{
   name: String!
+  phone: String!
   contactEmail: String!
 }
 

@@ -7,6 +7,7 @@ export const _organizationAdapter = (record: IOrganizationFromDB) => ({
     slug: record.slug,
     userId: record.user_id,
     active: record.active,
+    phone: record.phone,
     createdAt: record.created_at,
     updatedAt: record.updated_at,
     userOrganizationId: record.users_organizations_id,

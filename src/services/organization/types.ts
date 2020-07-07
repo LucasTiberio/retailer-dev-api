@@ -1,25 +1,27 @@
 import { ISimpleUser } from "../users/types";
-import { ICreditCard, PaymentMethod, Billing, Customer } from "../payments/types";
 import { ISimpleService } from "../services/types";
 
 export interface IOrganizationPayload{
     organization: {
         name: string;
         contactEmail: string;
+        phone: string;
     };
-    payment?: {
-        plan: string
-        creditCard: ICreditCard
-        paymentMethod: PaymentMethod
-        billing?: Billing
-        customer?: Customer
-    }
+    additionalInfos: IOrganizationAdittionalInfos
+}
+
+export interface IOrganizationAdittionalInfos{
+    segment: string;
+    resellersEstimate: number;
+    reason: string;
+    plataform: string
 }
 
 export interface IOrganizationAdapted{
     id: string
     userId: string
     active: boolean
+    phone: string
     updatedAt: Date
     createdAt: Date
 }
@@ -28,6 +30,7 @@ export interface IOrganizationFromDB{
     id: string
     name: string
     contact_email: string
+    phone: string
     user_id: string
     active: boolean
     slug: string

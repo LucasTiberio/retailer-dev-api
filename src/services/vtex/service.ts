@@ -5,7 +5,7 @@ import axios from 'axios';
 import store from '../../store';
 import { IVtexIntegrationFromDB, IVtexIntegrationAdapted, IVtexCampaign, ITimeToPayCommissionFromDB, IDefaultPayCommissionFromDB, IVtexCommissionFromDB } from './types';
 import moment from 'moment';
-import { mockVtexDepartments } from './__mocks__';
+import { mockVtexDepartments } from '../../__mocks__';
 import ServicesService from '../services/service';
 import OrganizationService from '../organization/service';
 import { MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST } from '../../common/consts';

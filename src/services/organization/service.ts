@@ -10,7 +10,7 @@ import ServicesService from '../services/service';
 import StorageService from '../storage/service';
 import knexDatabase from "../../knex-database";
 import common from "../../common";
-import { IUserOrganizationDB } from "./types";
+import { IUserOrganizationDB, IOrganizationAdittionalInfos } from "./types";
 import sharp from 'sharp';
 import { IPagination } from "../../common/types";
 import { Services } from "../services/types";
@@ -20,6 +20,21 @@ import { stringToSlug } from './helpers';
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from "./adapters";
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from "./loaders";
 import moment from "moment";
+
+const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
+
+  const { segment, resellersEstimate, reason, plataform } = input;
+
+  const [attachedOrganizationInfosId] = await (trx || knexDatabase.knex)('organization_additional_infos').insert({
+    segment,
+    resellers_estimate: resellersEstimate,
+    reason,
+    plataform
+  }).returning('id')
+
+  return attachedOrganizationInfosId;
+
+}
 
 const createOrganization = async (
     createOrganizationPayload : IOrganizationPayload, 
@@ -34,17 +49,19 @@ const createOrganization = async (
     .first()
     .select('id')
 
-  if(organizationFound && !createOrganizationPayload.payment){
+  if(organizationFound){
     throw new Error(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
   }
 
   const { 
     organization : { 
-      name, contactEmail
+      name, contactEmail, phone
     }
   } = createOrganizationPayload;
 
   try {
+
+    const attachedOrganizationInfosId = await attachOrganizationAditionalInfos(createOrganizationPayload.additionalInfos, trx);
 
     const [organizationCreated] = await (trx || database.knex)
     .insert({
@@ -52,8 +69,10 @@ const createOrganization = async (
       contact_email: contactEmail,
       user_id: context.client.id,
       slug: stringToSlug(name),
+      phone,
       free_trial: true,
-      free_trial_expires: moment().add(FREE_TRIAL_DAYS, 'days')
+      free_trial_expires: moment().add(FREE_TRIAL_DAYS, 'days'),
+      organization_additional_infos_id: attachedOrganizationInfosId
     }).into('organizations').returning('*')
 
     await organizationRolesAttach(context.client.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx);
@@ -68,7 +87,6 @@ const createOrganization = async (
 
     return _organizationAdapter(organizationCreated)
   } catch(e){
-    console.log(e.response.data)
     throw new Error(e.message);
   }
 

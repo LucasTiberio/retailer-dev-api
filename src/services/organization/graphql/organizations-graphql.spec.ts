@@ -281,33 +281,14 @@ describe('organizations graphql', () => {
             createOrganizationPayload = {
                 organization: {
                   name: Faker.name.firstName(),
-                  contactEmail: "gabriel-tamura@b8one.com"
+                  contactEmail: "gabriel-tamura@b8one.com",
+                  phone: "551123213123123"
                 },
-                payment: {
-                    plan: "488346",
-                    paymentMethod: PaymentMethod.credit_card,
-                    billing: {
-                    name: "Gabriel Tamura",
-                    address:{
-                        street: "Rua avare",
-                        complementary: "12",
-                        state: "São Paulo",
-                        streetNumber: "24",
-                        neighborhood: "Baeta Neves",
-                        city: "São Bernardo do Campo",
-                        zipcode: "09751060",
-                        country: "Brazil"
-                    }
-                    },
-                    customer: {
-                    documentNumber: "37859614804"
-                    },
-                    creditCard: {
-                    number: "4111111111111111",
-                    cvv: "123",
-                    expirationDate: "0922",
-                    holderName: "Morpheus Fishburne"
-                    }
+                additionalInfos: {
+                    segment: "Beleza e Cosméticos",
+                    resellersEstimate: 500,
+                    reason: "Ter mais uma opção de canal de vendas",
+                    plataform: "vtex"
                 }
             }
         })

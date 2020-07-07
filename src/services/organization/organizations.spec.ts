@@ -51,11 +51,19 @@ describe('Organizations', () => {
         await trx('users_organization_roles').del();
         await trx('users_organizations').del();
         await trx('organizations').del();
+        await trx('organization_additional_infos').del();
         await trx('users').del();
         createOrganizationPayload = {
             organization: {
               name: "Gabsss5",
-              contactEmail: "gabriel-tamura@b8one.com"
+              contactEmail: "gabriel-tamura@b8one.com",
+              phone: "551123213123123"
+            },
+            additionalInfos: {
+                segment: "Beleza e Cosméticos",
+                resellersEstimate: 500,
+                reason: "Ter mais uma opção de canal de vendas",
+                plataform: "vtex"
             }
         }
         await redisClient.flushall('ASYNC');
@@ -65,115 +73,30 @@ describe('Organizations', () => {
 
     test("user only create 1 free trial organization", async done => {
 
-        let otherCreateOrganizationPayload = {
-            organization: {
-              name: "Gabsss6",
-              contactEmail: "gabriel-tamura@b8one.com"
-            }
-        }
-
-        try{
-            await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
-        }catch(e){
-            expect(e.message).toBe(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
-        }
-
-        done();
-
-    })
-
-    test("user should create 1 free trial organization and 1 paid", async done => {
-
         await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
         let otherCreateOrganizationPayload = {
             organization: {
               name: "Gabsss6",
-              contactEmail: "gabriel-tamura@b8one.com"
+              contactEmail: "gabriel-tamura@b8one.com",
+              phone: "551123213123123"
             },
-            payment: {
-                plan: "488346",
-                paymentMethod: PaymentMethod.credit_card,
-                billing: {
-                name: "Gabriel Tamura",
-                address:{
-                    street: "Rua avare",
-                    complementary: "12",
-                    state: "São Paulo",
-                    streetNumber: "24",
-                    neighborhood: "Baeta Neves",
-                    city: "São Bernardo do Campo",
-                    zipcode: "09751060",
-                    country: "Brazil"
-                }
-                },
-                customer: {
-                documentNumber: "37859614804"
-                },
-                creditCard: {
-                number: "4111111111111111",
-                cvv: "123",
-                expirationDate: "0922",
-                holderName: "Morpheus Fishburne"
-                }
+            additionalInfos: {
+                segment: "Beleza e Cosméticos",
+                resellersEstimate: 500,
+                reason: "Ter mais uma opção de canal de vendas",
+                plataform: "vtex"
             }
         }
 
-        const organizationCreated = await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
+        try{
+            await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
 
-        expect(organizationCreated).toBeDefined();
-
-        const organizations = await (trx || knexDatabase.knex)('organizations').select();
-
-        expect(organizations).toHaveLength(2);
-        done();
-
-    })
-
-    test("user not should create 1 free trial after organization paid created", async done => {
-
-        let otherCreateOrganizationPayload = {
-            organization: {
-              name: "Gabsss6",
-              contactEmail: "gabriel-tamura@b8one.com"
-            },
-            payment: {
-                plan: "488346",
-                paymentMethod: PaymentMethod.credit_card,
-                billing: {
-                name: "Gabriel Tamura",
-                address:{
-                    street: "Rua avare",
-                    complementary: "12",
-                    state: "São Paulo",
-                    streetNumber: "24",
-                    neighborhood: "Baeta Neves",
-                    city: "São Bernardo do Campo",
-                    zipcode: "09751060",
-                    country: "Brazil"
-                }
-                },
-                customer: {
-                documentNumber: "37859614804"
-                },
-                creditCard: {
-                number: "4111111111111111",
-                cvv: "123",
-                expirationDate: "0922",
-                holderName: "Morpheus Fishburne"
-                }
-            }
+        }catch(e){
+            expect(e.message).toBe(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
+            done();
         }
 
-        await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
-
-        try {
-            await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
-        } catch (error) {
-            expect(error.message).toBe(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
-        }
-
-        done();
 
     })
 
@@ -305,6 +228,7 @@ describe('Organizations', () => {
                 contactEmail: createOrganizationPayload.organization.contactEmail,
                 userId: userToken.id,
                 active: true,
+
                 updatedAt: expect.any(Date),
                 createdAt: expect.any(Date)
             })    
@@ -317,11 +241,26 @@ describe('Organizations', () => {
             expect.objectContaining({
                 id: organizationCreated.id,
                 name: createOrganizationPayload.organization.name,
+                free_trial: true,
+                free_trial_expires: expect.any(Date),
                 contact_email: createOrganizationPayload.organization.contactEmail,
+                phone: createOrganizationPayload.organization.phone,
                 user_id: userToken.id,
                 active: true,
                 updated_at: expect.any(Date),
-                created_at: expect.any(Date)
+                created_at: expect.any(Date),
+                organization_additional_infos_id: expect.any(String)
+            })
+        )
+
+        const [organizationAdditionalInfosOnDb] = await (trx || knexDatabase.knex)('organization_additional_infos').select();
+
+        expect(organizationAdditionalInfosOnDb).toEqual(
+            expect.objectContaining({
+                segment: createOrganizationPayload.additionalInfos.segment,
+                resellers_estimate: createOrganizationPayload.additionalInfos.resellersEstimate,
+                reason: createOrganizationPayload.additionalInfos.reason,
+                plataform: createOrganizationPayload.additionalInfos.plataform
             })
         )
 

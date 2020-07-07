@@ -9,12 +9,11 @@ import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
 import { Services, IServiceAdaptedFromDB, ServiceRoles } from './types';
-import { IOrganizationAdapted, OrganizationInviteStatus, OrganizationRoles } from '../organization/types';
+import { IOrganizationAdapted, OrganizationInviteStatus } from '../organization/types';
 import knexDatabase from '../../knex-database';
 import { IContext } from '../../common/types';
-import { MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES } from '../../common/consts';
+import { createOrganizationPayload } from '../../__mocks__';
 import redisClient from '../../lib/Redis';
-import { PaymentMethod } from '../payments/types';
 
 describe('Services', () => {
 
@@ -27,39 +26,6 @@ describe('Services', () => {
         username: Faker.name.firstName(),
         email: Faker.internet.email(),
         password: "B8oneTeste123!"
-    }
-
-    const createOrganizationPayload = {
-        organization: {
-          name: Faker.internet.domainName(),
-          contactEmail: "gabriel-tamura@b8one.com"
-        },
-        payment: {
-            plan: "488346",
-            paymentMethod: PaymentMethod .credit_card,
-            billing: {
-            name: "Gabriel Tamura",
-            address:{
-                street: "Rua avare",
-                complementary: "12",
-                state: "São Paulo",
-                streetNumber: "24",
-                neighborhood: "Baeta Neves",
-                city: "São Bernardo do Campo",
-                zipcode: "09751060",
-                country: "Brazil"
-            }
-            },
-            customer: {
-            documentNumber: "37859614804"
-            },
-            creditCard: {
-            number: "4111111111111111",
-            cvv: "123",
-            expirationDate: "0922",
-            holderName: "Morpheus Fishburne"
-            }
-        }
     }
     
     let userToken : IUserToken;
@@ -93,7 +59,7 @@ describe('Services', () => {
         await trx('users').del();
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
         context = {client: userToken, organizationId: organizationCreated.id};

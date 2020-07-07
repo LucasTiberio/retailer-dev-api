@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { IOrganizationAdapted, OrganizationInviteStatus } from '../../organization/types';
 import { Services, IServiceAdaptedFromDB, ServiceRoles } from '../../services/types';
 import redisClient from '../../../lib/Redis';
-import { PaymentMethod } from '../../payments/types';
+import { createOrganizationPayload } from '../../../__mocks__';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -238,39 +238,6 @@ describe('services graphql', () => {
             }
         });
 
-        const createOrganizationPayload = {
-            organization: {
-              name: Faker.internet.domainName(),
-              contactEmail: "gabriel-tamura@b8one.com"
-            },
-            payment: {
-                plan: "488346",
-                paymentMethod: PaymentMethod.credit_card,
-                billing: {
-                name: "Gabriel Tamura",
-                address:{
-                    street: "Rua avare",
-                    complementary: "12",
-                    state: "São Paulo",
-                    streetNumber: "24",
-                    neighborhood: "Baeta Neves",
-                    city: "São Bernardo do Campo",
-                    zipcode: "09751060",
-                    country: "Brazil"
-                }
-                },
-                customer: {
-                documentNumber: "37859614804"
-                },
-                creditCard: {
-                number: "4111111111111111",
-                cvv: "123",
-                expirationDate: "0922",
-                holderName: "Morpheus Fishburne"
-                }
-            }
-        }
-
         const createOrganizationResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
@@ -278,7 +245,7 @@ describe('services graphql', () => {
         .send({
         'query': CREATE_ORGANIZATION, 
         'variables': {
-                input: createOrganizationPayload
+                input: createOrganizationPayload()
             }
         });
 

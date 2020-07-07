@@ -10,7 +10,7 @@ import { IOrganizationAdapted } from '../organization/types';
 import OrganizationService from '../organization/service';
 var imgGen = require('js-image-generator');
 import redisClient from '../../lib/Redis';
-import { PaymentMethod } from '../payments/types';
+import { createOrganizationPayload } from '../../__mocks__';
 
 describe('Storage', () => {
 
@@ -26,39 +26,6 @@ describe('Storage', () => {
     }
     
     let userToken : IUserToken;
-
-    const createOrganizationPayload = {
-        organization: {
-          name: Faker.internet.domainName(),
-          contactEmail: "gabriel-tamura@b8one.com"
-        },
-        payment: {
-          plan: "488346",
-          paymentMethod: PaymentMethod .credit_card,
-          billing: {
-            name: "Gabriel Tamura",
-            address:{
-              street: "Rua avare",
-              complementary: "12",
-              state: "São Paulo",
-              streetNumber: "24",
-              neighborhood: "Baeta Neves",
-              city: "São Bernardo do Campo",
-              zipcode: "09751060",
-              country: "Brazil"
-            }
-          },
-          customer: {
-            documentNumber: "37859614804"
-          },
-          creditCard: {
-            number: "4111111111111111",
-            cvv: "123",
-            expirationDate: "0922",
-            holderName: "Morpheus Fishburne"
-          }
-        }
-    }
     
     let organizationCreated: IOrganizationAdapted;
 
@@ -81,7 +48,7 @@ describe('Storage', () => {
         await trx('users').del();
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
     })
 
     test("should upload image", async done => {

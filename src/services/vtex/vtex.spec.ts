@@ -11,7 +11,7 @@ import { IUserToken } from '../authentication/types';
 import { IOrganizationAdapted, OrganizationInviteStatus } from '../organization/types';
 import knexDatabase from '../../knex-database';
 import service from './service';
-import { mockVtexDepartments } from './__mocks__';
+import { mockVtexDepartments, createOrganizationPayload } from '../../__mocks__';
 import { Services, ServiceRoles } from '../services/types';
 import moment from 'moment';
 import redisClient from '../../lib/Redis';
@@ -22,45 +22,11 @@ describe('Vtex', () => {
     let trx : Transaction;
 
     let signUpCreated: ISignUpAdapted;
-
     
     let signUpPayload = {
         username: Faker.name.firstName(),
         email: Faker.internet.email(),
         password: "B8oneTeste123!"
-    }
-
-    const createOrganizationPayload = {
-        organization: {
-          name: "Gabsss5",
-          contactEmail: "gabriel-tamura@b8one.com"
-        },
-        payment: {
-            plan: "488346",
-            paymentMethod: PaymentMethod.credit_card,
-            billing: {
-            name: "Gabriel Tamura",
-            address:{
-                street: "Rua avare",
-                complementary: "12",
-                state: "São Paulo",
-                streetNumber: "24",
-                neighborhood: "Baeta Neves",
-                city: "São Bernardo do Campo",
-                zipcode: "09751060",
-                country: "Brazil"
-            }
-            },
-            customer: {
-            documentNumber: "37859614804"
-            },
-            creditCard: {
-            number: "4111111111111111",
-            cvv: "123",
-            expirationDate: "0922",
-            holderName: "Morpheus Fishburne"
-            }
-        }
     }
     
     let userToken : IUserToken;
@@ -93,7 +59,7 @@ describe('Vtex', () => {
         userToken = { origin: 'user', id: signUpCreated.id };
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
     })
 
     test("organization admin should add vtex secrets and hook attached", async done => {

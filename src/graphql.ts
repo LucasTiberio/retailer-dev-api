@@ -217,10 +217,6 @@ const directiveResolvers : IDirectiveResolvers = {
     } else {
       const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId);
 
-      console.log("(moment(paymentServiceStatus.currentPeriodEnd).isBefore(moment())", (moment(paymentServiceStatus.currentPeriodEnd).isBefore(moment())));
-
-      console.log("paymentServiceStatus", paymentServiceStatus)
-
       if(paymentServiceStatus.currentTransaction.status === 'paid'){
         return next();
       } else if(moment(paymentServiceStatus.currentPeriodEnd).isBefore(moment())){

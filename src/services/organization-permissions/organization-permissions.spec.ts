@@ -13,6 +13,7 @@ import { IContext } from '../../common/types';
 import { OrganizationRoles, IOrganizationAdapted } from '../organization/types';
 import { PermissionGrant, PermissionName } from './types';
 import { PaymentMethod } from '../payments/types';
+import { createOrganizationPayload } from '../../__mocks__';
 import { Services, ServiceRoles } from '../services/types';
 
 describe('Organization Permissions', () => {
@@ -55,40 +56,8 @@ describe('Organization Permissions', () => {
         await redisClient.flushall('ASYNC');
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        const createOrganizationInput = {
-            organization: {
-              name: "Gabsss5",
-              contactEmail: "gabriel-tamura@b8one.com"
-            },
-            payment: {
-                plan: "488346",
-                paymentMethod: PaymentMethod.credit_card,
-                billing: {
-                name: "Gabriel Tamura",
-                address:{
-                    street: "Rua avare",
-                    complementary: "12",
-                    state: "São Paulo",
-                    streetNumber: "24",
-                    neighborhood: "Baeta Neves",
-                    city: "São Bernardo do Campo",
-                    zipcode: "09751060",
-                    country: "Brazil"
-                }
-                },
-                customer: {
-                documentNumber: "37859614804"
-                },
-                creditCard: {
-                number: "4111111111111111",
-                cvv: "123",
-                expirationDate: "0922",
-                holderName: "Morpheus Fishburne"
-                }
-            }
-        }
 
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationInput, {client: userToken, redisClient}, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
