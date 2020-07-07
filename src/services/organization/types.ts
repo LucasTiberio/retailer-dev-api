@@ -1,8 +1,16 @@
 import { ISimpleUser } from "../users/types";
+import { ICreditCard, PaymentMethod, Billing, Customer } from "../payments/types";
 
 export interface IOrganizationPayload{
-    name: string
-    contactEmail: string
+    organization: {
+        name: string;
+        contactEmail: string;
+    };
+    plan: number
+    creditCard: ICreditCard
+    paymentMethod: PaymentMethod
+    billing?: Billing
+    customer?: Customer
 }
 
 export interface IOrganizationAdapted extends IOrganizationPayload{
@@ -19,6 +27,7 @@ export interface IOrganizationFromDB{
     contact_email: string
     user_id: string
     active: boolean
+    slug: string
     updated_at: Date
     created_at: Date
     users_organizations_id: string

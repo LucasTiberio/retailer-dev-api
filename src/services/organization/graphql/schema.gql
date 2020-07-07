@@ -98,6 +98,15 @@ input InviteUsersInput {
 }
 
 input CreateOrganizationInput{
+  organization: OrganizationInput!
+  plan: Int!
+  creditCard: CreditCardInput
+  paymentMethod: PaymentMethod!
+  billing: Billing
+  customer: Customer
+}
+
+input OrganizationInput{
   name: String!
   contactEmail: String!
 }
@@ -106,8 +115,9 @@ type Organization{
   name: String!
   contactEmail: String!
   id: String!
+  slug: String!
   active: Boolean!
-  user: User! @isVerified @isAuthenticated # TODO somente admin pode ver o founder
+  user: User! @isVerified @isAuthenticated
   showFirstSteps: Boolean!
   updatedAt: Datetime!
   createdAt: Datetime!

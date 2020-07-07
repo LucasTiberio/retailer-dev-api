@@ -1,0 +1,113 @@
+extend type Query{
+  listAvailablePlans: [Plan]! @isVerified @isAuthenticated
+  listCardsByOrganizationId(input: ListCardsByOrganizationIdInput!): [CreditCard]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  getSubscriptionByOrganizationId: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  getSubscriptionTransactions: [Transaction]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+extend type Mutation{
+  saveOrganizationCreditCard(input: SaveOrganizationCreditCardInput!): CreditCard! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  removeCardById(input: RemoveCardByIdInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  updateRecurrencyTransaction(input: UpdateRecurrencyTransactionInput!): RecurrencyTransaction! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input UpdateRecurrencyTransactionInput{
+  recurrencyId: String!
+  planId: String!
+  paymentMethod: PaymentMethod!
+  cardId: String
+  customer: Customer
+}
+
+type RecurrencyTransaction{
+  status: String!
+}
+
+input RemoveCardByIdInput{
+  id: String!
+}
+
+input SaveOrganizationCreditCardInput{
+  number: String!
+  holderName: String!
+  expirationDate: String!
+  cvv: String!
+}
+
+input ListCardsByOrganizationIdInput{
+  organizationId: String!
+}
+
+type Plan{
+  id: String!
+  amount: Int!
+  days: Int!
+  name: String!
+  paymentMethods: [String!]!
+  installments: Int!
+}
+
+type CreditCard{
+  id: String!
+  brand: String!
+  holderName: String!
+  lastDigits: String!
+  country: String!
+  expirationDate: String!
+  valid: Boolean!
+}
+
+input CreditCardInput {
+  number: String!
+  holderName: String!
+  expirationDate: String!
+  cvv: String!
+}
+
+input Billing{
+  name: String!
+  address: Address!
+}
+
+input Address{
+    street: String!
+    complementary: String
+    state: String!
+    streetNumber: String!
+    neighborhood: String!
+    city: String!
+    zipcode: String!
+    country: String!
+}
+
+input Customer{
+    documentNumber: String
+    email: String
+}
+
+enum PaymentMethod{
+    boleto
+    credit_card
+}
+
+type Subscription{
+  id: String!
+  plan: Plan!
+  currentTransaction: Transaction!
+  currentPeriodStart: String
+  currentPeriodEnd: String
+  manageUrl: String!
+}
+
+type Transaction{
+  id: String!
+  status: String!
+  dateCreated: String!
+  dateUpdated: String!
+  paidAmount: String!
+  boletoBarcode: String
+  boletoExpirationDate: String
+  boletoUrl: String
+  paymentMethod: String!
+  postbackUrl: String
+}

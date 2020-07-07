@@ -3,12 +3,12 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import knexDatabase from '../../../knex-database';
-import { OrganizationRoles, IOrganizationSimple, OrganizationInviteStatus } from '../types';
-import common from '../../../common';
+import { OrganizationRoles, IOrganizationSimple, OrganizationInviteStatus, IOrganizationPayload } from '../types';
 import redisClient from '../../../lib/Redis';
+import { PaymentMethod } from '../../payments/types';
+import { stringToSlug } from '../helpers';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
-var imgGen = require('js-image-generator');
 
 declare var process : {
 	env: {
@@ -59,6 +59,7 @@ const CREATE_ORGANIZATION = `
         createOrganization(input: $input){
             id
             contactEmail
+            slug
             name
             active
             updatedAt
@@ -248,6 +249,8 @@ describe('organizations graphql', () => {
     })
 
     describe("organization tests with user verified", () => {
+
+        let createOrganizationPayload : IOrganizationPayload
         
         beforeEach(async () => {
             const [userFromDb] = await knexDatabase.knex('users').where('id', signUpCreated.id).select('verification_hash');
@@ -265,14 +268,40 @@ describe('organizations graphql', () => {
                     input: userVerifyEmailPayload
                 }
             });
+
+            createOrganizationPayload = {
+                organization: {
+                  name: Faker.name.firstName(),
+                  contactEmail: "gabriel-tamura@b8one.com"
+                },
+                plan: 488346,
+                paymentMethod: PaymentMethod.credit_card,
+                billing: {
+                  name: "Gabriel Tamura",
+                  address:{
+                    street: "Rua avare",
+                    complementary: "12",
+                    state: "São Paulo",
+                    streetNumber: "24",
+                    neighborhood: "Baeta Neves",
+                    city: "São Bernardo do Campo",
+                    zipcode: "09751060",
+                    country: "Brazil"
+                  }
+                },
+                customer: {
+                  documentNumber: "37859614804"
+                },
+                creditCard: {
+                  number: "4111111111111111",
+                  cvv: "123",
+                  expirationDate: "0922",
+                  holderName: "Morpheus Fishburne"
+                }
+            }
         })
 
-        test("user should create new organization", async done => {
-          
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should create new organization", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -289,8 +318,9 @@ describe('organizations graphql', () => {
             expect(createOrganizationResponse.body.data.createOrganization).toEqual(
                 expect.objectContaining({
                     id: expect.any(String),
-                    name: createOrganizationPayload.name,
-                    contactEmail: createOrganizationPayload.contactEmail,
+                    slug: stringToSlug(createOrganizationPayload.organization.name),
+                    name: createOrganizationPayload.organization.name,
+                    contactEmail: createOrganizationPayload.organization.contactEmail,
                     user: expect.objectContaining({
                         id: userClient.id
                     }),
@@ -306,8 +336,8 @@ describe('organizations graphql', () => {
             expect(organizationOnDb[0]).toEqual(
                 expect.objectContaining({
                     id: createOrganizationResponse.body.data.createOrganization.id,
-                    name: createOrganizationPayload.name,
-                    contact_email: createOrganizationPayload.contactEmail,
+                    name: createOrganizationPayload.organization.name,
+                    contact_email: createOrganizationPayload.organization.contactEmail,
                     user_id: userClient.id,
                     active: true,
                     updated_at: expect.any(Date),
@@ -318,12 +348,7 @@ describe('organizations graphql', () => {
             done();
         })
 
-        test("user should send a current organization to redis graphql", async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should send a current organization to redis graphql", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -364,12 +389,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test("user should send a nullable current organization to redis graphql", async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should send a nullable current organization to redis graphql", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -425,7 +445,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test("user should verify organization duplicated name before create with new organization graphql", async done => {
+        test("user should verify organization duplicated name before create with new organization graphql", async (done) => {
 
             const verifyOrganizationNamePayload = {
                 name: Faker.internet.domainName()
@@ -449,12 +469,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test("user should verify organization duplicated name before create with organization exists graphql", async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should verify organization duplicated name before create with organization exists graphql", async (done) => {
 
             await request
             .post('/graphql')
@@ -475,7 +490,7 @@ describe('organizations graphql', () => {
             'query': VERIFY_ORGANIZATION_NAME, 
             'variables': {
                     input: {
-                        name: createOrganizationPayload.name
+                        name: createOrganizationPayload.organization.name
                     }
                 }
             });
@@ -487,12 +502,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test("user should list your organizations", async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should list your organizations", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -522,8 +532,8 @@ describe('organizations graphql', () => {
                 expect.arrayContaining([
                     expect.objectContaining({
                         id: createOrganizationResponse.body.data.createOrganization.id,
-                        name: createOrganizationPayload.name,
-                        contactEmail: createOrganizationPayload.contactEmail,
+                        name: createOrganizationPayload.organization.name,
+                        contactEmail: createOrganizationPayload.organization.contactEmail,
                         user: expect.objectContaining({
                             id: userClient.id
                         }),
@@ -538,12 +548,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test("user should list your organization details", async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should list your organization details", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -585,8 +590,8 @@ describe('organizations graphql', () => {
             expect(organizationDetailsResponse.body.data.organizationDetails).toEqual(
                     expect.objectContaining({
                         id: createOrganizationResponse.body.data.createOrganization.id,
-                        name: createOrganizationPayload.name,
-                        contactEmail: createOrganizationPayload.contactEmail,
+                        name: createOrganizationPayload.organization.name,
+                        contactEmail: createOrganizationPayload.organization.contactEmail,
                         user: expect.objectContaining({
                             id: userClient.id
                         }),
@@ -600,12 +605,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test('user organization admin should invite existent members', async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test('user organization admin should invite existent members', async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -728,12 +728,7 @@ describe('organizations graphql', () => {
             done();
         });
 
-        test('user organization admin should invite inexistent members', async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test('user organization admin should invite inexistent members', async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -843,12 +838,7 @@ describe('organizations graphql', () => {
             done();
         });
     
-        test('existent user should accept invite', async done => {
-    
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test('existent user should accept invite', async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -952,12 +942,7 @@ describe('organizations graphql', () => {
     
         });
     
-        test('existent user should refuse invite', async done => {
-    
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test('existent user should refuse invite', async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -1061,12 +1046,7 @@ describe('organizations graphql', () => {
     
         });
     
-        test('no existent user should accept invite', async done => {
-    
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test('no existent user should accept invite', async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -1157,12 +1137,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test("user should search other members", async done => {
-    
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should search other members", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -1320,12 +1295,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test("user should search other invited members", async done => {
-    
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should search other invited members", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -1501,12 +1471,7 @@ describe('organizations graphql', () => {
     
         })
 
-        test("user should inative user from organization", async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("user should inative user from organization", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -1630,7 +1595,7 @@ describe('organizations graphql', () => {
             done();
         })
 
-        test("member/admin should list users from organization by optional name graphql", async done => {
+        test("member/admin should list users from organization by optional name graphql", async (done) => {
 
             let signUpPayload3 = {
                 username: "userteste",
@@ -1647,13 +1612,8 @@ describe('organizations graphql', () => {
                     input: signUpPayload3
                 }
             });
-    
+
             let signUpCreated3 = signUpResponse3.body.data.signUp
-    
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -1806,12 +1766,7 @@ describe('organizations graphql', () => {
             done();
         })
 
-        test("organization admin should handle member permissions to admin", async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test("organization admin should handle member permissions to admin", async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
@@ -1935,12 +1890,7 @@ describe('organizations graphql', () => {
             done();
         })
 
-        test('admin should invite member with role pre selected', async done => {
-
-            const createOrganizationPayload = {
-                name: Faker.internet.userName(),
-                contactEmail: Faker.internet.email()
-            }
+        test('admin should invite member with role pre selected', async (done) => {
 
             const createOrganizationResponse = await request
             .post('/graphql')
