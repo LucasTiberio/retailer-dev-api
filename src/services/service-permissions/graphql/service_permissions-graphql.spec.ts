@@ -177,7 +177,9 @@ describe('organizations graphql', () => {
             "commission",
             "orders" ,
             "generateLink",
-            "payments"
+            "payments",
+            "members",
+            "affiliate-settings"
         ];
 
         expect(userServicePermissionsResponse.statusCode).toBe(200);

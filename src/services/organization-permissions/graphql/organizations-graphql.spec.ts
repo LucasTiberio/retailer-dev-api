@@ -164,7 +164,6 @@ describe('organizations graphql', () => {
 
         let permissions = [
             "settings",
-            "members" ,
             "integrations" ,
             "affiliate"
         ];

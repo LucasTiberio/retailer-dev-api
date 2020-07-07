@@ -51,14 +51,17 @@ const CREATE_ORGANIZATION = `
 const MENU_TREE = `
     query menuTree{
         menuTree{
-            name
-            slug
-            children{
+            group
+            items{
                 name
                 slug
                 children{
                     name
                     slug
+                    children{
+                        name
+                        slug
+                    }
                 }
             }
         }
@@ -169,37 +172,52 @@ describe('services graphql', () => {
         expect(menuTreeResponse.statusCode).toBe(200);
         expect(menuTreeResponse.body.data.menuTree).toEqual(expect.arrayContaining([
             {
-                name: 'overview',
-                slug: '/overview',
-                children: null
-            },{
-                name: 'members',
-                slug: '/members',
-                children: null
-            },
-            {
-                name: 'integrations',
-                slug: '/integrations',
-                children: null
-            },
-            {
-                name: 'affiliate',
-                slug: null,
-                children: [
+                group: 'menu-items',
+                items: [
                     {
-                        name: 'orders',
-                        children: null,
-                        slug: '/affiliate/orders',
+                        name: 'overview',
+                        slug: '/overview',
+                        children: null
+                    },{
+                        name: 'settings',
+                        slug: '/settings',
+                        children: null
                     },
                     {
-                        name: 'commission',
-                        children: null,
-                        slug: '/affiliate/commission',
-                    }, 
+                        name: 'integrations',
+                        slug: '/integrations',
+                        children: null
+                    }
+                ]
+            },
+            {
+                group: 'services',
+                items: [
                     {
-                        name: 'payments',
-                        children: null,
-                        slug: '/affiliate/payments',
+                        name: 'affiliate',
+                        slug: null,
+                        children: [
+                            {
+                                name: 'orders',
+                                children: null,
+                                slug: '/affiliate/orders',
+                            },
+                            {
+                                name: 'commission',
+                                children: null,
+                                slug: '/affiliate/commission',
+                            }, 
+                            {
+                                name: 'members',
+                                children: null,
+                                slug: '/affiliate/members',
+                            },
+                            {
+                                name: 'payments',
+                                children: null,
+                                slug: '/affiliate/payments',
+                            }
+                        ]
                     }
                 ]
             }
