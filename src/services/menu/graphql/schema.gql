@@ -3,6 +3,11 @@ extend type Query{
 }
 
 type MenuTree{
+    group: String!
+    items: [MenuItem]!
+}
+
+type MenuItem{
     name: String!
     slug: String
     children: [MenuChildren]

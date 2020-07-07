@@ -12,7 +12,6 @@ import redisClient from '../../lib/Redis';
 import { IContext } from '../../common/types';
 import { OrganizationRoles, IOrganizationAdapted } from '../organization/types';
 import { PermissionGrant, PermissionName } from './types';
-import { PaymentMethod } from '../payments/types';
 import { createOrganizationPayload } from '../../__mocks__';
 import { Services, ServiceRoles } from '../services/types';
 
@@ -74,8 +73,7 @@ describe('Organization Permissions', () => {
 
         let permissions = [
             "settings",
-            "members" ,
-            "integrations" ,
+            "integrations",
             "affiliate"
         ];
 
@@ -119,7 +117,6 @@ describe('Organization Permissions', () => {
 
         let permissions = [
             "settings",
-            "members" ,
             "integrations" ,
             "affiliate"
         ];

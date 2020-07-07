@@ -1,6 +1,5 @@
 let permissions = [
     { name: "settings" },
-    { name: "members" },
     { name: "integrations" },
     { name: "affiliate" }
 ]
@@ -35,10 +34,6 @@ exports.seed = async function(knex) {
                             organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationAdminRoleId, grant: GRANT_WRITE })
                             organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationMemberRoleId, grant: GRANT_HIDE })
                             return
-                        case "members":
-                            organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationAdminRoleId, grant: GRANT_WRITE })
-                            organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationMemberRoleId, grant: GRANT_HIDE })
-                            return 
                         case "integrations":
                             organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationAdminRoleId, grant: GRANT_WRITE })
                             organizationRolesPermissions.push({permission_id: permission.id , organization_role_id: organizationMemberRoleId, grant: GRANT_HIDE })

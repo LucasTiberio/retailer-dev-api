@@ -2,79 +2,62 @@ import { ServiceRoles } from "../../services/types"
 
 export const organizationAdminMenu = [
     {
-        name: 'overview',
-        slug: '/overview'
-    },{
-        name: 'members',
-        slug: '/members'
+        group: "menu-items",
+        items: [
+            {
+                name: 'overview',
+                slug: '/overview'
+            },{
+                name: 'settings',
+                slug: '/settings'
+            },
+            {
+                name: 'integrations',
+                slug: '/integrations'
+            },
+        ]
     },
     {
-        name: 'integrations',
-        slug: '/integrations'
-    },
-    {
-        name: 'affiliate',
-        children: [
+        group: "services",
+        items: [
             {
-                name: 'orders',
-                slug: '/affiliate/orders'
-            },
-            {
-                name: 'commission',
-                slug: '/affiliate/commission'
-            },
-            {
-                name: 'payments',
-                slug: '/affiliate/payments'
-            },
+                name: 'affiliate',
+                children: [
+                    {
+                        name: 'orders',
+                        slug: '/affiliate/orders'
+                    },
+                    {
+                        name: 'commission',
+                        slug: '/affiliate/commission'
+                    },
+                    {
+                        name: 'members',
+                        slug: '/affiliate/members'
+                    },
+                    {
+                        name: 'payments',
+                        slug: '/affiliate/payments'
+                    }
+                ]
+            }
         ]
     }
 ]
 
 export const organizationMemberMenu = [
     {
-        name: 'overview',
-        slug: '/overview'
+        group: "menu-items",
+        items: [
+            {
+                name: 'overview',
+                slug: '/overview'
+            }
+        ]
     }
 ]
 
 export const affiliateMemberMountMenu = (serviceRole: string) => {
-
-    const affiliateAdmin : any =  {
-        name: 'affiliate',
-        children: [
-            {
-                name: 'orders',
-                slug: '/affiliate/orders'
-            },
-            {
-                name: 'commission',
-                slug: '/affiliate/commission'
-            },
-            {
-                name: 'payments',
-                slug: '/affiliate/payments'
-            },
-        ]
-    }
-
-    const affiliateResponsible : any =  {
-        name: 'affiliate',
-        children: [
-            {
-                name: 'orders',
-                slug: '/affiliate/orders'
-            },
-            {
-                name: 'commission',
-                slug: '/affiliate/commission'
-            },
-            {
-                name: 'linkGenerator',
-                slug: '/affiliate/link-generator'
-            },
-        ]
-    }
 
     const affiliateAnalyst : any =  {
         name: 'affiliate',
@@ -88,13 +71,23 @@ export const affiliateMemberMountMenu = (serviceRole: string) => {
                 slug: '/affiliate/commission'
             },
             {
-                name: 'linkGenerator',
-                slug: '/affiliate/link-generator'
+                name: 'settings',
+                slug: '/affiliate/settings'
             },
             {
                 name: 'payments',
                 slug: '/affiliate/payments'
             },
+            {
+                name: 'divulgation',
+                external: true,
+                children: [
+                    {
+                        name: 'linkGenerator',
+                        slug: '/affiliate/link-generator'
+                    }
+                ]
+            }
         ]
     }
 
@@ -117,14 +110,10 @@ export const affiliateMemberMountMenu = (serviceRole: string) => {
     }
 
     switch (serviceRole) {
-        case ServiceRoles.ADMIN:
-            return [...organizationMemberMenu, affiliateAdmin]
-        case ServiceRoles.RESPONSIBLE:
-            return [...organizationMemberMenu, affiliateResponsible]
         case ServiceRoles.ANALYST:
-            return [...organizationMemberMenu, affiliateAnalyst]
+            return [...organizationMemberMenu, {group: "services", items: [affiliateAnalyst]}]
         case ServiceRoles.SALE:
-            return [...organizationMemberMenu, affiliateSale]
+            return [...organizationMemberMenu, {group: "services", items: [affiliateSale]}]
         default: return;
     }
 

@@ -2,7 +2,9 @@ let permissions = [
   { name: "commission" },
   { name: "orders" },
   { name: "generateLink" },
-  { name: "payments" }
+  { name: "payments" },
+  { name: "members" },
+  { name: "affiliate-settings" }
 ]
 
 const SERVICE_ADMIN = "ADMIN";
@@ -59,6 +61,16 @@ exports.seed = async function(knex) {
                           serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAdminRoleId, grant: GRANT_WRITE })
                           serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAnalystRoleId, grant: GRANT_WRITE })
                           serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceSaleRoleId, grant: GRANT_WRITE })
+                          return 
+                    case "members":
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAdminRoleId, grant: GRANT_WRITE })
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAnalystRoleId, grant: GRANT_HIDE })
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceSaleRoleId, grant: GRANT_HIDE })
+                          return 
+                    case "settings":
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAdminRoleId, grant: GRANT_WRITE })
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceAnalystRoleId, grant: GRANT_HIDE })
+                          serviceRolesPermissions.push({service_id: affiliateService[0].id ,permission_id: permission.id , service_role_id: serviceSaleRoleId, grant: GRANT_HIDE })
                           return 
                       default: return;
                   }
