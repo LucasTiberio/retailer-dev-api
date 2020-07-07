@@ -4,9 +4,10 @@ import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import knexDatabase from '../../../knex-database';
 import { PermissionGrant, PermissionName } from '../types';
-import common from '../../../common';
 import redisClient from '../../../lib/Redis';
 import { IOrganizationAdapted, OrganizationRoles } from '../../organization/types';
+import { PaymentMethod } from '../../payments/types';
+import { createOrganizationPayload } from '../../../__mocks__';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -116,11 +117,6 @@ describe('organizations graphql', () => {
             }
         });
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
-        }
-
         const createOrganizationResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
@@ -128,7 +124,7 @@ describe('organizations graphql', () => {
         .send({
         'query': CREATE_ORGANIZATION, 
         'variables': {
-                input: createOrganizationPayload
+                input: createOrganizationPayload()
             }
         });
 

@@ -1,113 +1,121 @@
 extend type Query{
   listAvailablePlans: [Plan]! @isVerified @isAuthenticated
-  listCardsByOrganizationId(input: ListCardsByOrganizationIdInput!): [CreditCard]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getSubscriptionByOrganizationId: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getSubscriptionTransactions: [Transaction]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  listOrganizationCustomerPayment: [OrganizationCustomerPayment]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  getSubscriptionByOrganizationId(input: GetSubscriptionByOrganizationIdInput): Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
 
 extend type Mutation{
-  saveOrganizationCreditCard(input: SaveOrganizationCreditCardInput!): CreditCard! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  removeCardById(input: RemoveCardByIdInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  updateRecurrencyTransaction(input: UpdateRecurrencyTransactionInput!): RecurrencyTransaction! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  sendRecurrencyTransaction(input: SendRecurrencyTransactionInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  updateRecurrencyTransaction(input: UpdateRecurrencyTransactionInput!): Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  cancelRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  activateRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  createOrganizationCustomer(input: CreateOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  createOrganizationCustomerPayment(input: CreateOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  removeOrganizationCustomerPayment(input: RemoveOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
 
-input UpdateRecurrencyTransactionInput{
-  recurrencyId: String!
-  planId: String!
-  paymentMethod: PaymentMethod!
-  cardId: String
-  customer: Customer
+input UpdateRecurrencyTransactionInput {
+  planIdentifier: String!
+  payableWith: PayableWith!
 }
 
-type RecurrencyTransaction{
-  status: String!
+input SendRecurrencyTransactionInput {
+  planIdentifier: String!
+  payableWith: PayableWith!
 }
 
-input RemoveCardByIdInput{
-  id: String!
+enum PayableWith{
+  bank_slip
+  credit_card
 }
 
-input SaveOrganizationCreditCardInput{
-  number: String!
-  holderName: String!
-  expirationDate: String!
-  cvv: String!
-}
-
-input ListCardsByOrganizationIdInput{
+input GetSubscriptionByOrganizationIdInput{
   organizationId: String!
+}
+
+type OrganizationCustomerPayment{
+  id: String!
+  description: String!
+  itemType: String!
+  data: PaymentMethodData!
+}
+
+input RemoveOrganizationCustomerPaymentInput {
+  paymentId: String!
+}
+
+type PaymentMethodData{
+  brand: String!
+  holder: String!
+  lastDigits: String!
+}
+
+input CreateOrganizationCustomerPaymentInput{
+  description: String
+  token: String!
+}
+
+input CreateOrganizationCustomerInput{
+  zipCode: String!
+  number: String!
+  cpfCnpj: String!
 }
 
 type Plan{
   id: String!
-  amount: Int!
-  days: Int!
+  interval: Int!
+  intervalType: String!
   name: String!
-  paymentMethods: [String!]!
-  installments: Int!
+  payableWith: String!
+  price: Float!
+  affiliateRules: AffiliateRules
+  suport: [PlanSuport]!
+  benefits: [PlanBenefits]!
+  flags: PlanFlags
 }
 
-type CreditCard{
-  id: String!
-  brand: String!
-  holderName: String!
-  lastDigits: String!
-  country: String!
-  expirationDate: String!
-  valid: Boolean!
+type PlanSuport {
+    type: String!
+    time: Int!
+    measure: String!
 }
 
-input CreditCardInput {
-  number: String!
-  holderName: String!
-  expirationDate: String!
-  cvv: String!
+type PlanBenefits {
+    training: Boolean!
+    sso: Boolean!
 }
 
-input Billing{
-  name: String!
-  address: Address!
+type PlanFlags {
+    bestPrice: Boolean!
 }
 
-input Address{
-    street: String!
-    complementary: String
-    state: String!
-    streetNumber: String!
-    neighborhood: String!
-    city: String!
-    zipcode: String!
-    country: String!
-}
-
-input Customer{
-    documentNumber: String
-    email: String
-}
-
-enum PaymentMethod{
-    boleto
-    credit_card
+type AffiliateRules{
+  maxAnalysts: Int!
+  maxSales: Int!
+  maxTeammates: Int!
+  maxTransactionTax: Int!
 }
 
 type Subscription{
   id: String!
-  plan: Plan!
-  currentTransaction: Transaction!
-  currentPeriodStart: String
-  currentPeriodEnd: String
-  manageUrl: String!
+  suspended: Boolean!
+  planIdentifier: String!
+  priceCents: Int!
+  currency: String!
+  expiresAt: String
+  createdAt: String!
+  updatedAt: String!
+  cycledAt: String!
+  payableWith: String!
+  planName: String!
+  active: Boolean!
+  recentInvoices: [IuguRecentInvoices]!
 }
 
-type Transaction{
+type IuguRecentInvoices{
   id: String!
+  dueDate: String!
   status: String!
-  dateCreated: String!
-  dateUpdated: String!
-  paidAmount: String!
-  boletoBarcode: String
-  boletoExpirationDate: String
-  boletoUrl: String
-  paymentMethod: String!
-  postbackUrl: String
+  total: String!
+  secureUrl: String!
 }

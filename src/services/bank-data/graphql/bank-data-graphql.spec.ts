@@ -42,7 +42,7 @@ const GET_BRAZIL_BANKS = `
     }
 `
 
-describe('organizations graphql', () => {
+describe('bank-data graphql', () => {
 
     let signUpCreated: ISignInAdapted;
 
@@ -96,7 +96,7 @@ describe('organizations graphql', () => {
         await knexDatabase.cleanMyTestDB();
     })
 
-    test("user should create new organization", async done => {
+    test("user should create new bank-data", async done => {
         
         const getBrazilBanksResponse = await request
         .post('/graphql')

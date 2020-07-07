@@ -13,18 +13,18 @@ const resolvers : IResolvers = {
                 return service.createServiceInOrganization(input.serviceId, input.organizationId, client, trx);
             });
         },
-        addUserInOrganizationService: (_, attrs, { client, organizationId }) => {
-            const { input } = attrs;
-            return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.addUserInOrganizationService(input, {client, organizationId}, trx);
-            });
-        },
-        inativeUserFromServiceOrganization: (_, attrs, { client, organizationId }) => {
-            const { input } = attrs;
-            return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.inativeUserFromServiceOrganization(input, {client, organizationId}, trx);
-            });
-        },
+        // addUserInOrganizationService: (_, attrs, { client, organizationId }) => {
+        //     const { input } = attrs;
+        //     return knexDatabase.knex.transaction((trx: Transaction) => {
+        //         return service.addUserInOrganizationService(input, {client, organizationId}, trx);
+        //     });
+        // },
+        // inativeUserFromServiceOrganization: (_, attrs, { client, organizationId }) => {
+        //     const { input } = attrs;
+        //     return knexDatabase.knex.transaction((trx: Transaction) => {
+        //         return service.inativeUserFromServiceOrganization(input, {client, organizationId}, trx);
+        //     });
+        // },
         userInServiceHandleRole: (_, attrs, { client, organizationId }) => {
             const { input } = attrs;
             return knexDatabase.knex.transaction((trx: Transaction) => {
@@ -38,13 +38,13 @@ const resolvers : IResolvers = {
                 return service.listUsedServices({client, organizationId}, trx);
             });
         },
-        listAvailableUsersToService: (_, attrs, { client, organizationId }) => {
-            const { input } = attrs;
+        // listAvailableUsersToService: (_, attrs, { client, organizationId }) => {
+        //     const { input } = attrs;
 
-            return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.listAvailableUsersToService(input, {client, organizationId}, trx);
-            });
-        },
+        //     return knexDatabase.knex.transaction((trx: Transaction) => {
+        //         return service.listAvailableUsersToService(input, {client, organizationId}, trx);
+        //     });
+        // },
         getUserInOrganizationServiceById: (_, attrs) => {
             const { input } = attrs;
 
@@ -66,13 +66,13 @@ const resolvers : IResolvers = {
                 return service.getUserOrganizationServiceByServiceName(input, {client, userServiceOrganizationRolesId}, trx);
             });
         },
-        listUsersInOrganizationService: (_, attrs, { client, organizationId }) => {
-            const { input } = attrs;
+        // listUsersInOrganizationService: (_, attrs, { client, organizationId }) => {
+        //     const { input } = attrs;
 
-            return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.listUsersInOrganizationService(input, {client, organizationId}, trx);
-            });
-        }
+        //     return knexDatabase.knex.transaction((trx: Transaction) => {
+        //         return service.listUsersInOrganizationService(input, {client, organizationId}, trx);
+        //     });
+        // }
       },
     UserOrganizationService: {
         service: (obj) => {

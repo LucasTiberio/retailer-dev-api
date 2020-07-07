@@ -3,11 +3,11 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../authentication/types";
 import jwt from 'jsonwebtoken';
 import knexDatabase from '../../../knex-database';
-import { PermissionGrant, ServicePermissionName } from '../types';
-import common from '../../../common';
+import { PermissionGrant } from '../types';
 import redisClient from '../../../lib/Redis';
-import { IOrganizationAdapted, OrganizationRoles } from '../../organization/types';
+import { IOrganizationAdapted } from '../../organization/types';
 import { Services, ServiceRoles } from '../../services/types';
+import { createOrganizationPayload } from '../../../__mocks__';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 
@@ -121,11 +121,6 @@ describe('organizations graphql', () => {
             }
         });
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
-        }
-
         const createOrganizationResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
@@ -133,7 +128,7 @@ describe('organizations graphql', () => {
         .send({
         'query': CREATE_ORGANIZATION, 
         'variables': {
-                input: createOrganizationPayload
+                input: createOrganizationPayload()
             }
         });
 

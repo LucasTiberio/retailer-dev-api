@@ -11,27 +11,22 @@ import { IUserToken } from '../authentication/types';
 import { IOrganizationAdapted, OrganizationInviteStatus } from '../organization/types';
 import knexDatabase from '../../knex-database';
 import service from './service';
-import { mockVtexDepartments } from './__mocks__';
-import { Services } from '../services/types';
+import { mockVtexDepartments, createOrganizationPayload } from '../../__mocks__';
+import { Services, ServiceRoles } from '../services/types';
 import moment from 'moment';
 import redisClient from '../../lib/Redis';
+import { PaymentMethod } from '../payments/types';
 
 describe('Vtex', () => {
 
     let trx : Transaction;
 
     let signUpCreated: ISignUpAdapted;
-
     
     let signUpPayload = {
         username: Faker.name.firstName(),
         email: Faker.internet.email(),
         password: "B8oneTeste123!"
-    }
-
-    const createOrganizationPayload = {
-        name: Faker.internet.userName(),
-        contactEmail: Faker.internet.email(),
     }
     
     let userToken : IUserToken;
@@ -64,7 +59,7 @@ describe('Vtex', () => {
         userToken = { origin: 'user', id: signUpCreated.id };
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
     })
 
     test("organization admin should add vtex secrets and hook attached", async done => {
@@ -367,7 +362,11 @@ describe('Vtex', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -382,14 +381,6 @@ describe('Vtex', () => {
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
 
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
-
         const handleOrganizationVtexComissionPayload = {
             vtexDepartmentId: "1",
             vtexCommissionPercentage: 15,
@@ -403,6 +394,8 @@ describe('Vtex', () => {
         };
 
         await service.handleTimeToPayCommission(handleTimeToPayCommissionPayload, context, trx);
+
+        const [userInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
 
         const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
             vtexDepartmentsIds: ["1", "2"],
@@ -454,7 +447,11 @@ describe('Vtex', () => {
         const inviteUserToOrganizationPayload = {
             users: [{
                 id: otherSignUpCreated.id,
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 
@@ -469,19 +466,13 @@ describe('Vtex', () => {
 
         await OrganizationService.responseInvite(responseInvitePayload, trx);
 
-        const addUserInOrganizationServicePayload = {
-            organizationId:organizationCreated.id,
-            userId: otherSignUpCreated.id,
-            serviceName: Services.AFFILIATE 
-        };
-
-        const userInOrganizationService = await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
-
         const handleDefaultCommission = {
             percentage: 10
         };
 
         await service.handleDefaultommission(handleDefaultCommission, context, trx);
+
+        const [userInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').select();
 
         const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {
             vtexDepartmentsIds: ["1"],

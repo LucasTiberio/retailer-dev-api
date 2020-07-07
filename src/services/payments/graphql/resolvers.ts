@@ -6,25 +6,34 @@ const resolvers : IResolvers = {
     listAvailablePlans: () => {
       return service.listAvailablePlans();
     },
-    listCardsByOrganizationId: (_, __, { organizationId }) => {
-        return service.listCardsByOrganizationId(organizationId);
+    listOrganizationCustomerPayment: (_, __, { organizationId }) => {
+        return service.listOrganizationCustomerPayment(organizationId);
     },
     getSubscriptionByOrganizationId: (_,  __, {organizationId}) => {
       return service.getSubscriptionByOrganizationId(organizationId);
     },
-    getSubscriptionTransactions: (_,  __, {organizationId}) => {
-      return service.getSubscriptionTransactions(organizationId);
-    },
   },
   Mutation: {
-    saveOrganizationCreditCard: (_, { input }, { organizationId }) => {
-      return service.saveOrganizationCreditCard(input, { organizationId });
+    createOrganizationCustomer: (_, { input }, { organizationId }) => {
+      return service.createOrganizationCustomer(input, { organizationId });
+    },
+    createOrganizationCustomerPayment: (_, { input }, { organizationId }) => {
+      return service.createOrganizationCustomerPayment(input, { organizationId });
+    },
+    sendRecurrencyTransaction: (_, { input }, { organizationId }) => {
+      return service.sendRecurrencyTransaction(input, { organizationId });
     },
     updateRecurrencyTransaction: (_, { input }, { organizationId }) => {
-      return service.updateRecurrencyTransaction(input, { organizationId });
+      return service.updateRecurrencyTransaction(input, organizationId);
     },
-    removeCardById: (_, { input }, { organizationId }) => {
-      return service.removeCardById(input, { organizationId });
+    activateRecurrencyTransaction: (_, __, { organizationId }) => {
+      return service.activateRecurrencyTransaction(organizationId);
+    },
+    cancelRecurrencyTransaction: (_, __, { organizationId }) => {
+      return service.cancelRecurrencyTransaction(organizationId);
+    },
+    removeOrganizationCustomerPayment: (_, { input }, { organizationId }) => {
+      return service.removeOrganizationCustomerPayment(input, { organizationId });
     }
   }
 };

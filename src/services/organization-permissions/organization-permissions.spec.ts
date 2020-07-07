@@ -1,6 +1,7 @@
 process.env.NODE_ENV = 'test';
 import service from './service';
 import UserService from '../users/service';
+import VtexService from '../vtex/service';
 import OrganizationService from '../organization/service';
 import Faker from 'faker';
 import { Transaction } from 'knex';
@@ -11,6 +12,9 @@ import redisClient from '../../lib/Redis';
 import { IContext } from '../../common/types';
 import { OrganizationRoles, IOrganizationAdapted } from '../organization/types';
 import { PermissionGrant, PermissionName } from './types';
+import { PaymentMethod } from '../payments/types';
+import { createOrganizationPayload } from '../../__mocks__';
+import { Services, ServiceRoles } from '../services/types';
 
 describe('Organization Permissions', () => {
 
@@ -28,7 +32,7 @@ describe('Organization Permissions', () => {
 
     let context : IContext;
 
-    let organizationCreated: IOrganizationAdapted;
+    let organizationCreated: IOrganizationAdapted
 
     beforeAll(async () => {
         trx = await knexDatabase.knex.transaction(); 
@@ -52,12 +56,8 @@ describe('Organization Permissions', () => {
         await redisClient.flushall('ASYNC');
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email(),
-        }
 
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
 
         const currentOrganizationPayload = {
             organizationId: organizationCreated.id
@@ -134,9 +134,21 @@ describe('Organization Permissions', () => {
         const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
 
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+        
         const inviteUserToOrganizationPayload = {
             users: [{
-                email: otherSignUpCreated.email
+                email: otherSignUpCreated.email,
+                services: [{
+                    name: Services.AFFILIATE,
+                    role: ServiceRoles.ANALYST
+                }]
             }]
         }
 

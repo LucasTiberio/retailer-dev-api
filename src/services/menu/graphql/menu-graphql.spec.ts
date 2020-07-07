@@ -7,7 +7,7 @@ import { IOrganizationAdapted } from '../../organization/types';
 const app = require('../../../app');
 const request = require('supertest').agent(app);
 import redisClient from '../../../lib/Redis';
-import { organizationAdminMenu } from '../helpers';
+import { createOrganizationPayload } from '../../../__mocks__';
 
 declare var process : {
 	env: {
@@ -121,11 +121,6 @@ describe('services graphql', () => {
             }
         });
 
-        const createOrganizationPayload = {
-            name: Faker.internet.userName(),
-            contactEmail: Faker.internet.email()
-        }
-
         const createOrganizationResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
@@ -133,7 +128,7 @@ describe('services graphql', () => {
         .send({
         'query': CREATE_ORGANIZATION, 
         'variables': {
-                input: createOrganizationPayload
+                input: createOrganizationPayload()
             }
         });
 

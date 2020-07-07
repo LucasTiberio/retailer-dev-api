@@ -10,6 +10,7 @@ import { IOrganizationAdapted } from '../organization/types';
 import OrganizationService from '../organization/service';
 var imgGen = require('js-image-generator');
 import redisClient from '../../lib/Redis';
+import { createOrganizationPayload } from '../../__mocks__';
 
 describe('Storage', () => {
 
@@ -25,11 +26,6 @@ describe('Storage', () => {
     }
     
     let userToken : IUserToken;
-
-    const createOrganizationPayload = {
-        name: Faker.internet.userName(),
-        contactEmail: Faker.internet.email(),
-    }
     
     let organizationCreated: IOrganizationAdapted;
 
@@ -52,7 +48,7 @@ describe('Storage', () => {
         await trx('users').del();
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
-        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+        organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
     })
 
     test("should upload image", async done => {

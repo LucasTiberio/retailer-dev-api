@@ -81,6 +81,12 @@ enum ServiceRolesName {
     SALE
 }
 
+input ServiceInput {
+  name: ServiceName
+  role: ServiceRolesName
+}
+
+
 type Service{
     id: String!
     name: String!

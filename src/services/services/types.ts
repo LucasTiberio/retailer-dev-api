@@ -70,3 +70,8 @@ export interface IListAvailableUsersToServicePayload{
     name: string
     serviceName: Services
 }
+
+export interface ISimpleService{
+    name: Services
+    role: ServiceRoles
+}
