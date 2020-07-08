@@ -49,9 +49,9 @@ const createOrganization = async (
     .first()
     .select('id')
 
-  if(organizationFound){
-    throw new Error(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
-  }
+  // if(organizationFound){
+  //   throw new Error(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
+  // }
 
   const { 
     organization : { 
