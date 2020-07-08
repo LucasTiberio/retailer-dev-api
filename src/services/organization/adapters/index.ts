@@ -7,6 +7,8 @@ export const _organizationAdapter = (record: IOrganizationFromDB) => ({
     slug: record.slug,
     userId: record.user_id,
     active: record.active,
+    freeTrial: record.free_trial,
+    freeTrialExpires: record.free_trial_expires,
     phone: record.phone,
     createdAt: record.created_at,
     updatedAt: record.updated_at,

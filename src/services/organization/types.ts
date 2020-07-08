@@ -30,6 +30,8 @@ export interface IOrganizationFromDB{
     id: string
     name: string
     contact_email: string
+    free_trial: boolean
+    free_trial_expires?: Date
     phone: string
     user_id: string
     active: boolean

@@ -125,6 +125,8 @@ type Organization{
   user: User! @isVerified @isAuthenticated
   showFirstSteps: Boolean!
   updatedAt: Datetime!
+  freeTrial: Boolean!
+  freeTrialExpires: Datetime
   createdAt: Datetime!
   logo: String
   hasMember: Boolean!
