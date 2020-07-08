@@ -1,5 +1,5 @@
 extend type Mutation{
-    affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+    affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener! @hasServiceRole(role: ["ANALYST"]) @organizationPaidVerify @isVerified @isAuthenticated 
     generateSalesJwt(input: GenerateSalesJwtInput!): SalesSession!
     createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
     generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl! @hasSalesToken
@@ -31,7 +31,7 @@ input GenerateSalesJwtInput{
 }
 
 extend type Query{
-    listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+    listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @organizationPaidVerify @isVerified @isAuthenticated 
     getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): VtexAllOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     getOrganizationOrdersByAffiliateId(input: GetOrganizationOrdersByAffiliateIdInput): VtexAllOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
     getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 

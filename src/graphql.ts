@@ -208,23 +208,19 @@ const directiveResolvers : IDirectiveResolvers = {
 
     if(!organizationId) throw new Error("Invalid session!");
 
-    const organization = await knexDatabase.knex('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires');
+    const [organization] = await knexDatabase.knex('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires');
 
     if(!organization) throw new Error("Organization not found.");
 
-    if(organization.free_trial && moment(organization.free_trial_expires).isBefore(moment())){
+    if(moment(organization.free_trial_expires).isAfter(moment())){
       return next();
     } else {
       const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId);
 
-      if(paymentServiceStatus.currentTransaction.status === 'paid'){
+      if(moment(paymentServiceStatus.expiresAt).isAfter(moment())){
         return next();
-      } else if(moment(paymentServiceStatus.currentPeriodEnd).isBefore(moment())){
-        return next();
-      }
-    }
-
-    
+      } 
+    }    
 
     throw new Error("Organization has billing pendency.")
     

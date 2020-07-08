@@ -40,10 +40,10 @@ input VtexAffiliateCommissionInput{
 }
 
 extend type Mutation{
-  handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  handleTimeToPayCommission(input: HandleTimeToPayCommissionInput!): TimeToPayCommission! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  handleDefaultCommission(input: HandleDefaultCommissionInput!): DefaultCommission! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  handleTimeToPayCommission(input: HandleTimeToPayCommissionInput!): TimeToPayCommission! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  handleDefaultCommission(input: HandleDefaultCommissionInput!): DefaultCommission! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
 }
 
 input HandleOrganizationVtexCommissionInput {
