@@ -39,6 +39,11 @@ extend type Mutation{
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
   inativeUsersInOrganization(input: InativeUsersInOrganizationInput!): [InativeUsersInOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  inviteTeammates(input: InviteTeammatesInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+}
+
+input InviteTeammatesInput{
+  emails: [String!]!
 }
 
 input SetCurrentOrganizationInput{

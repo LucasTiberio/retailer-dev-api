@@ -1,18 +1,18 @@
 process.env.NODE_ENV = 'test';
 import service from './service';
+
 import UserService from '../users/service';
 import VtexService from '../vtex/service';
 import Faker from 'faker';
-import { Transaction } from 'knex';
 import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
 import { OrganizationRoles, OrganizationInviteStatus, IOrganizationSimple, IOrganizationPayload } from './types';
+import { Transaction } from 'knex';
 import knexDatabase from '../../knex-database';
 var imgGen = require('js-image-generator');
 import redisClient from '../../lib/Redis';
 import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME } from '../../common/consts';
 import { IContext } from '../../common/types';
-import { PaymentMethod } from '../payments/types';
 import { Services, ServiceRoles } from '../services/types';
 
 describe('Organizations', () => {
@@ -71,34 +71,34 @@ describe('Organizations', () => {
         userToken = { origin: 'user', id: signUpCreated.id };
     })
 
-    test("user only create 1 free trial organization", async done => {
+    // test("user only create 1 free trial organization", async done => {
 
-        await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
+    //     await service.createOrganization(createOrganizationPayload, {client: userToken, redisClient}, trx);
 
-        let otherCreateOrganizationPayload = {
-            organization: {
-              name: "Gabsss6",
-              contactEmail: "gabriel-tamura@b8one.com",
-              phone: "551123213123123"
-            },
-            additionalInfos: {
-                segment: "Beleza e Cosméticos",
-                resellersEstimate: 500,
-                reason: "Ter mais uma opção de canal de vendas",
-                plataform: "vtex"
-            }
-        }
+    //     let otherCreateOrganizationPayload = {
+    //         organization: {
+    //           name: "Gabsss6",
+    //           contactEmail: "gabriel-tamura@b8one.com",
+    //           phone: "551123213123123"
+    //         },
+    //         additionalInfos: {
+    //             segment: "Beleza e Cosméticos",
+    //             resellersEstimate: 500,
+    //             reason: "Ter mais uma opção de canal de vendas",
+    //             plataform: "vtex"
+    //         }
+    //     }
 
-        try{
-            await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
+    //     try{
+    //         await service.createOrganization(otherCreateOrganizationPayload, {client: userToken, redisClient}, trx);
 
-        }catch(e){
-            expect(e.message).toBe(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
-            done();
-        }
+    //     }catch(e){
+    //         expect(e.message).toBe(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
+    //         done();
+    //     }
 
 
-    })
+    // })
 
     test("user should send a current organization to redis", async done => {
 

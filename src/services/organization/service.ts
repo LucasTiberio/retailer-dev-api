@@ -3,7 +3,7 @@ import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
 import MailService from '../mail/service';
-import PaymentsService from '../payments/service';
+import OrganizationRulesService from '../organization-rules/service';
 import VtexService from '../vtex/service';
 import UserService from '../users/service';
 import ServicesService from '../services/service';
@@ -15,7 +15,7 @@ import sharp from 'sharp';
 import { IPagination } from "../../common/types";
 import { Services } from "../services/types";
 import { RedisClient } from "redis";
-import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME } from '../../common/consts';
+import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_UPGRADE_PLAN } from '../../common/consts';
 import { stringToSlug } from './helpers';
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from "./adapters";
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from "./loaders";
@@ -44,10 +44,10 @@ const createOrganization = async (
 
   if(!context.client) throw new Error("invalid token");
 
-  const organizationFound = await (trx || database.knex)('organizations')
-    .where('user_id', context.client.id)
-    .first()
-    .select('id')
+  // const organizationFound = await (trx || database.knex)('organizations')
+  //   .where('user_id', context.client.id)
+  //   .first()
+  //   .select('id')
 
   // if(organizationFound){
   //   throw new Error(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
@@ -113,13 +113,12 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
       invite_hash: hashToVerify
      }).returning('*');
 
-     await (trx || knexDatabase.knex)('users_organization_roles').insert({
+     const [organizationRoleId] = await (trx || knexDatabase.knex)('users_organization_roles').insert({
       users_organization_id: userOrganizationCreated.id, 
       organization_role_id: organizationRole.id
-     });
-     
+     }).returning('users_organization_id');
 
-     return _usersOrganizationsAdapter(userOrganizationCreated);
+     return _usersOrganizationsAdapter({...userOrganizationCreated, organization_role_id: organizationRoleId});
 
 }
 
@@ -128,6 +127,103 @@ const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transact
   return organizationRole;
 }
 
+const userTeammatesOrganizationCount = async (organizationId: string, userId: string, emails: string[], trx: Transaction) => {
+
+  const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+    .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
+    .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')
+    .innerJoin('users AS u', 'u.id', 'uo.user_id')
+    .where('or.name', OrganizationRoles.ADMIN)
+    .andWhere('uo.organization_id', organizationId)
+    .andWhereNot('uo.user_id', userId)
+    .whereNotIn('u.email', emails)
+    .count();
+
+  return userOrganizationCreatedId.count;
+
+}
+
+const inviteTeammates = async (
+  input : {
+    emails: string[]
+  },
+  context: { organizationId: string, client: IUserToken },
+  trx: Transaction
+) => {
+
+  const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId);
+
+  const maxTeammates = affiliateTeammateRules.affiliateRules.maxTeammates;
+
+  const currentTeammates = await userTeammatesOrganizationCount(context.organizationId, context.client.id, input.emails, trx);
+
+  const uniqueEmails = [...new Set(input.emails)]
+
+  if(uniqueEmails.length > maxTeammates || (Number(currentTeammates) + uniqueEmails.length) > maxTeammates) throw new Error(MESSAGE_ERROR_UPGRADE_PLAN);
+
+  const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', context.organizationId).select('name');
+
+  if(!organization) throw new Error("Organization not found.");
+
+  try {
+    await Promise.all(uniqueEmails.map(async item => {
+
+      let hashToVerify = await common.encryptSHA256(JSON.stringify({item, timestamp: +new Date()}));
+
+      const userEmailFound = await UserService.getUserByEmail(item, trx);
+
+      if(userEmailFound){
+
+        const usersOrganizationFound = await getUserOrganizationByIds(userEmailFound.id, context.organizationId, trx);
+
+        if(usersOrganizationFound){
+
+          const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations').update({
+            invite_status: OrganizationInviteStatus.PENDENT,
+            active: true
+            }).where('id', usersOrganizationFound.id).returning('id');
+
+            await MailService.sendInviteUserMail({
+            email: item,
+            hashToVerify,
+            organizationName: organization.name,
+          })
+
+          return userOrganizationCreatedId;
+
+        }
+
+      }
+
+      let userEmail = await UserService.getUserByEmail(item, trx);
+
+      if(!userEmail){
+        userEmail = await UserService.signUpWithEmailOnly(item, trx);
+      }
+
+      const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.ADMIN , OrganizationInviteStatus.PENDENT, trx, hashToVerify);
+  
+      await MailService.sendInviteNewUserMail({
+        email: userEmail.email,
+        hashToVerify,
+        organizationName: organization.name
+      })
+
+      return userOrganizationCreated;
+      
+    }))
+
+    return true;
+  } catch (error) {
+    throw new Error(error.message)
+  }
+
+}
+
+// inviteMembers ...
+
+
+//@DEPRECATED
 const inviteUserToOrganization = async (
     usersToAttach: IInviteUserToOrganizationPayload, 
     context: { organizationId: string, client: IUserToken },
@@ -731,5 +827,6 @@ export default {
   userOrganizationInviteStatus,
   getUserOrganizationById,
   inativeUsersInOrganization,
-  isOrganizationAdmin
+  isOrganizationAdmin,
+  inviteTeammates
 }

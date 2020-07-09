@@ -86,6 +86,7 @@ const createOrganizationCustomer = async (input: {
   }
 
 }
+
 const sendRecurrencyTransaction = async (input: {
   planIdentifier: string
   payableWith: PaymentMethod
@@ -204,84 +205,6 @@ const listOrganizationCustomerPayment = async (organizationId: string) => {
     throw new Error(error.message);
   }
 }
-
-// const saveOrganizationCreditCard = async (
-//   saveOrganizationCreditCardInput: {
-//     number: string, 
-//     holderName: string, 
-//     expirationDate: string, 
-//     cvv: string
-//   },
-//   context: { organizationId: string }
-// ) => {
-
-//   const query = `
-//     mutation saveOrganizationCreditCard($input: SaveOrganizationCreditCardInput!) {
-//         saveOrganizationCreditCard(input: $input){
-//           brand
-//           holderName
-//           lastDigits
-//           country
-//           expirationDate
-//           valid
-//         }
-//     }`
-
-//   const variables = {
-//       input: {
-//         ...saveOrganizationCreditCardInput,
-//         externalId: context.organizationId
-//       }
-//   };
-
-//   try {
-
-//     const res = await fetchPaymentsService(query, variables);
-
-//     if(res.data?.errors){
-//       throw new Error(res.data.errors[0].message)
-//     }
-
-//     return res.data.data.saveOrganizationCreditCard
-
-//   } catch (error) {
-//     throw new Error(error.message);
-//   }
-  
-// }
-
-// const removeCardById = async (
-//     removeCardByIdInput: {id : string},
-//     context: { organizationId: string }
-//   ) => {
-
-//   const query = `
-//     mutation removeCardById($input: RemoveCardByIdInput!) {
-//         removeCardById(input: $input)
-//     }`
-
-//   const variables = {
-//       input: {
-//         id: removeCardByIdInput.id,
-//         externalId: context.organizationId
-//       }
-//   };
-
-//   try {
-
-//     const res = await fetchPaymentsService(query, variables);
-
-//     if(res.data?.errors){
-//       throw new Error(res.data.errors[0].message)
-//     }
-
-//     return res.data.data.removeCardById
-
-//   } catch (error) {
-//     throw new Error(error.message);
-//   }
-
-// }
 
 const getSubscriptionByOrganizationId = async (organizationId: string) => {
 

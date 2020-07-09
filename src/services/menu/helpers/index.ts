@@ -79,14 +79,8 @@ export const affiliateMemberMountMenu = (serviceRole: string) => {
                 slug: '/affiliate/payments'
             },
             {
-                name: 'divulgation',
-                external: true,
-                children: [
-                    {
-                        name: 'linkGenerator',
-                        slug: '/affiliate/link-generator'
-                    }
-                ]
+                name: 'linkGenerator',
+                slug: '/affiliate/link-generator'
             }
         ]
     }

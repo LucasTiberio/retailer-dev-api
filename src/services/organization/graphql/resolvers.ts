@@ -7,6 +7,11 @@ import ServicesService from '../../services/service';
 
 const resolvers : IResolvers = {
   Mutation: {
+    inviteTeammates: (_, { input }, { client, organizationId }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.inviteTeammates(input, {client, organizationId}, trx);
+      });
+    },
     createOrganization: (_, { input }, { client, redisClient }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.createOrganization(input, {client, redisClient}, trx);
