@@ -1,6 +1,7 @@
 import OrganizationRulesService from '../../../organization-rules/service';
 jest.mock('../../../organization-rules/service')
 import service from '../../service';
+import VtexService from '../../../vtex/service';
 import UserService from '../../../users/service';
 import { Transaction } from 'knex';
 import knexDatabase from '../../../../knex-database';
@@ -10,6 +11,7 @@ import { IUserToken } from '../../../authentication/types';
 import Faker from 'faker';
 import redisClient from '../../../../lib/Redis';
 import { MESSAGE_ERROR_UPGRADE_PLAN } from '../../../../common/consts';
+import { ServiceRoles } from '../../../services/types';
 
 describe("teste", () => {
 
@@ -107,8 +109,7 @@ describe("teste", () => {
             maxTeammates: 5,
             maxTransactionTax: 5
         }})))
-
-        
+       
         try{
             await service.inviteTeammates(inviteTeammatesInput, context, trx);
         } catch(e){
@@ -117,8 +118,6 @@ describe("teste", () => {
             expect(usersOrganization).toHaveLength(1);
             done();
         }
-
-
 
     })
 
@@ -202,6 +201,61 @@ describe("teste", () => {
             expect(usersOrganization).toHaveLength(6);
             done();
         }
+
+    })
+
+    test('user organization admin should invite old service members to teammates but not exced plan limit', async done => {
+
+        const organizationCreated = await service.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
+
+        const currentOrganizationPayload = {
+            organizationId: organizationCreated.id
+        }
+
+        await service.setCurrentOrganization(currentOrganizationPayload, {client: userToken, redisClient}, trx);
+
+        let context = {client: userToken, organizationId: organizationCreated.id};
+
+        const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
+        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
+            maxAnalysts: 5,
+            maxSales: 5,
+            maxTeammates: 5,
+            maxTransactionTax: 5
+        }})))
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+
+        await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
+
+        const inviteAffiliatesInput = {
+            users: Array(1).fill(0).map(() => ({
+                email: Faker.internet.email(),
+                role: ServiceRoles.ANALYST
+            }))
+        }
+
+        await service.inviteAffiliateServiceMembers(inviteAffiliatesInput, context, trx);
+
+        const inviteTeammatesInput = {
+            emails: [inviteAffiliatesInput.users[0].email]
+        }
+
+        await service.inviteTeammates(inviteTeammatesInput, context, trx);
+
+        const usersOrganization = await (trx || knexDatabase.knex)('users_organizations').select();
+
+        expect(usersOrganization).toHaveLength(2);
+
+        const usersOrganizationService = await (trx || knexDatabase.knex)('users_organization_service_roles').where('active', true).select();
+        
+        expect(usersOrganizationService).toHaveLength(0);
+
+        done();
 
     })
 
