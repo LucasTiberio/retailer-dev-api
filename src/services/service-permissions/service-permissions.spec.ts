@@ -171,17 +171,14 @@ describe('Organization Permissions', () => {
 
         await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
 
-        const inviteUserToOrganizationPayload = {
+        const inviteAffiliatesInput = {
             users: [{
-                email: otherSignUpCreated.email,
-                services: [{
-                    name: Services.AFFILIATE,
+                    email: otherSignUpCreated.email,
                     role: ServiceRoles.ANALYST
                 }]
-            }]
         }
 
-        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+        await OrganizationService.inviteAffiliateServiceMembers(inviteAffiliatesInput, context, trx);
         
         //set currento other organization
         const currentOrganizationPayload = {

@@ -77,148 +77,6 @@ describe('Menu', () => {
         done();
     });
 
-    // test("organization member should list menu", async done => {
-
-    //     let otherSignUpPayload = {
-    //         username: Faker.name.firstName(),
-    //         email: Faker.internet.email(),
-    //         password: "B8oneTeste123!"
-    //     }
-
-    //     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    //     let otherUserToken = { origin: 'user', id: otherSignUpCreated.id };
-    //     const [otherUserFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
-    //     await UserService.verifyEmail(otherUserFromDb.verification_hash, trx);
-    //     let otherContext = {client: otherUserToken, organizationId: organizationCreated.id};
-
-    //     const vtexSecrets = {
-    //         xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
-    //         xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-    //         accountName: "beightoneagency"
-    //     }
-        
-    //     await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
-
-    //     const inviteUserToOrganizationPayload = {
-    //         users: [{
-    //             email: otherSignUpCreated.email,
-    //             services: [{
-    //                 name: Services.AFFILIATE,
-    //                 role: ServiceRoles.ANALYST
-    //             }]
-    //         }]
-    //     }
-
-    //     await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
-
-    //     const listServices = await service.getMenuTree(otherContext, trx);
-
-    //     expect(listServices).toEqual(organizationMemberMenu)
-
-    //     done();
-    // });
-
-    // test("organization affiliate admin should list menu", async done => {
-
-    //     let otherSignUpPayload = {
-    //         username: Faker.name.firstName(),
-    //         email: Faker.internet.email(),
-    //         password: "B8oneTeste123!"
-    //     }
-
-    //     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    //     let otherUserToken = { origin: 'user', id: otherSignUpCreated.id };
-    //     const [otherUserFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
-    //     await UserService.verifyEmail(otherUserFromDb.verification_hash, trx);
-    //     let otherContext = {client: otherUserToken, organizationId: organizationCreated.id};
-
-    //     //add vtex secrets
-    //     const vtexSecrets = {
-    //         xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
-    //         xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-    //         accountName: "beightoneagency"
-    //     }
-
-    //     await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
-
-    //     const inviteUserToOrganizationPayload = {
-    //         users: [{
-    //             email: otherSignUpCreated.email,
-    //             services: [{
-    //                 name: Services.AFFILIATE,
-    //                 role: ServiceRoles.ANALYST
-    //             }]
-    //         }]
-    //     }
-
-    //     await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
-
-    //     const listServices = await service.getMenuTree(otherContext, trx);
-
-    //     expect(listServices).toEqual(affiliateMemberMountMenu(ServiceRoles.ADMIN))
-
-    //     done();
-    // });
-
-    // test("organization affiliate responsible should list menu", async done => {
-
-    //     let otherSignUpPayload = {
-    //         username: Faker.name.firstName(),
-    //         email: Faker.internet.email(),
-    //         password: "B8oneTeste123!"
-    //     }
-
-    //     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    //     let otherUserToken = { origin: 'user', id: otherSignUpCreated.id };
-    //     const [otherUserFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash');
-    //     await UserService.verifyEmail(otherUserFromDb.verification_hash, trx);
-    //     let otherContext = {client: otherUserToken, organizationId: organizationCreated.id};
-    //     //add vtex secrets
-    //     const vtexSecrets = {
-    //         xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
-    //         xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
-    //         accountName: "beightoneagency"
-    //     }
-
-    //     await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
-
-    //     const inviteUserToOrganizationPayload = {
-    //         users: [{
-    //             email: otherSignUpCreated.email,
-    //             services: [{
-    //                 name: Services.AFFILIATE,
-    //                 role: ServiceRoles.ANALYST
-    //             }]
-    //         }]
-    //     }
-
-    //     await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
-
-
-    //     //add users in organization service
-    //     const addUserInOrganizationServicePayload = {
-    //         userId: otherSignUpCreated.id,
-    //         serviceName: Services.AFFILIATE 
-    //     };
-
-    //     await ServicesService.addUserInOrganizationService(addUserInOrganizationServicePayload, context, trx);
-
-    //     //handle roles in org service
-    //     const userInServiceHandleRolePayload = {
-    //         userId: otherSignUpCreated.id,
-    //         serviceName: Services.AFFILIATE,
-    //         serviceRole: ServiceRoles.RESPONSIBLE
-    //     };
-
-    //     await ServicesService.userInServiceHandleRole(userInServiceHandleRolePayload, context, trx);
-
-    //     const listServices = await service.getMenuTree(otherContext, trx);
-
-    //     expect(listServices).toEqual(affiliateMemberMountMenu(ServiceRoles.RESPONSIBLE))
-
-    //     done();
-    // });
-
     test("organization affiliate analyst should list menu", async done => {
 
         let otherSignUpPayload = {
@@ -241,18 +99,15 @@ describe('Menu', () => {
         }
 
         await VtexService.verifyAndAttachVtexSecrets(vtexSecrets,context, trx);
-        
-        const inviteUserToOrganizationPayload = {
+
+        const inviteAffiliatesInput = {
             users: [{
-                email: otherSignUpCreated.email,
-                services: [{
-                    name: Services.AFFILIATE,
+                    email: otherSignUpCreated.email,
                     role: ServiceRoles.ANALYST
                 }]
-            }]
         }
 
-        await OrganizationService.inviteUserToOrganization(inviteUserToOrganizationPayload, context, trx);
+        await OrganizationService.inviteAffiliateServiceMembers(inviteAffiliatesInput, context, trx);
 
         const listServices = await service.getMenuTree(otherContext, trx);
 
