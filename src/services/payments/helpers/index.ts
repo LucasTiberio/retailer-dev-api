@@ -69,8 +69,6 @@ export const fetchPaymentsService = async (query: string, variables?: any) => {
     variables
   }
 
-  console.log("PAYMENTS_URL", PAYMENTS_URL)
-  
   const res = await Axios.post(PAYMENTS_URL, payload, {
     headers: { "Content-Type": 'application/json' }
   })
