@@ -131,23 +131,18 @@ const listAvailablePlans = async () => {
       intervalType
       payableWith
       price
-      affiliateRules{
-        maxAnalysts
-        maxSales
-        maxTeammates
-        maxTransactionTax
-      }
-      suport{
-        type
-        time
-        measure
-      }
-      benefits{
-        training
-        sso
-      }
-      flags{
-        bestPrice
+      bestPrice
+      planRules{
+        serviceName
+        rules{
+          maxTransactionTax
+          maxTeammates
+          maxAnalysts
+          maxSales
+          support
+          training
+          sso
+        }
       }
     }
   }`

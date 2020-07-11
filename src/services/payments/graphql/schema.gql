@@ -68,32 +68,23 @@ type Plan{
   name: String!
   payableWith: String!
   price: Float!
-  affiliateRules: AffiliateRules
-  suport: [PlanSuport]!
-  benefits: [PlanBenefits]!
-  flags: PlanFlags
+  bestPrice: Boolean!
+  planRules: [PlanRules]!
 }
 
-type PlanSuport {
-    type: String!
-    time: Int!
-    measure: String!
+type PlanRules{
+  serviceName: String!
+  rules: Rules!
 }
 
-type PlanBenefits {
-    training: Boolean!
-    sso: Boolean!
-}
-
-type PlanFlags {
-    bestPrice: Boolean!
-}
-
-type AffiliateRules{
+type Rules{
+  maxTransactionTax: Int!
+  maxTeammates: Int!
   maxAnalysts: Int!
   maxSales: Int!
-  maxTeammates: Int!
-  maxTransactionTax: Int!
+  support: String!
+  training: Boolean!
+  sso: Boolean!
 }
 
 type Subscription{
