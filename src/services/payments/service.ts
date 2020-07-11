@@ -163,6 +163,7 @@ const listAvailablePlans = async () => {
     return res.data.data.listAvailablePlans
   
   } catch (error) {
+    console.log(error.response.data)
     throw new Error(error.message);
   }
 
