@@ -12,6 +12,11 @@ const resolvers : IResolvers = {
         return service.inviteTeammates(input, {client, organizationId}, trx);
       });
     },
+    inativeTeammates: (_, { input }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.inativeTeammates(input, trx);
+      });
+    },
     inviteAffiliate: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.inviteAffiliateServiceMembers(input, {client, organizationId}, trx);
@@ -40,11 +45,6 @@ const resolvers : IResolvers = {
     responseOrganizationInvite: (_, { input }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.responseInvite(input, trx);
-      });
-    },
-    inativeUsersInOrganization: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
-        return service.inativeUsersInOrganization(input, {client, organizationId}, trx);
       });
     },
     handleUserPermissionInOrganization: (_, { input }, { client, organizationId }) => {

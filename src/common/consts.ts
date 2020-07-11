@@ -15,6 +15,8 @@ export const SALE_VTEX_PIXEL_NAMESPACE = 'sale_vtex_pixel';
 export const MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST = 'Organization service does not exist';
 export const MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME = 'User used free trial time.';
 export const MESSAGE_ERROR_UPGRADE_PLAN = "upgrade your plan to release this action.";
+export const MESSAGE_ERROR_USER_NOT_TEAMMATE = "user not teammates in organization";
+export const MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER = "not organization founder";
 
 export const PAYMENTS_URL = process.env.PAYMENTS_URL;
 

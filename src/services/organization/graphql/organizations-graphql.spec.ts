@@ -95,30 +95,6 @@ const ORGANIZATION_UPLOAD_IMAGE = `
     }
 `
 
-const INATIVE_USERS_IN_ORGANIZATION = `
-    mutation inativeUsersInOrganization($input: InativeUsersInOrganizationInput!) {
-        inativeUsersInOrganization(input: $input){
-            userOrganization{
-                id
-                inviteStatus
-                inviteHash
-                updatedAt
-                createdAt
-                user{
-                    id
-                }
-                organization{
-                    id
-                }
-            }
-            userError{
-                message
-                userId
-            }
-        }
-    }
-`
-
 const HANDLE_USER_PERMISSION_IN_ORGANIZATION = `
     mutation handleUserPermissionInOrganization($input: HandleUserPermissionInOrganizationInput!) {
         handleUserPermissionInOrganization(input: $input){

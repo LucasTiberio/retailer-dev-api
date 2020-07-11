@@ -1,4 +1,4 @@
-import { IInviteUserToOrganizationData, IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IInviteUserToOrganizationPayload, IResponseInvitePayload, IFindUsersAttributes } from "./types";
+import { IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IResponseInvitePayload, IFindUsersAttributes } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
 import database from "../../knex-database";
@@ -13,9 +13,9 @@ import common from "../../common";
 import { IUserOrganizationDB, IOrganizationAdittionalInfos } from "./types";
 import sharp from 'sharp';
 import { IPagination } from "../../common/types";
-import { Services, ISimpleService, ServiceRoles } from "../services/types";
+import { Services, ServiceRoles } from "../services/types";
 import { RedisClient } from "redis";
-import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_UPGRADE_PLAN } from '../../common/consts';
+import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_UPGRADE_PLAN, MESSAGE_ERROR_USER_NOT_TEAMMATE } from '../../common/consts';
 import { stringToSlug } from './helpers';
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from "./adapters";
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from "./loaders";
@@ -43,15 +43,6 @@ const createOrganization = async (
   ) => {
 
   if(!context.client) throw new Error("invalid token");
-
-  // const organizationFound = await (trx || database.knex)('organizations')
-  //   .where('user_id', context.client.id)
-  //   .first()
-  //   .select('id')
-
-  // if(organizationFound){
-  //   throw new Error(MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME)
-  // }
 
   const { 
     organization : { 
@@ -167,7 +158,7 @@ const inviteTeammates = async (
   if(!organization) throw new Error("Organization not found.");
 
   try {
-    await Promise.all(uniqueEmails.map(async item => {
+    let users = await Promise.all(uniqueEmails.map(async item => {
 
       let hashToVerify = await common.encryptSHA256(JSON.stringify({item, timestamp: +new Date()}));
 
@@ -208,8 +199,6 @@ const inviteTeammates = async (
         userEmail = await UserService.signUpWithEmailOnly(item, trx);
       }
 
-
-
       const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.ADMIN , OrganizationInviteStatus.PENDENT, trx, hashToVerify);
   
       await MailService.sendInviteNewUserMail({
@@ -222,7 +211,7 @@ const inviteTeammates = async (
       
     }))
 
-    return true;
+    return users;
   } catch (error) {
     throw new Error(error.message)
   }
@@ -269,7 +258,7 @@ const inviteAffiliateServiceMembers = async (
 
     await ServicesService.verifyAffiliateMaxRules(input.users, affiliateTeammateRules.affiliateRules, serviceOrganizationFound.id, trx);
 
-    await Promise.all(input.users.map(async item => {
+    return await Promise.all(input.users.map(async item => {
 
       let hashToVerify = await common.encryptSHA256(JSON.stringify({...item, timestamp: +new Date()}));
 
@@ -325,9 +314,10 @@ const inviteAffiliateServiceMembers = async (
         organizationName: organization.name
       })
 
+      return userOrganizationCreated;
+
     }));
 
-    return true;
   } catch (error) {
     throw new Error(error.message)
   }
@@ -351,122 +341,6 @@ const changeOrganizationAdminToMember = async (userOrganizationIds: string[], tr
     .whereIn('users_organization_id', userOrganizationIds)
 
 }
-
-
-//@DEPRECATED
-// const inviteUserToOrganization = async (
-//     usersToAttach: IInviteUserToOrganizationPayload, 
-//     context: { organizationId: string, client: IUserToken },
-//     trx: Transaction
-//   ) => {
-
-//   if(!context.client) throw new Error("Token must be provided.");
-
-//   try {
-
-//     const organizationId = context.organizationId;
-
-//     const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('name');
-
-//     if(!organization) throw new Error("Organization not found.");
-
-//     await Promise.all(usersToAttach.users.map(async (user : IInviteUserToOrganizationData ) => {
-
-//       if(user.services && !user.services.length && user.role !== OrganizationRoles.ADMIN){
-//         throw new Error("Users not admin should be added only with services attached.")
-//       }
-
-//       let hashToVerify = await common.encryptSHA256(JSON.stringify({...user, timestamp: +new Date()}));
-
-//       const [userInvitedOnPast] = await (trx || knexDatabase.knex)('users_organizations AS uo')
-//         .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
-//         .where('usr.email', user.email)
-//         .where('uo.organization_id', organizationId)
-//         .select('uo.*', 'usr.email', 'usr.username');
-
-//       if(userInvitedOnPast){ 
-
-//         const [userReinvited] = await (trx || knexDatabase.knex)('users_organizations AS uo')
-//           .update({ active: true, invite_status: OrganizationInviteStatus.PENDENT, invite_hash: hashToVerify })
-//           .where('id', userInvitedOnPast.id)
-//           .returning('id');
-
-//         await (trx || knexDatabase.knex)('users_organization_service_roles')
-//           .update({ active: false})
-//           .where('users_organization_id', userInvitedOnPast.id);
-
-//         await MailService.sendInviteUserMail({
-//           email: user.email,
-//           hashToVerify,
-//           organizationName: organization.name,
-//         })
-
-//         return userReinvited;
-//       }
-
-//       const userEmailFound = await UserService.getUserByEmail(user.email, trx);
-
-//       if(userEmailFound){
-
-//         const usersOrganizationFound = await getUserOrganizationByIds(userEmailFound.id, organizationId, trx);
-
-//         if(usersOrganizationFound){
-
-//           const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations').update({
-//             invite_status: OrganizationInviteStatus.PENDENT,
-//             active: true
-//             }).where('id', usersOrganizationFound.id).returning('id');
-
-//             await MailService.sendInviteUserMail({
-//             email: user.email,
-//             hashToVerify,
-//             organizationName: organization.name,
-//           })
-
-//           return userOrganizationCreatedId;
-
-//         } else {
-
-//           const userAttached = await organizationRolesAttach(userEmailFound.id, organizationId, user.role || OrganizationRoles.MEMBER, OrganizationInviteStatus.PENDENT, trx, hashToVerify);
-
-//           if(user.services && user.role !== OrganizationRoles.ADMIN){
-//             await ServicesService.attachUserInOrganizationServices({ userOrganizationId: userAttached.id , services: user.services, organizationId: context.organizationId }, trx);
-//           }
-
-//           await MailService.sendInviteUserMail({ email: user.email, hashToVerify, organizationName: organization.name})
-
-//           return userAttached;
-
-//         }
-
-//       }
-
-//       const partialUserCreated = await UserService.signUpWithEmailOnly(user.email, trx);
-
-//       const userOrganizationCreated = await organizationRolesAttach(partialUserCreated.id, organizationId, user.role || OrganizationRoles.MEMBER, OrganizationInviteStatus.PENDENT, trx, hashToVerify);
-
-//       if(user.services && user.role !== OrganizationRoles.ADMIN){
-//         await ServicesService.attachUserInOrganizationServices({ userOrganizationId: userOrganizationCreated.id , services: user.services, organizationId: context.organizationId }, trx);
-//       }
-
-//       await MailService.sendInviteNewUserMail({
-//         email: partialUserCreated.email,
-//         hashToVerify,
-//         organizationName: organization.name
-//       })
-
-//       return userOrganizationCreated;
-
-//     }))
-
-//     return true;
-
-
-//   } catch(e){
-//     throw new Error(e.message);
-//   }
-
-// }
 
 const responseInvite = async (responseInvitePayload : IResponseInvitePayload, trx : Transaction) => {
 
@@ -608,67 +482,6 @@ const getOrganizationRoleById = async (organizationRoleId: string, trx?: Transac
   const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('id', organizationRoleId).select();
 
   return organizationRole;
-
-}
-
-const inativeUsersInOrganization = async (
-  inativeUsersInOrganizationPayload: {usersId: string[]}, 
-  context: { organizationId: string, client: IUserToken },
-  trx: Transaction) => {
-
-  if(!context.client) throw new Error("token must be provided.");
-
-  return await Promise.all(inativeUsersInOrganizationPayload.usersId.map(async userId => {
-
-    const [userOrganizationFound] = await (trx || knexDatabase.knex)('users_organizations')
-    .where('user_id', userId)
-    .andWhere('organization_id', context.organizationId);
-
-    if(!userOrganizationFound) return {
-      userError: {
-        message: "user not found in organization!",
-        userId
-      }
-    };
-
-    const [userFound] = await (trx || knexDatabase.knex)('users_organizations AS uo')
-      .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')  
-      .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')  
-      .where('uo.id', userOrganizationFound.id)
-      .select('uo.id', 'or.name');
-
-    if(userFound.name === OrganizationRoles.ADMIN){
-      const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', context.organizationId).select('user_id');
-      if(organizationFound.user_id !== context.client.id){
-        return {
-          userError: {
-            message: 'Not possible inative other admins',
-            userId
-          }
-        }
-      }
-    }
-
-    const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
-      .update({active: false, invite_hash: null})
-      .where('id', userOrganizationFound.id)
-      .returning('*');
-
-    await (trx || knexDatabase.knex)('users_organization_service_roles')
-      .update({ active: false})
-      .where('users_organization_id', userOrganizationInatived.id);
-
-    const memberOrganizationRole = await getOrganizationRoleId(OrganizationRoles.MEMBER, trx);
-
-    await (trx || knexDatabase.knex)('users_organization_roles')
-      .where('users_organization_id', userOrganizationInatived.id)
-      .update({ organization_role_id: memberOrganizationRole.id })
-
-    return {
-      userOrganization: _usersOrganizationsAdapter(userOrganizationInatived)
-    }
-
-  }))
 
 }
 
@@ -895,6 +708,7 @@ trx: Transaction) => {
   return _organizationAdapter(organizationAttachLogo);
 
 }
+
 const setCurrentOrganization = async (currentOrganizationPayload : { organizationId: string | null }, context: { client: IUserToken, redisClient: RedisClient }, trx: Transaction) => {
 
   if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
@@ -930,6 +744,26 @@ const verifyShowFirstSteps = async (organizationId: string) => {
 
 }
 
+const inativeTeammates = async (
+  inativeTeammatesIds: {userOrganizationId: string},
+  trx: Transaction
+) => {
+
+  const { userOrganizationId } = inativeTeammatesIds;
+
+  const organizationAdmin = await isOrganizationAdmin(userOrganizationId, trx);
+  
+  if(!organizationAdmin) throw new Error(MESSAGE_ERROR_USER_NOT_TEAMMATE);
+
+  const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
+    .update({active: false, invite_hash: null})
+    .where('id', userOrganizationId)
+    .returning('*');
+
+  return _usersOrganizationsAdapter(userOrganizationInatived);
+  
+}
+
 export default {
   listUsersInOrganization,
   getOrganizationByName,
@@ -944,8 +778,8 @@ export default {
   handleUserPermissionInOrganization,
   createOrganization,
   getUserOrganizationRoleById,
+  inativeTeammates,
   verifyOrganizationName,
-  // inviteUserToOrganization,
   responseInvite,
   getOrganizationRoleById,
   isFounder,
@@ -956,7 +790,6 @@ export default {
   findUsersToOrganization,
   userOrganizationInviteStatus,
   getUserOrganizationById,
-  inativeUsersInOrganization,
   isOrganizationAdmin,
   inviteTeammates,
   inviteAffiliateServiceMembers

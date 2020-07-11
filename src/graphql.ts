@@ -11,7 +11,7 @@ import knexDatabase from './knex-database';
 import { NextFunction } from 'express';
 import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus } from './services/organization/types';
 import redisClient from './lib/Redis';
-import { SALE_VTEX_PIXEL_NAMESPACE, MESSAGE_ERROR_SALE_TOKEN_INVALID } from './common/consts';
+import { SALE_VTEX_PIXEL_NAMESPACE, MESSAGE_ERROR_SALE_TOKEN_INVALID, MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER } from './common/consts';
 import PaymentService from './services/payments/service';
 
 declare var process : {
@@ -35,6 +35,7 @@ const typeDefsBase = gql`
   directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
   directive @organizationPaidVerify on FIELD | FIELD_DEFINITION
+  directive @asOrganizationFounder on FIELD | FIELD_DEFINITION
   directive @ordersService on FIELD | FIELD_DEFINITION
   directive @hasSalesToken on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
@@ -223,6 +224,19 @@ const directiveResolvers : IDirectiveResolvers = {
     }    
 
     throw new Error("Organization has billing pendency.")
+    
+  },
+  async asOrganizationFounder(next, _, __, context): Promise<NextFunction> {
+
+    const organizationId = await redisClient.getAsync(context.client.id);
+
+    if(!organizationId) throw new Error("Invalid session!");
+
+    const [organizationFounder] = await knexDatabase.knex('organizations').where('user_id', context.client.id).select('id');
+
+    if(!organizationFounder) throw new Error(MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER);
+
+    return next();
     
   },
   async ordersService(next, _, __, context): Promise<NextFunction> {
