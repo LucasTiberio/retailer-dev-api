@@ -7,7 +7,8 @@ import VtexService from '../vtex/service';
 import knexDatabase from "../../knex-database";
 import { OrganizationInviteStatus, OrganizationRoles } from "../organization/types";
 import store from "../../store";
-import { MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES } from "../../common/consts";
+import { MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES, MESSAGE_ERROR_UPGRADE_PLAN } from "../../common/consts";
+import { IVtexIntegrationAdapted } from "../vtex/types";
 
 const _serviceAdapter = (record: IServiceAdaptedFromDB) => {
   return {
@@ -144,7 +145,7 @@ const getServiceRolesByOneId = async (serviceRolesId: string) => {
   return organizationServices;
 }
 
-const getServiceRolesByName = async (serviceRoleName: ServiceRoles, trx?: Transaction) => {
+const getServiceRolesByName = async (serviceRoleName: ServiceRoles | string, trx?: Transaction) => {
   const [serviceRolesFound] = await (trx || knexDatabase.knex)('service_roles').where('name', serviceRoleName).select();
   return _serviceRolesAdapter(serviceRolesFound);
 }
@@ -226,122 +227,107 @@ const getOrganizationIdByUserOrganizationServiceRoleId = async (userOrganization
 
 }
 
-const addUserInOrganizationService = async (
-    attrs : { userId : string, serviceName: Services }, 
-    context: { organizationId: string, client: IUserToken }, 
-    trx: Transaction
-  ) => {
+const usersInServiceOrganizationCount = async (serviceRoleId: string, serviceOrganizationId: string, emails: string[] ,trx: Transaction) => {
 
-  if(!context.client) throw new Error("token must be provided!");
+  const [usersInServiceOrganizationCounted] = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+    .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
+    .innerJoin('users AS u', 'u.id', 'uo.user_id')
+    .where('uosr.service_roles_id', serviceRoleId)
+    .andWhere('uosr.organization_services_id', serviceOrganizationId)
+    .andWhere('uosr.active', true)
+    .whereNotIn('u.email', emails)
+    .count();
 
-  const { userId, serviceName } = attrs;
-
-  const [serviceAnalystServiceRole] = await (trx || knexDatabase.knex)('service_roles').where('name', ServiceRoles.ANALYST).select('id');
-
-  if(!serviceAnalystServiceRole)
-    throw new Error('Analyst service role doesnt exist');
-
-  const [usersOrganizationFoundDb] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', userId).andWhere('organization_id', context.organizationId).select('id');
-
-  if(!usersOrganizationFoundDb)
-    throw new Error("User doesnt are in organization");
-
-  const usersOrganizationRoleIsAdmin = await OrganizationService.isOrganizationAdmin(usersOrganizationFoundDb.id, trx);
-
-  if(usersOrganizationRoleIsAdmin) throw new Error(MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES);
-
-  const vtexSecrests = await VtexService.getSecretsByOrganizationId(context.organizationId, trx);
-
-  if(!vtexSecrests || !vtexSecrests.status) throw new Error("Vtex Integration not implemented");
-
-  const [serviceOrganizationFound] = await serviceOrganizationByName(context.organizationId, serviceName, trx);
-
-  if(!serviceOrganizationFound) throw new Error("Organization doesnt have this service");
-
-  const userOrganizationServiceRoleFound = await getUserOrganizationServiceRole(usersOrganizationFoundDb.id, serviceOrganizationFound.id, trx);
-
-  if(userOrganizationServiceRoleFound){
-
-    const [userReactiveInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
-      active: true
-    }).where({
-      users_organization_id: usersOrganizationFoundDb.id,
-      organization_services_id: serviceOrganizationFound.id
-    }).returning('*');
-
-    return {...usersOrganizationServiceAdapter(userReactiveInOrganizationService), serviceId: serviceOrganizationFound.service_id};
-
-  }
-
-  const [userAddedInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').insert({
-    service_roles_id: serviceAnalystServiceRole.id,
-    users_organization_id: usersOrganizationFoundDb.id,
-    organization_services_id: serviceOrganizationFound.id
-  }).returning('*');
-
-  await VtexService.createUserVtexCampaign(userAddedInOrganizationService.id, vtexSecrests, trx);
-
-  return {...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: serviceOrganizationFound.service_id};
+  return usersInServiceOrganizationCounted.count;
 
 }
 
-const attachUserInOrganizationServices = async (
-    input : { userOrganizationId : string, services: ISimpleService[], organizationId: string },
-    trx: Transaction
+const verifyAffiliateMaxRules = async (
+  users: {
+    email: string
+    role: ServiceRoles
+  }[],
+  affiliateRules: { maxAnalysts: number, maxSales: number },
+  serviceOrganizationId: string,
+  trx: Transaction
+) => {
+
+  let usersByRole : any = {};
+
+  users.forEach(user => {
+    let quantity = usersByRole[user.role]?.quantity || 0
+    Object.assign(usersByRole, {[user.role] : {quantity: quantity+= 1, emails: usersByRole[user.role] ? [...usersByRole[user.role].emails, user.email] : [user.email] } })
+  })
+
+  await Promise.all(
+    Object.keys(usersByRole).map(async role => {
+      let usersToInvite = usersByRole[role];
+
+      const affiliateService = await getServiceRolesByName(role, trx);
+
+      const usersInServiceOrganizationCounted = await usersInServiceOrganizationCount(affiliateService.id, serviceOrganizationId, usersToInvite.emails ,trx);
+
+      switch (role) {
+        case ServiceRoles.ANALYST:
+          if(usersToInvite.quantity > affiliateRules.maxAnalysts || (usersToInvite.quantity + Number(usersInServiceOrganizationCounted)) > affiliateRules.maxAnalysts) throw new Error(MESSAGE_ERROR_UPGRADE_PLAN);
+          return;
+        case ServiceRoles.SALE:
+          if(usersToInvite.quantity > affiliateRules.maxSales || (usersToInvite.quantity + Number(usersInServiceOrganizationCounted)) > affiliateRules.maxSales) throw new Error(MESSAGE_ERROR_UPGRADE_PLAN);
+          return 
+        default: return null;
+      }
+  
+    })
+  )
+ 
+}
+
+const attachUserInOrganizationAffiliateService = async (
+    input : { userOrganizationId : string, role: ServiceRoles, organizationId: string, serviceOrganization: {
+      id: string,
+      service_id: string
+    } },
+    trx: Transaction,
+    vtexSecrets?: IVtexIntegrationAdapted
   ) => {
 
-  const { userOrganizationId, services, organizationId } = input;
+  const { userOrganizationId, role, organizationId } = input;
 
-  const vtexSecrests = await VtexService.getSecretsByOrganizationId(organizationId, trx); if(!vtexSecrests || !vtexSecrests.status) 
-    throw new Error("Vtex Integration not implemented");
+    const [serviceRoleSelected] = await (trx || knexDatabase.knex)('service_roles').where('name', role).select('id');
+
+    if(!serviceRoleSelected)
+      throw new Error('Service role doesnt exist');
+
+    const userOrganizationServiceRoleFound = await getUserOrganizationServiceRole(userOrganizationId, input.serviceOrganization.id, trx);
+
+    if(userOrganizationServiceRoleFound){
+
+      const [userReactiveInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
+        active: true,
+        service_roles_id: serviceRoleSelected.id
+      }).where({
+        users_organization_id: userOrganizationId,
+        organization_services_id: input.serviceOrganization.id
+      }).returning('*');
+
+      return ({...usersOrganizationServiceAdapter(userReactiveInOrganizationService), serviceId: input.serviceOrganization.service_id});
+
+    } else {
+
+      const [userAddedInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').insert({
+        service_roles_id: serviceRoleSelected.id,
+        users_organization_id: userOrganizationId,
+        organization_services_id: input.serviceOrganization.id,
+        active: true
+      }).returning('*');
   
-  try {
-
-    await Promise.all(services.map(async service => {
-
-      const [serviceRoleSelected] = await (trx || knexDatabase.knex)('service_roles').where('name', service.role || ServiceRoles.ANALYST).select('id');
-
-      if(!serviceRoleSelected) throw new Error('Service role doesnt exist');
-
-      const [serviceOrganizationFound] = await serviceOrganizationByName(organizationId, service.name, trx);
-
-      if(!serviceOrganizationFound) throw new Error("Organization doesnt have this service");
-
-      const userOrganizationServiceRoleFound = await getUserOrganizationServiceRole(userOrganizationId, serviceOrganizationFound.id, trx);
-
-      if(userOrganizationServiceRoleFound){
-
-        const [userReactiveInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
-          active: true
-        }).where({
-          users_organization_id: userOrganizationId,
-          organization_services_id: serviceOrganizationFound.id
-        }).returning('*');
-
-        return {...usersOrganizationServiceAdapter(userReactiveInOrganizationService), serviceId: serviceOrganizationFound.service_id};
-
-      } else {
-
-        const [userAddedInOrganizationService] = await (trx || knexDatabase.knex)('users_organization_service_roles').insert({
-          service_roles_id: serviceRoleSelected.id,
-          users_organization_id: userOrganizationId,
-          organization_services_id: serviceOrganizationFound.id,
-          active: true
-        }).returning('*');
-    
-        if(service.name === Services.AFFILIATE){
-          await VtexService.createUserVtexCampaign(userAddedInOrganizationService.id, vtexSecrests, trx);
-        }
-    
-        return {...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: serviceOrganizationFound.service_id};
+      if(vtexSecrets){
+        await VtexService.createUserVtexCampaign(userAddedInOrganizationService.id, vtexSecrets, trx);
       }
-
-      }))
-
-  } catch (error){
-    throw new Error(error.message);
-  }
-
+  
+      return ({...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: input.serviceOrganization.service_id});
+    }
+  
 }
 
 const listAvailableUsersToService = async (
@@ -591,9 +577,41 @@ const verifyFirstSteps = async (userServiceOrganizationId: string, bankDataId: s
   return !(!!hasLinkGenerated && !!bankData);
 }
 
+const getUserInOrganizationServiceByUserOrganizationId = async (usersOrganizationId: string, organizationId: string, trx: Transaction) => {
+
+  const organizationServices = await getOrganizationServicesByOrganization(organizationId, trx);
+
+  const userInOrganizationServices = await (trx || knexDatabase.knex)('users_organization_service_roles')
+    .whereIn('organization_services_id', organizationServices.map(item => item.id))
+    .andWhere('users_organization_id', usersOrganizationId)
+
+  return userInOrganizationServices;
+
+}
+
+const getOrganizationServicesByOrganization = async (organizationId: string, trx: Transaction) => {
+
+  const organizationService = await (trx || knexDatabase.knex)('organization_services')
+    .where('organization_id', organizationId)
+    .select();
+
+  return organizationService
+
+}
+
+const inativeServiceMembersById = async (userOrganizationServiceIds: string[], trx: Transaction) => {
+  await (trx || knexDatabase.knex)('users_organization_service_roles')
+    .update({
+      active: false
+    }).whereIn('id', userOrganizationServiceIds)
+}
+
 export default {
+  inativeServiceMembersById,
   createServiceInOrganization,
+  getUserInOrganizationServiceByUserOrganizationId,
   getOrganizationServicesById,
+  getOrganizationServicesByOrganization,
   // listAvailableUsersToService,
   getOrganizationServicesByOrganizationId,
   getUserOrganizationServiceRoleById,
@@ -605,7 +623,6 @@ export default {
   listUsedServices,
   verifyFirstSteps,
   getServiceRolesByOneId,
-  // addUserInOrganizationService,
   getServiceMemberById,
   getUserOrganizationServiceRoleName,
   getServiceById,
@@ -617,5 +634,6 @@ export default {
   getServiceByName,
   usersOrganizationServiceAdapter,
   getOrganizationIdByUserOrganizationServiceRoleId,
-  attachUserInOrganizationServices
+  attachUserInOrganizationAffiliateService,
+  verifyAffiliateMaxRules
 }

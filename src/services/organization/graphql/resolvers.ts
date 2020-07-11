@@ -12,6 +12,11 @@ const resolvers : IResolvers = {
         return service.inviteTeammates(input, {client, organizationId}, trx);
       });
     },
+    inviteAffiliate: (_, { input }, { client, organizationId }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.inviteAffiliateServiceMembers(input, {client, organizationId}, trx);
+      });
+    },
     createOrganization: (_, { input }, { client, redisClient }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.createOrganization(input, {client, redisClient}, trx);
@@ -30,11 +35,6 @@ const resolvers : IResolvers = {
           data: createReadStream(),
           mimetype,
         }, {client, organizationId}, trx);
-      });
-    },
-    inviteUserToOrganization: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
-        return service.inviteUserToOrganization(input, {client, organizationId}, trx);
       });
     },
     responseOrganizationInvite: (_, { input }) => {

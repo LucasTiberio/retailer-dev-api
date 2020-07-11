@@ -49,6 +49,7 @@ stages:
           --build-arg redisport=$(REDIS_PORT)
           --build-arg ordersservicepassword=$(ORDERS_SERVICE_PASSWORD)
           --build-arg REDIRECT_URL_STAGING=https://go-staging.plugone.io
+          --build-arg PAYMENTS_URL=$(PAYMENTS_URL)
 
         includeLatestTag: true
         tags: |

@@ -32,6 +32,8 @@ input VerifyOrganizationNameInput{
 }
 
 extend type Mutation{
+  inviteAffiliate(input: InviteAffiliateInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
+  inviteTeammates(input: InviteTeammatesInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
   setCurrentOrganization(input: SetCurrentOrganizationInput!): Boolean! @isVerified @isAuthenticated 
   organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
@@ -40,6 +42,19 @@ extend type Mutation{
   inativeUsersInOrganization(input: InativeUsersInOrganizationInput!): [InativeUsersInOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   inviteTeammates(input: InviteTeammatesInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+}
+
+input InviteAffiliateInput{
+  users: [AffiliateUsers!]!
+}
+
+input InviteTeammatesInput{
+  emails: [String!]!
+}
+
+input AffiliateUsers{
+  email: String!
+  role: ServiceRolesName!
 }
 
 input InviteTeammatesInput{

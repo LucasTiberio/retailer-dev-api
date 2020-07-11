@@ -43,5 +43,7 @@ ARG ordersservicepassword
 ENV ORDERS_SERVICE_PASSWORD=$ordersservicepassword
 ARG REDIRECT_URL_STAGING
 ENV REDIRECT_URL_STAGING=$REDIRECT_URL_STAGING
+ARG PAYMENTS_URL
+ENV PAYMENTS_URL=$PAYMENTS_URL
 RUN npm install && npm run build
 CMD ["/bin/sh", "-c", "npx knex migrate:latest && npm start"]
