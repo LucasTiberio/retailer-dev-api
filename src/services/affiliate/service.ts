@@ -1,15 +1,21 @@
+import knexDatabase from '../../knex-database';
+
 import ShortenerUrlService from '../shortener-url/service';
 import UserService from '../users/service';
 import OrganizationService from '../organization/service';
 import ServicesService from '../services/service';
 import BankDataService from '../bank-data/service';
+
+import { _usersOrganizationServiceAdapter } from '../services/adapters';
+
 import { IUserToken } from '../authentication/types';
-import { Transaction } from 'knex';
 import { Services, ServiceRoles } from '../services/types';
-import knexDatabase from '../../knex-database';
 import { IUsersOrganizationServiceRolesUrlShortenerFromDB, IVtexStatus } from './types';
 import { IUserBankValuesToInsert } from '../bank-data/types';
+import { Transaction } from 'knex';
+
 import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE, MESSAGE_ERROR_USER_DOES_NOT_EXIST_IN_SYSTEM, MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE, SALE_VTEX_PIXEL_NAMESPACE } from '../../common/consts';
+
 import common from '../../common';
 import { RedisClient } from 'redis';
 import Axios from 'axios';
@@ -216,14 +222,14 @@ const createAffiliateBankValues = async (
 
     if(affiliateBankDataFound.bank_data_id){
       await BankDataService.updateBankValues({...createUserBankValuesPayload, bankDataId: affiliateBankDataFound.bank_data_id}, context, trx);
-      return ServicesService.usersOrganizationServiceAdapter(affiliateBankDataFound);
+      return ServicesService._usersOrganizationServiceAdapter(affiliateBankDataFound);
     }
 
     const bankData = await BankDataService.createBankValues(createUserBankValuesPayload, context, trx);
 
     const [affiliateBankData] = await (trx || knexDatabase.knex)('users_organization_service_roles').update('bank_data_id', bankData.id).where('id', context.userServiceOrganizationRolesId).returning('*');
 
-    return ServicesService.usersOrganizationServiceAdapter(affiliateBankData);
+    return ServicesService._usersOrganizationServiceAdapter(affiliateBankData);
 
 }
 

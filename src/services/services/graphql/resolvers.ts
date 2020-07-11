@@ -13,10 +13,10 @@ const resolvers : IResolvers = {
                 return service.createServiceInOrganization(input.serviceId, input.organizationId, client, trx);
             });
         },
-        userInServiceHandleRole: (_, attrs, { client, organizationId }) => {
+        handleServiceMembersRole: (_, attrs, { client, organizationId }) => {
             const { input } = attrs;
             return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.userInServiceHandleRole(input, {client, organizationId}, trx);
+                return service.handleServiceMembersRole(input, {client, organizationId}, trx);
             });
         }
       },

@@ -1,100 +1,17 @@
-import { IServiceAdaptedFromDB, ServiceRoles, Services, IUsersOrganizationServiceDB, IServiceRolesDB, IListAvailableUsersToServicePayload, ISimpleOrganizationServicePayload, IServiceAdapted, ISimpleService } from "./types";
+import { IServiceAdaptedFromDB, ServiceRoles, Services } from "./types";
 import { IUserToken } from "../authentication/types";
 import { Transaction } from "knex";
+import OrganizationRulesService from '../organization-rules/service';
 import OrganizationService from '../organization/service';
 import BankDataService from '../bank-data/service';
 import VtexService from '../vtex/service';
 import knexDatabase from "../../knex-database";
-import { OrganizationInviteStatus, OrganizationRoles } from "../organization/types";
-import store from "../../store";
-import { MESSAGE_ERROR_CANNOT_ADD_ADMIN_TO_SERVICES, MESSAGE_ERROR_UPGRADE_PLAN } from "../../common/consts";
+import { OrganizationRoles } from "../organization/types";
+import { MESSAGE_ERROR_UPGRADE_PLAN } from "../../common/consts";
 import { IVtexIntegrationAdapted } from "../vtex/types";
+import { organizationServicesRolesByIdLoader, organizationServicesByOrganizationIdLoader, organizationServicesRolesByIdOneToOneLoader, userOrganizationServicesByIdLoader, userOrganizationServicesHasLinkGeneratedByIdLoader } from "./loaders";
+import { _serviceAdapter, _serviceRolesAdapter, _usersOrganizationServiceAdapter } from './adapters';
 
-const _serviceAdapter = (record: IServiceAdaptedFromDB) => {
-  return {
-  id: record.id,
-  name: record.name,
-  active: record.active,
-  createdAt: record.created_at,
-  updatedAt: record.updated_at,
-  hasOrganization: !!record.has_organization,
-  serviceRolesId: record.service_roles_id
-}};
-
-const _serviceRolesAdapter = (record: IServiceRolesDB) => ({
-  id: record.id,
-  name: record.name,
-  createdAt: record.created_at,
-  updatedAt: record.updated_at
-});
-
-const usersOrganizationServiceAdapter = (record : IUsersOrganizationServiceDB) => ({
-  id: record.id,
-  serviceRolesId: record.service_roles_id,
-  usersOrganizationId: record.users_organization_id,
-  createdAt: record.created_at,
-  updatedAt: record.updated_at,
-  active: record.active,
-  bankDataId: record.bank_data_id
-})
-
-const organizationServicesByOrganizationIdLoader = store.registerOneToManyLoader(
-  async (userOrganizationIds : string[]) => {
-    const query = await knexDatabase.knex('users_organization_service_roles AS uosr')
-    .innerJoin('organization_services AS os', 'os.id', 'uosr.organization_services_id')
-    .innerJoin('services AS serv', 'serv.id', 'os.service_id')
-    .whereIn('uosr.users_organization_id', userOrganizationIds)
-    .select('serv.*', 'uosr.service_roles_id', 'uosr.users_organization_id');
-    return query;
-  },
-    'users_organization_id',
-    _serviceAdapter
-);
-
-const userOrganizationServicesByIdLoader = store.registerOneToOneLoader(
-  async (userOrganizationServiceIds : string[]) => {
-    const query = await knexDatabase.knex('users_organization_service_roles')
-    .whereIn('id', userOrganizationServiceIds)
-    .select('*');
-    return query;
-  },
-    'id',
-    usersOrganizationServiceAdapter
-);
-
-const userOrganizationServicesHasLinkGeneratedByIdLoader = store.registerOneToOneLoader(
-  async (userOrganizationServiceIds : string[]) => {
-    const query = await knexDatabase.knex('users_organization_service_roles_url_shortener')
-    .whereIn('users_organization_service_roles_id', userOrganizationServiceIds)
-    .limit(1)
-    .select('*');
-    return query;
-  },
-    'users_organization_service_roles_id',
-    (record: any) => record
-);
-
-const organizationServicesRolesByIdLoader = store.registerOneToManyLoader(
-  async (serviceRolesId : string[]) => {
-    const query = await knexDatabase.knex('service_roles')
-    .whereIn('id', serviceRolesId)
-    .select();
-    return query;
-  },
-    'id',
-    _serviceRolesAdapter
-);
-
-const organizationServicesRolesByIdOneToOneLoader = store.registerOneToOneLoader(
-  async (serviceRolesId : string[]) => {
-    const query = await knexDatabase.knex('service_roles')
-    .whereIn('id', serviceRolesId)
-    .select();
-    return query;
-  },
-    'id',
-    _serviceRolesAdapter
-);
 
 const createServiceInOrganization = async (serviceId: string, organizationId: string, userToken: IUserToken, trx: Transaction) => {
 
@@ -242,6 +159,19 @@ const usersInServiceOrganizationCount = async (serviceRoleId: string, serviceOrg
 
 }
 
+const _usersInServiceOrganizationCountById = async (serviceRoleId: string, serviceOrganizationId: string, userOrganizationServiceRoleId: string ,trx: Transaction) => {
+
+  const [usersInServiceOrganizationCounted] = await (trx || knexDatabase.knex)('users_organization_service_roles')
+    .where('service_roles_id', serviceRoleId)
+    .andWhere('organization_services_id', serviceOrganizationId)
+    .andWhere('active', true)
+    .andWhereNot('id', userOrganizationServiceRoleId)
+    .count();
+
+  return usersInServiceOrganizationCounted.count;
+
+}
+
 const verifyAffiliateMaxRules = async (
   users: {
     email: string
@@ -281,6 +211,33 @@ const verifyAffiliateMaxRules = async (
   )
  
 }
+const _verifyAffiliateMaxRulesByUserOrganizationServiceId = async (
+  user: {
+    serviceOrganizationId: string,
+    role: ServiceRoles,
+    userOrganizationServiceRoleId: string
+  },
+  affiliateRules: { maxAnalysts: number, maxSales: number },
+  trx: Transaction
+) => {
+
+  const { serviceOrganizationId, role, userOrganizationServiceRoleId } = user
+
+  const affiliateService = await getServiceRolesByName(role, trx);
+
+  const usersInServiceOrganizationCounted = await _usersInServiceOrganizationCountById(affiliateService.id, serviceOrganizationId, userOrganizationServiceRoleId, trx);
+
+  switch (role) {
+    case ServiceRoles.ANALYST:
+      if(1 > affiliateRules.maxAnalysts || (1 + Number(usersInServiceOrganizationCounted)) > affiliateRules.maxAnalysts) throw new Error(MESSAGE_ERROR_UPGRADE_PLAN);
+      return;
+    case ServiceRoles.SALE:
+      if(1 > affiliateRules.maxSales || (1 + Number(usersInServiceOrganizationCounted)) > affiliateRules.maxSales) throw new Error(MESSAGE_ERROR_UPGRADE_PLAN);
+      return 
+    default: return null;
+  }
+  
+}
 
 const attachUserInOrganizationAffiliateService = async (
     input : { userOrganizationId : string, role: ServiceRoles, organizationId: string, serviceOrganization: {
@@ -310,7 +267,7 @@ const attachUserInOrganizationAffiliateService = async (
         organization_services_id: input.serviceOrganization.id
       }).returning('*');
 
-      return ({...usersOrganizationServiceAdapter(userReactiveInOrganizationService), serviceId: input.serviceOrganization.service_id});
+      return ({..._usersOrganizationServiceAdapter(userReactiveInOrganizationService), serviceId: input.serviceOrganization.service_id});
 
     } else {
 
@@ -325,7 +282,7 @@ const attachUserInOrganizationAffiliateService = async (
         await VtexService.createUserVtexCampaign(userAddedInOrganizationService.id, vtexSecrets, trx);
       }
   
-      return ({...usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: input.serviceOrganization.service_id});
+      return ({..._usersOrganizationServiceAdapter(userAddedInOrganizationService), serviceId: input.serviceOrganization.service_id});
     }
   
 }
@@ -347,7 +304,7 @@ const listUsersInOrganizationService = async (listUsersInOrganizationServicePayl
     .where('uosr.organization_services_id', serviceOrganization.id)
     .select('uosr.*')
     
-  return usersInOrganizationService.map(usersOrganizationServiceAdapter)
+  return usersInOrganizationService.map(_usersOrganizationServiceAdapter)
 
 }
 
@@ -364,7 +321,7 @@ const getUserInOrganizationService = async (getUserInOrganizationServicePayload:
     .where('uosr.users_organization_id', userOrganizationId)
     .select('uosr.*')
 
-  return usersInOrganizationService ? usersOrganizationServiceAdapter(usersInOrganizationService) : null;
+  return usersInOrganizationService ? _usersOrganizationServiceAdapter(usersInOrganizationService) : null;
 
 }
 
@@ -378,7 +335,7 @@ const getUserOrganizationServiceByServiceName = async (input: {
     .where('uosr.id', context.userServiceOrganizationRolesId)
     .select('uosr.*')
 
-  return usersInOrganizationService ? usersOrganizationServiceAdapter(usersInOrganizationService) : null;
+  return usersInOrganizationService ? _usersOrganizationServiceAdapter(usersInOrganizationService) : null;
 
 }
 
@@ -390,7 +347,7 @@ const getUserInOrganizationServiceById = async (input: {
     .where('uosr.id', input.userOrganizationServiceId)
     .select('uosr.*')
 
-  return usersInOrganizationService ? usersOrganizationServiceAdapter(usersInOrganizationService) : null;
+  return usersInOrganizationService ? _usersOrganizationServiceAdapter(usersInOrganizationService) : null;
 
 }
 
@@ -405,45 +362,36 @@ const isServiceAdmin = async (usersOrganizationId: string, serviceOrganizationId
   return organizationServiceRole.name === ServiceRoles.ADMIN
 }
 
-const userInServiceHandleRole = async (userInServiceHandleRolePayload : {
+const handleServiceMembersRole = async (input : {
   serviceName: Services,
   serviceRole: ServiceRoles,
-  userId: string
+  userOrganizationServiceRoleId: string
 }, context: { client: IUserToken, organizationId: string }, trx: Transaction) => {
 
-  if(!context.client) throw new Error("token must be provided!");
+  const { serviceName , serviceRole, userOrganizationServiceRoleId } = input;
 
-  const { serviceName , serviceRole, userId } = userInServiceHandleRolePayload;
+  const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId);
+
+  const serviceRoleFound = await getServiceRolesByName(input.serviceRole, trx);
 
   const [serviceOrganizationFound] = await serviceOrganizationByName(context.organizationId, serviceName, trx);
 
-  if(!serviceOrganizationFound) throw new Error("Service organization not found!");
+  if(!serviceOrganizationFound)
+    throw new Error("Organization doesnt have this service");
 
-  const usersOrganizationFoundDb = await OrganizationService.getUserOrganizationByIds(userId, context.organizationId, trx);;
-
-  if(!usersOrganizationFoundDb)
-    throw new Error("User doesnt are in organization");
-
-  if(
-    !OrganizationService.isFounder(context.organizationId, context.client.id, trx) &&
-    await isServiceAdmin(usersOrganizationFoundDb.id, serviceOrganizationFound.id, trx)
-    ){
-    throw new Error("Not auth to remove admin roles")
-  }
-
-  const [serviceRoleFound] = await (trx || knexDatabase.knex)('service_roles').where('name', serviceRole).select('id');
-
-  if(!serviceRoleFound) throw new Error(`${serviceName} service role doesnt exist`);
+  await _verifyAffiliateMaxRulesByUserOrganizationServiceId({
+    role: serviceRole,
+    serviceOrganizationId: serviceOrganizationFound.id,
+    userOrganizationServiceRoleId
+  }, affiliateTeammateRules.affiliateRules, trx);
 
   const [userOrganizationServiceRoleUpdated] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
     service_roles_id: serviceRoleFound.id,
   }).where(
-    'users_organization_id',usersOrganizationFoundDb.id
-  ).andWhere(
-    'organization_services_id',serviceOrganizationFound.id
+    'id', userOrganizationServiceRoleId
   ).returning('*');
 
-  return {...usersOrganizationServiceAdapter(userOrganizationServiceRoleUpdated), serviceId: serviceOrganizationFound.service_id};
+  return {..._usersOrganizationServiceAdapter(userOrganizationServiceRoleUpdated), serviceId: serviceOrganizationFound.service_id};
 
 }
 
@@ -456,7 +404,7 @@ const getServiceMemberById = async (userOrganizationId: string, organizationServ
     'organization_services_id', organizationServiceId
   ).returning('*');
 
-  return userOrganizationService ? usersOrganizationServiceAdapter(userOrganizationService) : null
+  return userOrganizationService ? _usersOrganizationServiceAdapter(userOrganizationService) : null
 
 }
 
@@ -560,7 +508,7 @@ export default {
   getUserOrganizationServiceRoleById,
   serviceOrganizationByName,
   getServiceRolesByName,
-  userInServiceHandleRole,
+  handleServiceMembersRole,
   // listUsersInOrganizationService,
   listUsedServices,
   verifyFirstSteps,
@@ -574,7 +522,7 @@ export default {
   getServiceRolesById,
   getUserInOrganizationService,
   getServiceByName,
-  usersOrganizationServiceAdapter,
+  _usersOrganizationServiceAdapter,
   getOrganizationIdByUserOrganizationServiceRoleId,
   attachUserInOrganizationAffiliateService,
   verifyAffiliateMaxRules

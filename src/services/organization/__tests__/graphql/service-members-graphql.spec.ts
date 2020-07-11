@@ -1,14 +1,14 @@
 process.env.NODE_ENV = 'test';
-import OrganizationRulesService from '../../../../organization-rules/service';
-jest.mock('../../../../organization-rules/service')
+import OrganizationRulesService from '../../../organization-rules/service';
+jest.mock('../../../organization-rules/service')
 import Faker from 'faker';
-import { IUserToken, ISignInAdapted } from "../../../../authentication/types";
+import { IUserToken, ISignInAdapted } from '../../../authentication/types';
 import jwt from 'jsonwebtoken';
-import knexDatabase from '../../../../../knex-database';
-import { IOrganizationAdapted } from '../../../types';
-import redisClient from '../../../../../lib/Redis';
-import { ServiceRoles } from '../../../../services/types';
-const app = require('../../../../../app');
+import knexDatabase from '../../../../knex-database';
+import { IOrganizationAdapted } from '../../types';
+import redisClient from '../../../../lib/Redis';
+import { ServiceRoles } from '../../../services/types';
+const app = require('../../../../app');
 const request = require('supertest').agent(app);
 
 declare var process : {
@@ -63,15 +63,15 @@ const SET_CURRENT_ORGANIZATION = `
     }
 `
 
-const INVITE_TEAMMATES = `
-    mutation inviteTeammates($input: InviteTeammatesInput!) {
-        inviteTeammates(input: $input){
+const INVITE_AFFILIATE = `
+    mutation inviteAffiliate($input: InviteAffiliateInput!) {
+        inviteAffiliate(input: $input){
             id
         }
     }
 `
 
-describe('invite teammates graphql', () => {
+describe('invite service members graphql', () => {
 
     let signUpCreated: ISignInAdapted;
 
@@ -191,10 +191,13 @@ describe('invite teammates graphql', () => {
         await redisClient.end();
     })
 
-    test("user organization admin should invite teammates below plan limit - graphql", async done => {
+    test.only("user organization admin should invite service members below plan limit - graphql", async done => {
 
-        const inviteTeammatesInput = {
-            emails: Array(5).fill(0).map(() => Faker.internet.email())
+        const inviteAffiliatesInput = {
+            users: Array(5).fill(0).map(() => ({
+                email: Faker.internet.email(),
+                role: ServiceRoles.ANALYST
+            }))
         }
 
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
@@ -205,20 +208,20 @@ describe('invite teammates graphql', () => {
             maxTransactionTax: 5
         }})))
 
-        const inviteTeammatesResponse = await request
+        const inviteAffiliateResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
         .set('x-api-token', userToken)
         .send({
-        'query': INVITE_TEAMMATES, 
+        'query': INVITE_AFFILIATE, 
         'variables': {
-                input: inviteTeammatesInput
+                input: inviteAffiliatesInput
             }
         });
 
-        expect(inviteTeammatesResponse.statusCode).toBe(200);
+        expect(inviteAffiliateResponse.statusCode).toBe(200);
 
-        expect(inviteTeammatesResponse.body.data.inviteTeammates).toBeTruthy();
+        expect(inviteAffiliateResponse.body.data.inviteAffiliate).toBeTruthy();
 
         done();
 

@@ -1,14 +1,14 @@
 process.env.NODE_ENV = 'test';
-import OrganizationRulesService from '../../../../organization-rules/service';
-jest.mock('../../../../organization-rules/service')
+import OrganizationRulesService from '../../../organization-rules/service';
+jest.mock('../../../organization-rules/service')
 import Faker from 'faker';
-import { IUserToken, ISignInAdapted } from "../../../../authentication/types";
+import { IUserToken, ISignInAdapted } from '../../../authentication/types';
 import jwt from 'jsonwebtoken';
-import knexDatabase from '../../../../../knex-database';
-import { IOrganizationAdapted } from '../../../types';
-import redisClient from '../../../../../lib/Redis';
-import { MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER } from '../../../../../common/consts';
-const app = require('../../../../../app');
+import knexDatabase from '../../../../knex-database';
+import { IOrganizationAdapted } from '../../../organization/types';
+import redisClient from '../../../../lib/Redis';
+import { ServiceRoles, Services } from '../../../services/types';
+const app = require('../../../../app');
 const request = require('supertest').agent(app);
 
 declare var process : {
@@ -17,6 +17,12 @@ declare var process : {
       JWT_SECRET: string
 	}
 }
+
+const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
+    mutation verifyAndAttachVtexSecrets($input: VerifyAndAttachVtexSecretsInput!) {
+        verifyAndAttachVtexSecrets(input: $input)
+    }
+`
 
 const SIGN_UP = `
     mutation signUp($input: SignUpInput!) {
@@ -57,26 +63,23 @@ const SET_CURRENT_ORGANIZATION = `
     }
 `
 
-const INVITE_TEAMMATES = `
-    mutation inviteTeammates($input: InviteTeammatesInput!) {
-        inviteTeammates(input: $input){
-            id
-            user{
-                id
-            }
-        }
-    }
-`
-
-const INATIVE_TEAMMATES = `
-    mutation inativeTeammates($input: InativeTeammatesInput!) {
-        inativeTeammates(input: $input){
+const INVITE_AFFILIATE = `
+    mutation inviteAffiliate($input: InviteAffiliateInput!) {
+        inviteAffiliate(input: $input){
             id
         }
     }
 `
 
-describe('invite teammates graphql', () => {
+const HANDLE_SERVICE_MEMBERS_ROLE = `
+    mutation handleServiceMembersRole($input: HandleServiceMembersRoleInput!) {
+        handleServiceMembersRole(input: $input){
+            id
+        }
+    }
+`
+
+describe('invite service members graphql', () => {
 
     let signUpCreated: ISignInAdapted;
 
@@ -182,6 +185,23 @@ describe('invite teammates graphql', () => {
                 input: currentOrganizationPayload
             }
         });
+
+        const vtexSecrets = {
+            xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+            xVtexApiAppToken: "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+            accountName: "beightoneagency"
+        }
+        
+        await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE,
+        'variables': {
+                input: vtexSecrets
+            }
+        });
     });
 
     afterAll(async () => {
@@ -189,111 +209,48 @@ describe('invite teammates graphql', () => {
         await redisClient.end();
     })
 
-    test("user organization founder should inative teammates - graphql", async done => {
+    test("user organization admin should invite service members below plan limit - graphql", async done => {
 
-        const inviteTeammatesInput = {
-            emails: Array(1).fill(0).map(() => Faker.internet.email())
-        }
-
-        const inviteTeammatesResponse = await request
-        .post('/graphql')
-        .set('content-type', 'application/json')
-        .set('x-api-token', userToken)
-        .send({
-        'query': INVITE_TEAMMATES, 
-        'variables': {
-                input: inviteTeammatesInput
-            }
-        });
-
-        const teammatesInvited = inviteTeammatesResponse.body.data.inviteTeammates;
-
-        let inativeTeammatesIds = {userOrganizationId: teammatesInvited[0].id};
-
-        const inativeTeammatesResponse = await request
-        .post('/graphql')
-        .set('content-type', 'application/json')
-        .set('x-api-token', userToken)
-        .send({
-        'query': INATIVE_TEAMMATES, 
-        'variables': {
-                input: inativeTeammatesIds
-            }
-        });
-
-        expect(inativeTeammatesResponse.statusCode).toBe(200);
-        expect(inativeTeammatesResponse.body.data.inativeTeammates).toBeTruthy();
-
-        const activeUserOrganization = await knexDatabase.knex('users_organizations').where('active', true).select();
-
-        expect(activeUserOrganization).toHaveLength(1);
-
-        const inativeUserOrganization = await knexDatabase.knex('users_organizations').where('active', false).select();
-
-        expect(inativeUserOrganization).toHaveLength(1);
-
-        done();
-
-    })
-
-    test("user organization not should inative teammates - graphql", async done => {
-
-        const inviteTeammatesInput = {
-            emails: Array(1).fill(0).map(() => Faker.internet.email())
-        }
-
-        const inviteTeammatesResponse = await request
-        .post('/graphql')
-        .set('content-type', 'application/json')
-        .set('x-api-token', userToken)
-        .send({
-        'query': INVITE_TEAMMATES, 
-        'variables': {
-                input: inviteTeammatesInput
-            }
-        });
-
-        const teammatesInvited = inviteTeammatesResponse.body.data.inviteTeammates;
-
-        const [founderOrganizationUserId] = await knexDatabase.knex('users_organizations').whereNot('id', teammatesInvited[0].id).select('id');
-
-        let inativeFounderInput = {userOrganizationId: founderOrganizationUserId.id};
-
-        const teammateId = teammatesInvited[0].user.id;
-
-        let teammateClient = { origin: 'user', id: teammateId };
-
-        let teammateToken = await jwt.sign(teammateClient, process.env.JWT_SECRET);
-
-        await knexDatabase.knex('users').update({verified:true}).where('id', teammateId).select();
-
-        const currentOrganizationPayload = {
-            organizationId: organizationCreated.id
+        const inviteAffiliatesInput = {
+            users: Array(1).fill(0).map(() => ({
+                email: Faker.internet.email(),
+                role: ServiceRoles.ANALYST
+            }))
         }
 
         await request
         .post('/graphql')
         .set('content-type', 'application/json')
-        .set('x-api-token', teammateToken)
+        .set('x-api-token', userToken)
         .send({
-        'query': SET_CURRENT_ORGANIZATION, 
+        'query': INVITE_AFFILIATE, 
         'variables': {
-                input: currentOrganizationPayload
+                input: inviteAffiliatesInput
             }
         });
 
-        const inativeTeammatesResponse = await request
+        const userInOrganizationService = await knexDatabase.knex('users_organization_service_roles').first().select();
+
+        const handleServiceMembersRoleInput = {
+            serviceName: Services.AFFILIATE,
+            serviceRole: ServiceRoles.SALE,
+            userOrganizationServiceRoleId: userInOrganizationService.id
+        }
+
+        const handleServiceMembersRoleResponse = await request
         .post('/graphql')
         .set('content-type', 'application/json')
-        .set('x-api-token', teammateToken)
+        .set('x-api-token', userToken)
         .send({
-        'query': INATIVE_TEAMMATES, 
+        'query': HANDLE_SERVICE_MEMBERS_ROLE, 
         'variables': {
-                input: inativeFounderInput
+                input: handleServiceMembersRoleInput
             }
         });
 
-        expect(inativeTeammatesResponse.body.errors[0].message).toBe(MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER);
+        expect(handleServiceMembersRoleResponse.statusCode).toBe(200);
+
+        expect(handleServiceMembersRoleResponse.body.data.handleServiceMembersRole).toBeTruthy();
 
         done();
 
