@@ -16,7 +16,9 @@ export const MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST = 'Organization s
 export const MESSAGE_ERROR_USER_USED_FREE_TRIAL_TIME = 'User used free trial time.';
 export const MESSAGE_ERROR_UPGRADE_PLAN = "upgrade your plan to release this action.";
 export const MESSAGE_ERROR_USER_NOT_TEAMMATE = "user not teammates in organization";
+export const MESSAGE_ERROR_USER_TEAMMATE = "user teammates in organization";
 export const MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER = "not organization founder";
+export const MESSAGE_ERROR_USER_PENDENT_ORGANIZATION_INVITE = "user are pendent in organization";
 
 export const PAYMENTS_URL = process.env.PAYMENTS_URL;
 

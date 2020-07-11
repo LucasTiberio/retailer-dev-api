@@ -5,9 +5,10 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from "../../../../authentication/types";
 import jwt from 'jsonwebtoken';
 import knexDatabase from '../../../../../knex-database';
-import { IOrganizationAdapted } from '../../../types';
+import { IOrganizationAdapted, IUserOrganizationAdapted } from '../../../types';
 import redisClient from '../../../../../lib/Redis';
-import { ServiceRoles } from '../../../../services/types';
+import { MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER } from '../../../../../common/consts';
+import { ServiceRoles, Services } from '../../../../services/types';
 const app = require('../../../../../app');
 const request = require('supertest').agent(app);
 
@@ -17,12 +18,6 @@ declare var process : {
       JWT_SECRET: string
 	}
 }
-
-const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
-    mutation verifyAndAttachVtexSecrets($input: VerifyAndAttachVtexSecretsInput!) {
-        verifyAndAttachVtexSecrets(input: $input)
-    }
-`
 
 const SIGN_UP = `
     mutation signUp($input: SignUpInput!) {
@@ -71,7 +66,19 @@ const INVITE_AFFILIATE = `
     }
 `
 
-describe('invite service members graphql', () => {
+const VERIFY_AND_ATTACH_VTEX_SECRETS_RESPONSE = `
+    mutation verifyAndAttachVtexSecrets($input: VerifyAndAttachVtexSecretsInput!) {
+        verifyAndAttachVtexSecrets(input: $input)
+    }
+`
+
+const HANDLE_SERVICE_MEMBERS_ACTIVITY = `
+    mutation handleServiceMembersActivity($input: HandleServiceMembersActivityInput!) {
+        handleServiceMembersActivity(input: $input)
+    }
+`
+
+describe('invite teammates graphql', () => {
 
     let signUpCreated: ISignInAdapted;
 
@@ -80,6 +87,18 @@ describe('invite service members graphql', () => {
     let userToken: string;
 
     let organizationCreated : IOrganizationAdapted
+
+    let affiliatesInvited : IUserOrganizationAdapted[]
+
+    beforeAll(async () => {
+        const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
+        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
+            maxAnalysts: 5,
+            maxSales: 5,
+            maxTeammates: 5,
+            maxTransactionTax: 5
+        }})))
+    })
 
     beforeEach(async () => {
 
@@ -183,30 +202,14 @@ describe('invite service members graphql', () => {
         'variables': {
                 input: vtexSecrets
             }
-        });
-    });
-
-    afterAll(async () => {
-        await knexDatabase.cleanMyTestDB();
-        await redisClient.end();
-    })
-
-    test.only("user organization admin should invite service members below plan limit - graphql", async done => {
-
+        });        
+        
         const inviteAffiliatesInput = {
-            users: Array(5).fill(0).map(() => ({
+            users: Array(1).fill(0).map(() => ({
                 email: Faker.internet.email(),
                 role: ServiceRoles.ANALYST
             }))
         }
-
-        const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
-        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
-            maxAnalysts: 5,
-            maxSales: 5,
-            maxTeammates: 5,
-            maxTransactionTax: 5
-        }})))
 
         const inviteAffiliateResponse = await request
         .post('/graphql')
@@ -219,9 +222,47 @@ describe('invite service members graphql', () => {
             }
         });
 
-        expect(inviteAffiliateResponse.statusCode).toBe(200);
+        affiliatesInvited = inviteAffiliateResponse.body.data.inviteAffiliate
+    });
 
-        expect(inviteAffiliateResponse.body.data.inviteAffiliate).toBeTruthy();
+    afterAll(async () => {
+        await knexDatabase.cleanMyTestDB();
+        await redisClient.end();
+    })
+
+    test("user organization should inative service members - graphql", async done => {
+
+        let inativeServiceMembersIds = {userOrganizationId: affiliatesInvited[0].id, activity: false, service: Services.AFFILIATE};
+
+        const handleServiceMembersActivityResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': HANDLE_SERVICE_MEMBERS_ACTIVITY, 
+        'variables': {
+                input: inativeServiceMembersIds
+            }
+        });
+
+        expect(handleServiceMembersActivityResponse.statusCode).toBe(200);
+        expect(handleServiceMembersActivityResponse.body.data.handleServiceMembersActivity).toBeTruthy();
+
+        const activeUserOrganization = await knexDatabase.knex('users_organizations').where('active', true).select();
+
+        expect(activeUserOrganization).toHaveLength(1);
+
+        const inativeUserOrganization = await knexDatabase.knex('users_organizations').where('active', false).select();
+
+        expect(inativeUserOrganization).toHaveLength(1);
+
+        const usersInOrganizationService = await knexDatabase.knex('users_organization_service_roles').where('active', false).select();
+
+        expect(usersInOrganizationService).toHaveLength(1);
+
+        const usersInOrganizationServiceActive = await knexDatabase.knex('users_organization_service_roles').where('active', true).select();
+
+        expect(usersInOrganizationServiceActive).toHaveLength(0);
 
         done();
 

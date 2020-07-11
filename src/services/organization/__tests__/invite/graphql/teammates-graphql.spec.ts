@@ -65,7 +65,9 @@ const SET_CURRENT_ORGANIZATION = `
 
 const INVITE_TEAMMATES = `
     mutation inviteTeammates($input: InviteTeammatesInput!) {
-        inviteTeammates(input: $input)
+        inviteTeammates(input: $input){
+            id
+        }
     }
 `
 

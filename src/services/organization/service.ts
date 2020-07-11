@@ -15,7 +15,7 @@ import sharp from 'sharp';
 import { IPagination } from "../../common/types";
 import { Services, ServiceRoles } from "../services/types";
 import { RedisClient } from "redis";
-import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_UPGRADE_PLAN, MESSAGE_ERROR_USER_NOT_TEAMMATE } from '../../common/consts';
+import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_UPGRADE_PLAN, MESSAGE_ERROR_USER_NOT_TEAMMATE, MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST, MESSAGE_ERROR_USER_TEAMMATE, MESSAGE_ERROR_USER_PENDENT_ORGANIZATION_INVITE } from '../../common/consts';
 import { stringToSlug } from './helpers';
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from "./adapters";
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from "./loaders";
@@ -181,7 +181,7 @@ const inviteTeammates = async (
             organizationName: organization.name,
           })
 
-          const userInOrganizationService = await ServicesService.getUserInOrganizationServiceByUserOrganizationId(usersOrganizationFound.id, context.organizationId, trx)
+          const userInOrganizationService = await ServicesService.getUserInOrganizationServiceByUserOrganizationId({usersOrganizationId: usersOrganizationFound.id}, trx)
 
           if(userInOrganizationService.length){
             await ServicesService.inativeServiceMembersById(userInOrganizationService.map(item => item.id), trx);
@@ -744,6 +744,50 @@ const verifyShowFirstSteps = async (organizationId: string) => {
 
 }
 
+const handleServiceMembersActivity = async (
+  inativeServiceMembersInput: {userOrganizationId: string, activity: boolean, service: Services}, 
+  context: {organizationId: string},
+  trx: Transaction
+) => {
+
+  const { userOrganizationId, activity, service } = inativeServiceMembersInput;
+  
+  try {
+
+    const organizationService = await ServicesService.getOrganizationServiceByServiceName({ service, organizationId: context.organizationId }, trx);
+
+    if(!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST);
+
+    await (trx || knexDatabase.knex)('users_organization_service_roles')
+    .update({active: activity})
+    .where('users_organization_id', userOrganizationId)
+    .andWhere('organization_services_id', organizationService.id);
+
+    const hasMoreServices = await ServicesService.getUserInOrganizationServiceByUserOrganizationId({
+      usersOrganizationId: userOrganizationId,
+      activity: true
+    }, trx);
+
+    if(!hasMoreServices.length){
+      await _handleMemberActivity({
+        userOrganizationId: userOrganizationId, activity: false
+      }, trx)
+    }
+
+    if(activity){
+      await _handleMemberActivity({
+        userOrganizationId: userOrganizationId, activity: true
+      }, trx)
+    }
+
+    return true;
+    
+  } catch (error) {
+    throw new Error(error.message)
+  }
+  
+}
+
 const inativeTeammates = async (
   inativeTeammatesIds: {userOrganizationId: string},
   trx: Transaction
@@ -764,7 +808,28 @@ const inativeTeammates = async (
   
 }
 
+const _handleMemberActivity = async (
+  input: {userOrganizationId: string, activity: boolean},
+  trx: Transaction
+) => {
+
+  const { userOrganizationId, activity } = input;
+
+  const organizationAdmin = await isOrganizationAdmin(userOrganizationId, trx);
+  
+  if(organizationAdmin) throw new Error(MESSAGE_ERROR_USER_TEAMMATE);
+
+  const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
+    .update({active: activity })
+    .where('id', userOrganizationId)
+    .returning('*');
+
+  return _usersOrganizationsAdapter(userOrganizationInatived);
+  
+}
+
 export default {
+  handleServiceMembersActivity,
   listUsersInOrganization,
   getOrganizationByName,
   verifyShowFirstSteps,

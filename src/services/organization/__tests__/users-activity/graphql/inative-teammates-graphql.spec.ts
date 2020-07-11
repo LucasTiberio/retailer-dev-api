@@ -236,7 +236,7 @@ describe('invite teammates graphql', () => {
 
     })
 
-    test.only("user organization not should inative teammates - graphql", async done => {
+    test("user organization not should inative teammates - graphql", async done => {
 
         const inviteTeammatesInput = {
             emails: Array(1).fill(0).map(() => Faker.internet.email())

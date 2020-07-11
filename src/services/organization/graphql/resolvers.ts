@@ -22,6 +22,11 @@ const resolvers : IResolvers = {
         return service.inviteAffiliateServiceMembers(input, {client, organizationId}, trx);
       });
     },
+    handleServiceMembersActivity: (_, { input }, { organizationId }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.handleServiceMembersActivity(input, {organizationId}, trx);
+      });
+    },
     createOrganization: (_, { input }, { client, redisClient }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.createOrganization(input, {client, redisClient}, trx);
