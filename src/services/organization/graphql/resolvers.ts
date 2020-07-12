@@ -12,6 +12,11 @@ const resolvers : IResolvers = {
         return service.inviteTeammates(input, {client, organizationId}, trx);
       });
     },
+    reinviteServiceMember: (_, { input }, { client, organizationId }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.reinviteServiceMember(input, {client, organizationId}, trx);
+      });
+    },
     inativeTeammates: (_, { input }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.inativeTeammates(input, trx);

@@ -197,12 +197,12 @@ describe('invite teammates graphql', () => {
         }
 
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
-        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
+        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({
             maxAnalysts: 5,
             maxSales: 5,
             maxTeammates: 5,
             maxTransactionTax: 5
-        }})))
+        })))
 
         const inviteTeammatesResponse = await request
         .post('/graphql')

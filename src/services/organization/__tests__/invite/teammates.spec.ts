@@ -68,12 +68,12 @@ describe("teste", () => {
         }
 
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
-        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
+        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({
             maxAnalysts: 5,
             maxSales: 5,
             maxTeammates: 5,
             maxTransactionTax: 5
-        }})))
+        })))
 
         const invitedUserToOrganization = await service.inviteTeammates(inviteTeammatesInput, context, trx);
 
@@ -103,12 +103,12 @@ describe("teste", () => {
         }
 
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
-        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
+        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({
             maxAnalysts: 5,
             maxSales: 5,
             maxTeammates: 5,
             maxTransactionTax: 5
-        }})))
+        })))
        
         try{
             await service.inviteTeammates(inviteTeammatesInput, context, trx);
@@ -142,12 +142,12 @@ describe("teste", () => {
         }
 
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
-        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
+        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({
             maxAnalysts: 5,
             maxSales: 5,
             maxTeammates: 5,
             maxTransactionTax: 5
-        }})))
+        })))
 
         await service.inviteTeammates(inviteTeammatesInput, context, trx);
 
@@ -184,12 +184,12 @@ describe("teste", () => {
         }
 
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
-        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
+        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({
             maxAnalysts: 5,
             maxSales: 5,
             maxTeammates: 5,
             maxTransactionTax: 5
-        }})))
+        })))
 
         await service.inviteTeammates(inviteTeammatesInput, context, trx);
 
@@ -217,12 +217,12 @@ describe("teste", () => {
         let context = {client: userToken, organizationId: organizationCreated.id};
 
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
-        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({affiliateRules:{
+        getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({
             maxAnalysts: 5,
             maxSales: 5,
             maxTeammates: 5,
             maxTransactionTax: 5
-        }})))
+        })))
 
         const vtexSecrets = {
             xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",

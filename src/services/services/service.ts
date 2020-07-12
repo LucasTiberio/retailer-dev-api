@@ -383,7 +383,7 @@ const handleServiceMembersRole = async (input : {
     role: serviceRole,
     serviceOrganizationId: serviceOrganizationFound.id,
     userOrganizationServiceRoleId
-  }, affiliateTeammateRules.affiliateRules, trx);
+  }, affiliateTeammateRules, trx);
 
   const [userOrganizationServiceRoleUpdated] = await (trx || knexDatabase.knex)('users_organization_service_roles').update({
     service_roles_id: serviceRoleFound.id,

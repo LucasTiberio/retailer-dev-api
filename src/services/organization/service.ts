@@ -15,7 +15,7 @@ import sharp from 'sharp';
 import { IPagination } from "../../common/types";
 import { Services, ServiceRoles } from "../services/types";
 import { RedisClient } from "redis";
-import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_UPGRADE_PLAN, MESSAGE_ERROR_USER_NOT_TEAMMATE, MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST, MESSAGE_ERROR_USER_TEAMMATE, MESSAGE_ERROR_USER_PENDENT_ORGANIZATION_INVITE } from '../../common/consts';
+import { MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION, MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, FREE_TRIAL_DAYS, MESSAGE_ERROR_UPGRADE_PLAN, MESSAGE_ERROR_USER_NOT_TEAMMATE, MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST, MESSAGE_ERROR_USER_TEAMMATE, MESSAGE_ERROR_USER_PENDENT_ORGANIZATION_INVITE, MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE } from '../../common/consts';
 import { stringToSlug } from './helpers';
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from "./adapters";
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from "./loaders";
@@ -145,7 +145,7 @@ const inviteTeammates = async (
 
   const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId);
 
-  const maxTeammates = affiliateTeammateRules.affiliateRules.maxTeammates;
+  const maxTeammates = affiliateTeammateRules.maxTeammates;
 
   const currentTeammates = await userTeammatesOrganizationCount(context.organizationId, context.client.id, input.emails, trx);
 
@@ -256,7 +256,7 @@ const inviteAffiliateServiceMembers = async (
 
   try {
 
-    await ServicesService.verifyAffiliateMaxRules(input.users, affiliateTeammateRules.affiliateRules, serviceOrganizationFound.id, trx);
+    await ServicesService.verifyAffiliateMaxRules(input.users, affiliateTeammateRules, serviceOrganizationFound.id, trx);
 
     return await Promise.all(input.users.map(async item => {
 
@@ -828,7 +828,39 @@ const _handleMemberActivity = async (
   
 }
 
+const reinviteServiceMember = async (
+    input: {
+      userOrganizationId: string
+    }, 
+    context: {}, 
+    trx: Transaction
+  ) => {
+
+    try {
+      const usersOrganizationFound = await (trx || knexDatabase.knex)('users_organizations AS uo')
+      .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
+      .innerJoin('organizations AS org', 'org.id', 'uo.organization_id')
+      .where('uo.id', input.userOrganizationId)
+      .first()
+      .select();
+  
+      if(!usersOrganizationFound.invite_hash) throw new Error(MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE);
+    
+      await MailService.sendInviteNewUserMail({
+        email: usersOrganizationFound.email,
+        hashToVerify: usersOrganizationFound.invite_hash,
+        organizationName: usersOrganizationFound.name
+      }) 
+
+      return true;
+    } catch (error) {
+      throw new Error(error.message)
+    }
+
+};
+
 export default {
+  reinviteServiceMember,
   handleServiceMembersActivity,
   listUsersInOrganization,
   getOrganizationByName,

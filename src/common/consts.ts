@@ -19,6 +19,7 @@ export const MESSAGE_ERROR_USER_NOT_TEAMMATE = "user not teammates in organizati
 export const MESSAGE_ERROR_USER_TEAMMATE = "user teammates in organization";
 export const MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER = "not organization founder";
 export const MESSAGE_ERROR_USER_PENDENT_ORGANIZATION_INVITE = "user are pendent in organization";
+export const MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE = "user has already replied to the invitation";
 
 export const PAYMENTS_URL = process.env.PAYMENTS_URL;
 

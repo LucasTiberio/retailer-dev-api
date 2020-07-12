@@ -36,12 +36,17 @@ extend type Mutation{
   inviteTeammates(input: InviteTeammatesInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
   inativeTeammates(input: InativeTeammatesInput!): UserOrganization! @asOrganizationFounder @organizationPaidVerify @isVerified @isAuthenticated
   handleServiceMembersActivity(input: HandleServiceMembersActivityInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  reinviteServiceMember(input: ReinviteServiceMemberInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
   setCurrentOrganization(input: SetCurrentOrganizationInput!): Boolean! @isVerified @isAuthenticated 
   organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
   handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+}
+
+input ReinviteServiceMemberInput{
+  userOrganizationId: String!
 }
 
 input InativeTeammatesInput{

@@ -5,7 +5,7 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from '../../../authentication/types';
 import jwt from 'jsonwebtoken';
 import knexDatabase from '../../../../knex-database';
-import { IOrganizationAdapted } from '../../types';
+import { IOrganizationAdapted, IUserOrganizationAdapted } from '../../types';
 import redisClient from '../../../../lib/Redis';
 import { ServiceRoles } from '../../../services/types';
 const app = require('../../../../app');
@@ -71,6 +71,12 @@ const INVITE_AFFILIATE = `
     }
 `
 
+const REINVITE_SERVICE_MEMBER = `
+    mutation reinviteServiceMember($input: ReinviteServiceMemberInput!) {
+        reinviteServiceMember(input: $input)
+    }
+`
+
 describe('invite service members graphql', () => {
 
     let signUpCreated: ISignInAdapted;
@@ -80,6 +86,8 @@ describe('invite service members graphql', () => {
     let userToken: string;
 
     let organizationCreated : IOrganizationAdapted
+
+    let affiliateInvited: IUserOrganizationAdapted[]
 
     beforeEach(async () => {
 
@@ -184,17 +192,9 @@ describe('invite service members graphql', () => {
                 input: vtexSecrets
             }
         });
-    });
-
-    afterAll(async () => {
-        await knexDatabase.cleanMyTestDB();
-        await redisClient.end();
-    })
-
-    test("user organization admin should invite service members below plan limit - graphql", async done => {
 
         const inviteAffiliatesInput = {
-            users: Array(5).fill(0).map(() => ({
+            users: Array(1).fill(0).map(() => ({
                 email: Faker.internet.email(),
                 role: ServiceRoles.ANALYST
             }))
@@ -219,9 +219,38 @@ describe('invite service members graphql', () => {
             }
         });
 
-        expect(inviteAffiliateResponse.statusCode).toBe(200);
+        affiliateInvited = inviteAffiliateResponse.body.data.inviteAffiliate;
+    });
 
-        expect(inviteAffiliateResponse.body.data.inviteAffiliate).toBeTruthy();
+    afterAll(async () => {
+        await knexDatabase.cleanMyTestDB();
+        await redisClient.end();
+    })
+
+    test("user organization admin should re-invite service members - graphql", async done => {
+        
+        const reinviteServiceMemberInput = {
+            userOrganizationId: affiliateInvited[0].id
+        }
+
+        const reinviteServiceMemberResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+        'query': REINVITE_SERVICE_MEMBER, 
+        'variables': {
+                input: reinviteServiceMemberInput
+            }
+        });
+
+        expect(reinviteServiceMemberResponse.statusCode).toBe(200);
+
+        expect(reinviteServiceMemberResponse.body.data.reinviteServiceMember).toBeTruthy();
+
+        const usersOrganization = await knexDatabase.knex('users_organizations').whereNotNull('invite_hash').select();
+
+        expect(usersOrganization).toHaveLength(1);
 
         done();
 
