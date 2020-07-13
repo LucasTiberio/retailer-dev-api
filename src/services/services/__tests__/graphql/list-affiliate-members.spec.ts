@@ -5,7 +5,7 @@ import Faker from 'faker';
 import { IUserToken, ISignInAdapted } from '../../../authentication/types';
 import jwt from 'jsonwebtoken';
 import knexDatabase from '../../../../knex-database';
-import { IOrganizationAdapted } from '../../../organization/types';
+import { IOrganizationAdapted, IUserOrganizationAdapted } from '../../../organization/types';
 import redisClient from '../../../../lib/Redis';
 import { ServiceRoles, Services } from '../../../services/types';
 const app = require('../../../../app');
@@ -72,28 +72,33 @@ const INVITE_AFFILIATE = `
 `
 
 const LIST_AFFILIATES_MEMBERS = `
-    query listAffiliatesMembers {
-        listAffiliatesMembers{
-            id
-            showFirstSteps
-            serviceRoles{
+    query listAffiliatesMembers($input: ListAffiliatesMembersInput) {
+        listAffiliatesMembers(input: $input){
+            affiliates{
                 id
-                name
-            }
-            active
-            userOrganization{
-                id
-                user{
-                    id
-                    username
-                }
-                organization{
+                showFirstSteps
+                serviceRoles{
                     id
                     name
                 }
+                active
+                userOrganization{
+                    id
+                    user{
+                        id
+                        username
+                    }
+                    organization{
+                        id
+                        name
+                    }
+                }
+                createdAt
+                updatedAt
             }
-            createdAt
-            updatedAt
+            count
+            offset
+            limit
         }
     }
 `
@@ -107,6 +112,13 @@ describe('invite service members graphql', () => {
     let userToken: string;
 
     let organizationCreated : IOrganizationAdapted
+
+    const inviteAffiliatesInput = {
+        users: Array(5).fill(0).map(() => ({
+            email: Faker.internet.email(),
+            role: ServiceRoles.ANALYST
+        }))
+    }
 
     beforeAll(async () => {
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
@@ -222,13 +234,6 @@ describe('invite service members graphql', () => {
             }
         });
 
-        const inviteAffiliatesInput = {
-            users: Array(1).fill(0).map(() => ({
-                email: Faker.internet.email(),
-                role: ServiceRoles.ANALYST
-            }))
-        }
-
         await request
         .post('/graphql')
         .set('content-type', 'application/json')
@@ -239,6 +244,7 @@ describe('invite service members graphql', () => {
                 input: inviteAffiliatesInput
             }
         });
+
     });
 
     afterAll(async () => {
@@ -258,7 +264,36 @@ describe('invite service members graphql', () => {
 
         expect(listAffiliatesMembersResponse.statusCode).toBe(200);
 
-        expect(listAffiliatesMembersResponse.body.data.listAffiliatesMembers).toHaveLength(1);
+        expect(listAffiliatesMembersResponse.body.data.listAffiliatesMembers.affiliates).toHaveLength(5);
+        expect(listAffiliatesMembersResponse.body.data.listAffiliatesMembers.count).toBe("5");
+
+        done();
+
+    })
+
+    test("organization admin should list users in affiliate service with input - graphql", async done => {
+
+        const listAffiliatesMembersInput = {
+            name: inviteAffiliatesInput.users[0].email,
+            limit: 1,
+            offset: 0
+        }
+
+        const listAffiliatesMembersResponse = await request
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('x-api-token', userToken)
+        .send({
+            'query': LIST_AFFILIATES_MEMBERS,
+            'variables': {
+                input: listAffiliatesMembersInput
+            }
+        });
+
+        expect(listAffiliatesMembersResponse.statusCode).toBe(200);
+
+        expect(listAffiliatesMembersResponse.body.data.listAffiliatesMembers.affiliates).toHaveLength(1);
+        expect(listAffiliatesMembersResponse.body.data.listAffiliatesMembers.count).toBe("1");
 
         done();
 

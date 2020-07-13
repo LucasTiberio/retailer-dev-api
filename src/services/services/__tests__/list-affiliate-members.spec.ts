@@ -95,9 +95,10 @@ describe('Services', () => {
 
     test('organization admin should list users in affiliate service', async done => {
 
-        const listOfAffiliates = await service.listAffiliatesMembers(context, trx);
+        const listOfAffiliates = await service.listAffiliatesMembers({} ,context, trx);
 
-        expect(listOfAffiliates).toHaveLength(5);
+        expect(listOfAffiliates.affiliates).toHaveLength(5);
+        expect(listOfAffiliates.count).toBe("5");
 
         done();
     })

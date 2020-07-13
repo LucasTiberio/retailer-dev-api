@@ -1,10 +1,23 @@
 extend type Query{
     listAvailableServices: [Service]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
     listAvailableUsersToService(input: ListAvailableUsersToServiceInput!): [UserOrganization]! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    listAffiliatesMembers: [UserOrganizationService]! @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"]) @isVerified @isAuthenticated 
+    listAffiliatesMembers(input: ListAffiliatesMembersInput): ListAffiliatesMembersPayload! @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"]) @isVerified @isAuthenticated 
     getUserInOrganizationService(input: GetUserInOrganizationServiceInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated 
     getUserOrganizationByServiceName(input: GetUserOrganizationByServiceNameInput!): UserOrganizationService @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"]) @isVerified @isAuthenticated 
     getUserInOrganizationServiceById(input: GetUserInOrganizationServiceByIdInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+}
+
+input ListAffiliatesMembersInput{
+    name: String
+    offset: Int
+    limit: Int
+}
+
+type ListAffiliatesMembersPayload{
+    count: String!
+    offset: Int
+    limit: Int
+    affiliates: [UserOrganizationService]!
 }
 
 input GetUserOrganizationByServiceNameInput{

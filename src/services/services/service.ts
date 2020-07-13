@@ -287,22 +287,45 @@ const attachUserInOrganizationAffiliateService = async (
   
 }
 
-const listAffiliatesMembers = async (context: { organizationId: string, client: IUserToken }, trx: Transaction) => {
+const listAffiliatesMembers = async (
+    input: {
+      name?: string
+      offset?: number
+      limit?: number
+    },
+    context: { organizationId: string, client: IUserToken }, 
+    trx: Transaction
+  ) => {
 
   if(!context.client) throw new Error("token must be provided!");
 
   const [serviceOrganization] = await serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx);
 
-  const usersInOrganizationService = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+  let query = (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
     .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
     .where('uosr.organization_services_id', serviceOrganization.id)
     .whereNot('uo.invite_status', 'refused')
-    .orderBy('usr.username', 'asc')
+
+    if(input && input.name) {
+      query = query.andWhereRaw(`(LOWER(usr.email) LIKE ? OR LOWER(usr.username) LIKE ?)`, [`%${input.name.toLowerCase()}%`, `%${input.name.toLowerCase()}%`])
+    }
+  
+    var [totalCount] = await query.clone().count();
+  
+    if(input && input.limit) {
+      query = query.limit(input.limit)
+    }
+  
+    if(input && input.offset) {
+      query = query.offset(input.offset)
+    }
+  
+    const result = await query.orderBy('usr.username', 'asc')
     .select('uosr.*')
-    
-  return usersInOrganizationService.map(_usersOrganizationServiceAdapter)
+
+    return {...totalCount, limit: input?.limit , offset: input?.offset ,affiliates: result.map(_usersOrganizationServiceAdapter)}
 
 }
 

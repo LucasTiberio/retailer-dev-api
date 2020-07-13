@@ -47,9 +47,9 @@ const resolvers : IResolvers = {
                 return service.getUserOrganizationServiceByServiceName(input, {client, userServiceOrganizationRolesId}, trx);
             });
         },
-        listAffiliatesMembers: (_, __, { client, organizationId }) => {
+        listAffiliatesMembers: (_, { input }, { client, organizationId }) => {
             return knexDatabase.knex.transaction((trx: Transaction) => {
-                return service.listAffiliatesMembers({client, organizationId}, trx);
+                return service.listAffiliatesMembers(input, {client, organizationId}, trx);
             });
         }
       },
