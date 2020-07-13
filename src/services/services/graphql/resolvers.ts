@@ -47,13 +47,11 @@ const resolvers : IResolvers = {
                 return service.getUserOrganizationServiceByServiceName(input, {client, userServiceOrganizationRolesId}, trx);
             });
         },
-        // listUsersInOrganizationService: (_, attrs, { client, organizationId }) => {
-        //     const { input } = attrs;
-
-        //     return knexDatabase.knex.transaction((trx: Transaction) => {
-        //         return service.listUsersInOrganizationService(input, {client, organizationId}, trx);
-        //     });
-        // }
+        listAffiliatesMembers: (_, __, { client, organizationId }) => {
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.listAffiliatesMembers({client, organizationId}, trx);
+            });
+        }
       },
     UserOrganizationService: {
         service: (obj) => {

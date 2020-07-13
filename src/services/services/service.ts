@@ -287,21 +287,19 @@ const attachUserInOrganizationAffiliateService = async (
   
 }
 
-const listUsersInOrganizationService = async (listUsersInOrganizationServicePayload: {
-  serviceName: Services
-}, context: { organizationId: string, client: IUserToken }, trx: Transaction) => {
+const listAffiliatesMembers = async (context: { organizationId: string, client: IUserToken }, trx: Transaction) => {
 
   if(!context.client) throw new Error("token must be provided!");
 
-  const { serviceName } = listUsersInOrganizationServicePayload;
-
-  const [serviceOrganization] = await serviceOrganizationByName(context.organizationId, serviceName, trx);
+  const [serviceOrganization] = await serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx);
 
   const usersInOrganizationService = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
     .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
     .where('uosr.organization_services_id', serviceOrganization.id)
+    .whereNot('uo.invite_status', 'refused')
+    .orderBy('usr.username', 'asc')
     .select('uosr.*')
     
   return usersInOrganizationService.map(_usersOrganizationServiceAdapter)
@@ -525,5 +523,6 @@ export default {
   _usersOrganizationServiceAdapter,
   getOrganizationIdByUserOrganizationServiceRoleId,
   attachUserInOrganizationAffiliateService,
-  verifyAffiliateMaxRules
+  verifyAffiliateMaxRules,
+  listAffiliatesMembers
 }
