@@ -59,6 +59,7 @@ input CreateOrganizationCustomerInput{
   zipCode: String!
   number: String!
   cpfCnpj: String!
+  complement: String
 }
 
 type Plan{

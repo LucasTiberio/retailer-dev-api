@@ -41,12 +41,14 @@ const createOrganizationCustomer = async (input: {
   cpfCnpj: string
   number: string
   zipCode: string
+  complement?: string
 }, context: {organizationId: string}) => {
 
   const { 
     cpfCnpj,
     number,
-    zipCode
+    zipCode,
+    complement
   } = input;
 
   const { 
@@ -60,7 +62,7 @@ const createOrganizationCustomer = async (input: {
         createOrganizationCustomer(input: $input)
     }`
 
-  const variables = {
+  let variables : any = {
       input: {
         name: organization.name,
         email: organization.contactEmail,
@@ -70,6 +72,10 @@ const createOrganizationCustomer = async (input: {
         organizationId
       }
   };
+
+  if(complement){
+    variables.input.complement = complement;
+  }
 
   try {
 
@@ -154,7 +160,7 @@ const listAvailablePlans = async () => {
     if(res.data?.errors){
       throw new Error(res.data.errors[0].message)
     }
-  
+
     return res.data.data.listAvailablePlans
   
   } catch (error) {

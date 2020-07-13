@@ -1,4 +1,6 @@
 import { fetchPaymentsService } from "../payments/helpers";
+import knexDatabase from "../../knex-database";
+import moment from 'moment';
 
 const getAffiliateTeammateRules = async (organizationId: string) => {
 
@@ -20,9 +22,12 @@ const getAffiliateTeammateRules = async (organizationId: string) => {
         }
     }`
 
+  const [organizationFound] = await knexDatabase.knex('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires');
+
   const variables = {
       input: {
-        organizationId
+        organizationId,
+        freeTrial: organizationFound.free_trial && moment(organizationFound.free_trial_expires).isAfter(moment())
       }
   };
 
@@ -37,7 +42,7 @@ const getAffiliateTeammateRules = async (organizationId: string) => {
     return res.data.data.getCurrentOrganizationPlan.planRules[0].rules
 
   } catch (error) {
-      console.log(error.response.data)
+    console.log(error.response.data)
     throw new Error(error.message);
   }
 
