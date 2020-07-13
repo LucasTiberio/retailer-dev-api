@@ -17,6 +17,9 @@ const resolvers : IResolvers = {
     createOrganizationCustomer: (_, { input }, { organizationId }) => {
       return service.createOrganizationCustomer(input, { organizationId });
     },
+    editOrganizationCustomer: (_, { input }, { organizationId }) => {
+      return service.editOrganizationCustomer(input, { organizationId });
+    },
     createOrganizationCustomerPayment: (_, { input }, { organizationId }) => {
       return service.createOrganizationCustomerPayment(input, { organizationId });
     },

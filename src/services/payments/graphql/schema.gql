@@ -10,6 +10,7 @@ extend type Mutation{
   cancelRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   activateRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   createOrganizationCustomer(input: CreateOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  editOrganizationCustomer(input: EditOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   createOrganizationCustomerPayment(input: CreateOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   removeOrganizationCustomerPayment(input: RemoveOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
@@ -56,6 +57,13 @@ input CreateOrganizationCustomerPaymentInput{
 }
 
 input CreateOrganizationCustomerInput{
+  zipCode: String!
+  number: String!
+  cpfCnpj: String!
+  complement: String
+}
+
+input EditOrganizationCustomerInput{
   zipCode: String!
   number: String!
   cpfCnpj: String!

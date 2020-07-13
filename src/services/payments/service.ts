@@ -93,6 +93,58 @@ const createOrganizationCustomer = async (input: {
 
 }
 
+const editOrganizationCustomer = async (input: {
+  cpfCnpj: string
+  number: string
+  zipCode: string
+  complement?: string
+}, context: {organizationId: string}) => {
+
+  const { 
+    cpfCnpj,
+    number,
+    zipCode,
+    complement
+  } = input;
+
+  const { 
+    organizationId
+  } = context;
+
+  const query = `
+    mutation editOrganizationCustomer($input: EditOrganizationCustomerInput!) {
+        editOrganizationCustomer(input: $input)
+    }`
+
+  let variables : any = {
+      input: {
+        cpfCnpj,
+        number,
+        zipCode,
+        organizationId
+      }
+  };
+
+  if(complement){
+    variables.input.complement = complement;
+  }
+
+  try {
+
+    const res = await fetchPaymentsService(query, variables);
+
+    if(res.data?.errors){
+      throw new Error(res.data.errors[0].message)
+    }
+  
+    return res.data.data.editOrganizationCustomer
+  
+  } catch (error) {    
+    throw new Error(error.message);
+  }
+
+}
+
 const sendRecurrencyTransaction = async (input: {
   planIdentifier: string
   payableWith: PaymentMethod
@@ -411,5 +463,6 @@ export default {
   createOrganizationCustomer,
   listAvailablePlans,
   listOrganizationCustomerPayment,
-  cancelRecurrencyTransaction
+  cancelRecurrencyTransaction,
+  editOrganizationCustomer
 }
