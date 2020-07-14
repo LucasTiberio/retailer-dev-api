@@ -26,6 +26,11 @@ const resolvers : IResolvers = {
                 return service.listUsedServices({client, organizationId}, trx);
             });
         },
+        affiliatesCapacities: (_, __, { organizationId }) => {
+            return knexDatabase.knex.transaction((trx: Transaction) => {
+                return service.affiliatesCapacities({organizationId}, trx);
+            });
+        },
         getUserInOrganizationServiceById: (_, attrs) => {
             const { input } = attrs;
 

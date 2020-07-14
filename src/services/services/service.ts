@@ -518,7 +518,33 @@ const getOrganizationServiceByServiceName = async (input: {
 
 }
 
+const affiliatesCapacities = async (
+  context: { organizationId: string }, 
+  trx: Transaction
+) => {
+
+  const [serviceOrganization] = await serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx);
+
+  let query = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+    .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
+    .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
+    .where('uosr.organization_services_id', serviceOrganization.id)
+    .where('uo.active', true)
+    .select('sr.name')
+    .groupBy('sr.name')
+    .count()
+
+  const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId);
+
+  return {
+    analyst: affiliateTeammateRules.maxAnalysts - Number(query.find(item => item.name === ServiceRoles.ANALYST)?.count) || 0,
+    sale: affiliateTeammateRules.maxSales > 0 ? affiliateTeammateRules.maxSales - Number(query.find(item => item.name === ServiceRoles.SALE)?.count) || 0 : null,
+  };
+
+}
+
 export default {
+  affiliatesCapacities,
   getOrganizationServiceByServiceName,
   inativeServiceMembersById,
   createServiceInOrganization,

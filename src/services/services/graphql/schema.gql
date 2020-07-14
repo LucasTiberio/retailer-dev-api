@@ -5,6 +5,12 @@ extend type Query{
     getUserInOrganizationService(input: GetUserInOrganizationServiceInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated 
     getUserOrganizationByServiceName(input: GetUserOrganizationByServiceNameInput!): UserOrganizationService @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"]) @isVerified @isAuthenticated 
     getUserInOrganizationServiceById(input: GetUserInOrganizationServiceByIdInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+    affiliatesCapacities: AffiliatesCapacities @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+}
+
+type AffiliatesCapacities{
+    analyst: Int!
+    sale: Int
 }
 
 input ListAffiliatesMembersInput{
