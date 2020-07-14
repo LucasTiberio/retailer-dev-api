@@ -274,6 +274,16 @@ const getSubscriptionByOrganizationId = async (organizationId: string) => {
           createdAt
           updatedAt
           cycledAt
+          customerPaymentInfos{
+            id
+            description
+            itemType
+            data{
+              brand
+              holder
+              lastDigits
+            }
+          }
           payableWith
           planName
           active

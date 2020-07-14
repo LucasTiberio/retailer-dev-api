@@ -105,6 +105,7 @@ type Subscription{
   expiresAt: String
   createdAt: String!
   updatedAt: String!
+  customerPaymentInfos: OrganizationCustomerPayment
   cycledAt: String!
   payableWith: String!
   planName: String!
