@@ -39,6 +39,7 @@ enum ServicePermissionName{
     orders
     generateLink
     payments
+    members
 }
 
 enum PermissionGrant{

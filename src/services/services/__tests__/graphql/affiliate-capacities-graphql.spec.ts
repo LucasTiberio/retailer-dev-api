@@ -74,8 +74,14 @@ const INVITE_AFFILIATE = `
 const AFFILIATES_CAPACITIES = `
     query affiliatesCapacities{
         affiliatesCapacities{
-            analyst
-            sale
+            analyst{
+                total
+                used
+            }
+            sale{
+                total
+                used
+            }
         }
     }
 `
@@ -247,8 +253,14 @@ describe('invite service members graphql', () => {
         expect(affiliatesCapacitiesResponse.statusCode).toBe(200);
 
         expect(affiliatesCapacitiesResponse.body.data.affiliatesCapacities).toEqual(expect.objectContaining({
-            analyst: 2,
-            sale: 1
+            analyst: {
+                total: 5,
+                used: 3
+            },
+            sale: {
+                total: 5,
+                used: 4
+            }
         }))
 
         done();

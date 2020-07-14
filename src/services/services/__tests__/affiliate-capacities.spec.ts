@@ -101,8 +101,14 @@ describe('Services', () => {
         const capacities = await service.affiliatesCapacities(context, trx);
 
         expect(capacities).toEqual(expect.objectContaining({
-            analyst: 2,
-            sale: 1
+            analyst: {
+                total: 5,
+                used: 3
+            },
+            sale: {
+                total: 5,
+                used: 4
+            }
         }))
 
         done();

@@ -9,8 +9,13 @@ extend type Query{
 }
 
 type AffiliatesCapacities{
-    analyst: Int!
-    sale: Int
+    analyst: CapacitiesValues!
+    sale: CapacitiesValues
+}
+
+type CapacitiesValues{
+    total: Int!
+    used: Int!
 }
 
 input ListAffiliatesMembersInput{

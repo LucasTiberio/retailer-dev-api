@@ -221,7 +221,7 @@ const directiveResolvers : IDirectiveResolvers = {
       if(moment(paymentServiceStatus.expiresAt).isAfter(moment())){
         return next();
       } 
-    }    
+    }
 
     throw new Error("Organization has billing pendency.")
     

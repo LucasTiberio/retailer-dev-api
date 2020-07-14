@@ -537,8 +537,17 @@ const affiliatesCapacities = async (
   const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId);
 
   return {
-    analyst: affiliateTeammateRules.maxAnalysts - Number(query.find(item => item.name === ServiceRoles.ANALYST)?.count) || 0,
-    sale: affiliateTeammateRules.maxSales > 0 ? affiliateTeammateRules.maxSales - Number(query.find(item => item.name === ServiceRoles.SALE)?.count) || 0 : null,
+    analyst: {
+      total: affiliateTeammateRules.maxAnalysts,
+      used: Number(query.find(item => item.name === ServiceRoles.ANALYST)?.count) || 0
+    },
+    sale: 
+      affiliateTeammateRules.maxSales > 0 
+        ? {
+          total: affiliateTeammateRules.maxSales,
+          used: Number(query.find(item => item.name === ServiceRoles.SALE)?.count) || 0
+        } 
+        : null,
   };
 
 }

@@ -130,7 +130,7 @@ const listTeammates = async (
     .where('or.name', OrganizationRoles.ADMIN)
     .andWhere('uo.organization_id', context.organizationId)
     .andWhere('uo.active', true)
-    .select('uo.*')
+    .select('uo.*', 'or.id as organization_role_id')
 
     return teammates.map(_usersOrganizationsAdapter);
 
