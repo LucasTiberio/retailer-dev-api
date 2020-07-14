@@ -1,7 +1,7 @@
 extend type Query{
   verifyOrganizationName(input: VerifyOrganizationNameInput!): Boolean @isAuthenticated
   listMyOrganizations: [Organization]! @isVerified @isAuthenticated
-  organizationDetails: Organization! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @organizationPaidVerify @isVerified @isAuthenticated
+  organizationDetails: Organization! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
   listUsersInOrganization(input: ListUsersInOrganizationInput!): ListUsersInOrganizationPayload! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   listTeammates: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
