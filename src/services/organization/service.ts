@@ -118,6 +118,24 @@ const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transact
   return organizationRole;
 }
 
+const listTeammates = async (
+    context: { organizationId: string }, 
+    trx: Transaction
+  ) => {
+
+    const teammates = await (trx || knexDatabase.knex)('users_organizations AS uo')
+    .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
+    .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')
+    .innerJoin('users AS u', 'u.id', 'uo.user_id')
+    .where('or.name', OrganizationRoles.ADMIN)
+    .andWhere('uo.organization_id', context.organizationId)
+    .andWhere('uo.active', true)
+    .select('uo.*')
+
+    return teammates.map(_usersOrganizationsAdapter);
+
+}
+
 const userTeammatesOrganizationCount = async (organizationId: string, userId: string, emails: string[], trx: Transaction) => {
 
   const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations AS uo')
@@ -889,5 +907,6 @@ export default {
   getUserOrganizationById,
   isOrganizationAdmin,
   inviteTeammates,
-  inviteAffiliateServiceMembers
+  inviteAffiliateServiceMembers,
+  listTeammates
 }
