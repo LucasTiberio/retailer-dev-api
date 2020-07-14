@@ -1,6 +1,7 @@
 import { ICreateSubscribe, PaymentMethod, ISaveCreditCard, ICreditCard, Billing, Customer } from './types';
 import { paymentFactory, fetchPaymentsService, updatePaymentsFactory } from './helpers';
 import OrganizationService from '../organization/service';
+import knexDatabase from '../../knex-database';
 
 const createOrganizationCustomerPayment = async (
     createSubscribeInput: {
@@ -169,6 +170,13 @@ const sendRecurrencyTransaction = async (input: {
     if(res.data?.errors){
       throw new Error(res.data.errors[0].message)
     }
+
+    await knexDatabase.knex('organizations')
+      .where('id', context.organizationId)
+      .update({
+        free_trial: false,
+        free_trial_expires: null
+      })
   
     return res.data.data.sendRecurrencyTransaction
   
