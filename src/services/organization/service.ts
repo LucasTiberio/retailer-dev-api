@@ -175,6 +175,12 @@ const inviteTeammates = async (
 
   if(!organization) throw new Error("Organization not found.");
 
+  const hasFounder = await isFounderBulk(context.organizationId, input.emails, trx);
+
+  if(hasFounder){
+    throw new Error("Founder doesnt attached a member service");
+  }
+
   try {
     let users = await Promise.all(uniqueEmails.map(async item => {
 
@@ -272,6 +278,12 @@ const inviteAffiliateServiceMembers = async (
   if(!serviceOrganizationFound)
     throw new Error("Organization doesnt have this service");
 
+  const hasFounder = await isFounderBulk(context.organizationId, input.users.map(item => item.email), trx);
+
+  if(hasFounder){
+    throw new Error("Founder doesnt attached a member service");
+  }
+
   try {
 
     await ServicesService.verifyAffiliateMaxRules(input.users, affiliateTeammateRules, serviceOrganizationFound.id, trx);
@@ -291,7 +303,8 @@ const inviteAffiliateServiceMembers = async (
           const [userOrganizationUpdated] = await (trx || knexDatabase.knex)('users_organizations').update({
             invite_status: OrganizationInviteStatus.PENDENT,
             active: true
-            }).where('id', usersOrganizationFound.id).returning('id');
+            }).where('id', usersOrganizationFound.id).returning('id')
+            .returning('*');
 
             await MailService.sendInviteUserMail({
             email: item.email,
@@ -305,12 +318,14 @@ const inviteAffiliateServiceMembers = async (
             await changeOrganizationAdminToMember(organizationAdmin.map(item => item.id), trx);
           }
 
+          const memberOrganizationRole = await getOrganizationRoleByName(OrganizationRoles.MEMBER, trx);
+
           await ServicesService.attachUserInOrganizationAffiliateService(
             { userOrganizationId: usersOrganizationFound.id , role: item.role, organizationId: context.organizationId, serviceOrganization: serviceOrganizationFound }, 
             trx
           );
 
-          return userOrganizationUpdated;
+          return _usersOrganizationsAdapter({...userOrganizationUpdated, organization_role_id: memberOrganizationRole.id})
 
         }
 
@@ -583,6 +598,17 @@ const isFounder = async (organizationId: string, userId: string, trx: Transactio
     .select('user_id');
 
   return organizationFound.user_id === userId;
+
+}
+
+const isFounderBulk = async (organizationId: string, usersEmail: string[], trx: Transaction) => {
+
+  const [founder] = await (trx || knexDatabase.knex)('organizations AS org')
+    .innerJoin('users AS usr', 'usr.id', 'org.user_id')
+    .where('org.id', organizationId)
+    .select('usr.email');
+
+  return usersEmail.includes(founder.email);
 
 }
 
