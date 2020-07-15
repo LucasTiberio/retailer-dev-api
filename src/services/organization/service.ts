@@ -903,6 +903,31 @@ const reinviteServiceMember = async (
 
 };
 
+const teammatesCapacities = async (
+  context: { organizationId: string }, 
+  trx: Transaction
+) => {
+
+  const organizationAdminRole = await getOrganizationRoleByName(OrganizationRoles.ADMIN, trx);
+
+  let [query] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+    .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
+    .where('organization_id', context.organizationId)
+    .andWhere('active', true)
+    .andWhere('organization_role_id', organizationAdminRole.id)
+    .count()
+
+  const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId);
+
+  return {
+    teammates: {
+      total: affiliateTeammateRules.maxTeammates,
+      used: query.count - 1
+    }
+  };
+
+}
+
 export default {
   reinviteServiceMember,
   handleServiceMembersActivity,
@@ -934,5 +959,6 @@ export default {
   isOrganizationAdmin,
   inviteTeammates,
   inviteAffiliateServiceMembers,
-  listTeammates
+  listTeammates,
+  teammatesCapacities
 }

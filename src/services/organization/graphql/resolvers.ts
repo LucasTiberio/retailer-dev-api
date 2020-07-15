@@ -69,6 +69,11 @@ const resolvers : IResolvers = {
         return service.verifyOrganizationName(input.name, trx);
       });
     },
+    teammatesCapacities: (_, __, {organizationId}) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.teammatesCapacities({organizationId}, trx);
+      });
+    },
     listTeammates: (_, __, { organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
         return service.listTeammates({organizationId}, trx);
