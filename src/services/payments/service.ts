@@ -292,6 +292,16 @@ const getSubscriptionByOrganizationId = async (organizationId: string) => {
               lastDigits
             }
           }
+          invoiceData{
+            cpfCnpj
+            zipCode
+            number
+            complement
+            city
+            state
+            district
+            street
+          }
           payableWith
           planName
           active

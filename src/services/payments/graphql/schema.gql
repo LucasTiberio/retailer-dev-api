@@ -15,6 +15,17 @@ extend type Mutation{
   removeOrganizationCustomerPayment(input: RemoveOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
 
+type InvoiceData{
+  cpfCnpj: String!
+  zipCode: String!
+  number: String!
+  complement: String
+  city: String!
+  state: String!
+  district: String!
+  street: String!
+}
+
 input UpdateRecurrencyTransactionInput {
   planIdentifier: String!
   payableWith: PayableWith!
@@ -107,6 +118,7 @@ type Subscription{
   updatedAt: String!
   customerPaymentInfos: OrganizationCustomerPayment
   cycledAt: String!
+  invoiceData: InvoiceData
   payableWith: String!
   planName: String!
   active: Boolean!
