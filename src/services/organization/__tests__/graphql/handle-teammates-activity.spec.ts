@@ -92,9 +92,9 @@ describe("inative teammates", () => {
 
     test('user organization founder should inative teammates', async done => {
 
-        let inativeTeammatesIds = {userOrganizationId: teammates[0].id};
+        let inativeTeammatesIds = {userOrganizationId: teammates[0].id, activity: false};
 
-        await service.inativeTeammates(inativeTeammatesIds, trx);
+        await service.handleTeammatesActivity(inativeTeammatesIds, context, trx);
 
         const usersOrganization = await (trx || knexDatabase.knex)('users_organizations').where('active', true).select();
 
@@ -115,10 +115,10 @@ describe("inative teammates", () => {
         
         const invitedServiceMembers = await service.inviteAffiliateServiceMembers(inviteAffiliatesInput, context, trx);
         
-        let inativeAffiliateIds = {userOrganizationId: invitedServiceMembers[0].id};
+        let inativeAffiliateIds = {userOrganizationId: invitedServiceMembers[0].id, activity: false};
 
         try {
-            await service.inativeTeammates(inativeAffiliateIds, trx);
+            await service.handleTeammatesActivity(inativeAffiliateIds, context, trx);
         } catch (error) {
             expect(error.message).toBe(MESSAGE_ERROR_USER_NOT_TEAMMATE);
             const usersOrganization = await (trx || knexDatabase.knex)('users_organizations').where('active', true).select();

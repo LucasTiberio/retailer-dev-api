@@ -129,7 +129,7 @@ const listTeammates = async (
     .innerJoin('users AS u', 'u.id', 'uo.user_id')
     .where('or.name', OrganizationRoles.ADMIN)
     .andWhere('uo.organization_id', context.organizationId)
-    .andWhere('uo.active', true)
+    // .andWhere('uo.active', true)
     .select('uo.*', 'or.id as organization_role_id')
 
     return teammates.map(_usersOrganizationsAdapter);
@@ -832,19 +832,40 @@ const handleServiceMembersActivity = async (
   
 }
 
-const inativeTeammates = async (
-  inativeTeammatesIds: {userOrganizationId: string},
+const getUserByUserOrganizationId = async (userOrganizationId: string, trx: Transaction) => {
+
+  const user = await (trx || knexDatabase.knex)('users_organizations AS uo')
+    .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
+    .where('uo.id', userOrganizationId)
+    .first()
+    .select('usr.*')
+
+  return user;
+
+}
+
+const handleTeammatesActivity = async (
+  input: {userOrganizationId: string, activity: boolean},
+  context: { organizationId: string },
   trx: Transaction
 ) => {
 
-  const { userOrganizationId } = inativeTeammatesIds;
+  const { userOrganizationId, activity } = input;
+
+  const user = await getUserByUserOrganizationId(userOrganizationId, trx);
+
+  const founder = await isFounder(context.organizationId, user.id, trx);
+
+  if(founder){
+    throw new Error("Doesnt handle founder activity")
+  }
 
   const organizationAdmin = await isOrganizationAdmin(userOrganizationId, trx);
   
   if(!organizationAdmin) throw new Error(MESSAGE_ERROR_USER_NOT_TEAMMATE);
 
   const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations')
-    .update({active: false, invite_hash: null})
+    .update({active: activity})
     .where('id', userOrganizationId)
     .returning('*');
 
@@ -944,7 +965,7 @@ export default {
   handleUserPermissionInOrganization,
   createOrganization,
   getUserOrganizationRoleById,
-  inativeTeammates,
+  handleTeammatesActivity,
   verifyOrganizationName,
   responseInvite,
   getOrganizationRoleById,

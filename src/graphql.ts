@@ -236,6 +236,7 @@ const directiveResolvers : IDirectiveResolvers = {
 
     if(!organizationFounder) throw new Error(MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER);
 
+    context.organizationId = organizationId
     return next();
     
   },

@@ -40,7 +40,7 @@ input VerifyOrganizationNameInput{
 extend type Mutation{
   inviteAffiliate(input: InviteAffiliateInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
   inviteTeammates(input: InviteTeammatesInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
-  inativeTeammates(input: InativeTeammatesInput!): UserOrganization! @asOrganizationFounder @organizationPaidVerify @isVerified @isAuthenticated
+  handleTeammatesActivity(input: HandleTeammatesActivityInput!): UserOrganization! @asOrganizationFounder @organizationPaidVerify @isVerified @isAuthenticated
   handleServiceMembersActivity(input: HandleServiceMembersActivityInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   reinviteServiceMember(input: ReinviteServiceMemberInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
@@ -55,8 +55,9 @@ input ReinviteServiceMemberInput{
   userOrganizationId: String!
 }
 
-input InativeTeammatesInput{
+input HandleTeammatesActivityInput{
   userOrganizationId: String!
+  activity: Boolean!
 }
 
 input HandleServiceMembersActivityInput{
