@@ -155,7 +155,7 @@ type Organization{
   id: String!
   slug: String!
   active: Boolean!
-  hasBillingPendency: Boolean!
+  hasBillingPendency: Boolean
   user: User! @isVerified @isAuthenticated
   showFirstSteps: Boolean!
   updatedAt: Datetime!
