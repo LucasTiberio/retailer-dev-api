@@ -5,7 +5,7 @@ extend type Query{
   listUsersInOrganization(input: ListUsersInOrganizationInput!): ListUsersInOrganizationPayload! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
   listTeammates: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
   findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
-  teammatesCapacities: TeammatesCapacities! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  teammatesCapacities: TeammatesCapacities! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
 
 type TeammatesCapacities{
