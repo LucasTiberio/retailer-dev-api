@@ -104,6 +104,9 @@ const resolvers : IResolvers = {
     user: async (obj) => {
       return UserService.getUserById(obj.userId);
     },
+    hasBillingPendency: async (obj) => {
+      return service.organizationHasBillingPendency(obj.id);
+    },
     organizationRole: async (obj) => {
       return service.getUserOrganizationRole(obj.userOrganizationId);
     },

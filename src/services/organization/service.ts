@@ -7,6 +7,7 @@ import OrganizationRulesService from '../organization-rules/service';
 import VtexService from '../vtex/service';
 import UserService from '../users/service';
 import ServicesService from '../services/service';
+import PaymentService from '../payments/service';
 import StorageService from '../storage/service';
 import knexDatabase from "../../knex-database";
 import common from "../../common";
@@ -949,7 +950,19 @@ const teammatesCapacities = async (
 
 }
 
+const organizationHasBillingPendency = async (organizationId: string) => {
+
+  const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId);
+
+  if(moment(paymentServiceStatus.expiresAt).isAfter(moment())){
+    return true;
+  }; 
+
+  return false;
+}
+
 export default {
+  organizationHasBillingPendency,
   reinviteServiceMember,
   handleServiceMembersActivity,
   listUsersInOrganization,
