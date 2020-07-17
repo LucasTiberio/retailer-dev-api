@@ -952,13 +952,16 @@ const teammatesCapacities = async (
 
 const organizationHasBillingPendency = async (organizationId: string) => {
 
-  const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId);
+  try {
+    const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId);
+    if(moment(paymentServiceStatus.expiresAt).isAfter(moment())){
+      return true;
+    }; 
+    return false;
+  } catch (error) {
+    return false
+  }
 
-  if(moment(paymentServiceStatus.expiresAt).isAfter(moment())){
-    return true;
-  }; 
-
-  return false;
 }
 
 export default {
