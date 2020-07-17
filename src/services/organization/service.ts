@@ -954,12 +954,15 @@ const organizationHasBillingPendency = async (organizationId: string) => {
 
   try {
     const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId);
+    const organizationFound = await knexDatabase.knex('organizations').where('id', organizationId).first().select();
     if(moment(paymentServiceStatus.expiresAt).isAfter(moment())){
-      return true;
-    }; 
-    return false;
+      return false;
+    } else if(moment(organizationFound.free_trial_expires).isAfter(moment())){
+      return false
+    }
+    return true;
   } catch (error) {
-    return false
+    return true
   }
 
 }
