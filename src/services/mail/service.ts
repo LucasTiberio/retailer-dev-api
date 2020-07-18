@@ -1,18 +1,22 @@
-import Mail from '../../lib/Mail';
-import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail } from "./types";
+import Mail from "../../lib/Mail";
+import {
+  ISendMail,
+  ISendRecoveryPasswordMail,
+  IMail,
+  ISendInviteUserMail,
+} from "./types";
 
 const frontUrl = process.env.FRONT_URL_STAGING;
 
 const sendSignUpMail = async (data: ISendMail) => {
+  if (process.env.NODE_ENV === "test") return;
 
-    if(process.env.NODE_ENV === 'test') return;
-
-    try {
-        await Mail.sendMail({
-            from: 'PlugOne No-reply <noreply@plugone.io>',
-            to: `${data.username} <${data.email}>`,
-            subject: 'Bem vindo(a) a PlugOne!',
-            html: `
+  try {
+    await Mail.sendMail({
+      from: "PlugOne No-reply <noreply@plugone.io>",
+      to: `${data.username || ""} <${data.email}>`,
+      subject: "Bem vindo(a) a PlugOne!",
+      html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
             <head>
@@ -321,13 +325,18 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                     <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                         <td class="col px-16" bgcolor="#FFFFFF" align="left" width="100%" style="padding: 48px 48px 0 48px;" >
-                                                            <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${data.username}!</h1>
+                                                            <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
+                                                              data.username ||
+                                                              ""
+                                                            }!</h1>
                                                             <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Hoje começa a sua jornada com a Plugone, por isso queremos mostrar tudo que você pode fazer com a nossa poderosa ferramenta. Mas pra isso precisamos que confirme seu e-mail, assim a gente garante com segurança que você é você mesmo.</p>
                                                             <table border="0" cellpadding="0" cellspacing="0" align="center" class="inter" style="font-family: 'Inter', sans-serif!important;" width="100%">
                                                                 <tbody>
                                                                     <tr>
                                                                         <td align="center" height="36" bgcolor="#3B24A8" width="330" style="width:330px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background:linear-gradient(200.34deg, #3C5ED9 -2.42%, #3B24A8 79.51%);border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
-                                                                            <a href="${frontUrl}/verification/${data.hashToVerify}" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
+                                                                            <a href="${frontUrl}/verification/${
+        data.hashToVerify
+      }" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
                                                                                     Confirmar email e ativar conta
                                                                                 </a>
                                                                         </td>
@@ -396,15 +405,12 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                         </td>
                                 
                                                         <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                            <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                            <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/facebook.png" alt="facebook" width="38px" style="width: 38px; max-width: 38px;">
-                                                            </a>
-                                                            <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                            <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/twitter.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                            </a>
-                                                            <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                            </a>
+                                                        <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                        <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                      </a> -->
+                                                      <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                          <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                        </a>
                                                         </td>
                                 
                                                         </tr>
@@ -475,23 +481,22 @@ const sendSignUpMail = async (data: ISendMail) => {
             
             </body>
             </html>
-            `
-        });
-    } catch(e){
-        throw new Error(e.message)
-    }
-}
+            `,
+    });
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
 
 const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
+  if (process.env.NODE_ENV === "test") return;
 
-    if(process.env.NODE_ENV === 'test') return;
-
-    try {
-        await Mail.sendMail({
-            from: 'PlugOne No-reply <noreply@plugone.io>',
-            to: `${data.username} <${data.email}>`,
-            subject: 'Recuperacão de senha Plugone!',
-            html: `
+  try {
+    await Mail.sendMail({
+      from: "PlugOne No-reply <noreply@plugone.io>",
+      to: `${data.username || ""} <${data.email}>`,
+      subject: "Recuperacão de senha Plugone!",
+      html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
               <head>
@@ -806,19 +811,27 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                       <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                           <td class="col px-16" bgcolor="#FFFFFF" align="left" width="352" style="padding: 48px 48px 32px 48px;" >
-                                                            <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${data.username}!</h1>
+                                                            <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
+                                                              data.username ||
+                                                              ""
+                                                            }!</h1>
                                                             <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;"><strong style="font-weight: 700;">Esqueceu sua senha? Não se preocupe. Isso acontece 😉                                                </p>
                                                             <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Para escolher uma nova, clique no link abaixo:</p>
                                                             <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                             <tr>
                                                             <td class="col px-16" bgcolor="#FFFFFF" align="left" width="100%" style="padding: 48px 48px 0 48px;" >
-                                                                <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${data.username}!</h1>
+                                                                <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
+                                                                  data.username ||
+                                                                  ""
+                                                                }!</h1>
                                                                 <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Hoje começa a sua jornada com a Plugone, por isso queremos mostrar tudo que você pode fazer com a nossa poderosa ferramenta. Mas pra isso precisamos que confirme seu e-mail, assim a gente garante com segurança que você é você mesmo.</p>
                                                                 <table border="0" cellpadding="0" cellspacing="0" align="center" class="inter" style="font-family: 'Inter', sans-serif!important;" width="100%">
                                                                     <tbody>
                                                                         <tr>
                                                                             <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background:linear-gradient(200.34deg, #3C5ED9 -2.42%, #3B24A8 79.51%);border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
-                                                                                <a href="${frontUrl}/recovery-password/change-password/${data.hashToVerify}" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
+                                                                                <a href="${frontUrl}/recovery-password/change-password/${
+        data.hashToVerify
+      }" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
                                                                                     Escolher nova senha
                                                                                 </a>
                                                                             </td>
@@ -846,13 +859,10 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                           </td>
                                 
                                                           <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                            <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                              <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/facebook.png" alt="facebook" width="38px" style="width: 38px; max-width: 38px;">
-                                                            </a>
-                                                            <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                              <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/twitter.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                            </a>
-                                                            <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                          <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                              <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                            </a> -->
+                                                            <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
                                                                 <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
                                                               </a>
                                                           </td>
@@ -926,23 +936,22 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
               </body>
             </html>
             
-                 `
-        });
-    } catch(e){
-        throw new Error(e.message)
-    }
-}
+                 `,
+    });
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
 
 const sendRecoveredPasswordMail = async (data: IMail) => {
+  if (process.env.NODE_ENV === "test") return;
 
-    if(process.env.NODE_ENV === 'test') return;
-
-    try {
-        await Mail.sendMail({
-            from: 'PlugOne No-reply <noreply@plugone.io>',
-            to: `${data.username} <${data.email}>`,
-            subject: 'Senha recuperada Plugone!',
-            html: `
+  try {
+    await Mail.sendMail({
+      from: "PlugOne No-reply <noreply@plugone.io>",
+      to: `${data.username || ""} <${data.email}>`,
+      subject: "Senha recuperada Plugone!",
+      html: `
                     <!DOCTYPE html>
                     <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
                     <head>
@@ -1254,7 +1263,10 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                             <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                 <tr>
                                                                 <td class="col px-16" bgcolor="#FFFFFF" align="left" width="352" style="padding: 48px 48px 32px 48px;" >
-                                                                    <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${data.username}!</h1>
+                                                                    <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
+                                                                      data.username ||
+                                                                      ""
+                                                                    }!</h1>
                                                                     <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;"><strong style="font-weight: 700;">A sua senha da Plugone foi redefinida</strong>. Se você fez isso,  pode desconsiderar este email com segurança.</p>
                                                                     <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Se você não solicitou redefinir sua senha, <strong style="color:#3B24A8">entre em contato conosco</strong>.</p>
                                                                     <p class="inter" style="color: #1C1637;font-size: 12px; font-weight: 500; line-height: 20px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Obrigado,<br> <strong>Equipe Plugone</strong>.</p>
@@ -1282,15 +1294,12 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                                 </td>
                                         
                                                                 <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                                    <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/facebook.png" alt="facebook" width="38px" style="width: 38px; max-width: 38px;">
-                                                                    </a>
-                                                                    <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/twitter.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                                    </a>
-                                                                    <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                                        <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                                    </a>
+                                                                <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                              </a> -->
+                                                              <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                                  <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                                </a>
                                                                 </td>
                                         
                                                                 </tr>
@@ -1362,23 +1371,22 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                     </body>
                     </html>
 
-            `
-        });
-    } catch(e){
-        throw new Error(e.message)
-    }
-}
+            `,
+    });
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
 
 const sendInviteUserMail = async (data: ISendInviteUserMail) => {
+  if (process.env.NODE_ENV === "test") return;
 
-    if(process.env.NODE_ENV === 'test') return;
-
-    try {
-        await Mail.sendMail({
-            from: 'PlugOne No-reply <noreply@plugone.io>',
-            to: `<${data.email}>`,
-            subject: `Você foi convidado por ${data.organizationName}!`,
-            html: `
+  try {
+    await Mail.sendMail({
+      from: "PlugOne No-reply <noreply@plugone.io>",
+      to: `<${data.email}>`,
+      subject: `Você foi convidado por ${data.organizationName}!`,
+      html: `
 
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -1726,15 +1734,12 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                               </td>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                  <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/facebook.png" alt="facebook" width="38px" style="width: 38px; max-width: 38px;">
-                                                </a>
-                                                <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                  <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/twitter.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                </a>
-                                                <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                  </a>
+                                                          <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                              <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                            </a> -->
+                                                            <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                              </a>
                                               </td>
                     
                                             </tr>
@@ -1805,23 +1810,22 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
 
   </body>
 </html>
-                `
-        });
-    } catch(e){
-        throw new Error(e.message)
-    }
-}
+                `,
+    });
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
 
 const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
+  if (process.env.NODE_ENV === "test") return;
 
-    if(process.env.NODE_ENV === 'test') return;
-
-    try {
-        await Mail.sendMail({
-            from: 'PlugOne No-reply <noreply@plugone.io>',
-            to: `<${data.email}>`,
-            subject: `Você foi convidado à plugone por ${data.organizationName}!`,
-            html: `
+  try {
+    await Mail.sendMail({
+      from: "PlugOne No-reply <noreply@plugone.io>",
+      to: `<${data.email}>`,
+      subject: `Você foi convidado à plugone por ${data.organizationName}!`,
+      html: `
 
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -2173,15 +2177,12 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                               </td>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                  <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/facebook.png" alt="facebook" width="38px" style="width: 38px; max-width: 38px;">
-                                                </a>
-                                                <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                  <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/twitter.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                </a>
-                                                <a href="#" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                  </a>
+                                                          <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                              <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                            </a> -->
+                                                            <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                              </a>
                                               </td>
                     
                                             </tr>
@@ -2251,17 +2252,17 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
 
 
   </body>
-</html>`
-        });
-    } catch(e){
-        throw new Error(e.message)
-    }
-}
+</html>`,
+    });
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
 
 export default {
-    sendSignUpMail,
-    sendRecoveryPasswordMail,
-    sendRecoveredPasswordMail,
-    sendInviteUserMail,
-    sendInviteNewUserMail
-}
+  sendSignUpMail,
+  sendRecoveryPasswordMail,
+  sendRecoveredPasswordMail,
+  sendInviteUserMail,
+  sendInviteNewUserMail,
+};
