@@ -326,15 +326,15 @@ const inviteTeammates = async (
           );
 
           if (usersOrganizationFound) {
-            const [userOrganizationCreatedId] = await (
-              trx || knexDatabase.knex
-            )("users_organizations")
+            const [userOrganizationCreated] = await (trx || knexDatabase.knex)(
+              "users_organizations"
+            )
               .update({
                 invite_status: OrganizationInviteStatus.PENDENT,
                 active: true,
               })
               .where("id", usersOrganizationFound.id)
-              .returning("id");
+              .returning("*");
 
             await MailService.sendInviteUserMail({
               email: item,
@@ -352,9 +352,21 @@ const inviteTeammates = async (
                 userInOrganizationService.map((item) => item.id),
                 trx
               );
+
+              const adminRole = await getOrganizationRoleByName(
+                OrganizationRoles.ADMIN,
+                trx
+              );
+
+              await (trx || knexDatabase.knex)("users_organization_roles")
+                .update({
+                  organization_role_id: adminRole.id,
+                })
+                .where("users_organization_id", usersOrganizationFound.id)
+                .returning("*");
             }
 
-            return userOrganizationCreatedId;
+            return userOrganizationCreated;
           }
         }
 
@@ -1370,4 +1382,5 @@ export default {
   inviteAffiliateServiceMembers,
   listTeammates,
   teammatesCapacities,
+  getOrganizationRoleByName,
 };

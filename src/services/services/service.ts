@@ -418,6 +418,11 @@ const listAffiliatesMembers = async (
     trx
   );
 
+  const memberOrganizationRole = await OrganizationService.getOrganizationRoleByName(
+    OrganizationRoles.MEMBER,
+    trx
+  );
+
   let query = (trx || knexDatabase.knex)(
     "users_organization_service_roles AS uosr"
   )
@@ -428,7 +433,13 @@ const listAffiliatesMembers = async (
     )
     .innerJoin("users AS usr", "usr.id", "uo.user_id")
     .innerJoin("service_roles AS sr", "sr.id", "uosr.service_roles_id")
+    .innerJoin(
+      "users_organization_roles AS uor",
+      "uor.users_organization_id",
+      "uo.id"
+    )
     .where("uosr.organization_services_id", serviceOrganization.id)
+    .andWhere("uor.organization_role_id", memberOrganizationRole.id)
     .whereNot("uo.invite_status", "refused");
 
   if (input && input.name) {
@@ -722,6 +733,11 @@ const affiliatesCapacities = async (
     trx
   );
 
+  const memberOrganizationRole = await OrganizationService.getOrganizationRoleByName(
+    OrganizationRoles.MEMBER,
+    trx
+  );
+
   let query = await (trx || knexDatabase.knex)(
     "users_organization_service_roles AS uosr"
   )
@@ -731,8 +747,14 @@ const affiliatesCapacities = async (
       "uosr.users_organization_id"
     )
     .innerJoin("service_roles AS sr", "sr.id", "uosr.service_roles_id")
+    .innerJoin(
+      "users_organization_roles AS uor",
+      "uor.users_organization_id",
+      "uo.id"
+    )
     .where("uosr.organization_services_id", serviceOrganization.id)
-    .where("uo.active", true)
+    .andWhere("uo.active", true)
+    .andWhere("uor.organization_role_id", memberOrganizationRole.id)
     .select("sr.name")
     .groupBy("sr.name")
     .count();
