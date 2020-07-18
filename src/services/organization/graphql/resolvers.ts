@@ -1,40 +1,56 @@
-import service from '../service';
-import { IResolvers } from 'apollo-server';
-import { Transaction } from 'knex';
-import database from '../../../knex-database';
-import UserService from '../../users/service';
-import ServicesService from '../../services/service';
+import service from "../service";
+import { IResolvers } from "apollo-server";
+import { Transaction } from "knex";
+import database from "../../../knex-database";
+import UserService from "../../users/service";
+import ServicesService from "../../services/service";
 
-const resolvers : IResolvers = {
+const resolvers: IResolvers = {
   Mutation: {
     inviteTeammates: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.inviteTeammates(input, {client, organizationId}, trx);
+        return service.inviteTeammates(input, { client, organizationId }, trx);
       });
     },
     reinviteServiceMember: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.reinviteServiceMember(input, {client, organizationId}, trx);
+        return service.reinviteServiceMember(
+          input,
+          { client, organizationId },
+          trx
+        );
       });
     },
-    handleTeammatesActivity: (_, { input }, {organizationId}) => {
+    handleTeammatesActivity: (_, { input }, { organizationId, client }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.handleTeammatesActivity(input, {organizationId}, trx);
+        return service.handleTeammatesActivity(
+          input,
+          { organizationId, client },
+          trx
+        );
       });
     },
     inviteAffiliate: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.inviteAffiliateServiceMembers(input, {client, organizationId}, trx);
+        return service.inviteAffiliateServiceMembers(
+          input,
+          { client, organizationId },
+          trx
+        );
       });
     },
     handleServiceMembersActivity: (_, { input }, { organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.handleServiceMembersActivity(input, {organizationId}, trx);
+        return service.handleServiceMembersActivity(
+          input,
+          { organizationId },
+          trx
+        );
       });
     },
     createOrganization: (_, { input }, { client, redisClient }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.createOrganization(input, {client, redisClient}, trx);
+        return service.createOrganization(input, { client, redisClient }, trx);
       });
     },
     setCurrentOrganization: (_, { input }, context) => {
@@ -42,14 +58,22 @@ const resolvers : IResolvers = {
         return service.setCurrentOrganization(input, context, trx);
       });
     },
-    organizationUploadImage: async (_, { input }, { client, organizationId }) => {
+    organizationUploadImage: async (
+      _,
+      { input },
+      { client, organizationId }
+    ) => {
       const { createReadStream, filename, mimetype } = await input.data;
       return database.knex.transaction((trx: Transaction) => {
-        return service.organizationUploadImage({
-          imageName: filename,
-          data: createReadStream(),
-          mimetype,
-        }, {client, organizationId}, trx);
+        return service.organizationUploadImage(
+          {
+            imageName: filename,
+            data: createReadStream(),
+            mimetype,
+          },
+          { client, organizationId },
+          trx
+        );
       });
     },
     responseOrganizationInvite: (_, { input }) => {
@@ -57,11 +81,19 @@ const resolvers : IResolvers = {
         return service.responseInvite(input, trx);
       });
     },
-    handleUserPermissionInOrganization: (_, { input }, { client, organizationId }) => {
+    handleUserPermissionInOrganization: (
+      _,
+      { input },
+      { client, organizationId }
+    ) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.handleUserPermissionInOrganization(input, {client, organizationId}, trx);
+        return service.handleUserPermissionInOrganization(
+          input,
+          { client, organizationId },
+          trx
+        );
       });
-    }
+    },
   },
   Query: {
     verifyOrganizationName: (_, { input }) => {
@@ -69,19 +101,19 @@ const resolvers : IResolvers = {
         return service.verifyOrganizationName(input.name, trx);
       });
     },
-    teammatesCapacities: (_, __, {organizationId}) => {
+    teammatesCapacities: (_, __, { organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.teammatesCapacities({organizationId}, trx);
+        return service.teammatesCapacities({ organizationId }, trx);
       });
     },
     listTeammates: (_, __, { organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.listTeammates({organizationId}, trx);
+        return service.listTeammates({ organizationId }, trx);
       });
     },
-    organizationDetails: (_, __, {client, organizationId}) => {
+    organizationDetails: (_, __, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.organizationDetails({client, organizationId}, trx);
+        return service.organizationDetails({ client, organizationId }, trx);
       });
     },
     listMyOrganizations: (_, __, { client }) => {
@@ -91,14 +123,22 @@ const resolvers : IResolvers = {
     },
     listUsersInOrganization: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.listUsersInOrganization(input, {client, organizationId}, trx);
+        return service.listUsersInOrganization(
+          input,
+          { client, organizationId },
+          trx
+        );
       });
     },
     findUsersToOrganization: (_, { input }, { client, organizationId }) => {
       return database.knex.transaction((trx: Transaction) => {
-        return service.findUsersToOrganization(input, {client, organizationId}, trx);
+        return service.findUsersToOrganization(
+          input,
+          { client, organizationId },
+          trx
+        );
       });
-    }
+    },
   },
   Organization: {
     user: async (obj) => {
@@ -111,7 +151,10 @@ const resolvers : IResolvers = {
       return service.getUserOrganizationRole(obj.userOrganizationId);
     },
     services: async (obj) => {
-      return ServicesService.getOrganizationServicesByOrganizationId(obj.userOrganizationId, obj.id);
+      return ServicesService.getOrganizationServicesByOrganizationId(
+        obj.userOrganizationId,
+        obj.id
+      );
     },
     hasMember: async (obj) => {
       return service.verifyOrganizationHasMember(obj.id);
@@ -123,7 +166,7 @@ const resolvers : IResolvers = {
   UserOrganizationRole: {
     userOrganization: async (obj) => {
       return service.getUserOrganizationById(obj.userOrganizationId);
-    }
+    },
   },
   UserOrganization: {
     user: async (obj) => {
@@ -133,9 +176,9 @@ const resolvers : IResolvers = {
       return service.getOrganizationById(obj.organizationId);
     },
     organizationRole: async (obj) => {
-      return service.getOrganizationRoleById(obj.organizationRoleId)
-    }
-  }
+      return service.getOrganizationRoleById(obj.organizationRoleId);
+    },
+  },
 };
 
 export default resolvers;
