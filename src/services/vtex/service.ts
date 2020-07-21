@@ -156,7 +156,13 @@ const getSecretsByOrganizationId = async (
 
 const createUserVtexCampaign = async (
   userOrganizationServiceId: string,
-  vtexSecrests: IVtexIntegrationAdapted,
+  vtexSecrests: {
+    organizationId: string;
+    storeName: string;
+    vtexKey: string;
+    vtexToken: string;
+    status: boolean;
+  },
   trx: Transaction
 ) => {
   if (process.env.NODE_ENV === "test") return true;

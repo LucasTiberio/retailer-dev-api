@@ -8,7 +8,7 @@ import VtexService from "../vtex/service";
 import knexDatabase from "../../knex-database";
 import { OrganizationRoles } from "../organization/types";
 import { MESSAGE_ERROR_UPGRADE_PLAN } from "../../common/consts";
-import { IVtexIntegrationAdapted } from "../vtex/types";
+import { IVtexIntegrationAdapted, IVtexSecrets } from "../vtex/types";
 import {
   organizationServicesRolesByIdLoader,
   organizationServicesByOrganizationIdLoader,
