@@ -3,55 +3,39 @@ import { Transaction } from "knex";
 import knexDatabase from "../../../knex-database";
 import service from "../service";
 
-const resolvers : IResolvers = {
+const resolvers: IResolvers = {
   Mutation: {
-    verifyAndAttachVtexSecrets: (_, { input }, { client, organizationId }) => {
-        return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.verifyAndAttachVtexSecrets(input, {client, organizationId}, trx);
-        });
-    },
-    handleOrganizationVtexCommission: (_, { input }, { client, organizationId }) => {
-        return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.handleOrganizationVtexComission(input, {client, organizationId}, trx);
-        });
-    },
-    handleTimeToPayCommission: (_, {input}, { organizationId, client}) => {
+    handleOrganizationVtexCommission: (
+      _,
+      { input },
+      { client, organizationId }
+    ) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
-          return service.handleTimeToPayCommission(input, { organizationId, client}, trx);
-      });
-    },
-    handleDefaultCommission: (_, {input}, { organizationId, client}) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
-          return service.handleDefaultommission(input, { organizationId, client}, trx);
+        return service.handleOrganizationVtexComission(
+          input,
+          { client, organizationId },
+          trx
+        );
       });
     },
   },
   Query: {
     vtexDepartmentsCommissions: (_, __, { client, organizationId }) => {
-        return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.getVtexDepartmentsCommissions({client, organizationId}, trx);
-        });
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getVtexDepartmentsCommissions(
+          { client, organizationId },
+          trx
+        );
+      });
     },
-    timeToPayCommission: (_, __, { client, organizationId }) => {
-        return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.getTimeToPayCommission({client, organizationId}, trx);
-        });
+    vtexAffiliateCommission: (_, { input }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getVtexCommissionInfosByAffiliateIdAndDepartmentId(
+          input,
+          trx
+        );
+      });
     },
-    defaultCommission: (_, __, { client, organizationId }) => {
-        return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.getDefaultCommission({client, organizationId}, trx);
-        });
-    },
-    vtexAffiliateCommission: (_, {input}) => {
-        return knexDatabase.knex.transaction((trx: Transaction) => {
-            return service.getVtexCommissionInfosByAffiliateIdAndDepartmentId(input, trx);
-        });
-    },
-  },
-  Organization: {
-    vtexIntegration: async (obj) => {
-      return service.verifyIntegration(obj.id);
-    }
   },
 };
 

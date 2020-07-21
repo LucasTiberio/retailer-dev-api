@@ -1,49 +1,37 @@
-extend type Query{
-  vtexDepartmentsCommissions: [VtexDepartmentsComissionsAdapted]! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
-  vtexAffiliateCommission(input: VtexAffiliateCommissionInput!): [VtexDepartmentsComissionsPercentage]! @ordersService
-  timeToPayCommission: TimeToPayCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
-  defaultCommission: DefaultCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
+extend type Query {
+  vtexDepartmentsCommissions: [VtexDepartmentsComissionsAdapted]!
+    @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"])
+    @isVerified
+    @isAuthenticated
+  vtexAffiliateCommission(
+    input: VtexAffiliateCommissionInput!
+  ): [VtexDepartmentsComissionsPercentage]! @ordersService
 }
 
-type VtexDepartmentsComissionsPercentage{
+type VtexDepartmentsComissionsPercentage {
   vtexDepartmentId: String!
   percentage: Int
   payDay: String
 }
 
-input HandleTimeToPayCommissionInput{
-  days: Int!
-}
-
-input HandleDefaultCommissionInput{
-  percentage: Float!
-}
-
-type TimeToPayCommission{
-    id: String!
-    days: String!
-    type: String!
-    updatedAt: Datetime!
-    createdAt: Datetime!
-}
-
-type DefaultCommission{
-    id: String!
-    percentage: Float!
-    updatedAt: Datetime!
-    createdAt: Datetime!
-}
-
-input VtexAffiliateCommissionInput{
+input VtexAffiliateCommissionInput {
   vtexDepartmentsIds: [String]!
   affiliateId: String!
 }
 
-extend type Mutation{
-  handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
-  handleTimeToPayCommission(input: HandleTimeToPayCommissionInput!): TimeToPayCommission! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
-  handleDefaultCommission(input: HandleDefaultCommissionInput!): DefaultCommission! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
-  verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+extend type Mutation {
+  handleOrganizationVtexCommission(
+    input: HandleOrganizationVtexCommissionInput!
+  ): VtexDepartmentsComissions!
+    @hasServiceRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
+  verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
 }
 
 input HandleOrganizationVtexCommissionInput {
@@ -52,7 +40,7 @@ input HandleOrganizationVtexCommissionInput {
   active: Boolean!
 }
 
-type VtexDepartmentsComissions{
+type VtexDepartmentsComissions {
   id: String!
   vtexDepartmentId: String!
   organizationId: String!
@@ -62,7 +50,7 @@ type VtexDepartmentsComissions{
   createdAt: Datetime!
 }
 
-type VtexDepartmentsComissionsAdapted{
+type VtexDepartmentsComissionsAdapted {
   id: String!
   name: String!
   url: String!
@@ -70,18 +58,8 @@ type VtexDepartmentsComissionsAdapted{
   percentage: Int
 }
 
-input VerifyAndAttachVtexSecretsInput{
+input VerifyAndAttachVtexSecretsInput {
   xVtexApiAppKey: String!
   xVtexApiAppToken: String!
   accountName: String!
-}
-
-extend type Organization{
-  vtexIntegration: VtexIntegration
-}
-
-type VtexIntegration{
-  status: Boolean!
-  createdAt: Datetime!
-  updatedAt: Datetime!
 }

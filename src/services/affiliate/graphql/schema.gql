@@ -1,145 +1,251 @@
-extend type Mutation{
-    affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener! @hasServiceRole(role: ["ANALYST"]) @organizationPaidVerify @isVerified @isAuthenticated 
-    generateSalesJwt(input: GenerateSalesJwtInput!): SalesSession!
-    createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
-    generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl! @hasSalesToken
-    paidAffiliateCommission(input: PaidAffiliateCommissionInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+extend type Mutation {
+  affiliateGenerateShortenerUrl(
+    input: AffiliateGenerateShortenerUrlInput!
+  ): UserOrganizationServiceRolesUrlShortener!
+    @hasServiceRole(role: ["ANALYST"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
+  generateSalesJwt(input: GenerateSalesJwtInput!): SalesSession!
+  createAffiliateBankValues(
+    input: CreateAffiliateBankValuesInput!
+  ): UserOrganizationService!
+    @hasServiceRole(role: ["ANALYST"])
+    @isVerified
+    @isAuthenticated
+  generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl!
+    @hasSalesToken
+  paidAffiliateCommission(input: PaidAffiliateCommissionInput!): Boolean
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  handleTimeToPayCommission(
+    input: HandleTimeToPayCommissionInput!
+  ): TimeToPayCommission!
+    @hasServiceRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
+  handleDefaultCommission(
+    input: HandleDefaultCommissionInput!
+  ): DefaultCommission!
+    @hasServiceRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
 }
 
-input PaidAffiliateCommissionInput{
-    affiliateCommissionSetPaid: [AffiliateCommissionSetPaid]!
+input HandleTimeToPayCommissionInput {
+  days: Int!
 }
 
-input AffiliateCommissionSetPaid{
-    affiliateId: String!
-    orderId: String!
+input HandleDefaultCommissionInput {
+  percentage: Float!
 }
 
-type SalesSession{
-    salesId: String!
-    vtexSalePixelJwt: String!
+input PaidAffiliateCommissionInput {
+  affiliateCommissionSetPaid: [AffiliateCommissionSetPaid]!
 }
 
-input GenerateSalesShortenInput{
-    url: String!
+input AffiliateCommissionSetPaid {
+  affiliateId: String!
+  orderId: String!
 }
 
-input GenerateSalesJwtInput{
-    email: String!
-    organizationId: String!
-    serviceName: ServiceName!
+type SalesSession {
+  salesId: String!
+  vtexSalePixelJwt: String!
 }
 
-extend type Query{
-    listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @organizationPaidVerify @isVerified @isAuthenticated 
-    getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): VtexAllOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    getOrganizationOrdersByAffiliateId(input: GetOrganizationOrdersByAffiliateIdInput): VtexAllOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
-    getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    getOrganizationAverageTicket(input: GetOrganizationAverageTicketInput): OrganizationAverageTicket! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    getOrganizationTotalOrders(input: GetOrganizationTotalOrdersInput): OrganizationTotalOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    getOrganizationCommission(input: GetOrganizationCommissionInput): OrganizationCommission! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    getOrganizationTotalOrdersByAffiliate(input: GetOrganizationTotalOrdersByAffiliateInput!): OrganizationTotalOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
-    getOrganizationCommissionByAffiliate(input: GetOrganizationCommissionByAffiliateInput!): OrganizationCommission! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated 
+input GenerateSalesShortenInput {
+  url: String!
 }
 
-input GetOrganizationCommissionByAffiliateInput{
-    paid: Boolean
-    startDate: Datetime
-    endDate: Datetime
-    serviceName: ServiceName
+input GenerateSalesJwtInput {
+  email: String!
+  organizationId: String!
+  serviceName: ServiceName!
 }
 
-type OrganizationCommission{
-    data: [OrganizationCommissionItem]!
+type TimeToPayCommission {
+  id: String!
+  days: String!
+  type: String!
+  updatedAt: Datetime!
+  createdAt: Datetime!
 }
 
-type OrganizationCommissionItem{
-    _id: String!
-    affiliateInfo: AffiliateInfo!
+type DefaultCommission {
+  id: String!
+  percentage: Float!
+  updatedAt: Datetime!
+  createdAt: Datetime!
 }
 
-type AffiliateInfo{
-    affiliateId: String!
-    commission: AffiliateCommission!
+extend type Query {
+  timeToPayCommission: TimeToPayCommission!
+    @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"])
+    @isVerified
+    @isAuthenticated
+  defaultCommission: DefaultCommission!
+    @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"])
+    @isVerified
+    @isAuthenticated
+  listAffiliateShorterUrl(
+    input: ListAffiliateShorterUrlInput!
+  ): [UserOrganizationServiceRolesUrlShortener]!
+    @hasServiceRole(role: ["ANALYST"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
+  getAllOrganizationOrders(
+    input: GetAllOrganizationOrdersInput
+  ): VtexAllOrders!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  getOrganizationOrdersByAffiliateId(
+    input: GetOrganizationOrdersByAffiliateIdInput
+  ): VtexAllOrders!
+    @hasServiceRole(role: ["ANALYST"])
+    @isVerified
+    @isAuthenticated
+  getOrganizationRevenue(
+    input: GetOrganizationRevenueInput
+  ): OrganizationRevenue!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  getOrganizationAverageTicket(
+    input: GetOrganizationAverageTicketInput
+  ): OrganizationAverageTicket!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  getOrganizationTotalOrders(
+    input: GetOrganizationTotalOrdersInput
+  ): OrganizationTotalOrders!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  getOrganizationCommission(
+    input: GetOrganizationCommissionInput
+  ): OrganizationCommission!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  getOrganizationTotalOrdersByAffiliate(
+    input: GetOrganizationTotalOrdersByAffiliateInput!
+  ): OrganizationTotalOrders!
+    @hasServiceRole(role: ["ANALYST"])
+    @isVerified
+    @isAuthenticated
+  getOrganizationCommissionByAffiliate(
+    input: GetOrganizationCommissionByAffiliateInput!
+  ): OrganizationCommission!
+    @hasServiceRole(role: ["ANALYST"])
+    @isVerified
+    @isAuthenticated
 }
 
-type AffiliateCommission{
-    amount: Float!
-    payDay: String!
+input GetOrganizationCommissionByAffiliateInput {
+  paid: Boolean
+  startDate: Datetime
+  endDate: Datetime
+  serviceName: ServiceName
 }
 
-type OrganizationTotalOrders{
-    amount: Float!
+type OrganizationCommission {
+  data: [OrganizationCommissionItem]!
 }
 
-type OrganizationAverageTicket{
-    amount: Float!
+type OrganizationCommissionItem {
+  _id: String!
+  affiliateInfo: AffiliateInfo!
 }
 
-type OrganizationRevenue{
-    amount: Float!
+type AffiliateInfo {
+  affiliateId: String!
+  commission: AffiliateCommission!
 }
 
-input GetOrganizationRevenueInput{
-    startDate: Datetime
-    endDate: Datetime
+type AffiliateCommission {
+  amount: Float!
+  payDay: String!
 }
 
-input GetOrganizationCommissionInput{
-    paid: Boolean
-    startDate: Datetime
-    endDate: Datetime
+type OrganizationTotalOrders {
+  amount: Float!
 }
 
-input GetOrganizationTotalOrdersInput{
-    startDate: Datetime
-    endDate: Datetime
+type OrganizationAverageTicket {
+  amount: Float!
 }
 
-input GetOrganizationTotalOrdersByAffiliateInput{
-    startDate: Datetime
-    endDate: Datetime
-    serviceName: ServiceName!
+type OrganizationRevenue {
+  amount: Float!
 }
 
-input GetOrganizationAverageTicketInput{
-    startDate: Datetime
-    endDate: Datetime
+input GetOrganizationRevenueInput {
+  startDate: Datetime
+  endDate: Datetime
 }
 
-input GetAllCommissionsInput{
-    limit: String
-    startDate: Datetime
-    endDate: Datetime
-    name: String
-    status: OrderStatus
+input GetOrganizationCommissionInput {
+  paid: Boolean
+  startDate: Datetime
+  endDate: Datetime
 }
 
-input GetOrganizationOrdersByAffiliateIdInput{
-    limit: String
-    startDate: Datetime
-    endDate: Datetime
-    name: String
-    paid: Boolean
-    status: OrderStatus
-    serviceName: ServiceName!
+input GetOrganizationTotalOrdersInput {
+  startDate: Datetime
+  endDate: Datetime
 }
 
-input GetAllOrganizationOrdersInput{
-    limit: String
-    startDate: Datetime
-    endDate: Datetime
-    name: String
-    status: OrderStatus
+input GetOrganizationTotalOrdersByAffiliateInput {
+  startDate: Datetime
+  endDate: Datetime
+  serviceName: ServiceName!
 }
 
-enum OrderStatus{
-    approved
-    canceled
-    reproved
+input GetOrganizationAverageTicketInput {
+  startDate: Datetime
+  endDate: Datetime
 }
 
-input CreateAffiliateBankValuesInput{
+input GetAllCommissionsInput {
+  limit: String
+  startDate: Datetime
+  endDate: Datetime
+  name: String
+  status: OrderStatus
+}
+
+input GetOrganizationOrdersByAffiliateIdInput {
+  limit: String
+  startDate: Datetime
+  endDate: Datetime
+  name: String
+  paid: Boolean
+  status: OrderStatus
+  serviceName: ServiceName!
+}
+
+input GetAllOrganizationOrdersInput {
+  limit: String
+  startDate: Datetime
+  endDate: Datetime
+  name: String
+  status: OrderStatus
+}
+
+enum OrderStatus {
+  approved
+  canceled
+  reproved
+}
+
+input CreateAffiliateBankValuesInput {
   name: String!
   agency: String!
   account: String!
@@ -149,148 +255,148 @@ input CreateAffiliateBankValuesInput{
   serviceName: ServiceName!
 }
 
-input ListAffiliateShorterUrlInput{
-    userOrganizationServiceId: String!
-    serviceName: ServiceName!
+input ListAffiliateShorterUrlInput {
+  userOrganizationServiceId: String!
+  serviceName: ServiceName!
 }
 
-input AffiliateGenerateShortenerUrlInput{
-    originalUrl: String!
-    serviceName: ServiceName!
+input AffiliateGenerateShortenerUrlInput {
+  originalUrl: String!
+  serviceName: ServiceName!
 }
 
 type UserOrganizationServiceRolesUrlShortener {
-    id: String!
-    shortenerUrl: ShortenerUrl!
-    userOrganizationService: UserOrganizationService!
-    createdAt: Datetime!
-    updatedAt: Datetime!
+  id: String!
+  shortenerUrl: ShortenerUrl!
+  userOrganizationService: UserOrganizationService!
+  createdAt: Datetime!
+  updatedAt: Datetime!
 }
 
 # VTEX TYPES RESPONSE
 
-type VtexAllOrders{
-    offset: Int!
-    limit: Int!
-    count: Int!
-    data: [VtexOrders]!
+type VtexAllOrders {
+  offset: Int!
+  limit: Int!
+  count: Int!
+  data: [VtexOrders]!
 }
 
-type VtexOrders{
-    _id: String!
-    orderId: String!
-    isPaid: Boolean!
-    organizationId: String!
-    sellerOrderId: String!
-    plugoneAffiliateStatus: PlugoneAffiliateStatus!
-    status: String!
-    statusDescription: String!
-    value: Float!
-    affiliateInfo: AffiliateInfo!
-    creationDate: String!
-    lastChange: String!
-    totals: [TotalItems]!
-    items: [VtexItems]!
-    clientProfileData: VtexClientProfileData!
+type VtexOrders {
+  _id: String!
+  orderId: String!
+  isPaid: Boolean!
+  organizationId: String!
+  sellerOrderId: String!
+  plugoneAffiliateStatus: PlugoneAffiliateStatus!
+  status: String!
+  statusDescription: String!
+  value: Float!
+  affiliateInfo: AffiliateInfo!
+  creationDate: String!
+  lastChange: String!
+  totals: [TotalItems]!
+  items: [VtexItems]!
+  clientProfileData: VtexClientProfileData!
 }
 
-enum PlugoneAffiliateStatus{
-    Pending
-    Approved
-    Reproved
+enum PlugoneAffiliateStatus {
+  Pending
+  Approved
+  Reproved
 }
 
-type TotalItems{
-    id: String!
-    name: String!
-    value: Int!
+type TotalItems {
+  id: String!
+  name: String!
+  value: Int!
 }
 
-type VtexItems{
-    uniqueId: String!
-    id: String!
-    productId: String!
-    ean: String
-    lockId: String!
-    itemAttachment: VtexItemAttachment!
-    attachments: String
-    quantity: Int
-    seller: String!
-    name: String!
-    refId: String!
-    price: Int!
-    listPrice: Int!
-    manualPrice: String
-    priceTags: String
-    imageUrl: String!
-    detailUrl: String!
-    components: String
-    bundleItems: String
-    params: String
-    offerings: String
-    sellerSku: String!
-    priceValidUntil: String
-    commission: Int!
-    tax: Int!
-    preSaleDate: String
-    measurementUnit: String!
-    unitMultiplier: Int!
-    sellingPrice: Float!
-    isGift: Boolean!
-    shippingPrice: String
-    rewardValue: Int!
-    freightCommission: Int!
-    priceDefinitions: String
-    taxCode: String
-    parentItemIndex: String
-    parentAssemblyBinding: String
-    vtexAdditionalInfo: VtexAdditionalInfo
-    hostname: String!
-    invoiceData: String
-    orderFormId: String!
-    isCompleted: Boolean!
-    invoicedDate: String
+type VtexItems {
+  uniqueId: String!
+  id: String!
+  productId: String!
+  ean: String
+  lockId: String!
+  itemAttachment: VtexItemAttachment!
+  attachments: String
+  quantity: Int
+  seller: String!
+  name: String!
+  refId: String!
+  price: Int!
+  listPrice: Int!
+  manualPrice: String
+  priceTags: String
+  imageUrl: String!
+  detailUrl: String!
+  components: String
+  bundleItems: String
+  params: String
+  offerings: String
+  sellerSku: String!
+  priceValidUntil: String
+  commission: Int!
+  tax: Int!
+  preSaleDate: String
+  measurementUnit: String!
+  unitMultiplier: Int!
+  sellingPrice: Float!
+  isGift: Boolean!
+  shippingPrice: String
+  rewardValue: Int!
+  freightCommission: Int!
+  priceDefinitions: String
+  taxCode: String
+  parentItemIndex: String
+  parentAssemblyBinding: String
+  vtexAdditionalInfo: VtexAdditionalInfo
+  hostname: String!
+  invoiceData: String
+  orderFormId: String!
+  isCompleted: Boolean!
+  invoicedDate: String
 }
 
-type VtexClientProfileData{
-    id: String!
-    email: String!
-    firstName: String
-    lastName: String
-    documentType: String
-    document: String
-    phone: String
-    corporateName: String
-    tradeName: String
-    corporateDocument: String
-    stateInscription: String
-    corporatePhone: String
-    isCorporate: Boolean!
-    userProfileId: String!
-    customerClass: String
+type VtexClientProfileData {
+  id: String!
+  email: String!
+  firstName: String
+  lastName: String
+  documentType: String
+  document: String
+  phone: String
+  corporateName: String
+  tradeName: String
+  corporateDocument: String
+  stateInscription: String
+  corporatePhone: String
+  isCorporate: Boolean!
+  userProfileId: String!
+  customerClass: String
 }
 
-type VtexAdditionalInfo{
-    brandName: String!
-    brandId: String!
-    categoriesIds: String!
-    productClusterId: String!
-    commercialConditionId: String!
-    dimension: VtexDimension
-    offeringInfo: String
-    offeringType: String
-    offeringTypeId: String
+type VtexAdditionalInfo {
+  brandName: String!
+  brandId: String!
+  categoriesIds: String!
+  productClusterId: String!
+  commercialConditionId: String!
+  dimension: VtexDimension
+  offeringInfo: String
+  offeringType: String
+  offeringTypeId: String
 }
 
-type VtexDimension{
-    cubicweight: Int!
-    height: Int!
-    length: Int!
-    weight: Int!
-    width: Int!
+type VtexDimension {
+  cubicweight: Int!
+  height: Int!
+  length: Int!
+  weight: Int!
+  width: Int!
 }
 
-type VtexItemAttachment{
-    content: String
-    name: String
+type VtexItemAttachment {
+  content: String
+  name: String
 }

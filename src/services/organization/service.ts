@@ -10,6 +10,7 @@ import { Transaction } from "knex";
 import database from "../../knex-database";
 import MailService from "../mail/service";
 import OrganizationRulesService from "../organization-rules/service";
+import IntegrationsService from "../integration/service";
 import VtexService from "../vtex/service";
 import UserService from "../users/service";
 import ServicesService from "../services/service";
@@ -1091,11 +1092,13 @@ const setCurrentOrganization = async (
 const verifyShowFirstSteps = async (organizationId: string) => {
   const members = await organizationHasAnyMemberLoader().load(organizationId);
 
-  const vtexIntegration = await VtexService.verifyIntegration(organizationId);
+  const vtexIntegration = await IntegrationsService.verifyIntegration(
+    organizationId
+  );
 
   const hasMember = members.length > 1;
 
-  return !(!!vtexIntegration && hasMember);
+  return !(vtexIntegration?.status && hasMember);
 };
 
 const handleServiceMembersActivity = async (
