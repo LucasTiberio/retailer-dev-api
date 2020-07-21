@@ -66,11 +66,11 @@ const verifyVtexSecrets = async (secrets: IVtexSecrets) => {
     );
 
     if (data.status === 200) {
+      return true;
     }
 
     return false;
   } catch (e) {
-    console.log(e.response.data);
     let errorMessage = e.response?.data?.error?.message || e.message;
     if (errorMessage === "An error has occurred")
       errorMessage = "Verifique as chaves inseridas.";
@@ -143,7 +143,7 @@ const getSecretsByOrganizationId = async (
 
   if (!verifySecretExists) return null;
 
-  const decode: any = common.jwtDecode(verifySecretExists.secret);
+  const decode: any = await common.jwtDecode(verifySecretExists.secret);
 
   return {
     organizationId: verifySecretExists.organization_id,
