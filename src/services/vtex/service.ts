@@ -25,8 +25,8 @@ const createVtexHook = async (secrets: IVtexSecrets) => {
       status: ORDER_MOMENTS,
     },
     hook: {
-      url: "https://5d990dcdbe66.ngrok.io/feed/affiliate/vtex/orders/sync",
-      // "https://hook-orders-staging.plugone.io/feed/affiliate/vtex/orders/sync",
+      url:
+        "https://hook-orders-staging.plugone.io/feed/affiliate/vtex/orders/sync",
     },
     visibilityTimeoutInSeconds: 250,
     MessageRetentionPeriodInSeconds: 4000000,
