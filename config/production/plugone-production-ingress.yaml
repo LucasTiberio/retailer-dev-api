@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: plugone-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-plugone-api-production"
+  namespace: graphql-api-production
+spec:
+  tls:
+  - hosts:
+    - api.plugone.io
+    secretName: api-production-tls
+  rules:
+  - host: api.plugone.io
+    http:
+      paths:
+      - backend:
+          serviceName: graphql-users-api-production
+          servicePort: 80
