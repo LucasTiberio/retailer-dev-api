@@ -1,0 +1,201 @@
+extend type Query{
+  verifyOrganizationName(input: VerifyOrganizationNameInput!): Boolean @isAuthenticated
+  listMyOrganizations: [Organization]! @isVerified @isAuthenticated
+  organizationDetails: Organization! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
+  listUsersInOrganization(input: ListUsersInOrganizationInput!): ListUsersInOrganizationPayload! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  listTeammates: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  teammatesCapacities: TeammatesCapacities! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+type TeammatesCapacities{
+  teammates: CapacitiesValues!
+}
+
+type ListUsersInOrganizationPayload{
+  count: Int!
+  usersOrganizations: [UserOrganization]!
+}
+
+input ListUsersInOrganizationInput{
+  name: String
+  offset: Int
+  limit: Int
+  showActive: Boolean
+}
+
+input FindUsersToOrganizationInput{
+  name: String!
+}
+
+type FindUsersToOrganizationPayload{
+  user: User!
+  inviteStatus: OrganizationInviteStatus
+}
+
+input VerifyOrganizationNameInput{
+  name: String!
+}
+
+extend type Mutation{
+  inviteAffiliate(input: InviteAffiliateInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
+  inviteTeammates(input: InviteTeammatesInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
+  handleTeammatesActivity(input: HandleTeammatesActivityInput!): UserOrganization! @asOrganizationFounder @organizationPaidVerify @isVerified @isAuthenticated
+  handleServiceMembersActivity(input: HandleServiceMembersActivityInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  reinviteServiceMember(input: ReinviteServiceMemberInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @isAuthenticated 
+  setCurrentOrganization(input: SetCurrentOrganizationInput!): Boolean! @isVerified @isAuthenticated 
+  organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
+  inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
+  handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+}
+
+input ReinviteServiceMemberInput{
+  userOrganizationId: String!
+}
+
+input HandleTeammatesActivityInput{
+  userOrganizationId: String!
+  activity: Boolean!
+}
+
+input HandleServiceMembersActivityInput{
+  userOrganizationId: String!
+  activity: Boolean!
+  service: ServiceName!
+}
+
+input InviteAffiliateInput{
+  users: [AffiliateUsers!]!
+}
+
+input InviteTeammatesInput{
+  emails: [String!]!
+}
+
+input AffiliateUsers{
+  email: String!
+  role: ServiceRolesName!
+}
+
+input InviteTeammatesInput{
+  emails: [String!]!
+}
+
+input SetCurrentOrganizationInput{
+  organizationId: String
+}
+
+type UserError{
+  message: String!
+  userId: String!
+}
+
+input OrganizationUploadImageInput{
+  mimetype: String
+  data: Upload!
+  organizationId: String!
+}
+
+type ResponseOrganizationInvitePayload{
+  status: Boolean!
+  email: String
+}
+
+input HandleUserPermissionInOrganizationInput{
+  userId: String!
+  permission: OrganizationRoleName!
+}
+
+input ResponseOrganizationInviteInput{
+  inviteHash: String!
+  response: OrganizationInviteStatus!
+}
+
+enum OrganizationInviteStatus {
+    refused,
+    pendent,
+    accept,
+    exited
+}
+
+input InviteUserToOrganizationInput {
+  users: [InviteUsersInput]!
+}
+
+input InviteUsersInput {
+  id: String
+  email: String!
+  role: OrganizationRoleName
+  services: [ServiceInput!]
+}
+
+input CreateOrganizationInput{
+  organization: OrganizationInput!
+  additionalInfos: AdditionalInfos!
+}
+
+input AdditionalInfos{
+  segment: String!
+  resellersEstimate: Int!
+  reason: String!
+  plataform: String!
+}
+
+input OrganizationInput{
+  name: String!
+  phone: String!
+  contactEmail: String!
+}
+
+type Organization{
+  name: String!
+  contactEmail: String!
+  id: String!
+  slug: String!
+  active: Boolean!
+  hasBillingPendency: Boolean
+  user: User! @isVerified @isAuthenticated
+  showFirstSteps: Boolean!
+  updatedAt: Datetime!
+  freeTrial: Boolean!
+  freeTrialExpires: Datetime
+  createdAt: Datetime!
+  logo: String
+  hasMember: Boolean!
+  organizationRole: [OrganizationRole]!
+  services: [Service]!
+}
+
+type UserOrganizationRole{
+  id: String!
+  userOrganization: UserOrganization!
+  organizationRole: OrganizationRole!
+  createdAt: Datetime!
+  updatedAt: Datetime!
+}
+
+type UserOrganization{
+  id: String!
+  inviteStatus: OrganizationInviteStatus!
+  inviteHash: String
+  updatedAt: Datetime!
+  createdAt: Datetime!
+  organization: Organization!
+  user: User!
+  active: Boolean!
+  organizationRole: OrganizationRole!
+}
+
+type OrganizationRole{
+    id: String!
+    name: OrganizationRoleName!
+    createdAt: Datetime!
+    updatedAt: Datetime!
+}
+
+enum OrganizationRoleName {
+    ADMIN,
+    MEMBER
+}

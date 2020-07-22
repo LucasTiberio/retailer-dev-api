@@ -1,4 +1,3 @@
-import common from "../../../common";
 process.env.NODE_ENV = 'test';
 import database from '../../../knex-database';
 import Faker from 'faker';
@@ -49,7 +48,7 @@ describe('authentication graphql', () => {
         const signUpPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         beforeEach(async () => {
@@ -86,7 +85,7 @@ describe('authentication graphql', () => {
             });
 
             const signInPayload = {
-                password: signUpPayload.password,
+                password: "B8oneTeste123!",
                 email: signUpPayload.email
             }
 

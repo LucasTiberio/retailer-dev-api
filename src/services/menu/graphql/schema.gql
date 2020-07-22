@@ -1,0 +1,28 @@
+extend type Query{
+    menuTree: [MenuTree]! @hasOrganizationRole(role: ["ADMIN","MEMBER"]) @isVerified @isAuthenticated 
+}
+
+type MenuTree{
+    group: String!
+    items: [MenuItem]!
+}
+
+type MenuItem{
+    name: String!
+    slug: String
+    children: [MenuChildren]
+}
+
+type MenuChildren{
+    name: String
+    slug: String
+    children: [SubMenuChildren]
+}
+
+type SubMenuChildren{
+    slug: String
+    name: String
+}
+
+
+

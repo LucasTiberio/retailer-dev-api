@@ -2,6 +2,7 @@ import service from '../service';
 import { IResolvers } from 'apollo-server';
 import { Transaction } from 'knex';
 import database from '../../../knex-database';
+import OrganizationService from '../../organization/service';
 
 const resolvers : IResolvers = {
   Mutation: {
@@ -26,7 +27,18 @@ const resolvers : IResolvers = {
       });
     }
   },
-  Query: {}
+  Query: {
+    getUser: (_, __, { client }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.getUser(client, trx);
+      })
+    } 
+  },
+  User: {
+    organizations: (obj, { organizationId }) => {
+      return OrganizationService.getOrganizationByUserId(obj.id, organizationId);
+    } 
+  }
 };
 
 export default resolvers;

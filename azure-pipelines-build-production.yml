@@ -1,0 +1,81 @@
+# Docker
+# Build a Docker image 
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      displayName: DockerBuild
+      inputs:
+        command: build
+        containerRegistry: 'plugoneproduction-dockerhub'
+        repository: 'plugoneproduction/plugone-main-api'
+        Dockerfile: '**/Dockerfile'
+        arguments: | 
+          --build-arg nodeenv=production 
+          --build-arg dbuser=$(DB_USER) 
+          --build-arg dbpassword=$(DB_PASSWORD) 
+          --build-arg dbdatabase=$(DB_DATABASE) 
+          --build-arg dbport=$(DB_PORT) 
+          --build-arg dbhost=$(DB_HOST) 
+          --build-arg jwtsecret=$(JWT_SECRET)
+          --build-arg mailhost=$(MAIL_HOST)
+          --build-arg mailport=$(MAIL_PORT)
+          --build-arg mailuser=$(MAIL_USER)
+          --build-arg sendgridapikey=$(SEND_GRID_API_KEY)
+          --build-arg digitaloceanawsaccesskeyid=$(DIGITAL_OCEAN_AWS_ACCESS_KEY_ID)
+          --build-arg digitaloceanawssecretaccesskey=$(DIGITAL_OCEAN_AWS_SECRET_ACCESS_KEY)
+          --build-arg digitaloceanspacesendpoint=$(DIGITAL_OCEAN_SPACES_END_POINT)
+          --build-arg bucketname=$(BUCKET_NAME)
+          --build-arg fronturlstaging=https://app.plugone.io
+          --build-arg rediscachekey=$(REDIS_CACHEKEY)
+          --build-arg redishost=$(REDIS_HOST)
+          --build-arg redisport=$(REDIS_PORT)
+          --build-arg ordersservicepassword=$(ORDERS_SERVICE_PASSWORD)
+          --build-arg REDIRECT_URL_STAGING=https://go.plugone.io
+          --build-arg PAYMENTS_URL=$(PAYMENTS_URL)
+
+        includeLatestTag: true
+        tags: |
+          $(Build.BuildId)
+          latest
+
+    - task: Docker@2
+      displayName: DockerPush
+      inputs:
+        command: push
+        containerRegistry: 'plugoneproduction-dockerhub'
+        repository: 'plugoneproduction/plugone-main-api'
+        includeLatestTag: true
+        tags: |
+          $(Build.BuildId)
+          latest
+    
+    - task: KubectlInstaller@0
+      inputs: 
+        kubectlVersion: 'latest'
+
+    - script: |
+        apk --no-cache add curl
+        curl -sL https://github.com/digitalocean/doctl/releases/download/v1.27.0/doctl-1.27.0-linux-amd64.tar.gz | tar -xzv
+        sudo mv ./doctl /usr/local/bin
+        doctl -t $(DOCTL_TOKEN) k8s cluster kubeconfig show k8s-1-17-5-do-0-nyc1-plugone > kubeconfig.yml
+        kubectl --kubeconfig=kubeconfig.yml apply -f ./config/production/graphql-users-api-production.yaml
+        kubectl --kubeconfig=kubeconfig.yml rollout restart deploy graphql-users-api-production --namespace graphql-api-production
+        kubectl --kubeconfig=kubeconfig.yml rollout status deploy graphql-users-api-production --namespace graphql-api-production

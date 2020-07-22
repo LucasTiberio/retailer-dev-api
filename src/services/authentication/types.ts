@@ -8,3 +8,8 @@ export interface ISignInAdapted{
     username: string
     email: string
 }
+
+export interface IUserToken{
+    origin: string
+    id: string
+}

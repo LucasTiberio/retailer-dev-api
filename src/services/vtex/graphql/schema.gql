@@ -1,0 +1,65 @@
+extend type Query {
+  vtexDepartmentsCommissions: [VtexDepartmentsComissionsAdapted]!
+    @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"])
+    @isVerified
+    @isAuthenticated
+  vtexAffiliateCommission(
+    input: VtexAffiliateCommissionInput!
+  ): [VtexDepartmentsComissionsPercentage]! @ordersService
+}
+
+type VtexDepartmentsComissionsPercentage {
+  vtexDepartmentId: String!
+  percentage: Int
+  payDay: String
+}
+
+input VtexAffiliateCommissionInput {
+  vtexDepartmentsIds: [String]!
+  affiliateId: String!
+}
+
+extend type Mutation {
+  handleOrganizationVtexCommission(
+    input: HandleOrganizationVtexCommissionInput!
+  ): VtexDepartmentsComissions!
+    @hasServiceRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
+  verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
+}
+
+input HandleOrganizationVtexCommissionInput {
+  vtexDepartmentId: String!
+  vtexCommissionPercentage: Int!
+  active: Boolean!
+}
+
+type VtexDepartmentsComissions {
+  id: String!
+  vtexDepartmentId: String!
+  organizationId: String!
+  active: Boolean!
+  vtexCommissionPercentage: Int!
+  updatedAt: Datetime!
+  createdAt: Datetime!
+}
+
+type VtexDepartmentsComissionsAdapted {
+  id: String!
+  name: String!
+  url: String!
+  active: Boolean!
+  percentage: Int
+}
+
+input VerifyAndAttachVtexSecretsInput {
+  xVtexApiAppKey: String!
+  xVtexApiAppToken: String!
+  accountName: String!
+}

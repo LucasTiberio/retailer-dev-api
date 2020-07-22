@@ -1,7 +1,7 @@
 import GraphQLAPI from './graphql';
 import store from './store';
-import jwt from 'jsonwebtoken';
-import { ApolloServer, gql, makeExecutableSchema } from 'apollo-server-express';
+import { ApolloServer, makeExecutableSchema } from 'apollo-server-express';
+import redisClient from './lib/Redis';
 
 const server = new ApolloServer({
   schema: makeExecutableSchema({
@@ -9,9 +9,17 @@ const server = new ApolloServer({
     resolvers: GraphQLAPI.resolvers,
     directiveResolvers: GraphQLAPI.directiveResolvers
   }),
-  context: ({req, connection}) => {
+  uploads: {
+    maxFileSize: 700000,
+    maxFiles: 1,
+    maxFieldSize: 700000
+  },
+  context: ({req}) => {
     store.resetStores();
-    return {};
+    return {
+      headers: req.headers,
+      redisClient
+    }
   },
   introspection: true,
   playground: true

@@ -1,0 +1,43 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: graphql-users-api-staging
+  namespace: graphql-api-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: graphql-users-api-staging
+      version: v01
+  template:
+    metadata:
+      labels:
+        app: graphql-users-api-staging
+        version: v01
+    spec:
+      containers:
+      - name: graphql-users-api-staging-container
+        image: gabrieltamurab8one/plugone-api-staging:latest
+        ports:
+        - containerPort: 80
+        imagePullPolicy: Always
+        env:
+        - name: PORT
+          value: "80"
+      imagePullSecrets:
+        - name: "gabrieltamura"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: graphql-users-api-staging
+  namespace: graphql-api-staging
+spec:
+  selector:
+    app: graphql-users-api-staging
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP

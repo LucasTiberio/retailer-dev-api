@@ -1,3 +1,7 @@
+extend type Query{
+  getUser: User! @isVerified @isAuthenticated 
+}
+
 extend type Mutation{
   signUp(input: SignUpInput!): User!
   userVerifyEmail(input: UserVerifyEmailInput!): Boolean
@@ -26,6 +30,7 @@ input SignUpInput{
 
 type User{
   id: String!
-  username: String!
+  username: String
   email: String!
+  organizations(organizationId: String): [Organization]! 
 }

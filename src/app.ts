@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import server from './server';
+import knexDatabase from './knex-database';
 
 const app = express();
 
@@ -15,12 +16,12 @@ app.get('/', (req, res) => {
 
 server.applyMiddleware({app, cors: true});
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 80;
 
 module.exports = app
 
 if(process.env.NODE_ENV !== 'test')
-  app.listen({port}, () => console.log("server running"));
+  app.listen({port}, () => console.log(`server running on port ${port}`));
 
 
 

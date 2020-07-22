@@ -12,7 +12,7 @@ describe('Authentication', () => {
     let trx : Transaction;
 
     beforeAll(async () => {
-        trx = await database.knexTest.transaction(); 
+        trx = await database.knex.transaction(); 
     });
 
     afterAll(async () => {
@@ -34,7 +34,7 @@ describe('Authentication', () => {
         let signUpPayload = {
             username: Faker.name.firstName(),
             email: Faker.internet.email(),
-            password: Faker.internet.password()
+            password: "B8oneTeste123!"
         }
 
         beforeEach(async () => {
@@ -50,7 +50,7 @@ describe('Authentication', () => {
 
             const signInPayload = {
                 email: signUpPayload.email,
-                password: signUpPayload.password
+                password: "B8oneTeste123!"
             }
 
             const signIn = await service.signIn(signInPayload, trx);
