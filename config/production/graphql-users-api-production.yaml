@@ -1,0 +1,43 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: graphql-users-api-production
+  namespace: graphql-api-production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: graphql-users-api-production
+      version: v01
+  template:
+    metadata:
+      labels:
+        app: graphql-users-api-production
+        version: v01
+    spec:
+      containers:
+      - name: graphql-users-api-production-container
+        image: plugoneproduction/plugone-main-api:latest
+        ports:
+        - containerPort: 80
+        imagePullPolicy: Always
+        env:
+        - name: PORT
+          value: "80"
+      imagePullSecrets:
+        - name: "plugoneproduction"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: graphql-users-api-production
+  namespace: graphql-api-production
+spec:
+  selector:
+    app: graphql-users-api-production
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP

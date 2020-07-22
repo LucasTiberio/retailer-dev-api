@@ -3,7 +3,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- staging
+- master
 
 resources:
 - repo: self
@@ -24,11 +24,11 @@ stages:
       displayName: DockerBuild
       inputs:
         command: build
-        containerRegistry: 'gabrieltamura-dockerhub'
-        repository: 'gabrieltamurab8one/plugone-api-staging'
+        containerRegistry: 'plugoneproduction-dockerhub'
+        repository: 'plugoneproduction/plugone-main-api'
         Dockerfile: '**/Dockerfile'
         arguments: | 
-          --build-arg nodeenv=development 
+          --build-arg nodeenv=production 
           --build-arg dbuser=$(DB_USER) 
           --build-arg dbpassword=$(DB_PASSWORD) 
           --build-arg dbdatabase=$(DB_DATABASE) 
@@ -43,12 +43,12 @@ stages:
           --build-arg digitaloceanawssecretaccesskey=$(DIGITAL_OCEAN_AWS_SECRET_ACCESS_KEY)
           --build-arg digitaloceanspacesendpoint=$(DIGITAL_OCEAN_SPACES_END_POINT)
           --build-arg bucketname=$(BUCKET_NAME)
-          --build-arg fronturlstaging=https://staging.plugone.io
+          --build-arg fronturlstaging=https://app.plugone.io
           --build-arg rediscachekey=$(REDIS_CACHEKEY)
           --build-arg redishost=$(REDIS_HOST)
           --build-arg redisport=$(REDIS_PORT)
           --build-arg ordersservicepassword=$(ORDERS_SERVICE_PASSWORD)
-          --build-arg REDIRECT_URL_STAGING=https://go-staging.plugone.io
+          --build-arg REDIRECT_URL_STAGING=https://go.plugone.io
           --build-arg PAYMENTS_URL=$(PAYMENTS_URL)
 
         includeLatestTag: true
@@ -60,8 +60,8 @@ stages:
       displayName: DockerPush
       inputs:
         command: push
-        containerRegistry: 'gabrieltamura-dockerhub'
-        repository: 'gabrieltamurab8one/plugone-api-staging'
+        containerRegistry: 'plugoneproduction-dockerhub'
+        repository: 'plugoneproduction/plugone-main-api'
         includeLatestTag: true
         tags: |
           $(Build.BuildId)
@@ -76,6 +76,6 @@ stages:
         curl -sL https://github.com/digitalocean/doctl/releases/download/v1.27.0/doctl-1.27.0-linux-amd64.tar.gz | tar -xzv
         sudo mv ./doctl /usr/local/bin
         doctl -t $(DOCTL_TOKEN) k8s cluster kubeconfig show k8s-1-17-5-do-0-nyc1-plugone > kubeconfig.yml
-        kubectl --kubeconfig=kubeconfig.yml apply -f ./config/staging/graphql-users-api-staging.yaml
-        kubectl --kubeconfig=kubeconfig.yml rollout restart deploy graphql-users-api-staging --namespace graphql-api-staging
-        kubectl --kubeconfig=kubeconfig.yml rollout status deploy graphql-users-api-staging --namespace graphql-api-staging
+        kubectl --kubeconfig=kubeconfig.yml apply -f ./config/production/graphql-users-api-production.yaml
+        kubectl --kubeconfig=kubeconfig.yml rollout restart deploy graphql-users-api-production --namespace graphql-api-production
+        kubectl --kubeconfig=kubeconfig.yml rollout status deploy graphql-users-api-production --namespace graphql-api-production
