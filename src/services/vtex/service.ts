@@ -1,3 +1,4 @@
+require("dotenv");
 import { Transaction } from "knex";
 import knexDatabase from "../../knex-database";
 import { IUserToken } from "../authentication/types";
@@ -25,8 +26,7 @@ const createVtexHook = async (secrets: IVtexSecrets) => {
       status: ORDER_MOMENTS,
     },
     hook: {
-      url:
-        "https://hook-orders-staging.plugone.io/feed/affiliate/vtex/orders/sync",
+      url: process.env.VTEX_HOOK_URL,
     },
     visibilityTimeoutInSeconds: 250,
     MessageRetentionPeriodInSeconds: 4000000,
