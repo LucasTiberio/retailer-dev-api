@@ -503,18 +503,27 @@ const inviteAffiliateServiceMembers = async (
               "users_organizations"
             )
               .update({
-                invite_status: OrganizationInviteStatus.PENDENT,
+                invite_status:
+                  usersOrganizationFound.invite_status ===
+                  OrganizationInviteStatus.ACCEPT
+                    ? OrganizationInviteStatus.ACCEPT
+                    : OrganizationInviteStatus.PENDENT,
                 active: true,
               })
               .where("id", usersOrganizationFound.id)
               .returning("id")
               .returning("*");
 
-            await MailService.sendInviteUserMail({
-              email: item.email,
-              hashToVerify,
-              organizationName: organization.name,
-            });
+            if (
+              usersOrganizationFound.invite_status !==
+              OrganizationInviteStatus.ACCEPT
+            ) {
+              await MailService.sendInviteUserMail({
+                email: item.email,
+                hashToVerify,
+                organizationName: organization.name,
+              });
+            }
 
             const organizationAdmin = await getUserOrganizationByUserOrganizationId(
               usersOrganizationFound.id,
