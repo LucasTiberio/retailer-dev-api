@@ -1,5 +1,6 @@
 export enum Integrations {
   VTEX = "vtex",
+  LOJA_INTEGRADA = "loja_integrada",
 }
 
 export interface IIntegration {
@@ -10,4 +11,8 @@ export interface IIntegration {
   integration_secrets_id: string;
   created_at: Date;
   updated_at: Date;
+}
+
+export interface ILojaIntegradaSecrets {
+  appKey: string;
 }
