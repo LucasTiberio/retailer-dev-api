@@ -232,7 +232,7 @@ const sendSignUpMail = async (data: ISendMail) => {
             <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
             
             
-                <div style="display:none;font-size:0;line-height:0;">Título do e-mail aqui (pre header)</div>
+                <div style="display:none;font-size:0;line-height:0;">"Bem vindo(a) a PlugOne!</div>
             
                 <!-- WRAPPER -->
                 <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -716,7 +716,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
               <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
             
             
-                <div style="display:none;font-size:0;line-height:0;">Título do e-mail aqui (pre header)</div>
+                <div style="display:none;font-size:0;line-height:0;">Recuperacão de senha Plugone!</div>
             
                   <!-- WRAPPER -->
                   <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -1168,7 +1168,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                     <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
 
 
-                        <div style="display:none;font-size:0;line-height:0;">Título do e-mail aqui (pre header)</div>
+                        <div style="display:none;font-size:0;line-height:0;">Senha recuperada Plugone!</div>
 
                         <!-- WRAPPER -->
                         <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -1604,7 +1604,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
   <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
 
 
-    <div style="display:none;font-size:0;line-height:0;">Título do e-mail aqui (pre header)</div>
+    <div style="display:none;font-size:0;line-height:0;">Você foi convidado para a Plugone!</div>
 
       <!-- WRAPPER -->
       <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -2043,7 +2043,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
   <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
 
 
-    <div style="display:none;font-size:0;line-height:0;">Título do e-mail aqui (pre header)</div>
+    <div style="display:none;font-size:0;line-height:0;">Você foi convidado para a ${data.organizationName}!</div>
 
       <!-- WRAPPER -->
       <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
