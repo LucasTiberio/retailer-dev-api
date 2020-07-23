@@ -50,6 +50,7 @@ stages:
           --build-arg ordersservicepassword=$(ORDERS_SERVICE_PASSWORD)
           --build-arg REDIRECT_URL_STAGING=https://go.plugone.io
           --build-arg PAYMENTS_URL=$(PAYMENTS_URL)
+          --build-arg VTEX_HOOK_URL=$(VTEX_HOOK_URL)
 
         includeLatestTag: true
         tags: |
