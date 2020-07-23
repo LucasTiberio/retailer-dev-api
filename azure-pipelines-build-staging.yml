@@ -28,7 +28,7 @@ stages:
         repository: 'gabrieltamurab8one/plugone-api-staging'
         Dockerfile: '**/Dockerfile'
         arguments: | 
-          --build-arg nodeenv=production 
+          --build-arg nodeenv=development 
           --build-arg dbuser=$(DB_USER) 
           --build-arg dbpassword=$(DB_PASSWORD) 
           --build-arg dbdatabase=$(DB_DATABASE) 
