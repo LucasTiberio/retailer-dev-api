@@ -1,3 +1,4 @@
+require("dotenv");
 import {
   IOrganizationPayload,
   OrganizationRoles,
@@ -82,6 +83,18 @@ const createOrganization = async (
   } = createOrganizationPayload;
 
   try {
+    const [organizationFound] = await (trx || knexDatabase.knex)(
+      "organizations"
+    )
+      .where("user_id", context.client.id)
+      .select();
+
+    if (process.env.NODE_ENV === "production") {
+      if (organizationFound) {
+        throw new Error("Only 1 organization per account an available");
+      }
+    }
+
     const attachedOrganizationInfosId = await attachOrganizationAditionalInfos(
       createOrganizationPayload.additionalInfos,
       trx
