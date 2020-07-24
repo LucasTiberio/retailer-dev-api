@@ -28,7 +28,7 @@ extend type Organization {
 }
 
 type Integration {
-  type: String!
+  type: Integrations!
   status: Boolean!
   createdAt: Datetime!
   updatedAt: Datetime!
