@@ -47,5 +47,7 @@ ARG PAYMENTS_URL
 ENV PAYMENTS_URL=$PAYMENTS_URL
 ARG VTEX_HOOK_URL
 ENV VTEX_HOOK_URL=$VTEX_HOOK_URL
+ARG ORDER_SERVICE_URL
+ENV ORDER_SERVICE_URL=$ORDER_SERVICE_URL
 RUN npm install && npm run build
 CMD ["/bin/sh", "-c", "npx knex migrate:latest && npm start"]

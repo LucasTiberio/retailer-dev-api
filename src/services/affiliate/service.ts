@@ -1,3 +1,4 @@
+require("dotenv");
 import knexDatabase from "../../knex-database";
 
 import ShortenerUrlService from "../shortener-url/service";
@@ -36,7 +37,7 @@ import {
   timeToPayCommissionAdapter,
 } from "./adapters";
 
-const ordersServiceUrl = `https://hook-orders-staging.plugone.io`;
+const ordersServiceUrl = process.env.ORDER_SERVICE_URL;
 
 const utmSource = "plugone_affiliate";
 

@@ -98,18 +98,13 @@ extend type Query {
     @organizationPaidVerify
     @isVerified
     @isAuthenticated
-  getAllOrganizationOrders(
-    input: GetAllOrganizationOrdersInput
-  ): VtexAllOrders!
+  getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): AllOrders!
     @hasOrganizationRole(role: ["ADMIN"])
     @isVerified
     @isAuthenticated
   getOrganizationOrdersByAffiliateId(
     input: GetOrganizationOrdersByAffiliateIdInput
-  ): VtexAllOrders!
-    @hasServiceRole(role: ["ANALYST"])
-    @isVerified
-    @isAuthenticated
+  ): AllOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
   getOrganizationRevenue(
     input: GetOrganizationRevenueInput
   ): OrganizationRevenue!
@@ -275,128 +270,41 @@ type UserOrganizationServiceRolesUrlShortener {
 
 # VTEX TYPES RESPONSE
 
-type VtexAllOrders {
+type AllOrders {
   offset: Int!
   limit: Int!
   count: Int!
-  data: [VtexOrders]!
+  data: [Order]!
 }
 
-type VtexOrders {
+type Order {
   _id: String!
+  isPaid: Boolean
   orderId: String!
-  isPaid: Boolean!
-  organizationId: String!
-  sellerOrderId: String!
   plugoneAffiliateStatus: PlugoneAffiliateStatus!
-  status: String!
-  statusDescription: String!
+  creationDate: String!
   value: Float!
   affiliateInfo: AffiliateInfo!
-  creationDate: String!
-  lastChange: String!
-  totals: [TotalItems]!
-  items: [VtexItems]!
-  clientProfileData: VtexClientProfileData!
+  items: [OrderItem]!
+  clientData: ClientData!
+}
+
+type ClientData {
+  name: String
+  document: String
+  email: String!
+}
+
+type OrderItem {
+  id: String!
+  image: String!
+  quantity: Int!
+  name: String!
+  price: Float!
 }
 
 enum PlugoneAffiliateStatus {
   Pending
   Approved
   Reproved
-}
-
-type TotalItems {
-  id: String!
-  name: String!
-  value: Int!
-}
-
-type VtexItems {
-  uniqueId: String!
-  id: String!
-  productId: String!
-  ean: String
-  lockId: String!
-  itemAttachment: VtexItemAttachment!
-  attachments: String
-  quantity: Int
-  seller: String!
-  name: String!
-  refId: String!
-  price: Int!
-  listPrice: Int!
-  manualPrice: String
-  priceTags: String
-  imageUrl: String!
-  detailUrl: String!
-  components: String
-  bundleItems: String
-  params: String
-  offerings: String
-  sellerSku: String!
-  priceValidUntil: String
-  commission: Int!
-  tax: Int!
-  preSaleDate: String
-  measurementUnit: String!
-  unitMultiplier: Int!
-  sellingPrice: Float!
-  isGift: Boolean!
-  shippingPrice: String
-  rewardValue: Int!
-  freightCommission: Int!
-  priceDefinitions: String
-  taxCode: String
-  parentItemIndex: String
-  parentAssemblyBinding: String
-  vtexAdditionalInfo: VtexAdditionalInfo
-  hostname: String!
-  invoiceData: String
-  orderFormId: String!
-  isCompleted: Boolean!
-  invoicedDate: String
-}
-
-type VtexClientProfileData {
-  id: String!
-  email: String!
-  firstName: String
-  lastName: String
-  documentType: String
-  document: String
-  phone: String
-  corporateName: String
-  tradeName: String
-  corporateDocument: String
-  stateInscription: String
-  corporatePhone: String
-  isCorporate: Boolean!
-  userProfileId: String!
-  customerClass: String
-}
-
-type VtexAdditionalInfo {
-  brandName: String!
-  brandId: String!
-  categoriesIds: String!
-  productClusterId: String!
-  commercialConditionId: String!
-  dimension: VtexDimension
-  offeringInfo: String
-  offeringType: String
-  offeringTypeId: String
-}
-
-type VtexDimension {
-  cubicweight: Int!
-  height: Int!
-  length: Int!
-  weight: Int!
-  width: Int!
-}
-
-type VtexItemAttachment {
-  content: String
-  name: String
 }
