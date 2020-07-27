@@ -170,7 +170,7 @@ type AffiliateCommission {
 }
 
 type OrganizationTotalOrders {
-  amount: Float!
+  amount: Int!
 }
 
 type OrganizationAverageTicket {
@@ -297,7 +297,7 @@ type ClientData {
 
 type OrderItem {
   id: String!
-  image: String!
+  image: String
   quantity: Int!
   name: String!
   price: Float!
