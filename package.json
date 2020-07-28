@@ -67,8 +67,6 @@
     "stream-length": "^1.0.2",
     "stream-to-array": "^2.3.0",
     "ts-node-register": "^1.0.0",
-    "tsc-alias": "^1.1.1",
-    "tsconfig-paths": "^3.9.0",
     "typescript": "^3.8.3",
     "uuid": "^8.0.0",
     "uuidv4": "^6.0.8",
