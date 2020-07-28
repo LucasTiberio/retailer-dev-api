@@ -52,6 +52,7 @@ stages:
           --build-arg PAYMENTS_URL=$(PAYMENTS_URL)
           --build-arg VTEX_HOOK_URL=$(VTEX_HOOK_URL)
           --build-arg ORDER_SERVICE_URL=$(ORDER_SERVICE_URL)
+          --build-arg LOJA_INTEGRADA_APPLICATION_KEY=$(LOJA_INTEGRADA_APPLICATION_KEY)
 
         includeLatestTag: true
         tags: |
