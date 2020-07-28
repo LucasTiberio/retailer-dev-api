@@ -1,21 +1,53 @@
-extend type Query{
+extend type Query {
   listAvailablePlans: [Plan]! @isVerified @isAuthenticated
-  listOrganizationCustomerPayment: [OrganizationCustomerPayment]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getSubscriptionByOrganizationId(input: GetSubscriptionByOrganizationIdInput): Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  listOrganizationCustomerPayment: [OrganizationCustomerPayment]!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  getSubscriptionByOrganizationId(
+    input: GetSubscriptionByOrganizationIdInput
+  ): Subscription
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
 }
 
-extend type Mutation{
-  sendRecurrencyTransaction(input: SendRecurrencyTransactionInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  updateRecurrencyTransaction(input: UpdateRecurrencyTransactionInput!): Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  cancelRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  activateRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  createOrganizationCustomer(input: CreateOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  editOrganizationCustomer(input: EditOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  createOrganizationCustomerPayment(input: CreateOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  removeOrganizationCustomerPayment(input: RemoveOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+extend type Mutation {
+  sendRecurrencyTransaction(input: SendRecurrencyTransactionInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  updateRecurrencyTransaction(
+    input: UpdateRecurrencyTransactionInput!
+  ): Subscription!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  cancelRecurrencyTransaction: Subscription!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  activateRecurrencyTransaction: Subscription!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  createOrganizationCustomer(input: CreateOrganizationCustomerInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  editOrganizationCustomer(input: EditOrganizationCustomerInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
+  createOrganizationCustomerPayment(
+    input: CreateOrganizationCustomerPaymentInput!
+  ): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  removeOrganizationCustomerPayment(
+    input: RemoveOrganizationCustomerPaymentInput!
+  ): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
 
-type InvoiceData{
+type InvoiceData {
   cpfCnpj: String!
   zipCode: String!
   number: String!
@@ -36,16 +68,16 @@ input SendRecurrencyTransactionInput {
   payableWith: PayableWith!
 }
 
-enum PayableWith{
+enum PayableWith {
   bank_slip
   credit_card
 }
 
-input GetSubscriptionByOrganizationIdInput{
+input GetSubscriptionByOrganizationIdInput {
   organizationId: String!
 }
 
-type OrganizationCustomerPayment{
+type OrganizationCustomerPayment {
   id: String!
   description: String!
   itemType: String!
@@ -56,32 +88,32 @@ input RemoveOrganizationCustomerPaymentInput {
   paymentId: String!
 }
 
-type PaymentMethodData{
+type PaymentMethodData {
   brand: String!
   holder: String!
   lastDigits: String!
 }
 
-input CreateOrganizationCustomerPaymentInput{
+input CreateOrganizationCustomerPaymentInput {
   description: String
   token: String!
 }
 
-input CreateOrganizationCustomerInput{
+input CreateOrganizationCustomerInput {
   zipCode: String!
   number: String!
   cpfCnpj: String!
   complement: String
 }
 
-input EditOrganizationCustomerInput{
+input EditOrganizationCustomerInput {
   zipCode: String!
   number: String!
   cpfCnpj: String!
   complement: String
 }
 
-type Plan{
+type Plan {
   id: String!
   interval: Int!
   intervalType: String!
@@ -92,12 +124,12 @@ type Plan{
   planRules: [PlanRules]!
 }
 
-type PlanRules{
+type PlanRules {
   serviceName: String!
   rules: Rules!
 }
 
-type Rules{
+type Rules {
   maxTransactionTax: Int!
   maxTeammates: Int!
   maxAnalysts: Int!
@@ -107,7 +139,7 @@ type Rules{
   sso: Boolean!
 }
 
-type Subscription{
+type Subscription {
   id: String!
   suspended: Boolean!
   planIdentifier: String!
@@ -125,7 +157,7 @@ type Subscription{
   recentInvoices: [IuguRecentInvoices]!
 }
 
-type IuguRecentInvoices{
+type IuguRecentInvoices {
   id: String!
   dueDate: String!
   status: String!
