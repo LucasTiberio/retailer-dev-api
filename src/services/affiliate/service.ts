@@ -908,13 +908,8 @@ const attachVtexCategoryName = async (
 ) => {
   const decode: any = await common.jwtDecode(secret);
 
-  const { data: vtexCategoriesData } = await Axios.get(
-    buildGetCategoriesThreeVtexUrl(decode?.accountName),
-    {
-      headers: {
-        "content-type": "Content-Type",
-      },
-    }
+  const vtexCategoriesData = await getVtexCategoriesCategories(
+    decode.accountName
   );
 
   let mergedArray: any = [];
@@ -933,10 +928,7 @@ const attachVtexCategoryName = async (
   return mergedArray;
 };
 
-const attachLojaIntegradaCategoryName = async (
-  commissionList: IOrganizationCommission[],
-  identifier: string
-) => {
+const getLojaIntegradaCategories = async (identifier: string) => {
   const { data: dataLojaIntegradaCategories } = await Axios.get(
     "https://api.awsli.com.br/v1/categoria",
     {
@@ -947,26 +939,86 @@ const attachLojaIntegradaCategoryName = async (
     }
   );
 
-  let mergedArray: any = [];
+  return dataLojaIntegradaCategories.objects;
+};
 
-  dataLojaIntegradaCategories.objects.map(
-    (item: { id: number; nome: string }) => {
-      return commissionList.some((commission) => {
-        if (Number(item.id) === Number(commission.department_id)) {
-          mergedArray.push({
-            ...commission,
-            name: item.nome,
-          });
-        }
-      });
+const getVtexCategoriesCategories = async (accountName: string) => {
+  const { data: vtexCategoriesData } = await Axios.get(
+    buildGetCategoriesThreeVtexUrl(accountName),
+    {
+      headers: {
+        "content-type": "Content-Type",
+      },
     }
   );
+
+  return vtexCategoriesData;
+};
+
+const attachLojaIntegradaCategoryName = async (
+  commissionList: IOrganizationCommission[],
+  identifier: string
+) => {
+  const dataLojaIntegradaCategories = await getLojaIntegradaCategories(
+    identifier
+  );
+
+  let mergedArray: any = [];
+
+  dataLojaIntegradaCategories.map((item: { id: number; nome: string }) => {
+    return commissionList.some((commission) => {
+      if (Number(item.id) === Number(commission.department_id)) {
+        mergedArray.push({
+          ...commission,
+          name: item.nome,
+        });
+      }
+    });
+  });
 
   return mergedArray;
 };
 
+const getOrganizationCommissionsName = async (
+  organizationId: string,
+  trx: Transaction
+) => {
+  const integration = await IntegrationService.getIntegrationByOrganizationId(
+    organizationId,
+    trx
+  );
+
+  if (!integration.type)
+    throw new Error(
+      MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION
+    );
+
+  switch (integration.type) {
+    case Integrations.LOJA_INTEGRADA:
+      const lojaIntegradaCategories = await getLojaIntegradaCategories(
+        integration.identifier
+      );
+      return lojaIntegradaCategories.map((item: any) => ({
+        name: item.nome,
+        id: item.id,
+      }));
+    case Integrations.VTEX:
+      const decode: any = await common.jwtDecode(integration.secret);
+      const vtexCategories = await getVtexCategoriesCategories(
+        decode?.accountName
+      );
+      return vtexCategories.map((item: any) => ({
+        name: item.name,
+        id: item.id,
+      }));
+    default:
+      return [];
+  }
+};
+
 export default {
   generateShortenerUrl,
+  getOrganizationCommissionsName,
   generateSalesShorten,
   getOrganizationCommissionByOrganizationId,
   getOrganizationTotalOrders,

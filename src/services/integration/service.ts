@@ -152,6 +152,7 @@ const updateOrganizationSecret = async (
   await (trx || knexDatabase)("organization_integration_secrets")
     .update({
       integration_secrets_id: secretId,
+      active: true,
     })
     .where("id", organizationIntegrationId)
     .returning("*");
@@ -170,6 +171,7 @@ const createOrganizationSecret = async (
       organization_id: organizationId,
       type,
       identifier: identifier,
+      active: true,
     })
     .returning("*");
 };

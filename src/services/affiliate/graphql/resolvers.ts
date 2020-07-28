@@ -92,6 +92,11 @@ const resolvers: IResolvers = {
         );
       });
     },
+    getOrganizationCommissionsName: (_, __, { organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getOrganizationCommissionsName(organizationId, trx);
+      });
+    },
     timeToPayCommission: (_, __, { client, organizationId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.getTimeToPayCommission({ client, organizationId }, trx);

@@ -119,6 +119,10 @@ extend type Query {
     @hasOrganizationRole(role: ["ADMIN"])
     @isVerified
     @isAuthenticated
+  getOrganizationCommissionsName: [OrganizationCommissionName]!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
+    @isAuthenticated
   listAffiliateShorterUrl(
     input: ListAffiliateShorterUrlInput!
   ): [UserOrganizationServiceRolesUrlShortener]!
@@ -169,6 +173,11 @@ extend type Query {
     @hasServiceRole(role: ["ANALYST"])
     @isVerified
     @isAuthenticated
+}
+
+type OrganizationCommissionName {
+  id: String!
+  name: String!
 }
 
 input GetOrganizationCommissionByAffiliateInput {
