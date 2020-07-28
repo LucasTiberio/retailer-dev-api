@@ -280,11 +280,14 @@ const directiveResolvers: IDirectiveResolvers = {
         organizationId
       );
 
-      if (moment(paymentServiceStatus.expiresAt).isAfter(moment())) {
+      if (
+        paymentServiceStatus &&
+        moment(paymentServiceStatus.expiresAt).isAfter(moment())
+      ) {
         return next();
       }
 
-      if (!paymentServiceStatus.expiresAt) {
+      if (paymentServiceStatus && !paymentServiceStatus.expiresAt) {
         const pendingInvoices = paymentServiceStatus.recentInvoices.filter(
           (item: { dueData: string; status: PaymentServiceStatus }) =>
             item.status === PaymentServiceStatus.PENDING
