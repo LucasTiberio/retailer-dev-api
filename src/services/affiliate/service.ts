@@ -15,6 +15,7 @@ import { Services, ServiceRoles } from "../services/types";
 import {
   IUsersOrganizationServiceRolesUrlShortenerFromDB,
   IVtexStatus,
+  IOrganizationCommission,
 } from "./types";
 import { IUserBankValuesToInsert } from "../bank-data/types";
 import { Transaction } from "knex";
@@ -41,6 +42,8 @@ import {
 } from "./adapters";
 import organization from "../organization";
 import { Integrations } from "../integration/types";
+import { IOrganizationAdapted } from "../organization/types";
+import { buildGetCategoriesThreeVtexUrl } from "../vtex/helpers";
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL;
 
@@ -761,7 +764,7 @@ const handleOrganizationCommission = async (
     trx
   );
 
-  if (!integrationType)
+  if (!integrationType.type)
     throw new Error(
       MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION
     );
@@ -769,7 +772,7 @@ const handleOrganizationCommission = async (
   const comissionFound = await getOrganizationCommissionByType(
     input.departmentId,
     context.organizationId,
-    integrationType,
+    integrationType.type,
     trx
   );
 
@@ -784,7 +787,7 @@ const handleOrganizationCommission = async (
     const organizationCommissionCreated = await createOrganizationCommission(
       input,
       context.organizationId,
-      integrationType,
+      integrationType.type,
       trx
     );
 
@@ -864,12 +867,12 @@ const getOrganizationCommissionByOrganizationId = async (
   context: { organizationId: string },
   trx: Transaction
 ) => {
-  const integrationType = await IntegrationService.getIntegrationByOrganizationId(
+  const integration = await IntegrationService.getIntegrationByOrganizationId(
     context.organizationId,
     trx
   );
 
-  if (!integrationType)
+  if (!integration.type)
     throw new Error(
       MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION
     );
@@ -878,10 +881,88 @@ const getOrganizationCommissionByOrganizationId = async (
     "organization_commission"
   )
     .where("organization_id", context.organizationId)
-    .andWhere("type", integrationType)
+    .andWhere("type", integration.type)
     .select();
 
-  return organizationCommission.map(organizationCommissionAdapter);
+  switch (integration.type) {
+    case Integrations.LOJA_INTEGRADA:
+      const lojaIntegradaAttachedList = await attachLojaIntegradaCategoryName(
+        organizationCommission,
+        integration.identifier
+      );
+      return lojaIntegradaAttachedList.map(organizationCommissionAdapter);
+    case Integrations.VTEX:
+      const vtexAttachedList = await attachVtexCategoryName(
+        organizationCommission,
+        integration.secret
+      );
+      return vtexAttachedList.map(organizationCommissionAdapter);
+    default:
+      return [];
+  }
+};
+
+const attachVtexCategoryName = async (
+  commissionList: IOrganizationCommission[],
+  secret: string
+) => {
+  const decode: any = await common.jwtDecode(secret);
+
+  const { data: vtexCategoriesData } = await Axios.get(
+    buildGetCategoriesThreeVtexUrl(decode?.accountName),
+    {
+      headers: {
+        "content-type": "Content-Type",
+      },
+    }
+  );
+
+  let mergedArray: any = [];
+
+  vtexCategoriesData.map((item: { id: number; name: string }) => {
+    return commissionList.some((commission) => {
+      if (Number(item.id) === Number(commission.department_id)) {
+        mergedArray.push({
+          ...commission,
+          name: item.name,
+        });
+      }
+    });
+  });
+
+  return mergedArray;
+};
+
+const attachLojaIntegradaCategoryName = async (
+  commissionList: IOrganizationCommission[],
+  identifier: string
+) => {
+  const { data: dataLojaIntegradaCategories } = await Axios.get(
+    "https://api.awsli.com.br/v1/categoria",
+    {
+      params: {
+        chave_aplicacao: process.env.LOJA_INTEGRADA_APPLICATION_KEY,
+        chave_api: identifier,
+      },
+    }
+  );
+
+  let mergedArray: any = [];
+
+  dataLojaIntegradaCategories.objects.map(
+    (item: { id: number; nome: string }) => {
+      return commissionList.some((commission) => {
+        if (Number(item.id) === Number(commission.department_id)) {
+          mergedArray.push({
+            ...commission,
+            name: item.nome,
+          });
+        }
+      });
+    }
+  );
+
+  return mergedArray;
 };
 
 export default {

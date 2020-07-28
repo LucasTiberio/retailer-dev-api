@@ -13,7 +13,7 @@ exports.up = async function (knex) {
         .uuid("organization_id")
         .notNullable()
         .references("organizations.id");
-      table.text("department_id").unique().notNullable();
+      table.text("department_id").notNullable();
       table.boolean("active").notNullable().defaultsTo(true);
       table.text("type").notNullable();
       table.decimal("commission_percentage").notNullable();

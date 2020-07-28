@@ -53,6 +53,7 @@ type OrganizationCommission {
   departmentId: String!
   commissionPercentage: Float!
   active: Boolean!
+  name: String!
   type: String!
   updatedAt: Datetime!
   createdAt: Datetime!

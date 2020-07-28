@@ -222,14 +222,19 @@ const getIntegrationByOrganizationId = async (
   trx: Transaction
 ) => {
   const integration = await (trx || knexDatabase.knex)(
-    "organization_integration_secrets"
+    "organization_integration_secrets AS ois"
   )
-    .where("organization_id", organizationId)
+    .innerJoin(
+      "integration_secrets AS is",
+      "is.id",
+      "ois.integration_secrets_id"
+    )
+    .where("ois.organization_id", organizationId)
     .andWhere("active", true)
     .first()
     .select("*");
 
-  return integration.type;
+  return integration;
 };
 
 export default {

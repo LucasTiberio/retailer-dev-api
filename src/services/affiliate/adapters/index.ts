@@ -29,6 +29,7 @@ export const organizationCommissionAdapter = (
   record: IOrganizationCommission
 ) => ({
   id: record.id,
+  name: record.name,
   organizationId: record.organization_id,
   departmentId: record.department_id,
   active: record.active,

@@ -10,6 +10,7 @@ export interface IOrganizationCommission {
   id: string;
   organization_id: string;
   department_id: string;
+  name: string;
   active: boolean;
   type: string;
   commission_percentage: number;
