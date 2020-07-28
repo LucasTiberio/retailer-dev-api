@@ -7,6 +7,19 @@ import ServicesService from "../../services/service";
 
 const resolvers: IResolvers = {
   Mutation: {
+    handleOrganizationCommission: (
+      _,
+      { input },
+      { organizationId, client }
+    ) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.handleOrganizationCommission(
+          input,
+          { organizationId },
+          trx
+        );
+      });
+    },
     handleTimeToPayCommission: (_, { input }, { organizationId, client }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.handleTimeToPayCommission(
@@ -71,6 +84,14 @@ const resolvers: IResolvers = {
     },
   },
   Query: {
+    getOrganizationCommissions: (_, __, { organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getOrganizationCommissionByOrganizationId(
+          { organizationId },
+          trx
+        );
+      });
+    },
     timeToPayCommission: (_, __, { client, organizationId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.getTimeToPayCommission({ client, organizationId }, trx);

@@ -4,6 +4,7 @@ import knexDatabase from "../../knex-database";
 import ShortenerUrlService from "../shortener-url/service";
 import UserService from "../users/service";
 import OrganizationService from "../organization/service";
+import IntegrationService from "../integration/service";
 import ServicesService from "../services/service";
 import BankDataService from "../bank-data/service";
 
@@ -26,6 +27,7 @@ import {
   MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE,
   SALE_VTEX_PIXEL_NAMESPACE,
   MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST,
+  MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION,
 } from "../../common/consts";
 
 import common from "../../common";
@@ -35,7 +37,10 @@ import moment from "moment";
 import {
   defaultCommissionAdapter,
   timeToPayCommissionAdapter,
+  organizationCommissionAdapter,
 } from "./adapters";
+import organization from "../organization";
+import { Integrations } from "../integration/types";
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL;
 
@@ -742,9 +747,147 @@ const handleDefaultommission = async (
   return defaultCommissionAdapter(defaultCommissionCreated);
 };
 
+const handleOrganizationCommission = async (
+  input: {
+    departmentId: string;
+    commissionPercentage: number;
+    active: boolean;
+  },
+  context: { organizationId: string },
+  trx: Transaction
+) => {
+  const integrationType = await IntegrationService.getIntegrationByOrganizationId(
+    context.organizationId,
+    trx
+  );
+
+  if (!integrationType)
+    throw new Error(
+      MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION
+    );
+
+  const comissionFound = await getOrganizationCommissionByType(
+    input.departmentId,
+    context.organizationId,
+    integrationType,
+    trx
+  );
+
+  if (comissionFound) {
+    const organizationCommissionCreated = await updateOrganizationCommission(
+      input,
+      comissionFound.id,
+      trx
+    );
+    return organizationCommissionCreated;
+  } else {
+    const organizationCommissionCreated = await createOrganizationCommission(
+      input,
+      context.organizationId,
+      integrationType,
+      trx
+    );
+
+    return organizationCommissionCreated;
+  }
+};
+
+const createOrganizationCommission = async (
+  input: {
+    departmentId: string;
+    commissionPercentage: number;
+    active: boolean;
+  },
+  organizationId: string,
+  integrationType: Integrations,
+  trx: Transaction
+) => {
+  const [organizationCommission] = await (trx || knexDatabase.knex)(
+    "organization_commission"
+  )
+    .insert({
+      department_id: input.departmentId,
+      commission_percentage: input.commissionPercentage,
+      active: input.active,
+      organization_id: organizationId,
+      type: integrationType,
+    })
+    .returning("*");
+
+  return organizationCommissionAdapter(organizationCommission);
+};
+
+const updateOrganizationCommission = async (
+  input: {
+    departmentId: string;
+    commissionPercentage: number;
+    active: boolean;
+  },
+  commissionId: string,
+  trx: Transaction
+) => {
+  const [organizationCommission] = await (trx || knexDatabase.knex)(
+    "organization_commission"
+  )
+    .update({
+      department_id: input.departmentId,
+      commission_percentage: input.commissionPercentage,
+      active: input.active,
+    })
+    .where("id", commissionId)
+    .returning("*");
+
+  return organizationCommissionAdapter(organizationCommission);
+};
+
+const getOrganizationCommissionByType = async (
+  departmentId: string,
+  organizationId: string,
+  integrationType: Integrations,
+  trx: Transaction
+) => {
+  const organizationCommission = await (trx || knexDatabase.knex)(
+    "organization_commission"
+  )
+    .where("organization_id", organizationId)
+    .andWhere("department_id", departmentId)
+    .andWhere("type", integrationType)
+    .first()
+    .select();
+
+  return organizationCommission
+    ? organizationCommissionAdapter(organizationCommission)
+    : null;
+};
+
+const getOrganizationCommissionByOrganizationId = async (
+  context: { organizationId: string },
+  trx: Transaction
+) => {
+  const integrationType = await IntegrationService.getIntegrationByOrganizationId(
+    context.organizationId,
+    trx
+  );
+
+  if (!integrationType)
+    throw new Error(
+      MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION
+    );
+
+  const organizationCommission = await (trx || knexDatabase.knex)(
+    "organization_commission"
+  )
+    .where("organization_id", context.organizationId)
+    .andWhere("type", integrationType)
+    .select();
+
+  return organizationCommission.map(organizationCommissionAdapter);
+};
+
 export default {
   generateShortenerUrl,
   generateSalesShorten,
+  getOrganizationCommissionByOrganizationId,
   getOrganizationTotalOrders,
   getTimeToPayCommissionById,
   getDefaultCommissionByOrganizationServiceId,
@@ -763,4 +906,5 @@ export default {
   handleTimeToPayCommission,
   handleDefaultommission,
   getTimeToPayCommission,
+  handleOrganizationCommission,
 };

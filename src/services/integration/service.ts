@@ -217,7 +217,23 @@ const verifyIntegration = async (organizationId: string) => {
     : null;
 };
 
+const getIntegrationByOrganizationId = async (
+  organizationId: string,
+  trx: Transaction
+) => {
+  const integration = await (trx || knexDatabase.knex)(
+    "organization_integration_secrets"
+  )
+    .where("organization_id", organizationId)
+    .andWhere("active", true)
+    .first()
+    .select("*");
+
+  return integration.type;
+};
+
 export default {
   createIntegration,
   verifyIntegration,
+  getIntegrationByOrganizationId,
 };

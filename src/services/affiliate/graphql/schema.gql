@@ -6,6 +6,13 @@ extend type Mutation {
     @organizationPaidVerify
     @isVerified
     @isAuthenticated
+  handleOrganizationCommission(
+    input: HandleOrganizationCommissionInput!
+  ): OrganizationCommission!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
   generateSalesJwt(input: GenerateSalesJwtInput!): SalesSession!
   createAffiliateBankValues(
     input: CreateAffiliateBankValuesInput!
@@ -33,6 +40,22 @@ extend type Mutation {
     @organizationPaidVerify
     @isVerified
     @isAuthenticated
+}
+
+input HandleOrganizationCommissionInput {
+  departmentId: String!
+  commissionPercentage: Float!
+  active: Boolean!
+}
+
+type OrganizationCommission {
+  id: String!
+  departmentId: String!
+  commissionPercentage: Float!
+  active: Boolean!
+  type: String!
+  updatedAt: Datetime!
+  createdAt: Datetime!
 }
 
 input HandleTimeToPayCommissionInput {
@@ -89,6 +112,10 @@ extend type Query {
     @isAuthenticated
   defaultCommission: DefaultCommission!
     @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"])
+    @isVerified
+    @isAuthenticated
+  getOrganizationCommissions: [OrganizationCommission]!
+    @hasOrganizationRole(role: ["ADMIN"])
     @isVerified
     @isAuthenticated
   listAffiliateShorterUrl(

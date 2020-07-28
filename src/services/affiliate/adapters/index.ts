@@ -1,6 +1,7 @@
 import {
   IDefaultPayCommissionFromDB,
   ITimeToPayCommissionFromDB,
+  IOrganizationCommission,
 } from "../types";
 
 export const defaultCommissionAdapter = (
@@ -22,4 +23,17 @@ export const timeToPayCommissionAdapter = (
   type: record.type,
   updatedAt: record.updated_at,
   createdAt: record.created_at,
+});
+
+export const organizationCommissionAdapter = (
+  record: IOrganizationCommission
+) => ({
+  id: record.id,
+  organizationId: record.organization_id,
+  departmentId: record.department_id,
+  active: record.active,
+  type: record.type,
+  commissionPercentage: record.commission_percentage,
+  createdAt: record.created_at,
+  updatedAt: record.updated_at,
 });
