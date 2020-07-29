@@ -65,6 +65,7 @@ const attachIntegration = async (
     await updateOrganizationSecret(
       secret.id,
       organizationIntegrationFound.id,
+      identifier,
       trx
     );
   } else {
@@ -91,11 +92,13 @@ const createIntegrationSecret = async (jwtSecret: string, trx: Transaction) => {
 const updateOrganizationSecret = async (
   secretId: string,
   organizationIntegrationId: string,
+  identifier: string,
   trx: Transaction
 ) => {
   await (trx || knexDatabase)("organization_integration_secrets")
     .update({
       integration_secrets_id: secretId,
+      identifier,
     })
     .where("id", organizationIntegrationId)
     .returning("*");
