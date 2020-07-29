@@ -367,7 +367,6 @@ const getVtexCommissionInfosByAffiliateIdAndDepartmentId = async (
 
 export default {
   getSecretsByOrganizationId,
-  createUserVtexCampaign,
   getVtexCommissionInfosByAffiliateIdAndDepartmentId,
   getVtexDepartments,
   getVtexDepartmentsCommissions,
