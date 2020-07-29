@@ -50,6 +50,7 @@ import {
   organizationHasAnyMemberLoader,
 } from "./loaders";
 import moment from "moment";
+import { createVtexCampaignFail } from "../../common/errors";
 
 const attachOrganizationAditionalInfos = async (
   input: IOrganizationAdittionalInfos,
@@ -591,8 +592,13 @@ const inviteAffiliateServiceMembers = async (
       })
     );
   } catch (error) {
-    console.log(error.response);
-    throw new Error(error.message);
+    let errorMessage = error.message;
+
+    if (error.response.config.url.match(/campaignConfiguration/)) {
+      errorMessage = createVtexCampaignFail;
+    }
+
+    throw new Error(errorMessage);
   }
 };
 
