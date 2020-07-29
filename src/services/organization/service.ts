@@ -591,6 +591,7 @@ const inviteAffiliateServiceMembers = async (
       })
     );
   } catch (error) {
+    console.log(error.response);
     throw new Error(error.message);
   }
 };
