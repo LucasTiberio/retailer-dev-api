@@ -392,14 +392,6 @@ const attachUserInOrganizationAffiliateService = async (
       })
       .returning("*");
 
-    if (vtexSecrets) {
-      await VtexService.createUserVtexCampaign(
-        userAddedInOrganizationService.id,
-        vtexSecrets,
-        trx
-      );
-    }
-
     return {
       ..._usersOrganizationServiceAdapter(userAddedInOrganizationService),
       serviceId: input.serviceOrganization.service_id,

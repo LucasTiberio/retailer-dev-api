@@ -285,7 +285,7 @@ type VtexAllOrders {
 type VtexOrders {
   _id: String!
   orderId: String!
-  isPaid: Boolean!
+  isPaid: Boolean
   organizationId: String!
   sellerOrderId: String!
   plugoneAffiliateStatus: PlugoneAffiliateStatus!
