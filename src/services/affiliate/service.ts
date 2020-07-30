@@ -44,10 +44,18 @@ import organization from "../organization";
 import { Integrations } from "../integration/types";
 import { IOrganizationAdapted } from "../organization/types";
 import { buildGetCategoriesThreeVtexUrl } from "../vtex/helpers";
+import {
+  generateVtexShortener,
+  generateLojaIntegradaShortener,
+} from "./helpers";
+import {
+  integrationTypeShortenerGeneratorNotFound,
+  organizationDoesNotHaveActiveIntegration,
+  affiliateDoesNotExist,
+  tokenMustBeProvided,
+} from "../../common/errors";
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL;
-
-const utmSource = "plugone_affiliate";
 
 const affiliateShorterUrlAdapter = (
   record: IUsersOrganizationServiceRolesUrlShortenerFromDB
@@ -67,7 +75,7 @@ const generateShortenerUrl = async (
   context: { client: IUserToken; organizationId: string },
   trx: Transaction
 ) => {
-  if (!context.client) throw new Error("token must be provided!");
+  if (!context.client) throw new Error(tokenMustBeProvided);
 
   const { originalUrl, serviceName } = affiliateGenerateShortenerUrlPayload;
 
@@ -89,18 +97,42 @@ const generateShortenerUrl = async (
     trx
   );
 
-  if (!affiliate) throw new Error("Affiliate doesnt exists.");
+  if (!affiliate) throw new Error(affiliateDoesNotExist);
 
-  let hasQueryString = originalUrl.match(/\?/gi);
+  const integration = await IntegrationService.getIntegrationByOrganizationId(
+    context.organizationId,
+    trx
+  );
 
-  const urlWithMemberAttached = `${originalUrl}${
-    hasQueryString ? "&" : "?"
-  }utm_source=${utmSource}&utm_campaign=${affiliate.id}_${
-    context.organizationId
-  }`;
+  if (!integration.type)
+    throw new Error(organizationDoesNotHaveActiveIntegration);
+
+  let hasQueryString = !!originalUrl.match(/\?/gi);
+
+  let memberUrlToAttach;
+
+  if (integration.type === Integrations.VTEX) {
+    const vtexUrlWithMemberAttached = generateVtexShortener(
+      originalUrl,
+      hasQueryString,
+      affiliate.id,
+      context.organizationId
+    );
+    memberUrlToAttach = vtexUrlWithMemberAttached;
+  } else if (integration.type === Integrations.LOJA_INTEGRADA) {
+    const lojaIntegradaUrlWithMemberAttached = generateLojaIntegradaShortener(
+      originalUrl,
+      hasQueryString,
+      affiliate.id,
+      context.organizationId
+    );
+    memberUrlToAttach = lojaIntegradaUrlWithMemberAttached;
+  } else {
+    throw new Error(integrationTypeShortenerGeneratorNotFound);
+  }
 
   const shorterUrl = await ShortenerUrlService.shortenerUrl(
-    urlWithMemberAttached,
+    memberUrlToAttach,
     trx
   );
 
