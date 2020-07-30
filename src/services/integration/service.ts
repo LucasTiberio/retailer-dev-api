@@ -2,10 +2,12 @@ import { Transaction } from "knex";
 import { Integrations, ILojaIntegradaSecrets } from "./types";
 import common from "../../common";
 import VtexService from "../vtex/service";
+import OrganizationRulesService from "../organization-rules/service";
 import { IVtexSecrets } from "../vtex/types";
 import knexDatabase from "../../knex-database";
 import { organizationServicesByOrganizationIdLoader } from "./loaders";
 import Axios from "axios";
+import { upgradeYourPlan } from "../../common/errors";
 
 const _secretToJwt = (obj: object) => {
   return common.jwtEncode(obj);
@@ -20,6 +22,19 @@ const createIntegration = async (
   trx: Transaction
 ) => {
   const { secrets, type } = input;
+
+  const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(
+    context.organizationId
+  );
+
+  if (
+    !affiliateRules.providers.some(
+      (item: { name: Integrations; status: boolean }) =>
+        item.name === type && item.status
+    )
+  ) {
+    throw new Error(upgradeYourPlan);
+  }
 
   try {
     switch (type) {

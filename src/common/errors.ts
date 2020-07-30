@@ -5,3 +5,4 @@ export const organizationDoesNotHaveActiveIntegration =
   "organization_does_not_have_active_integration";
 export const affiliateDoesNotExist = "affiliate_does_not_exist";
 export const tokenMustBeProvided = "token_must_be_provided";
+export const upgradeYourPlan = "upgrade_your_plan";

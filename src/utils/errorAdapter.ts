@@ -4,6 +4,7 @@ import {
   organizationDoesNotHaveActiveIntegration,
   affiliateDoesNotExist,
   tokenMustBeProvided,
+  upgradeYourPlan,
 } from "../common/errors";
 
 export default (message: string) => {
@@ -32,6 +33,11 @@ export default (message: string) => {
       return {
         code: 1,
         explication: "Token must be provided",
+      };
+    case upgradeYourPlan:
+      return {
+        code: 8,
+        explication: "Upgrade your plan to use this feature",
       };
     default:
       return {

@@ -1,18 +1,10 @@
-import {
-  ICreateSubscribe,
-  PaymentMethod,
-  ISaveCreditCard,
-  ICreditCard,
-  Billing,
-  Customer,
-} from "./types";
-import {
-  paymentFactory,
-  fetchPaymentsService,
-  updatePaymentsFactory,
-} from "./helpers";
+import { PaymentMethod } from "./types";
+import { fetchPaymentsService } from "./helpers";
 import OrganizationService from "../organization/service";
+import OrganizationRulesService from "../organization-rules/service";
 import knexDatabase from "../../knex-database";
+import { Integrations } from "../integration/types";
+import { deactivateVtexIntegrationByOrganizationId } from "./repository/organizationIntegrationSecrets";
 
 const createOrganizationCustomerPayment = async (
   createSubscribeInput: {
@@ -172,6 +164,19 @@ const sendRecurrencyTransaction = async (
         free_trial: false,
         free_trial_expires: null,
       });
+
+    const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(
+      context.organizationId
+    );
+
+    if (
+      !affiliateRules.providers.filter(
+        (provider: { name: Integrations }) =>
+          provider.name === Integrations.VTEX
+      )[0].status
+    ) {
+      await deactivateVtexIntegrationByOrganizationId(context.organizationId);
+    }
 
     return res.data.data.sendRecurrencyTransaction;
   } catch (error) {
