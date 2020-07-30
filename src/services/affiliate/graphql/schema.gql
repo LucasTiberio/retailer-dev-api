@@ -203,7 +203,7 @@ type AffiliateInfo {
 
 type AffiliateCommission {
   amount: Float!
-  payDay: String!
+  payDay: String
 }
 
 type OrganizationTotalOrders {
