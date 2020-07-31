@@ -315,11 +315,63 @@ const getSubscriptionByOrganizationId = async (organizationId: string) => {
     const res = await fetchPaymentsService(query, variables);
 
     if (res.data?.errors) {
+      console.log(res.data.errors);
       return null;
     }
 
     return res.data.data.getSubscriptionByOrganizationId;
   } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const createEnterpriseRecurrencyTransaction = async (input: {
+  zipCode: string;
+  number: string;
+  complement?: string;
+  cpfCnpj: string;
+  valueCents: number;
+  organizationId: string;
+}) => {
+  const mutation = `
+  mutation createEnterpriseRecurrencyTransaction($input: CreateEnterpriseRecurrencyTransactionInput!){
+    createEnterpriseRecurrencyTransaction(input:$input)
+  }`;
+
+  const organization = await OrganizationService.getOrganizationById(
+    input.organizationId
+  );
+
+  const variables: any = {
+    input: {
+      organizationId: organization.id,
+      payableWith: "bank_slip",
+      customer: {
+        email: organization.contactEmail,
+        name: organization.name,
+        zipCode: input.zipCode,
+        number: input.number,
+        cpfCnpj: input.cpfCnpj,
+      },
+      valueCents: input.valueCents,
+    },
+  };
+
+  if (input.complement) {
+    variables.input.customer.complement = input.complement;
+  }
+
+  try {
+    const res = await fetchPaymentsService(mutation, variables);
+
+    if (res.data?.errors) {
+      console.log(res.data.errors);
+      throw new Error("error on create plan");
+    }
+
+    return res.data.data.createEnterpriseRecurrencyTransaction;
+  } catch (error) {
+    console.log(error.response.data);
     throw new Error(error.message);
   }
 };
@@ -467,4 +519,5 @@ export default {
   listOrganizationCustomerPayment,
   cancelRecurrencyTransaction,
   editOrganizationCustomer,
+  createEnterpriseRecurrencyTransaction,
 };

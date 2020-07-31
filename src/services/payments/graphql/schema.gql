@@ -17,6 +17,9 @@ extend type Mutation {
     @hasOrganizationRole(role: ["ADMIN"])
     @isVerified
     @isAuthenticated
+  createEnterpriseRecurrencyTransaction(
+    input: CreateEnterpriseRecurrencyTransaction!
+  ): Boolean! @hasEnterpriseToken
   updateRecurrencyTransaction(
     input: UpdateRecurrencyTransactionInput!
   ): Subscription!
@@ -45,6 +48,15 @@ extend type Mutation {
   removeOrganizationCustomerPayment(
     input: RemoveOrganizationCustomerPaymentInput!
   ): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+}
+
+input CreateEnterpriseRecurrencyTransaction {
+  zipCode: String!
+  number: String!
+  complement: String
+  cpfCnpj: String!
+  valueCents: Int!
+  organizationId: String!
 }
 
 type InvoiceData {
