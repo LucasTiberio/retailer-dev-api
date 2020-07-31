@@ -447,13 +447,13 @@ const inviteAffiliateServiceMembers = async (
 
   if (!organization) throw new Error("Organization not found.");
 
-  const vtexSecrets = await VtexService.getSecretsByOrganizationId(
+  const integration = await IntegrationsService.getIntegrationByOrganizationId(
     context.organizationId,
     trx
   );
 
-  if (!vtexSecrets || !vtexSecrets.status)
-    throw new Error("Vtex Integration not implemented");
+  if (!integration || !integration.active)
+    throw new Error("Integration not implemented");
 
   const [
     serviceOrganizationFound,
@@ -578,8 +578,7 @@ const inviteAffiliateServiceMembers = async (
             organizationId: context.organizationId,
             serviceOrganization: serviceOrganizationFound,
           },
-          trx,
-          vtexSecrets
+          trx
         );
 
         await MailService.sendInviteNewUserMail({

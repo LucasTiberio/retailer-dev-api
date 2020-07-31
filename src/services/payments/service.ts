@@ -369,6 +369,14 @@ const createEnterpriseRecurrencyTransaction = async (input: {
       throw new Error("error on create plan");
     }
 
+    await knexDatabase
+      .knex("organizations")
+      .where("id", organization.id)
+      .update({
+        free_trial: false,
+        free_trial_expires: null,
+      });
+
     return res.data.data.createEnterpriseRecurrencyTransaction;
   } catch (error) {
     console.log(error.response.data);

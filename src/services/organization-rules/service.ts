@@ -43,6 +43,7 @@ const getAffiliateTeammateRules = async (organizationId: string) => {
     const res = await fetchPaymentsService(query, variables);
 
     if (res.data?.errors) {
+      console.log(res.data.errors);
       throw new Error(res.data.errors[0].message);
     }
 
