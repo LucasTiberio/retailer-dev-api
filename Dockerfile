@@ -21,8 +21,8 @@ ARG mailport
 ENV MAIL_PORT=$mailport
 ARG mailuser
 ENV MAIL_USER=$mailuser
-ARG sendgridapikey
-ENV SEND_GRID_API_KEY=$sendgridapikey
+ARG MAIL_PASS
+ENV MAIL_PASS=$MAIL_PASS
 ARG digitaloceanawsaccesskeyid
 ENV DIGITAL_OCEAN_AWS_ACCESS_KEY_ID=$digitaloceanawsaccesskeyid
 ARG digitaloceanawssecretaccesskey
