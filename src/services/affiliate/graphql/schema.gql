@@ -318,7 +318,6 @@ type Order {
   _id: String!
   isPaid: Boolean
   orderId: String!
-  isPaid: Boolean
   organizationId: String!
   sellerOrderId: String!
   plugoneAffiliateStatus: PlugoneAffiliateStatus!
