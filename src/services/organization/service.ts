@@ -50,6 +50,7 @@ import {
   organizationHasAnyMemberLoader,
 } from "./loaders";
 import moment from "moment";
+import { createVtexCampaignFail } from "../../common/errors";
 
 const attachOrganizationAditionalInfos = async (
   input: IOrganizationAdittionalInfos,
@@ -446,13 +447,13 @@ const inviteAffiliateServiceMembers = async (
 
   if (!organization) throw new Error("Organization not found.");
 
-  const vtexSecrets = await VtexService.getSecretsByOrganizationId(
+  const integration = await IntegrationsService.getIntegrationByOrganizationId(
     context.organizationId,
     trx
   );
 
-  if (!vtexSecrets || !vtexSecrets.status)
-    throw new Error("Vtex Integration not implemented");
+  if (!integration || !integration.active)
+    throw new Error("Integration not implemented");
 
   const [
     serviceOrganizationFound,
@@ -577,8 +578,7 @@ const inviteAffiliateServiceMembers = async (
             organizationId: context.organizationId,
             serviceOrganization: serviceOrganizationFound,
           },
-          trx,
-          vtexSecrets
+          trx
         );
 
         await MailService.sendInviteNewUserMail({
@@ -591,7 +591,13 @@ const inviteAffiliateServiceMembers = async (
       })
     );
   } catch (error) {
-    throw new Error(error.message);
+    let errorMessage = error.message;
+
+    if (error.response.config.url.match(/campaignConfiguration/)) {
+      errorMessage = createVtexCampaignFail;
+    }
+
+    throw new Error(errorMessage);
   }
 };
 

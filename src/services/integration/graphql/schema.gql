@@ -13,12 +13,14 @@ input CreateIntegrationInput {
 
 enum Integrations {
   vtex
+  loja_integrada
 }
 
 input IntegrationSecrets {
-  xVtexApiAppKey: String!
-  xVtexApiAppToken: String!
-  accountName: String!
+  xVtexApiAppKey: String
+  xVtexApiAppToken: String
+  accountName: String
+  appKey: String
 }
 
 extend type Organization {
@@ -26,6 +28,7 @@ extend type Organization {
 }
 
 type Integration {
+  type: Integrations!
   status: Boolean!
   createdAt: Datetime!
   updatedAt: Datetime!

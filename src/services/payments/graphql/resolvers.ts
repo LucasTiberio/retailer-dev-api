@@ -1,15 +1,15 @@
 import { IResolvers } from "apollo-server";
 import service from "../service";
 
-const resolvers : IResolvers = {
+const resolvers: IResolvers = {
   Query: {
     listAvailablePlans: () => {
       return service.listAvailablePlans();
     },
     listOrganizationCustomerPayment: (_, __, { organizationId }) => {
-        return service.listOrganizationCustomerPayment(organizationId);
+      return service.listOrganizationCustomerPayment(organizationId);
     },
-    getSubscriptionByOrganizationId: (_,  __, {organizationId}) => {
+    getSubscriptionByOrganizationId: (_, __, { organizationId }) => {
       return service.getSubscriptionByOrganizationId(organizationId);
     },
   },
@@ -17,11 +17,16 @@ const resolvers : IResolvers = {
     createOrganizationCustomer: (_, { input }, { organizationId }) => {
       return service.createOrganizationCustomer(input, { organizationId });
     },
+    createEnterpriseRecurrencyTransaction: (_, { input }) => {
+      return service.createEnterpriseRecurrencyTransaction(input);
+    },
     editOrganizationCustomer: (_, { input }, { organizationId }) => {
       return service.editOrganizationCustomer(input, { organizationId });
     },
     createOrganizationCustomerPayment: (_, { input }, { organizationId }) => {
-      return service.createOrganizationCustomerPayment(input, { organizationId });
+      return service.createOrganizationCustomerPayment(input, {
+        organizationId,
+      });
     },
     sendRecurrencyTransaction: (_, { input }, { organizationId }) => {
       return service.sendRecurrencyTransaction(input, { organizationId });
@@ -36,9 +41,11 @@ const resolvers : IResolvers = {
       return service.cancelRecurrencyTransaction(organizationId);
     },
     removeOrganizationCustomerPayment: (_, { input }, { organizationId }) => {
-      return service.removeOrganizationCustomerPayment(input, { organizationId });
-    }
-  }
+      return service.removeOrganizationCustomerPayment(input, {
+        organizationId,
+      });
+    },
+  },
 };
 
 export default resolvers;

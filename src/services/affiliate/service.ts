@@ -4,6 +4,7 @@ import knexDatabase from "../../knex-database";
 import ShortenerUrlService from "../shortener-url/service";
 import UserService from "../users/service";
 import OrganizationService from "../organization/service";
+import IntegrationService from "../integration/service";
 import ServicesService from "../services/service";
 import BankDataService from "../bank-data/service";
 
@@ -14,6 +15,7 @@ import { Services, ServiceRoles } from "../services/types";
 import {
   IUsersOrganizationServiceRolesUrlShortenerFromDB,
   IVtexStatus,
+  IOrganizationCommission,
 } from "./types";
 import { IUserBankValuesToInsert } from "../bank-data/types";
 import { Transaction } from "knex";
@@ -26,6 +28,7 @@ import {
   MESSAGE_ERROR_USER_DOES_NOT_HAVE_SALE_ROLE,
   SALE_VTEX_PIXEL_NAMESPACE,
   MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST,
+  MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION,
 } from "../../common/consts";
 
 import common from "../../common";
@@ -35,11 +38,24 @@ import moment from "moment";
 import {
   defaultCommissionAdapter,
   timeToPayCommissionAdapter,
+  organizationCommissionAdapter,
 } from "./adapters";
+import organization from "../organization";
+import { Integrations } from "../integration/types";
+import { IOrganizationAdapted } from "../organization/types";
+import { buildGetCategoriesThreeVtexUrl } from "../vtex/helpers";
+import {
+  generateVtexShortener,
+  generateLojaIntegradaShortener,
+} from "./helpers";
+import {
+  integrationTypeShortenerGeneratorNotFound,
+  organizationDoesNotHaveActiveIntegration,
+  affiliateDoesNotExist,
+  tokenMustBeProvided,
+} from "../../common/errors";
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL;
-
-const utmSource = "plugone_affiliate";
 
 const affiliateShorterUrlAdapter = (
   record: IUsersOrganizationServiceRolesUrlShortenerFromDB
@@ -59,7 +75,7 @@ const generateShortenerUrl = async (
   context: { client: IUserToken; organizationId: string },
   trx: Transaction
 ) => {
-  if (!context.client) throw new Error("token must be provided!");
+  if (!context.client) throw new Error(tokenMustBeProvided);
 
   const { originalUrl, serviceName } = affiliateGenerateShortenerUrlPayload;
 
@@ -81,18 +97,42 @@ const generateShortenerUrl = async (
     trx
   );
 
-  if (!affiliate) throw new Error("Affiliate doesnt exists.");
+  if (!affiliate) throw new Error(affiliateDoesNotExist);
 
-  let hasQueryString = originalUrl.match(/\?/gi);
+  const integration = await IntegrationService.getIntegrationByOrganizationId(
+    context.organizationId,
+    trx
+  );
 
-  const urlWithMemberAttached = `${originalUrl}${
-    hasQueryString ? "&" : "?"
-  }utm_source=${utmSource}&utm_campaign=${affiliate.id}_${
-    context.organizationId
-  }`;
+  if (!integration.type)
+    throw new Error(organizationDoesNotHaveActiveIntegration);
+
+  let hasQueryString = !!originalUrl.match(/\?/gi);
+
+  let memberUrlToAttach;
+
+  if (integration.type === Integrations.VTEX) {
+    const vtexUrlWithMemberAttached = generateVtexShortener(
+      originalUrl,
+      hasQueryString,
+      affiliate.id,
+      context.organizationId
+    );
+    memberUrlToAttach = vtexUrlWithMemberAttached;
+  } else if (integration.type === Integrations.LOJA_INTEGRADA) {
+    const lojaIntegradaUrlWithMemberAttached = generateLojaIntegradaShortener(
+      originalUrl,
+      hasQueryString,
+      affiliate.id,
+      context.organizationId
+    );
+    memberUrlToAttach = lojaIntegradaUrlWithMemberAttached;
+  } else {
+    throw new Error(integrationTypeShortenerGeneratorNotFound);
+  }
 
   const shorterUrl = await ShortenerUrlService.shortenerUrl(
-    urlWithMemberAttached,
+    memberUrlToAttach,
     trx
   );
 
@@ -742,9 +782,277 @@ const handleDefaultommission = async (
   return defaultCommissionAdapter(defaultCommissionCreated);
 };
 
+const handleOrganizationCommission = async (
+  input: {
+    departmentId: string;
+    commissionPercentage: number;
+    active: boolean;
+  },
+  context: { organizationId: string },
+  trx: Transaction
+) => {
+  const integrationType = await IntegrationService.getIntegrationByOrganizationId(
+    context.organizationId,
+    trx
+  );
+
+  if (!integrationType.type)
+    throw new Error(
+      MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION
+    );
+
+  const comissionFound = await getOrganizationCommissionByType(
+    input.departmentId,
+    context.organizationId,
+    integrationType.type,
+    trx
+  );
+
+  if (comissionFound) {
+    const organizationCommissionCreated = await updateOrganizationCommission(
+      input,
+      comissionFound.id,
+      trx
+    );
+    return organizationCommissionCreated;
+  } else {
+    const organizationCommissionCreated = await createOrganizationCommission(
+      input,
+      context.organizationId,
+      integrationType.type,
+      trx
+    );
+
+    return organizationCommissionCreated;
+  }
+};
+
+const createOrganizationCommission = async (
+  input: {
+    departmentId: string;
+    commissionPercentage: number;
+    active: boolean;
+  },
+  organizationId: string,
+  integrationType: Integrations,
+  trx: Transaction
+) => {
+  const [organizationCommission] = await (trx || knexDatabase.knex)(
+    "organization_commission"
+  )
+    .insert({
+      department_id: input.departmentId,
+      commission_percentage: input.commissionPercentage,
+      active: input.active,
+      organization_id: organizationId,
+      type: integrationType,
+    })
+    .returning("*");
+
+  return organizationCommissionAdapter(organizationCommission);
+};
+
+const updateOrganizationCommission = async (
+  input: {
+    departmentId: string;
+    commissionPercentage: number;
+    active: boolean;
+  },
+  commissionId: string,
+  trx: Transaction
+) => {
+  const [organizationCommission] = await (trx || knexDatabase.knex)(
+    "organization_commission"
+  )
+    .update({
+      department_id: input.departmentId,
+      commission_percentage: input.commissionPercentage,
+      active: input.active,
+    })
+    .where("id", commissionId)
+    .returning("*");
+
+  return organizationCommissionAdapter(organizationCommission);
+};
+
+const getOrganizationCommissionByType = async (
+  departmentId: string,
+  organizationId: string,
+  integrationType: Integrations,
+  trx: Transaction
+) => {
+  const organizationCommission = await (trx || knexDatabase.knex)(
+    "organization_commission"
+  )
+    .where("organization_id", organizationId)
+    .andWhere("department_id", departmentId)
+    .andWhere("type", integrationType)
+    .first()
+    .select();
+
+  return organizationCommission
+    ? organizationCommissionAdapter(organizationCommission)
+    : null;
+};
+
+const getOrganizationCommissionByOrganizationId = async (
+  context: { organizationId: string },
+  trx: Transaction
+) => {
+  const integration = await IntegrationService.getIntegrationByOrganizationId(
+    context.organizationId,
+    trx
+  );
+
+  if (!integration.type)
+    throw new Error(
+      MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION
+    );
+
+  const organizationCommission = await (trx || knexDatabase.knex)(
+    "organization_commission"
+  )
+    .where("organization_id", context.organizationId)
+    .andWhere("type", integration.type)
+    .select();
+
+  switch (integration.type) {
+    case Integrations.LOJA_INTEGRADA:
+      const lojaIntegradaAttachedList = await attachLojaIntegradaCategoryName(
+        organizationCommission,
+        integration.identifier
+      );
+      return lojaIntegradaAttachedList.map(organizationCommissionAdapter);
+    case Integrations.VTEX:
+      const vtexAttachedList = await attachVtexCategoryName(
+        organizationCommission,
+        integration.secret
+      );
+      return vtexAttachedList.map(organizationCommissionAdapter);
+    default:
+      return [];
+  }
+};
+
+const attachVtexCategoryName = async (
+  commissionList: IOrganizationCommission[],
+  secret: string
+) => {
+  const decode: any = await common.jwtDecode(secret);
+
+  const vtexCategoriesData = await getVtexCategoriesCategories(
+    decode.accountName
+  );
+
+  let mergedArray: any = [];
+
+  vtexCategoriesData.map((item: { id: number; name: string }) => {
+    return commissionList.some((commission) => {
+      if (Number(item.id) === Number(commission.department_id)) {
+        mergedArray.push({
+          ...commission,
+          name: item.name,
+        });
+      }
+    });
+  });
+
+  return mergedArray;
+};
+
+const getLojaIntegradaCategories = async (identifier: string) => {
+  const { data: dataLojaIntegradaCategories } = await Axios.get(
+    "https://api.awsli.com.br/v1/categoria",
+    {
+      params: {
+        chave_aplicacao: process.env.LOJA_INTEGRADA_APPLICATION_KEY,
+        chave_api: identifier,
+      },
+    }
+  );
+
+  return dataLojaIntegradaCategories.objects;
+};
+
+const getVtexCategoriesCategories = async (accountName: string) => {
+  const { data: vtexCategoriesData } = await Axios.get(
+    buildGetCategoriesThreeVtexUrl(accountName),
+    {
+      headers: {
+        "content-type": "Content-Type",
+      },
+    }
+  );
+
+  return vtexCategoriesData;
+};
+
+const attachLojaIntegradaCategoryName = async (
+  commissionList: IOrganizationCommission[],
+  identifier: string
+) => {
+  const dataLojaIntegradaCategories = await getLojaIntegradaCategories(
+    identifier
+  );
+
+  let mergedArray: any = [];
+
+  dataLojaIntegradaCategories.map((item: { id: number; nome: string }) => {
+    return commissionList.some((commission) => {
+      if (Number(item.id) === Number(commission.department_id)) {
+        mergedArray.push({
+          ...commission,
+          name: item.nome,
+        });
+      }
+    });
+  });
+
+  return mergedArray;
+};
+
+const getOrganizationCommissionsName = async (
+  organizationId: string,
+  trx: Transaction
+) => {
+  const integration = await IntegrationService.getIntegrationByOrganizationId(
+    organizationId,
+    trx
+  );
+
+  if (!integration.type)
+    throw new Error(
+      MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION
+    );
+
+  switch (integration.type) {
+    case Integrations.LOJA_INTEGRADA:
+      const lojaIntegradaCategories = await getLojaIntegradaCategories(
+        integration.identifier
+      );
+      return lojaIntegradaCategories.map((item: any) => ({
+        name: item.nome,
+        id: item.id,
+      }));
+    case Integrations.VTEX:
+      const decode: any = await common.jwtDecode(integration.secret);
+      const vtexCategories = await getVtexCategoriesCategories(
+        decode?.accountName
+      );
+      return vtexCategories.map((item: any) => ({
+        name: item.name,
+        id: item.id,
+      }));
+    default:
+      return [];
+  }
+};
+
 export default {
   generateShortenerUrl,
+  getOrganizationCommissionsName,
   generateSalesShorten,
+  getOrganizationCommissionByOrganizationId,
   getOrganizationTotalOrders,
   getTimeToPayCommissionById,
   getDefaultCommissionByOrganizationServiceId,
@@ -763,4 +1071,5 @@ export default {
   handleTimeToPayCommission,
   handleDefaultommission,
   getTimeToPayCommission,
+  handleOrganizationCommission,
 };

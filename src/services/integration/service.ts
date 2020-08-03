@@ -1,10 +1,13 @@
 import { Transaction } from "knex";
-import { Integrations } from "./types";
+import { Integrations, ILojaIntegradaSecrets } from "./types";
 import common from "../../common";
 import VtexService from "../vtex/service";
+import OrganizationRulesService from "../organization-rules/service";
 import { IVtexSecrets } from "../vtex/types";
 import knexDatabase from "../../knex-database";
 import { organizationServicesByOrganizationIdLoader } from "./loaders";
+import Axios from "axios";
+import { upgradeYourPlan } from "../../common/errors";
 
 const _secretToJwt = (obj: object) => {
   return common.jwtEncode(obj);
@@ -12,7 +15,7 @@ const _secretToJwt = (obj: object) => {
 
 const createIntegration = async (
   input: {
-    secrets: IVtexSecrets;
+    secrets: any;
     type: Integrations;
   },
   context: { organizationId: string },
@@ -20,26 +23,79 @@ const createIntegration = async (
 ) => {
   const { secrets, type } = input;
 
+  const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(
+    context.organizationId
+  );
+
+  if (
+    !affiliateRules.providers.some(
+      (item: { name: Integrations; status: boolean }) =>
+        item.name === type && item.status
+    )
+  ) {
+    throw new Error(upgradeYourPlan);
+  }
+
   try {
     switch (type) {
       case Integrations.VTEX:
-        await VtexService.verifyVtexSecrets(secrets);
-        await VtexService.createVtexHook(secrets);
-        const jwtSecret = await _secretToJwt(input.secrets);
-        await attachIntegration(
-          context.organizationId,
-          jwtSecret,
-          type,
-          input.secrets.accountName,
-          trx
-        );
-        return true;
+        if (
+          secrets.xVtexApiAppKey &&
+          secrets.xVtexApiAppToken &&
+          secrets.accountName
+        ) {
+          await VtexService.verifyVtexSecrets(secrets);
+          await VtexService.createVtexHook(secrets);
+          const jwtSecret = await _secretToJwt(input.secrets);
+          await attachIntegration(
+            context.organizationId,
+            jwtSecret,
+            type,
+            input.secrets.accountName,
+            trx
+          );
+          return true;
+        }
+        throw new Error("Vtex integration need other keys.");
+      case Integrations.LOJA_INTEGRADA:
+        if (secrets.appKey) {
+          await verifyLojaIntegradaSecrets(secrets);
+          const jwtSecret = await _secretToJwt(input.secrets);
+          await attachIntegration(
+            context.organizationId,
+            jwtSecret,
+            type,
+            secrets.appKey,
+            trx
+          );
+          return true;
+        }
+        throw new Error("Loja integrada integration need other keys.");
       default:
         return;
     }
   } catch (error) {
+    console.log(error?.response?.data || error.message);
     throw new Error(error.message);
   }
+};
+
+const verifyLojaIntegradaSecrets = async (secrets: ILojaIntegradaSecrets) => {
+  const lojaIntegradaOrders = await Axios.get(
+    "https://api.awsli.com.br/v1/pedido/search",
+    {
+      params: {
+        chave_aplicacao: process.env.LOJA_INTEGRADA_APPLICATION_KEY,
+        chave_api: secrets.appKey,
+      },
+    }
+  );
+
+  if (lojaIntegradaOrders.status === 200) {
+    return true;
+  }
+
+  throw new Error("fail in loja integrada app key verification.");
 };
 
 const attachIntegration = async (
@@ -61,6 +117,8 @@ const attachIntegration = async (
     secret = await createIntegrationSecret(jwtSecret, trx);
   }
 
+  await inactiveOtherIntegrationsByOrganizationId(organizationId, type, trx);
+
   if (organizationIntegrationFound) {
     await updateOrganizationSecret(
       secret.id,
@@ -77,6 +135,19 @@ const attachIntegration = async (
       trx
     );
   }
+};
+
+const inactiveOtherIntegrationsByOrganizationId = async (
+  organizationId: string,
+  type: Integrations,
+  trx: Transaction
+) => {
+  await (trx || knexDatabase)("organization_integration_secrets")
+    .update({
+      active: false,
+    })
+    .where("organization_id", organizationId)
+    .andWhereNot("type", type);
 };
 
 const createIntegrationSecret = async (jwtSecret: string, trx: Transaction) => {
@@ -99,6 +170,7 @@ const updateOrganizationSecret = async (
     .update({
       integration_secrets_id: secretId,
       identifier,
+      active: true,
     })
     .where("id", organizationIntegrationId)
     .returning("*");
@@ -117,6 +189,7 @@ const createOrganizationSecret = async (
       organization_id: organizationId,
       type,
       identifier: identifier,
+      active: true,
     })
     .returning("*");
 };
@@ -153,8 +226,10 @@ const verifyIntegration = async (organizationId: string) => {
   const integration = await organizationServicesByOrganizationIdLoader().load(
     organizationId
   );
+
   return integration
     ? {
+        type: integration.type,
         status: integration.active,
         createdAt: integration.createdAt,
         updatedAt: integration.updatedAt,
@@ -162,7 +237,28 @@ const verifyIntegration = async (organizationId: string) => {
     : null;
 };
 
+const getIntegrationByOrganizationId = async (
+  organizationId: string,
+  trx: Transaction
+) => {
+  const integration = await (trx || knexDatabase.knex)(
+    "organization_integration_secrets AS ois"
+  )
+    .innerJoin(
+      "integration_secrets AS is",
+      "is.id",
+      "ois.integration_secrets_id"
+    )
+    .where("ois.organization_id", organizationId)
+    .andWhere("active", true)
+    .first()
+    .select("*");
+
+  return integration;
+};
+
 export default {
   createIntegration,
   verifyIntegration,
+  getIntegrationByOrganizationId,
 };

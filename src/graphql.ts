@@ -29,6 +29,7 @@ declare var process: {
     JWT_SECRET: string;
     NODE_ENV: "test" | "production" | "staging";
     ORDERS_SERVICE_PASSWORD: string;
+    ENTERPRISE_TOKEN: string;
   };
 };
 
@@ -47,6 +48,7 @@ const typeDefsBase = gql`
   directive @organizationPaidVerify on FIELD | FIELD_DEFINITION
   directive @asOrganizationFounder on FIELD | FIELD_DEFINITION
   directive @ordersService on FIELD | FIELD_DEFINITION
+  directive @hasEnterpriseToken on FIELD | FIELD_DEFINITION
   directive @hasSalesToken on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
   directive @hasServiceRole(role: [String]!) on FIELD | FIELD_DEFINITION
@@ -261,6 +263,16 @@ const directiveResolvers: IDirectiveResolvers = {
       throw new Error("You are not authorized.");
     }
   },
+  async hasEnterpriseToken(next, _, __, context): Promise<NextFunction> {
+    const token = context.headers["token"];
+    if (!token) throw new Error("token must be provided!");
+
+    if (token !== process.env.ENTERPRISE_TOKEN) {
+      throw new Error("Invalid Token");
+    }
+
+    return next();
+  },
   async organizationPaidVerify(next, _, __, context): Promise<NextFunction> {
     const organizationId = await redisClient.getAsync(context.client.id);
 
@@ -280,11 +292,14 @@ const directiveResolvers: IDirectiveResolvers = {
         organizationId
       );
 
-      if (moment(paymentServiceStatus.expiresAt).isAfter(moment())) {
+      if (
+        paymentServiceStatus &&
+        moment(paymentServiceStatus.expiresAt).isAfter(moment())
+      ) {
         return next();
       }
 
-      if (!paymentServiceStatus.expiresAt) {
+      if (paymentServiceStatus && !paymentServiceStatus.expiresAt) {
         const pendingInvoices = paymentServiceStatus.recentInvoices.filter(
           (item: { dueData: string; status: PaymentServiceStatus }) =>
             item.status === PaymentServiceStatus.PENDING

@@ -337,14 +337,7 @@ const attachUserInOrganizationAffiliateService = async (
       service_id: string;
     };
   },
-  trx: Transaction,
-  vtexSecrets?: {
-    organizationId: string;
-    storeName: string;
-    vtexKey: string;
-    vtexToken: string;
-    status: boolean;
-  }
+  trx: Transaction
 ) => {
   const { userOrganizationId, role, organizationId } = input;
 

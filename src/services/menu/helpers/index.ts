@@ -12,10 +12,6 @@ export const organizationAdminMenu = [
         name: "settings",
         slug: "/settings",
       },
-      {
-        name: "integrations",
-        slug: "/integrations",
-      },
     ],
   },
   {

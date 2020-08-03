@@ -179,4 +179,120 @@ describe("create integration", () => {
 
     done();
   });
+
+  test("user organization admin should create loja integrada integration", async (done) => {
+    const createIntegrationInput = {
+      secrets: {
+        appKey: "f0ceb7be2309c30ba3bd",
+      },
+      type: Integrations.LOJA_INTEGRADA,
+    };
+
+    const secretCreated = await service.createIntegration(
+      createIntegrationInput,
+      context,
+      trx
+    );
+
+    expect(secretCreated).toBe(true);
+
+    const integrationSecrets = await (trx || knexDatabase.knex)(
+      "integration_secrets"
+    )
+      .first()
+      .select();
+
+    expect(integrationSecrets).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        secret: common.jwtEncode(createIntegrationInput.secrets),
+        created_at: expect.any(Date),
+        updated_at: expect.any(Date),
+      })
+    );
+
+    const organizationIntegration = await (trx || knexDatabase.knex)(
+      "organization_integration_secrets"
+    )
+      .first()
+      .select();
+
+    expect(organizationIntegration).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        active: true,
+        type: Integrations.LOJA_INTEGRADA,
+        organization_id: context.organizationId,
+        integration_secrets_id: integrationSecrets.id,
+        created_at: expect.any(Date),
+        updated_at: expect.any(Date),
+      })
+    );
+
+    done();
+  });
+
+  test("user organization admin should create loja integrada integration after vtex ingration and inative vtex", async (done) => {
+    const createVTEXIntegrationInput = {
+      secrets: {
+        xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
+        xVtexApiAppToken:
+          "UGQTSFGUPUNOUCZKJVKYRSZHGMWYZXBPCVGURKHVIUMZZKNVUSEAHFFBGIMGIIURSYLZWFSZOPQXFAIWYADGTBHWQFNJXAMAZVGBZNZPAFLSPHVGAQHHFNYQQOJRRIBO",
+        accountName: "beightoneagency",
+      },
+      type: Integrations.VTEX,
+    };
+
+    await service.createIntegration(createVTEXIntegrationInput, context, trx);
+
+    const createIntegrationInput = {
+      secrets: {
+        appKey: "f0ceb7be2309c30ba3bd",
+      },
+      type: Integrations.LOJA_INTEGRADA,
+    };
+
+    const secretCreated = await service.createIntegration(
+      createIntegrationInput,
+      context,
+      trx
+    );
+
+    expect(secretCreated).toBe(true);
+
+    const integrationSecrets = await (trx || knexDatabase.knex)(
+      "integration_secrets"
+    ).select();
+
+    expect(integrationSecrets).toHaveLength(2);
+
+    const organizationIntegration = await (trx || knexDatabase.knex)(
+      "organization_integration_secrets"
+    ).select();
+
+    expect(organizationIntegration).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          active: true,
+          type: Integrations.LOJA_INTEGRADA,
+          organization_id: context.organizationId,
+          integration_secrets_id: expect.any(String),
+          created_at: expect.any(Date),
+          updated_at: expect.any(Date),
+        }),
+        expect.objectContaining({
+          id: expect.any(String),
+          active: false,
+          type: Integrations.VTEX,
+          organization_id: context.organizationId,
+          integration_secrets_id: expect.any(String),
+          created_at: expect.any(Date),
+          updated_at: expect.any(Date),
+        }),
+      ])
+    );
+
+    done();
+  });
 });
