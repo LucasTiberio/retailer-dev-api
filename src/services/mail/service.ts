@@ -484,6 +484,7 @@ const sendSignUpMail = async (data: ISendMail) => {
             `,
     });
   } catch (e) {
+    console.log(e);
     throw new Error(e.message);
   }
 };
