@@ -33,6 +33,9 @@ const resolvers: IResolvers = {
         return service.getAffiliateStore({ userServiceOrganizationRolesId }, trx)
       })
     },
+    getAffiliateStoreProducts: (_, { input }, { secret }) => {
+      return service.getAffiliateStoreProducts(input, { secret })
+    },
   },
 }
 

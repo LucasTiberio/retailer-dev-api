@@ -4,19 +4,22 @@ import { Transaction } from 'knex'
 import { ICreateAffiliateStore, IAffiliateStoreAdapted, IAvatar } from './types'
 
 /** Common */
-import { affiliateDoesNotExist, onlyPnhAndJpgIsSupported } from '../../common/errors'
+import { affiliateDoesNotExist, onlyPnhAndJpgIsSupported, minThreeLetters } from '../../common/errors'
 
 /** Utils */
 import removeUndefinedOfObjects from '../../utils/removeUndefinedOfObjects'
 
 /** Services */
 import StorageService from '../storage/service'
+import IntegrationService from '../integration/service'
 
 /** Repository */
 import Repository from './repositories/affiliate-store'
 import { affiliateStoreAdapter } from './adapters'
 import common from '../../common'
 import sharp from 'sharp'
+import { Integrations } from '../integration/types'
+import { fetchVtexProducts } from './client/vtex'
 
 const handleAffiliateStore = async (
   input: ICreateAffiliateStore,
@@ -81,7 +84,20 @@ const handleAffiliateStoreImages = async (width: number, height: number, type: s
   return imageUploaded.url
 }
 
+const getAffiliateStoreProducts = async (input: { term: string }, context: { secret: string }) => {
+  if (input.term.length < 3) {
+    throw new Error(minThreeLetters)
+  }
+
+  const decode: any = await common.jwtDecode(context.secret)
+
+  const products = await fetchVtexProducts(decode.accountName, input.term)
+
+  return products
+}
+
 export default {
   handleAffiliateStore,
   getAffiliateStore,
+  getAffiliateStoreProducts,
 }

@@ -5,6 +5,8 @@ import {
   affiliateDoesNotExist,
   tokenMustBeProvided,
   upgradeYourPlan,
+  minThreeLetters,
+  onlyVtexIntegrationFeature,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -18,6 +20,16 @@ export default (message: string) => {
       return {
         code: 51,
         explication: 'Integration provider doesnt have shortener generator',
+      }
+    case onlyVtexIntegrationFeature:
+      return {
+        code: 54,
+        explication: 'This feature is only for accounts with vtex integration',
+      }
+    case minThreeLetters:
+      return {
+        code: 53,
+        explication: 'Minimum three letters for this search',
       }
     case organizationDoesNotHaveActiveIntegration:
       return {

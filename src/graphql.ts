@@ -14,7 +14,10 @@ import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus 
 import redisClient from './lib/Redis'
 import { SALE_VTEX_PIXEL_NAMESPACE, MESSAGE_ERROR_SALE_TOKEN_INVALID, MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER } from './common/consts'
 import PaymentService from './services/payments/service'
+import IntegrationService from './services/integration/service'
 import { PaymentServiceStatus } from './services/payments/types'
+import { Integrations } from './services/integration/types'
+import { onlyVtexIntegrationFeature } from './common/errors'
 
 declare var process: {
   env: {
@@ -41,6 +44,7 @@ const typeDefsBase = gql`
   directive @asOrganizationFounder on FIELD | FIELD_DEFINITION
   directive @ordersService on FIELD | FIELD_DEFINITION
   directive @hasEnterpriseToken on FIELD | FIELD_DEFINITION
+  directive @vtexFeature on FIELD | FIELD_DEFINITION
   directive @hasSalesToken on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
   directive @hasServiceRole(role: [String]!, serviceName: String) on FIELD | FIELD_DEFINITION
@@ -201,6 +205,20 @@ const directiveResolvers: IDirectiveResolvers = {
     } catch (err) {
       throw new Error('You are not authorized.')
     }
+  },
+  async vtexFeature(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+
+    if (!organizationId) throw new Error('Organization identifier invalid!')
+
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
+
+    if (integration.type !== Integrations.VTEX) {
+      throw new Error(onlyVtexIntegrationFeature)
+    }
+
+    context.secret = integration.secret
+    return next()
   },
   async hasEnterpriseToken(next, _, __, context): Promise<NextFunction> {
     const token = context.headers['token']

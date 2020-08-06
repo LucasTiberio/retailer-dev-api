@@ -4,6 +4,17 @@ extend type Mutation {
 
 extend type Query {
   getAffiliateStore: AffiliateStore! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @isVerified @isAuthenticated
+  getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
+}
+
+input GetAffiliateStoreProductsInput {
+  term: String!
+}
+
+type AffiliateStoreProduct {
+  productId: String!
+  price: String!
+  image: String!
 }
 
 input HandleAffiliateStoreInput {

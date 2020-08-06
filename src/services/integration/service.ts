@@ -1,5 +1,5 @@
 import { Transaction } from 'knex'
-import { Integrations, ILojaIntegradaSecrets } from './types'
+import { Integrations, ILojaIntegradaSecrets, IIntegration } from './types'
 import common from '../../common'
 import VtexService from '../vtex/service'
 import OrganizationRulesService from '../organization-rules/service'
@@ -157,7 +157,7 @@ const verifyIntegration = async (organizationId: string) => {
     : null
 }
 
-const getIntegrationByOrganizationId = async (organizationId: string, trx: Transaction) => {
+const getIntegrationByOrganizationId = async (organizationId: string, trx?: Transaction) => {
   const integration = await (trx || knexDatabase.knex)('organization_integration_secrets AS ois')
     .innerJoin('integration_secrets AS is', 'is.id', 'ois.integration_secrets_id')
     .where('ois.organization_id', organizationId)
