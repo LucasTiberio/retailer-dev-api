@@ -55,8 +55,6 @@ describe('Affiliate', () => {
 
   it('affiliate should get your affiliate store', async (done) => {
     const input = {
-      avatar: Faker.internet.avatar(),
-      cover: Faker.random.image(),
       name: Faker.name.firstName(),
       description: Faker.random.uuid(),
       facebook: Faker.random.uuid(),
@@ -74,8 +72,6 @@ describe('Affiliate', () => {
       expect.objectContaining({
         id: expect.any(String),
         usersOrganizationServiceRolesId: affiliateinserted.id,
-        avatar: input.avatar,
-        cover: input.cover,
         name: input.name,
         description: input.description,
         facebook: input.facebook,

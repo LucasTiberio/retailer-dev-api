@@ -31,8 +31,9 @@ export interface IAffiliateStoreAdapted {
 }
 
 export interface ICreateAffiliateStore {
-  avatar?: string
-  cover?: string
+  avatar?: any
+  avatarUrl?: string
+  cover?: any
   name?: string
   description?: string
   facebook?: string
@@ -40,4 +41,9 @@ export interface ICreateAffiliateStore {
   twitter?: string
   tiktok?: string
   instagram?: string
+}
+
+export interface IAvatar {
+  mimetype: string
+  data: any
 }

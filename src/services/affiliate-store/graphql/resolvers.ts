@@ -5,7 +5,23 @@ import service from '../service'
 
 const resolvers: IResolvers = {
   Mutation: {
-    handleAffiliateStore: (_, { input }, { userServiceOrganizationRolesId }) => {
+    handleAffiliateStore: async (_, { input }, { userServiceOrganizationRolesId }) => {
+      if (input.cover) {
+        const { createReadStream: coverCreateReadStream, mimetype: coverMimetype } = await input.cover.data
+        input.cover = {
+          data: coverCreateReadStream(),
+          mimetype: coverMimetype,
+        }
+      }
+
+      if (input.avatar) {
+        const { createReadStream: avatarCreateReadStream, mimetype: avatarMimetype } = await input.avatar.data
+        input.avatar = {
+          data: avatarCreateReadStream(),
+          mimetype: avatarMimetype,
+        }
+      }
+
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.handleAffiliateStore(input, { userServiceOrganizationRolesId }, trx)
       })

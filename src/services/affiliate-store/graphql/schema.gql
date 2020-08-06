@@ -7,8 +7,8 @@ extend type Query {
 }
 
 input HandleAffiliateStoreInput {
-  avatar: String
-  cover: String
+  avatar: AffiliateAvatarInput
+  cover: AffiliateCoverInput
   name: String
   description: String
   facebook: String
@@ -16,6 +16,16 @@ input HandleAffiliateStoreInput {
   twitter: String
   tiktok: String
   instagram: String
+}
+
+input AffiliateAvatarInput {
+  mimetype: String
+  data: Upload!
+}
+
+input AffiliateCoverInput {
+  mimetype: String
+  data: Upload!
 }
 
 type AffiliateStore {

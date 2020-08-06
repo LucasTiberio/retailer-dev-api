@@ -6,6 +6,8 @@ import { Transaction } from 'knex'
 import { IUsersOrganizationServiceDB } from '../../services/types'
 import createAffiliateMock from '../../../__mocks__/full/create-affiliate-mock'
 import OrganizationRulesService from '../../../services/organization-rules/service'
+import imgGen from 'js-image-generator'
+import common from '../../../common'
 jest.mock('../../../services/organization-rules/service')
 
 describe('Affiliate', () => {
@@ -55,8 +57,6 @@ describe('Affiliate', () => {
 
   it('affiliate should insert affiliate store', async (done) => {
     const input = {
-      avatar: Faker.internet.avatar(),
-      cover: Faker.random.image(),
       name: Faker.name.firstName(),
       description: Faker.random.uuid(),
       facebook: Faker.random.uuid(),
@@ -72,8 +72,6 @@ describe('Affiliate', () => {
       expect.objectContaining({
         id: expect.any(String),
         usersOrganizationServiceRolesId: affiliateinserted.id,
-        avatar: input.avatar,
-        cover: input.cover,
         name: input.name,
         description: input.description,
         facebook: input.facebook,
@@ -91,8 +89,6 @@ describe('Affiliate', () => {
 
   it('affiliate should update affiliate store', async (done) => {
     const createInput = {
-      avatar: Faker.internet.avatar(),
-      cover: Faker.random.image(),
       name: Faker.name.firstName(),
       description: Faker.random.uuid(),
       facebook: Faker.random.uuid(),
@@ -114,8 +110,6 @@ describe('Affiliate', () => {
       expect.objectContaining({
         id: expect.any(String),
         usersOrganizationServiceRolesId: affiliateinserted.id,
-        avatar: createInput.avatar,
-        cover: createInput.cover,
         name: input.name,
         description: createInput.description,
         facebook: createInput.facebook,
@@ -129,5 +123,83 @@ describe('Affiliate', () => {
     )
 
     done()
+  })
+
+  it('affiliate should insert avatar in affiliate store', async (done) => {
+    imgGen.generateImage(50, 50, 80, async function (err: Error, image: any) {
+      const createInput = {
+        avatar: {
+          mimetype: 'image/jpeg',
+          data: image.data,
+        },
+        name: Faker.name.firstName(),
+        description: Faker.random.uuid(),
+        facebook: Faker.random.uuid(),
+        youtube: Faker.random.uuid(),
+        twitter: Faker.random.uuid(),
+        tiktok: Faker.random.uuid(),
+        instagram: Faker.random.uuid(),
+      }
+
+      const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+
+      console.log('affiliateStoreCreated', affiliateStoreCreated)
+
+      expect(affiliateStoreCreated).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          usersOrganizationServiceRolesId: affiliateinserted.id,
+          avatar: `https://plugone-staging.nyc3.digitaloceanspaces.com/tdd/affiliate-store/avatar/${common.encryptSHA256(affiliateinserted.id)}`,
+          name: createInput.name,
+          description: createInput.description,
+          facebook: createInput.facebook,
+          youtube: createInput.youtube,
+          twitter: createInput.twitter,
+          tiktok: createInput.tiktok,
+          instagram: createInput.instagram,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        })
+      )
+      done()
+    })
+  })
+
+  it('affiliate should insert cover in affiliate store', async (done) => {
+    imgGen.generateImage(50, 50, 80, async function (err: Error, image: any) {
+      const createInput = {
+        cover: {
+          mimetype: 'image/jpeg',
+          data: image.data,
+        },
+        name: Faker.name.firstName(),
+        description: Faker.random.uuid(),
+        facebook: Faker.random.uuid(),
+        youtube: Faker.random.uuid(),
+        twitter: Faker.random.uuid(),
+        tiktok: Faker.random.uuid(),
+        instagram: Faker.random.uuid(),
+      }
+
+      const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+
+      expect(affiliateStoreCreated).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          usersOrganizationServiceRolesId: affiliateinserted.id,
+          cover: `https://plugone-staging.nyc3.digitaloceanspaces.com/tdd/affiliate-store/cover/${common.encryptSHA256(affiliateinserted.id)}`,
+          name: createInput.name,
+          description: createInput.description,
+          facebook: createInput.facebook,
+          youtube: createInput.youtube,
+          twitter: createInput.twitter,
+          tiktok: createInput.tiktok,
+          instagram: createInput.instagram,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        })
+      )
+      done()
+    })
   })
 })
