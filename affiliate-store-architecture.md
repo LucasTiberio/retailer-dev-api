@@ -45,9 +45,7 @@ package "Reseller domain" #00E0FF {
         + instagram: String
         + facebook: String
     }
-    affiliate_store : createAffiliateStore()
     affiliate_store : handleAffiliateStore()
-    affiliate_store : handleAffiliateStoreActivity()
     affiliate_store : getAffiliateStore()
 
     class affiliate_store_products {
