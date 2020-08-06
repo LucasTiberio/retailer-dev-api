@@ -1,0 +1,35 @@
+extend type Mutation {
+  handleAffiliateStore(input: HandleAffiliateStoreInput!): AffiliateStore! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @organizationPaidVerify @isVerified @isAuthenticated
+}
+
+extend type Query {
+  getAffiliateStore: AffiliateStore! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @isVerified @isAuthenticated
+}
+
+input HandleAffiliateStoreInput {
+  avatar: String
+  cover: String
+  name: String
+  description: String
+  facebook: String
+  youtube: String
+  twitter: String
+  tiktok: String
+  instagram: String
+}
+
+type AffiliateStore {
+  id: String!
+  usersOrganizationServiceRoles: UserOrganizationService!
+  avatar: String!
+  cover: String!
+  name: String!
+  description: String!
+  facebook: String!
+  youtube: String!
+  twitter: String!
+  tiktok: String!
+  instagram: String!
+  createdAt: Datetime!
+  updatedAt: Datetime!
+}
