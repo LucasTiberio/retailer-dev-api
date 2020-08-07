@@ -1,17 +1,70 @@
 extend type Mutation {
-  handleAffiliateStore(input: HandleAffiliateStoreInput!): AffiliateStore! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @organizationPaidVerify @isVerified @isAuthenticated
+  handleAffiliateStore(input: HandleAffiliateStoreInput!): AffiliateStore!
+    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
+  addProductOnAffiliateStore(input: AddProductOnAffiliateStoreInput!): AffiliateStoreProduct!
+    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
+  handleProductOnAffiliateStoreActivity(input: HandleProductOnAffiliateStoreActivityInput!): AffiliateStoreProduct!
+    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
+  handleProductOnAffiliateStoreOrder(input: [HandleProductOnAffiliateStoreOrderInput]!): Boolean!
+    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
+  handleProductOnAffiliateStoreSearchable(input: HandleProductOnAffiliateStoreSearchableInput!): AffiliateStoreProduct!
+    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
 }
 
 extend type Query {
   getAffiliateStore: AffiliateStore! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @isVerified @isAuthenticated
-  getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
+  getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProductFormatted]!
+    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
+  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
+}
+
+input HandleProductOnAffiliateStoreSearchableInput {
+  affiliateStoreProductId: String!
+  searchable: Boolean!
+}
+
+input HandleProductOnAffiliateStoreOrderInput {
+  affiliateStoreProductId: String!
+  order: Int!
+}
+
+input HandleProductOnAffiliateStoreActivityInput {
+  affiliateStoreProductId: String!
+  activity: Boolean!
+}
+
+input AddProductOnAffiliateStoreInput {
+  productId: String!
 }
 
 input GetAffiliateStoreProductsInput {
   term: String!
 }
 
-type AffiliateStoreProduct {
+type AffiliateStoreProductFormatted {
   productId: String!
   price: String!
   image: String!
@@ -53,4 +106,13 @@ type AffiliateStore {
   instagram: String!
   createdAt: Datetime!
   updatedAt: Datetime!
+}
+
+type AffiliateStoreProduct {
+  id: String!
+  affiliateStoreId: String!
+  productId: String!
+  active: Boolean!
+  searchable: Boolean!
+  order: Int!
 }

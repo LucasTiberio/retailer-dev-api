@@ -28,7 +28,17 @@ const findOrUpdate = async (affiliateId: string, input: ICreateAffiliateStore, t
   }
 }
 
+const createAffiliateStore = async (affiliateId: string, trx: Transaction) => {
+  const [affiliateStoreCreated] = await (trx || knexDatabase.knex)('affiliate_store')
+    .insert({
+      users_organization_service_roles_id: affiliateId,
+    })
+    .returning('*')
+  return affiliateStoreCreated
+}
+
 export default {
   findOrUpdate,
   getById,
+  createAffiliateStore,
 }

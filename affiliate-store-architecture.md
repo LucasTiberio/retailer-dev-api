@@ -55,12 +55,12 @@ package "Reseller domain" #00E0FF {
         + active: Boolean
         + order: Int
     }
+    affiliate_store_products : getAffiliateStoreProducts()
     affiliate_store_products : addProductOnAffiliateStore()
     affiliate_store_products : handleProductOnAffiliateStoreActivity()
     affiliate_store_products : handleProductOnAffiliateStoreSearchable()
     affiliate_store_products : handleProductOnAffiliateStoreOrder()
-    affiliate_store_products : productOnAffiliateStoreClicked()
-    affiliate_store_products : searchProductsToAffiliateStore()
+    affiliate_store_products : [not now]productOnAffiliateStoreClicked()
     affiliate_store : getAffiliateStoreProducts()
 
     users_organization_service_roles "1" *-- "1" affiliate_store : contains

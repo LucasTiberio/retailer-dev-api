@@ -14,6 +14,17 @@ export interface IAffiliateStore {
   updated_at: Date
 }
 
+export interface IAffiliateProductStore {
+  id: string
+  affiliate_store_id: string
+  product_id: string
+  active: boolean
+  searchable: boolean
+  created_at: Date
+  updated_at: Date
+  order: number
+}
+
 export interface IAffiliateStoreAdapted {
   id: string
   usersOrganizationServiceRolesId: string
@@ -41,6 +52,10 @@ export interface ICreateAffiliateStore {
   twitter?: string
   tiktok?: string
   instagram?: string
+}
+
+export interface ICreateAffiliateStoreProduct {
+  productId: string
 }
 
 export interface IAvatar {

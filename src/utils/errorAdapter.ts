@@ -7,6 +7,8 @@ import {
   upgradeYourPlan,
   minThreeLetters,
   onlyVtexIntegrationFeature,
+  affiliateStoreHasThisProduct,
+  maxAffiliateStoreProductLength,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -35,6 +37,16 @@ export default (message: string) => {
       return {
         code: 52,
         explication: 'Current organization doesnt have active integration',
+      }
+    case affiliateStoreHasThisProduct:
+      return {
+        code: 55,
+        explication: 'Affiliate store has this product',
+      }
+    case maxAffiliateStoreProductLength:
+      return {
+        code: 56,
+        explication: 'Affiliate store has maximum products added',
       }
     case affiliateDoesNotExist:
       return {

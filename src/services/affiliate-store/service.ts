@@ -4,7 +4,7 @@ import { Transaction } from 'knex'
 import { ICreateAffiliateStore, IAffiliateStoreAdapted, IAvatar } from './types'
 
 /** Common */
-import { affiliateDoesNotExist, onlyPnhAndJpgIsSupported, minThreeLetters } from '../../common/errors'
+import { affiliateDoesNotExist, onlyPnhAndJpgIsSupported, minThreeLetters, maxAffiliateStoreProductLength } from '../../common/errors'
 
 /** Utils */
 import removeUndefinedOfObjects from '../../utils/removeUndefinedOfObjects'
@@ -14,8 +14,12 @@ import StorageService from '../storage/service'
 import IntegrationService from '../integration/service'
 
 /** Repository */
-import Repository from './repositories/affiliate-store'
-import { affiliateStoreAdapter } from './adapters'
+import RepositoryAffiliateStore from './repositories/affiliate-store'
+import RepositoryAffiliateStoreProduct from './repositories/affiliate-store-product'
+
+/** Adapter */
+import { affiliateStoreAdapter, affiliateStoreProductAdapter } from './adapters'
+
 import common from '../../common'
 import sharp from 'sharp'
 import { Integrations } from '../integration/types'
@@ -42,7 +46,7 @@ const handleAffiliateStore = async (
     input.cover = url
   }
 
-  const [affiliateStoreCreated] = await Repository.findOrUpdate(context.userServiceOrganizationRolesId, input, trx)
+  const [affiliateStoreCreated] = await RepositoryAffiliateStore.findOrUpdate(context.userServiceOrganizationRolesId, input, trx)
 
   return affiliateStoreAdapter(affiliateStoreCreated)
 }
@@ -50,9 +54,9 @@ const handleAffiliateStore = async (
 const getAffiliateStore = async (context: { userServiceOrganizationRolesId: string }, trx: Transaction) => {
   if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
 
-  const affiliateStore = await Repository.getById(context.userServiceOrganizationRolesId, trx)
+  const affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
 
-  return affiliateStoreAdapter(affiliateStore)
+  return affiliateStore ? affiliateStoreAdapter(affiliateStore) : null
 }
 
 const handleAffiliateStoreImages = async (width: number, height: number, type: string, input: IAvatar, affiliateId: string, trx: Transaction) => {
@@ -96,8 +100,92 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
   return products
 }
 
+const getAffiliateStoreAddedProducts = async (context: { userServiceOrganizationRolesId: string }, trx: Transaction) => {
+  if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
+
+  let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+
+  const products = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
+
+  return products.map(affiliateStoreProductAdapter)
+}
+
+const addProductOnAffiliateStore = async (input: { productId: string }, context: { userServiceOrganizationRolesId: string }, trx: Transaction) => {
+  if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
+
+  let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+
+  if (!affiliateStore) {
+    affiliateStore = await RepositoryAffiliateStore.createAffiliateStore(context.userServiceOrganizationRolesId, trx)
+  }
+
+  const affiliateStoreLength = await RepositoryAffiliateStoreProduct.getAffiliateStoreProductLengthByAffiliateId(affiliateStore.id, trx)
+
+  if (Number(affiliateStoreLength[0].count) >= 48) throw new Error(maxAffiliateStoreProductLength)
+
+  const [affiliateStoreProductAdded] = await RepositoryAffiliateStoreProduct.findOrUpdate(affiliateStore.id, input, trx)
+
+  return affiliateStoreProductAdapter(affiliateStoreProductAdded)
+}
+
+const handleProductOnAffiliateStoreActivity = async (
+  input: {
+    affiliateStoreProductId: string
+    activity: boolean
+  },
+  context: { userServiceOrganizationRolesId: string },
+  trx: Transaction
+) => {
+  if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
+
+  let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+
+  let handledProductActivity = await RepositoryAffiliateStoreProduct.handleProductActivity(input, affiliateStore.id, trx)
+
+  return affiliateStoreProductAdapter(handledProductActivity)
+}
+
+const handleProductOnAffiliateStoreSearchable = async (
+  input: {
+    affiliateStoreProductId: string
+    searchable: boolean
+  },
+  context: { userServiceOrganizationRolesId: string },
+  trx: Transaction
+) => {
+  if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
+
+  let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+
+  let handledProductActivity = await RepositoryAffiliateStoreProduct.handleProductSearchable(input, affiliateStore.id, trx)
+
+  return affiliateStoreProductAdapter(handledProductActivity)
+}
+
+const handleProductOnAffiliateStoreOrder = async (
+  input: {
+    affiliateStoreProductId: string
+    order: number
+  }[],
+  context: { userServiceOrganizationRolesId: string },
+  trx: Transaction
+) => {
+  if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
+
+  let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+
+  let handledProductsOrder = await RepositoryAffiliateStoreProduct.handleProductsOrder(input, affiliateStore.id, trx)
+
+  return handledProductsOrder
+}
+
 export default {
   handleAffiliateStore,
+  handleProductOnAffiliateStoreSearchable,
+  handleProductOnAffiliateStoreActivity,
   getAffiliateStore,
   getAffiliateStoreProducts,
+  addProductOnAffiliateStore,
+  handleProductOnAffiliateStoreOrder,
+  getAffiliateStoreAddedProducts,
 }
