@@ -95,15 +95,15 @@ input AffiliateCoverInput {
 type AffiliateStore {
   id: String!
   usersOrganizationServiceRoles: UserOrganizationService!
-  avatar: String!
-  cover: String!
-  name: String!
-  description: String!
-  facebook: String!
-  youtube: String!
-  twitter: String!
-  tiktok: String!
-  instagram: String!
+  avatar: String
+  cover: String
+  name: String
+  description: String
+  facebook: String
+  youtube: String
+  twitter: String
+  tiktok: String
+  instagram: String
   createdAt: Datetime!
   updatedAt: Datetime!
 }
