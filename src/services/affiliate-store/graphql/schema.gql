@@ -32,7 +32,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  getAffiliateStore: AffiliateStore! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @isVerified @isAuthenticated
+  getAffiliateStore: AffiliateStore @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @isVerified @isAuthenticated
   getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProductFormatted]!
     @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
     @vtexFeature
