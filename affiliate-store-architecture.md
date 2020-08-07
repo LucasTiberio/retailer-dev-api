@@ -60,8 +60,8 @@ package "Reseller domain" #00E0FF {
     affiliate_store_products : handleProductOnAffiliateStoreActivity()
     affiliate_store_products : handleProductOnAffiliateStoreSearchable()
     affiliate_store_products : handleProductOnAffiliateStoreOrder()
-    affiliate_store_products : [not now]productOnAffiliateStoreClicked()
     affiliate_store : getAffiliateStoreProducts()
+    affiliate_store_products : [not now]productOnAffiliateStoreClicked()
 
     users_organization_service_roles "1" *-- "1" affiliate_store : contains
 
