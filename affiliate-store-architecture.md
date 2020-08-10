@@ -33,6 +33,30 @@ package "Reseller domain" #00E0FF {
         + active: Boolean
     }
 
+    class organizations {
+        + domain: String
+    }
+    organizations : handleOrganizationDomain()
+    organizations : fetchOrganizationDomain()
+
+    class organization_affiliate_store {
+        + id: String
+        + active: String
+        + script_url: String
+        + shelf_id: String
+    }
+    organization_affiliate_store : getOrganizationAffiliateStore()
+    organization_affiliate_store : handleOrganizationAffiliateStore()
+
+    class organization_affiliate_store_banner {
+        + id: String
+        + organization_affiliate_store_id: String
+        + url: String
+    }
+    organization_affiliate_store_banner : getOrganizationAffiliateStoreBanner()
+    organization_affiliate_store_banner : addOrganizationAffiliateStoreBanner()
+    organization_affiliate_store_banner : removeOrganizationAffiliateStoreBanner()
+
     class affiliate_store {
         + avatar: String
         + cover: String
@@ -66,6 +90,10 @@ package "Reseller domain" #00E0FF {
     users_organization_service_roles "1" *-- "1" affiliate_store : contains
 
     affiliate_store "1" *-- "many" affiliate_store_products : contains
+
+    organizations "1" *-- "1" organization_affiliate_store : contains
+
+    organization_affiliate_store_banner "many" *-- "1" organization_affiliate_store : contains
 
 }
 @enduml
