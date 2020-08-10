@@ -31,6 +31,11 @@ const resolvers: IResolvers = {
         return service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId }, trx)
       })
     },
+    handleOrganizationAffiliateStore: async (_, { input }, { organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.handleOrganizationAffiliateStore(input, { organizationId }, trx)
+      })
+    },
     handleProductOnAffiliateStoreActivity: async (_, { input }, { userServiceOrganizationRolesId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.handleProductOnAffiliateStoreActivity(input, { userServiceOrganizationRolesId }, trx)
@@ -51,6 +56,11 @@ const resolvers: IResolvers = {
     getAffiliateStore: (_, __, { userServiceOrganizationRolesId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.getAffiliateStore({ userServiceOrganizationRolesId }, trx)
+      })
+    },
+    getOrganizationAffiliateStore: (_, __, { organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getOrganizationAffiliateStore({ organizationId }, trx)
       })
     },
     getAffiliateStoreAddedProducts: (_, __, { userServiceOrganizationRolesId }) => {

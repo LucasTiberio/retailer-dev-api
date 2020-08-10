@@ -25,6 +25,16 @@ export interface IAffiliateProductStore {
   order: number
 }
 
+export interface IOrganizationAffiliateStore {
+  id: string
+  active: boolean
+  script_url: string
+  organization_id: string
+  shelf_id: string
+  created_at: Date
+  updated_at: Date
+}
+
 export interface IAffiliateStoreAdapted {
   id: string
   usersOrganizationServiceRolesId: string

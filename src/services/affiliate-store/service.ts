@@ -11,18 +11,17 @@ import removeUndefinedOfObjects from '../../utils/removeUndefinedOfObjects'
 
 /** Services */
 import StorageService from '../storage/service'
-import IntegrationService from '../integration/service'
 
 /** Repository */
 import RepositoryAffiliateStore from './repositories/affiliate-store'
 import RepositoryAffiliateStoreProduct from './repositories/affiliate-store-product'
+import RepositoryOrganizationAffiliateStore from './repositories/organization-affiliate-store'
 
 /** Adapter */
-import { affiliateStoreAdapter, affiliateStoreProductAdapter } from './adapters'
+import { affiliateStoreAdapter, affiliateStoreProductAdapter, organizationAffiliateStoreAdapter } from './adapters'
 
 import common from '../../common'
 import sharp from 'sharp'
-import { Integrations } from '../integration/types'
 import { fetchVtexProducts } from './client/vtex'
 
 const handleAffiliateStore = async (
@@ -179,13 +178,47 @@ const handleProductOnAffiliateStoreOrder = async (
   return handledProductsOrder
 }
 
+/**
+ * create or update organization affiliate store on database
+ *
+ * @param input possible parameters for insertion or alteration in the database
+ * @param context graphql context with organizationId
+ * @param trx knex transaction
+ */
+const handleOrganizationAffiliateStore = async (
+  input: {
+    active?: boolean
+    shelfId?: string
+  },
+  context: { organizationId: string },
+  trx: Transaction
+) => {
+  const [organizationStore] = await RepositoryOrganizationAffiliateStore.findOrUpdate(context.organizationId, { ...input }, trx)
+
+  return organizationAffiliateStoreAdapter(organizationStore)
+}
+
+/**
+ * get organization affiliate store on database
+ *
+ * @param context graphql context with organizationId
+ * @param trx knex transaction
+ */
+const getOrganizationAffiliateStore = async (context: { organizationId: string }, trx: Transaction) => {
+  const organizationStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(context.organizationId, trx)
+
+  return organizationStore ? organizationAffiliateStoreAdapter(organizationStore) : null
+}
+
 export default {
   handleAffiliateStore,
   handleProductOnAffiliateStoreSearchable,
   handleProductOnAffiliateStoreActivity,
+  getOrganizationAffiliateStore,
   getAffiliateStore,
   getAffiliateStoreProducts,
   addProductOnAffiliateStore,
   handleProductOnAffiliateStoreOrder,
   getAffiliateStoreAddedProducts,
+  handleOrganizationAffiliateStore,
 }

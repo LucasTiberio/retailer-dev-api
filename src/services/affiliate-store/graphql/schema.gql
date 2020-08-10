@@ -11,6 +11,12 @@ extend type Mutation {
     @vtexFeature
     @isVerified
     @isAuthenticated
+  handleOrganizationAffiliateStore(input: HandleOrganizationAffiliateStoreInput!): OrganizationAffiliateStore!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
   handleProductOnAffiliateStoreActivity(input: HandleProductOnAffiliateStoreActivityInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
     @organizationPaidVerify
@@ -39,6 +45,22 @@ extend type Query {
     @isVerified
     @isAuthenticated
   getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
+  getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @isVerified @isAuthenticated
+}
+
+input HandleOrganizationAffiliateStoreInput {
+  active: Boolean
+  shelfId: String
+}
+
+type OrganizationAffiliateStore {
+  id: String!
+  active: Boolean!
+  scriptUrl: String
+  organization: Organization!
+  shelfId: String
+  createdAt: Datetime!
+  updatedAt: Datetime!
 }
 
 input HandleProductOnAffiliateStoreSearchableInput {
