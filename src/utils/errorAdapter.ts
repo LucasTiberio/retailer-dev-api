@@ -9,6 +9,7 @@ import {
   onlyVtexIntegrationFeature,
   affiliateStoreHasThisProduct,
   maxAffiliateStoreProductLength,
+  organizationDoestNotHaveActiveIntegration,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -47,6 +48,11 @@ export default (message: string) => {
       return {
         code: 56,
         explication: 'Affiliate store has maximum products added',
+      }
+    case organizationDoestNotHaveActiveIntegration:
+      return {
+        code: 57,
+        explication: 'Organization does not have a active plataform integration',
       }
     case affiliateDoesNotExist:
       return {
