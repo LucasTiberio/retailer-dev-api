@@ -143,8 +143,6 @@ describe('Affiliate', () => {
 
       const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
 
-      console.log('affiliateStoreCreated', affiliateStoreCreated)
-
       expect(affiliateStoreCreated).toEqual(
         expect.objectContaining({
           id: expect.any(String),
