@@ -43,6 +43,7 @@ package "Reseller domain" #00E0FF {
         + id: String
         + active: String
         + script_url: String
+        + organization_id: String
         + shelf_id: String
     }
     organization_affiliate_store : getOrganizationAffiliateStore()
