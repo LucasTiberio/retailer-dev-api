@@ -10,6 +10,8 @@ import {
   affiliateStoreHasThisProduct,
   maxAffiliateStoreProductLength,
   organizationDoestNotHaveActiveIntegration,
+  onlyThreeBannersInAffiliateStore,
+  affiliateStoreNotFound,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -64,6 +66,11 @@ export default (message: string) => {
         code: 1,
         explication: 'Token must be provided',
       }
+    case affiliateStoreNotFound:
+      return {
+        code: 12,
+        explication: 'Affiliate Store not found',
+      }
     case upgradeYourPlan:
       return {
         code: 8,
@@ -73,6 +80,11 @@ export default (message: string) => {
       return {
         code: 9,
         explication: 'Only image/png and image/jpg is supported!',
+      }
+    case onlyThreeBannersInAffiliateStore:
+      return {
+        code: 11,
+        explication: 'Maximum three banners in affiliate store',
       }
     default:
       return {

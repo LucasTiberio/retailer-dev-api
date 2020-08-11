@@ -4,30 +4,46 @@ import { Transaction } from 'knex'
 import { ICreateAffiliateStore, IAffiliateStoreAdapted, IAvatar } from './types'
 
 /** Common */
-import { affiliateDoesNotExist, onlyPnhAndJpgIsSupported, minThreeLetters, maxAffiliateStoreProductLength } from '../../common/errors'
+import {
+  affiliateDoesNotExist,
+  onlyPnhAndJpgIsSupported,
+  minThreeLetters,
+  maxAffiliateStoreProductLength,
+  onlyThreeBannersInAffiliateStore,
+  affiliateStoreNotFound,
+  organizationDoestNotHaveActiveIntegration,
+} from '../../common/errors'
 
 /** Utils */
 import removeUndefinedOfObjects from '../../utils/removeUndefinedOfObjects'
 
 /** Services */
 import StorageService from '../storage/service'
+import IntegrationService from '../integration/service'
 
 /** Repository */
 import RepositoryAffiliateStore from './repositories/affiliate-store'
 import RepositoryAffiliateStoreProduct from './repositories/affiliate-store-product'
 import RepositoryOrganizationAffiliateStore from './repositories/organization-affiliate-store'
+import RepositoryOrganizationAffiliateStoreBanner from './repositories/organization_affiliate_store_banner'
 
 /** Adapter */
-import { affiliateStoreAdapter, affiliateStoreProductAdapter, organizationAffiliateStoreAdapter } from './adapters'
+import { affiliateStoreAdapter, affiliateStoreProductAdapter, organizationAffiliateStoreAdapter, organizationAffiliateStoreBannerAdapter } from './adapters'
+
+/** Clients */
+import { fetchVtexProducts, fetchVtexProductsHtml } from './client/vtex'
 
 import common from '../../common'
 import sharp from 'sharp'
-import { fetchVtexProducts } from './client/vtex'
+import knexDatabase from '../../knex-database'
+import { buildProductsHtmlVtexUrl } from '../vtex/helpers'
+import client from '../../lib/Redis'
 
 const handleAffiliateStore = async (
   input: ICreateAffiliateStore,
   context: {
     userServiceOrganizationRolesId: string
+    organizationId: string
   },
   trx: Transaction
 ): Promise<IAffiliateStoreAdapted> => {
@@ -45,7 +61,7 @@ const handleAffiliateStore = async (
     input.cover = url
   }
 
-  const [affiliateStoreCreated] = await RepositoryAffiliateStore.findOrUpdate(context.userServiceOrganizationRolesId, input, trx)
+  const [affiliateStoreCreated] = await RepositoryAffiliateStore.findOrUpdate(context.organizationId, context.userServiceOrganizationRolesId, input, trx)
 
   return affiliateStoreAdapter(affiliateStoreCreated)
 }
@@ -78,7 +94,7 @@ const handleAffiliateStoreImages = async (width: number, height: number, type: s
   }
 
   const imageUploaded = await StorageService.uploadImage(
-    process.env.NODE_ENV === 'test' ? `tdd/affiliate-store/${type}/${path}` : `affiliatestore/${type}/${path}`,
+    process.env.NODE_ENV === 'test' ? `tdd/affiliate-store/${type}/${path}` : `affiliate-store/${type}/${path}`,
     process.env.NODE_ENV === 'test' ? data : newData,
     mimetype,
     trx
@@ -109,13 +125,13 @@ const getAffiliateStoreAddedProducts = async (context: { userServiceOrganization
   return products.map(affiliateStoreProductAdapter)
 }
 
-const addProductOnAffiliateStore = async (input: { productId: string }, context: { userServiceOrganizationRolesId: string }, trx: Transaction) => {
+const addProductOnAffiliateStore = async (input: { productId: string }, context: { userServiceOrganizationRolesId: string; organizationId: string }, trx: Transaction) => {
   if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
 
   let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
 
   if (!affiliateStore) {
-    affiliateStore = await RepositoryAffiliateStore.createAffiliateStore(context.userServiceOrganizationRolesId, trx)
+    affiliateStore = await RepositoryAffiliateStore.createAffiliateStore(context.userServiceOrganizationRolesId, context.organizationId, trx)
   }
 
   const affiliateStoreLength = await RepositoryAffiliateStoreProduct.getAffiliateStoreProductLengthByAffiliateId(affiliateStore.id, trx)
@@ -210,13 +226,172 @@ const getOrganizationAffiliateStore = async (context: { organizationId: string }
   return organizationStore ? organizationAffiliateStoreAdapter(organizationStore) : null
 }
 
+/**
+ * add organization affiliate store banner on bucket and save in database
+ *
+ * @param input image to insert in bucket
+ * @param context graphql context with organizationId
+ * @param trx knex transaction
+ */
+const addOrganizationAffiliateStoreBanner = async (
+  input: {
+    data: any
+    mimetype: string
+  },
+  context: {
+    organizationId: string
+  },
+  trx: Transaction
+) => {
+  let affiliateStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(context.organizationId, trx)
+
+  if (!affiliateStore) {
+    let affiliateStoreCreated = await RepositoryOrganizationAffiliateStore.findOrUpdate(context.organizationId, { active: true }, trx)
+    affiliateStore = affiliateStoreCreated[0]
+  }
+
+  const banners = await RepositoryOrganizationAffiliateStoreBanner.getCountByOrganizationId(affiliateStore.id, trx)
+
+  if (Number(banners[0].count) >= 3) {
+    throw new Error(onlyThreeBannersInAffiliateStore)
+  }
+
+  let { data, mimetype } = input
+
+  if (!mimetype.match(/\/png/gi)?.length && !mimetype.match(/\/jpg/gi)?.length && !mimetype.match(/\/jpeg/gi)?.length) {
+    throw new Error(onlyPnhAndJpgIsSupported)
+  }
+
+  const path = common.encryptSHA256(`${affiliateStore.id}${+new Date()}`)
+
+  const pipeline = sharp().resize(1120, 130, {
+    fit: 'contain',
+  })
+
+  let newData
+
+  if (process.env.NODE_ENV !== 'test') {
+    newData = await data.pipe(pipeline)
+  }
+
+  const imageUploaded = await StorageService.uploadImage(
+    process.env.NODE_ENV === 'test' ? `tdd/affiliate-store/banners/${path}` : `affiliate-store/banners/${path}`,
+    process.env.NODE_ENV === 'test' ? data : newData,
+    mimetype,
+    trx
+  )
+
+  const imageUploadedUrl = imageUploaded.url
+
+  const [bannerAdded] = await RepositoryOrganizationAffiliateStoreBanner.create(affiliateStore.id, imageUploadedUrl, trx)
+
+  return organizationAffiliateStoreBannerAdapter(bannerAdded)
+}
+
+/**
+ * get organization affiliate store banner in database
+ *
+ * @param context graphql context with organizationId
+ * @param trx knex transaction
+ */
+const getOrganizationAffiliateStoreBanner = async (
+  context: {
+    organizationId: string
+  },
+  trx: Transaction
+) => {
+  const affiliateStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(context.organizationId, trx)
+
+  const affiliateStoreBanners = await RepositoryOrganizationAffiliateStoreBanner.getByAffiliateStoreId(affiliateStore.id, trx)
+
+  return affiliateStoreBanners.map(organizationAffiliateStoreBannerAdapter)
+}
+
+/**
+ * remove organization affiliate store banner in database
+ *
+ * @param input banner id to remove
+ * @param context graphql context with organizationId
+ * @param trx knex transaction
+ */
+const removeOrganizationAffiliateStoreBanner = async (
+  input: {
+    organizationAffiliateStoreBannerId: string
+  },
+  context: {
+    organizationId: string
+  },
+  trx: Transaction
+) => {
+  try {
+    const affiliateStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(context.organizationId, trx)
+
+    const [affiliateStoreBanner] = await RepositoryOrganizationAffiliateStoreBanner.getByAffiliateStoreId(affiliateStore.id, trx)
+
+    const bucketKey = affiliateStoreBanner.url.replace(/https:\/\/.*?\//gi, '')
+
+    await StorageService.deleteImage(bucketKey)
+
+    await RepositoryOrganizationAffiliateStoreBanner.remove(input.organizationAffiliateStoreBannerId, affiliateStore.id, trx)
+
+    return true
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
+/**
+ * get affiliate store with products html
+ *
+ * @param input organizationId and affiliateStoreSlug
+ * @param trx knex transaction
+ */
+const getAffiliateStoreWithProducts = async (
+  input: {
+    organizationId: string
+    affiliateStoreSlug: string
+  },
+  trx: Transaction
+) => {
+  const affiliateStore = await RepositoryAffiliateStore.getBySlugAndOrganizationId(input.affiliateStoreSlug, input.organizationId, trx)
+
+  const organizationAffiliateStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(input.organizationId, trx)
+
+  const affiliateStoreProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
+
+  const affiliateStoreIds = affiliateStoreProducts.map((item) => `productId:${item.product_id}`)
+
+  const integration = await IntegrationService.getIntegrationByOrganizationId(input.organizationId, trx)
+
+  if (!integration) throw new Error(organizationDoestNotHaveActiveIntegration)
+
+  const decode: any = await common.jwtDecode(integration.secret)
+
+  const productsHtml = await fetchVtexProductsHtml(decode?.accountName, organizationAffiliateStore.shelf_id, affiliateStoreIds.join(','))
+
+  // console.log('productsHtml', typeof productsHtml)
+
+  // const htmlRegex = productsHtml.match(/<ul>((.|\n)*)<\/ul>/g)
+
+  // console.log('htmlRegex', htmlRegex)
+
+  return {
+    affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
+    productsHtml: productsHtml ?? null,
+  }
+}
+
 export default {
   handleAffiliateStore,
+  removeOrganizationAffiliateStoreBanner,
+  getOrganizationAffiliateStoreBanner,
   handleProductOnAffiliateStoreSearchable,
   handleProductOnAffiliateStoreActivity,
   getOrganizationAffiliateStore,
+  addOrganizationAffiliateStoreBanner,
   getAffiliateStore,
   getAffiliateStoreProducts,
+  getAffiliateStoreWithProducts,
   addProductOnAffiliateStore,
   handleProductOnAffiliateStoreOrder,
   getAffiliateStoreAddedProducts,

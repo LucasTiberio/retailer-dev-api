@@ -8,12 +8,14 @@ import createAffiliateMock from '../../../__mocks__/full/create-affiliate-mock'
 import OrganizationRulesService from '../../../services/organization-rules/service'
 import imgGen from 'js-image-generator'
 import common from '../../../common'
+import { IOrganizationFromDB } from '../../organization/types'
 jest.mock('../../../services/organization-rules/service')
 
 describe('Affiliate', () => {
   let trx: Transaction
 
   let affiliateinserted: IUsersOrganizationServiceDB
+  let organizationInserted: IOrganizationFromDB
 
   beforeAll(async () => {
     const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
@@ -44,7 +46,10 @@ describe('Affiliate', () => {
   beforeEach(async () => {
     trx = await database.knex.transaction()
 
-    affiliateinserted = (await createAffiliateMock(trx)).affiliate
+    const { organization, affiliate } = await createAffiliateMock(trx)
+
+    affiliateinserted = affiliate
+    organizationInserted = organization
   })
 
   afterEach(async () => {
@@ -66,7 +71,7 @@ describe('Affiliate', () => {
       instagram: Faker.random.uuid(),
     }
 
-    const affiliateStoreCreated = await service.handleAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const affiliateStoreCreated = await service.handleAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     expect(affiliateStoreCreated).toEqual(
       expect.objectContaining({
@@ -98,13 +103,13 @@ describe('Affiliate', () => {
       instagram: Faker.random.uuid(),
     }
 
-    await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const input = {
       name: Faker.name.firstName(),
     }
 
-    const affiliateStoreUpdated = await service.handleAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const affiliateStoreUpdated = await service.handleAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     expect(affiliateStoreUpdated).toEqual(
       expect.objectContaining({
@@ -141,7 +146,7 @@ describe('Affiliate', () => {
         instagram: Faker.random.uuid(),
       }
 
-      const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+      const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
       expect(affiliateStoreCreated).toEqual(
         expect.objectContaining({
@@ -179,7 +184,7 @@ describe('Affiliate', () => {
         instagram: Faker.random.uuid(),
       }
 
-      const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+      const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
       expect(affiliateStoreCreated).toEqual(
         expect.objectContaining({

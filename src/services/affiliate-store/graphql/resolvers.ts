@@ -5,7 +5,7 @@ import service from '../service'
 
 const resolvers: IResolvers = {
   Mutation: {
-    handleAffiliateStore: async (_, { input }, { userServiceOrganizationRolesId }) => {
+    handleAffiliateStore: async (_, { input }, { userServiceOrganizationRolesId, organizationId }) => {
       if (input.cover) {
         const { createReadStream: coverCreateReadStream, mimetype: coverMimetype } = await input.cover.data
         input.cover = {
@@ -23,12 +23,22 @@ const resolvers: IResolvers = {
       }
 
       return knexDatabase.knex.transaction((trx: Transaction) => {
-        return service.handleAffiliateStore(input, { userServiceOrganizationRolesId }, trx)
+        return service.handleAffiliateStore(input, { userServiceOrganizationRolesId, organizationId }, trx)
       })
     },
-    addProductOnAffiliateStore: async (_, { input }, { userServiceOrganizationRolesId }) => {
+    addProductOnAffiliateStore: async (_, { input }, { userServiceOrganizationRolesId, organizationId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
-        return service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId }, trx)
+        return service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId, organizationId }, trx)
+      })
+    },
+    removeOrganizationAffiliateStoreBanner: async (_, { input }, { organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.removeOrganizationAffiliateStoreBanner(input, { organizationId }, trx)
+      })
+    },
+    addOrganizationAffiliateStoreBanner: async (_, { input }, { organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.addOrganizationAffiliateStoreBanner(input, { organizationId }, trx)
       })
     },
     handleOrganizationAffiliateStore: async (_, { input }, { organizationId }) => {
@@ -56,6 +66,16 @@ const resolvers: IResolvers = {
     getAffiliateStore: (_, __, { userServiceOrganizationRolesId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.getAffiliateStore({ userServiceOrganizationRolesId }, trx)
+      })
+    },
+    getAffiliateStoreWithProducts: (_, { input }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getAffiliateStoreWithProducts(input, trx)
+      })
+    },
+    getOrganizationAffiliateStoreBanner: (_, __, { organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getOrganizationAffiliateStoreBanner({ organizationId }, trx)
       })
     },
     getOrganizationAffiliateStore: (_, __, { organizationId }) => {

@@ -2,11 +2,15 @@ import knexDatabase from '../../../knex-database'
 import { ICreateAffiliateStore } from '../types'
 import { Transaction } from 'knex'
 
+const getBySlugAndOrganizationId = async (slug: string, organizationId: string, trx: Transaction) => {
+  return await (trx || knexDatabase.knex)('affiliate_store').where('slug', slug).andWhere('organization_id', organizationId).first().select()
+}
+
 const getById = async (affiliateId: string, trx: Transaction) => {
   return await (trx || knexDatabase.knex)('affiliate_store').where('users_organization_service_roles_id', affiliateId).first().select()
 }
 
-const findOrUpdate = async (affiliateId: string, input: ICreateAffiliateStore, trx: Transaction) => {
+const findOrUpdate = async (organizationId: string, affiliateId: string, input: ICreateAffiliateStore, trx: Transaction) => {
   const affiliateStoreFound = await getById(affiliateId, trx)
 
   let query = (trx || knexDatabase.knex)('affiliate_store')
@@ -16,6 +20,7 @@ const findOrUpdate = async (affiliateId: string, input: ICreateAffiliateStore, t
       .insert({
         ...input,
         users_organization_service_roles_id: affiliateId,
+        organization_id: organizationId,
       })
       .returning('*')
   } else {
@@ -28,10 +33,11 @@ const findOrUpdate = async (affiliateId: string, input: ICreateAffiliateStore, t
   }
 }
 
-const createAffiliateStore = async (affiliateId: string, trx: Transaction) => {
+const createAffiliateStore = async (affiliateId: string, organizationId: string, trx: Transaction) => {
   const [affiliateStoreCreated] = await (trx || knexDatabase.knex)('affiliate_store')
     .insert({
       users_organization_service_roles_id: affiliateId,
+      organization_id: organizationId,
     })
     .returning('*')
   return affiliateStoreCreated
@@ -41,4 +47,5 @@ export default {
   findOrUpdate,
   getById,
   createAffiliateStore,
+  getBySlugAndOrganizationId,
 }

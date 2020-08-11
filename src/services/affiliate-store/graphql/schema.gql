@@ -17,6 +17,18 @@ extend type Mutation {
     @vtexFeature
     @isVerified
     @isAuthenticated
+  addOrganizationAffiliateStoreBanner(input: AddOrganizationAffiliateStoreBannerInput!): OrganizationAffiliateStoreBanner!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
+  removeOrganizationAffiliateStoreBanner(input: RemoveOrganizationAffiliateStoreBannerInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @vtexFeature
+    @isVerified
+    @isAuthenticated
   handleProductOnAffiliateStoreActivity(input: HandleProductOnAffiliateStoreActivityInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
     @organizationPaidVerify
@@ -39,13 +51,38 @@ extend type Mutation {
 
 extend type Query {
   getAffiliateStore: AffiliateStore @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @isVerified @isAuthenticated
+  getAffiliateStoreWithProducts(input: GetAffiliateStoreWithProductsInput!): AffiliateStoreWithProducts
   getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProductFormatted]!
     @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
     @vtexFeature
     @isVerified
     @isAuthenticated
   getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
+  getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
   getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @isVerified @isAuthenticated
+}
+
+type AffiliateStoreWithProducts {
+  affiliateStore: AffiliateStore!
+  productsHtml: String
+}
+
+input GetAffiliateStoreWithProductsInput {
+  organizationId: String!
+  affiliateStoreSlug: String!
+}
+
+input RemoveOrganizationAffiliateStoreBannerInput {
+  organizationAffiliateStoreBannerId: String!
+}
+
+input AddOrganizationAffiliateStoreBannerInput {
+  data: Upload!
+}
+
+type OrganizationAffiliateStoreBanner {
+  id: String!
+  url: String!
 }
 
 input HandleOrganizationAffiliateStoreInput {
@@ -96,6 +133,7 @@ input HandleAffiliateStoreInput {
   avatar: AffiliateAvatarInput
   cover: AffiliateCoverInput
   name: String
+  slug: String
   description: String
   facebook: String
   youtube: String
@@ -123,6 +161,7 @@ type AffiliateStore {
   description: String
   facebook: String
   youtube: String
+  slug: String
   twitter: String
   tiktok: String
   instagram: String

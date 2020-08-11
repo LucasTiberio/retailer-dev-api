@@ -1,4 +1,4 @@
-import { IAffiliateStore, IAffiliateProductStore, IOrganizationAffiliateStore } from '../types'
+import { IAffiliateStore, IAffiliateProductStore, IOrganizationAffiliateStore, IOrganizationAffiliateStoreBanner } from '../types'
 
 export const affiliateStoreAdapter = (record: IAffiliateStore) => ({
   id: record.id,
@@ -8,6 +8,7 @@ export const affiliateStoreAdapter = (record: IAffiliateStore) => ({
   name: record.name,
   description: record.description,
   facebook: record.facebook,
+  slug: record.slug,
   youtube: record.youtube,
   twitter: record.twitter,
   tiktok: record.tiktok,
@@ -33,6 +34,14 @@ export const organizationAffiliateStoreAdapter = (record: IOrganizationAffiliate
   scriptUrl: record.script_url,
   organizationId: record.organization_id,
   shelfId: record.shelf_id,
+  createdAt: record.created_at,
+  updatedAt: record.updated_at,
+})
+
+export const organizationAffiliateStoreBannerAdapter = (record: IOrganizationAffiliateStoreBanner) => ({
+  id: record.id,
+  url: record.url,
+  organizationAffiliateStoreId: record.organization_affiliate_store_id,
   createdAt: record.created_at,
   updatedAt: record.updated_at,
 })

@@ -3,6 +3,7 @@ export interface IAffiliateStore {
   users_organization_service_roles_id: string
   avatar: string
   cover: string
+  slug: string
   name: string
   description: string
   facebook: string
@@ -31,6 +32,13 @@ export interface IOrganizationAffiliateStore {
   script_url: string
   organization_id: string
   shelf_id: string
+  created_at: Date
+  updated_at: Date
+}
+export interface IOrganizationAffiliateStoreBanner {
+  id: string
+  url: boolean
+  organization_affiliate_store_id: string
   created_at: Date
   updated_at: Date
 }

@@ -1,4 +1,4 @@
-import { buildGetProductsVtexUrl } from '../../vtex/helpers'
+import { buildGetProductsVtexUrl, buildProductsHtmlVtexUrl } from '../../vtex/helpers'
 import Axios from 'axios'
 
 export const fetchVtexProducts = async (accountName: string, term: string) => {
@@ -18,4 +18,14 @@ export const fetchVtexProducts = async (accountName: string, term: string) => {
     } = seller
     return { productId: product.productId, price: `R$ ${(Price / 100).toFixed(2)}`, image: image.imageUrl }
   })
+}
+
+export const fetchVtexProductsHtml = async (accountName: string, shelfId: string, affiliateStoreIds: string) => {
+  const { data: vtexProductsData } = await Axios.get(buildProductsHtmlVtexUrl(accountName, shelfId, affiliateStoreIds), {
+    headers: {
+      'content-type': 'Content-Type',
+    },
+  })
+
+  return vtexProductsData
 }

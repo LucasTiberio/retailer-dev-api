@@ -65,13 +65,13 @@ describe('Affiliate Store', () => {
       name: Faker.name.firstName(),
     }
 
-    const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const input = {
       productId: '12345',
     }
 
-    const productAdded = await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const productAdded = await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     expect(productAdded).toEqual(
       expect.objectContaining({
@@ -94,19 +94,19 @@ describe('Affiliate Store', () => {
       name: Faker.name.firstName(),
     }
 
-    const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const affiliateStoreCreated = await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const input = {
       productId: '12345',
     }
 
-    await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const input2 = {
       productId: '123456',
     }
 
-    const product2Added = await service.addProductOnAffiliateStore(input2, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const product2Added = await service.addProductOnAffiliateStore(input2, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     expect(product2Added).toEqual(
       expect.objectContaining({
@@ -129,7 +129,7 @@ describe('Affiliate Store', () => {
       productId: '12345',
     }
 
-    const productAdded = await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const productAdded = await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const affiliateStore = await (trx || knexDatabase.knex)('affiliate_store').first().select('id')
 
@@ -156,7 +156,7 @@ describe('Affiliate Store', () => {
       name: Faker.name.firstName(),
     }
 
-    await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    await service.handleAffiliateStore(createInput, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const arrayLength = Array(maxAffiliateStoreProducts + 1).fill(0)
 
@@ -164,7 +164,7 @@ describe('Affiliate Store', () => {
       return accumulatorPromise.then(async () => {
         await new Promise(async (resolve) => {
           try {
-            await service.addProductOnAffiliateStore({ productId: String(index) }, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+            await service.addProductOnAffiliateStore({ productId: String(index) }, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
           } catch (error) {
             expect(error.message).toBe('max_affiliate_store_product_length')
             done()
