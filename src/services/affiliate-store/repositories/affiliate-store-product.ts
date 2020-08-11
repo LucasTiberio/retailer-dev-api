@@ -120,7 +120,7 @@ const handleProductsOrder = async (
             order: item.order,
           })
           .where('affiliate_store_id', affiliateStoreId)
-          .andWhere('id', item.affiliateStoreProductId)
+          .andWhere('product_id', item.affiliateStoreProductId)
           .returning('*')
       })
     )

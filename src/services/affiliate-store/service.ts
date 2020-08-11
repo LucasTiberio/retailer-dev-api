@@ -1,4 +1,5 @@
 import { Transaction } from 'knex'
+import cheerio from 'cheerio'
 
 /** Types */
 import { ICreateAffiliateStore, IAffiliateStoreAdapted, IAvatar } from './types'
@@ -380,15 +381,20 @@ const getAffiliateStoreWithProducts = async (
 
   const productsHtml = await fetchVtexProductsHtml(decode?.accountName, organizationAffiliateStore.shelf_id, affiliateStoreIds.join(','))
 
-  // console.log('productsHtml', typeof productsHtml)
+  const $ = cheerio.load(productsHtml)
 
-  // const htmlRegex = productsHtml.match(/<ul>((.|\n)*)<\/ul>/g)
+  const productIdsOrdered = affiliateStoreProducts.map((item) => item.product_id)
 
-  // console.log('htmlRegex', htmlRegex)
+  const htmlOrdered = productIdsOrdered
+    .map((item) => {
+      const prevLi = $(`#helperComplement_${item}`).prev()[0]
+      return $.html(prevLi)
+    })
+    .join('')
 
   return {
     affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
-    productsHtml: productsHtml ?? null,
+    productsHtml: htmlOrdered ?? null,
   }
 }
 

@@ -178,4 +178,5 @@ type AffiliateStoreProduct {
   active: Boolean!
   searchable: Boolean!
   order: Int!
+  createdAt: Datetime!
 }
