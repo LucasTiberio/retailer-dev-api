@@ -32,7 +32,7 @@ import RepositoryOrganizationAffiliateStoreBanner from './repositories/organizat
 import { affiliateStoreAdapter, affiliateStoreProductAdapter, organizationAffiliateStoreAdapter, organizationAffiliateStoreBannerAdapter } from './adapters'
 
 /** Clients */
-import { fetchVtexProducts, fetchVtexProductsHtml } from './client/vtex'
+import { fetchVtexProducts, fetchVtexProductsHtml, fetchVtexProductsByIds } from './client/vtex'
 
 import common from '../../common'
 import sharp from 'sharp'
@@ -85,7 +85,7 @@ const handleAffiliateStoreImages = async (width: number, height: number, type: s
   const path = common.encryptSHA256(affiliateId)
 
   const pipeline = sharp().resize(width, height, {
-    fit: 'contain',
+    fit: 'cover',
   })
 
   let newData
@@ -127,14 +127,27 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
   return products
 }
 
-const getAffiliateStoreAddedProducts = async (context: { userServiceOrganizationRolesId: string }, trx: Transaction) => {
+const getAffiliateStoreAddedProducts = async (context: { userServiceOrganizationRolesId: string; secret: string }, trx: Transaction) => {
   if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
 
   let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
 
   const products = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
 
-  return products.map(affiliateStoreProductAdapter)
+  const decode: any = await common.jwtDecode(context.secret)
+
+  const affiliateStoreIds = products.map((item) => `productId:${item.product_id}`)
+
+  const productsData = await fetchVtexProductsByIds(decode.accountName, affiliateStoreIds.join(','))
+
+  const productsFormatted = products.map((item) => {
+    const productFound = productsData.find((product: { productId: string }) => {
+      return product.productId == item.product_id
+    })
+    return { ...item, name: productFound?.name, image: productFound?.image }
+  })
+
+  return productsFormatted.map(affiliateStoreProductAdapter)
 }
 
 const addProductOnAffiliateStore = async (input: { productId: string }, context: { userServiceOrganizationRolesId: string; organizationId: string }, trx: Transaction) => {
@@ -277,7 +290,7 @@ const addOrganizationAffiliateStoreBanner = async (
   const path = common.encryptSHA256(`${affiliateStore.id}${+new Date()}`)
 
   const pipeline = sharp().resize(1120, 130, {
-    fit: 'contain',
+    fit: 'cover',
   })
 
   let newData
@@ -369,7 +382,7 @@ const getAffiliateStoreWithProducts = async (
 
   const organizationAffiliateStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(input.organizationId, trx)
 
-  const affiliateStoreProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
+  const affiliateStoreProducts = await RepositoryAffiliateStoreProduct.getSearchablesByAffiliateStoreId(affiliateStore.id, trx)
 
   const affiliateStoreIds = affiliateStoreProducts.map((item) => `productId:${item.product_id}`)
 

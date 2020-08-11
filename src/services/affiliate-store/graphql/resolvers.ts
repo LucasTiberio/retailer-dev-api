@@ -83,9 +83,9 @@ const resolvers: IResolvers = {
         return service.getOrganizationAffiliateStore({ organizationId }, trx)
       })
     },
-    getAffiliateStoreAddedProducts: (_, __, { userServiceOrganizationRolesId }) => {
+    getAffiliateStoreAddedProducts: (_, __, { userServiceOrganizationRolesId, secret }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
-        return service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId }, trx)
+        return service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId, secret }, trx)
       })
     },
     getAffiliateStoreProducts: (_, { input }, { secret, userServiceOrganizationRolesId }) => {

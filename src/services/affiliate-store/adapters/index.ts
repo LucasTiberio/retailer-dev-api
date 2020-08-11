@@ -23,6 +23,8 @@ export const affiliateStoreProductAdapter = (record: IAffiliateProductStore) => 
   active: record.active,
   searchable: record.searchable,
   order: record.order,
+  name: record?.name,
+  image: record?.image,
   productId: record.product_id,
   createdAt: record.created_at,
   updatedAt: record.updated_at,

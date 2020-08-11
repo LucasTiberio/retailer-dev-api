@@ -175,6 +175,8 @@ type AffiliateStoreProduct {
   id: String!
   affiliateStoreId: String!
   productId: String!
+  image: String
+  name: String
   active: Boolean!
   searchable: Boolean!
   order: Int!

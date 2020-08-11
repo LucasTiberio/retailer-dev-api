@@ -19,6 +19,8 @@ export interface IAffiliateProductStore {
   id: string
   affiliate_store_id: string
   product_id: string
+  name: string
+  image: string
   active: boolean
   searchable: boolean
   created_at: Date

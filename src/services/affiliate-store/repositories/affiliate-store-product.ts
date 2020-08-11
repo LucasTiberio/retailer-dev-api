@@ -16,6 +16,15 @@ const getByAffiliateStoreId = async (affiliateStoreId: string, trx: Transaction)
   return await (trx || knexDatabase.knex)('affiliate_store_product').where('affiliate_store_id', affiliateStoreId).andWhere('active', true).orderBy('order', 'asc').select()
 }
 
+const getSearchablesByAffiliateStoreId = async (affiliateStoreId: string, trx: Transaction) => {
+  return await (trx || knexDatabase.knex)('affiliate_store_product')
+    .where('affiliate_store_id', affiliateStoreId)
+    .andWhere('active', true)
+    .andWhere('searchable', true)
+    .orderBy('order', 'asc')
+    .select()
+}
+
 const getAffiliateStoreProductLengthByAffiliateId = async (affiliateStoreId: string, trx: Transaction) => {
   return await (trx || knexDatabase.knex)('affiliate_store_product').where('affiliate_store_id', affiliateStoreId).andWhere('active', true).count()
 }
@@ -138,4 +147,5 @@ export default {
   handleProductSearchable,
   handleProductsOrder,
   getByAffiliateStoreId,
+  getSearchablesByAffiliateStoreId,
 }

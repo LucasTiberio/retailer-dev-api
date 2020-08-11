@@ -734,7 +734,7 @@ const organizationUploadImage = async (
   const path = common.encryptSHA256(context.organizationId)
 
   const pipeline = sharp().resize(248, 160, {
-    fit: 'contain',
+    fit: 'cover',
   })
 
   let newData
