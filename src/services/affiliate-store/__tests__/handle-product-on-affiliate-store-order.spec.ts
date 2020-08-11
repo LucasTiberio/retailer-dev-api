@@ -65,13 +65,13 @@ describe('Affiliate Store', () => {
       productId: '1',
     }
 
-    const affiliateStoreProductAdded = await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const affiliateStoreProductAdded = await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const input2 = {
       productId: '2',
     }
 
-    const affiliateStoreProductAdded2 = await service.addProductOnAffiliateStore(input2, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const affiliateStoreProductAdded2 = await service.addProductOnAffiliateStore(input2, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const orderInput = [
       {

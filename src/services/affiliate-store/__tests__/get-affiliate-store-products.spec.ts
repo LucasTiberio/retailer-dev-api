@@ -65,7 +65,7 @@ describe('Affiliate Store', () => {
       productId: '12345',
     }
 
-    await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const productAdded = await service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId: affiliateinserted.id }, trx)
 

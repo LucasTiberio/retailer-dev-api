@@ -6,12 +6,14 @@ import { Transaction } from 'knex'
 import { IUsersOrganizationServiceDB } from '../../services/types'
 import createAffiliateMock from '../../../__mocks__/full/create-affiliate-mock'
 import OrganizationRulesService from '../../../services/organization-rules/service'
+import { IOrganizationFromDB } from '../../organization/types'
 jest.mock('../../../services/organization-rules/service')
 
 describe('Affiliate', () => {
   let trx: Transaction
 
   let affiliateinserted: IUsersOrganizationServiceDB
+  let organizationInserted: IOrganizationFromDB
 
   beforeAll(async () => {
     const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
@@ -42,7 +44,10 @@ describe('Affiliate', () => {
   beforeEach(async () => {
     trx = await database.knex.transaction()
 
-    affiliateinserted = (await createAffiliateMock(trx)).affiliate
+    const { affiliate, organization } = await createAffiliateMock(trx)
+
+    affiliateinserted = affiliate
+    organizationInserted = organization
   })
 
   afterEach(async () => {
@@ -64,7 +69,7 @@ describe('Affiliate', () => {
       instagram: Faker.random.uuid(),
     }
 
-    await service.handleAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    await service.handleAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
     const affiliateStoreFound = await service.getAffiliateStore({ userServiceOrganizationRolesId: affiliateinserted.id }, trx)
 
