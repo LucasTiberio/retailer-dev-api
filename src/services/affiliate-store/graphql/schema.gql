@@ -127,6 +127,8 @@ type AffiliateStoreProductFormatted {
   productId: String!
   price: String!
   image: String!
+  name: String!
+  added: Boolean!
 }
 
 input HandleAffiliateStoreInput {

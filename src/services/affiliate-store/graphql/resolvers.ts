@@ -88,8 +88,10 @@ const resolvers: IResolvers = {
         return service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId }, trx)
       })
     },
-    getAffiliateStoreProducts: (_, { input }, { secret }) => {
-      return service.getAffiliateStoreProducts(input, { secret })
+    getAffiliateStoreProducts: (_, { input }, { secret, userServiceOrganizationRolesId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getAffiliateStoreProducts(input, { secret, userServiceOrganizationRolesId }, trx)
+      })
     },
   },
 }

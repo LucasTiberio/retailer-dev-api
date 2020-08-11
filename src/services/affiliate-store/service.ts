@@ -103,7 +103,7 @@ const handleAffiliateStoreImages = async (width: number, height: number, type: s
   return imageUploaded.url
 }
 
-const getAffiliateStoreProducts = async (input: { term: string }, context: { secret: string }) => {
+const getAffiliateStoreProducts = async (input: { term: string }, context: { secret: string; userServiceOrganizationRolesId: string }, trx: Transaction) => {
   if (input.term.length < 3) {
     throw new Error(minThreeLetters)
   }
@@ -111,6 +111,17 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
   const decode: any = await common.jwtDecode(context.secret)
 
   const products = await fetchVtexProducts(decode.accountName, input.term)
+
+  let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+
+  if (affiliateStore) {
+    const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
+
+    return products.map((item: { productId: string }) => {
+      const productFound = currentProducts.find((product) => product.product_id === item.productId)
+      return { ...item, added: !!productFound }
+    })
+  }
 
   return products
 }

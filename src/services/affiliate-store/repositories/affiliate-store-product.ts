@@ -8,6 +8,10 @@ const getByProductIdAndAffiliateStoreId = async (productId: string, affiliateSto
   return await (trx || knexDatabase.knex)('affiliate_store_product').where('product_id', productId).andWhere('affiliate_store_id', affiliateStoreId).andWhere('active', true).first().select()
 }
 
+const getByProductIdAndAffiliateStoreIdWithoutActive = async (productId: string, affiliateStoreId: string, trx: Transaction) => {
+  return await (trx || knexDatabase.knex)('affiliate_store_product').where('product_id', productId).andWhere('affiliate_store_id', affiliateStoreId).first().select()
+}
+
 const getByAffiliateStoreId = async (affiliateStoreId: string, trx: Transaction) => {
   return await (trx || knexDatabase.knex)('affiliate_store_product').where('affiliate_store_id', affiliateStoreId).andWhere('active', true).orderBy('order', 'asc').select()
 }
@@ -21,7 +25,7 @@ const getAffiliateStoreOrderByAffiliateStoreId = async (affiliateStoreId: string
 }
 
 const findOrUpdate = async (affiliateStoreId: string, input: ICreateAffiliateStoreProduct, trx: Transaction) => {
-  const affiliateStoreProduct = await getByProductIdAndAffiliateStoreId(input.productId, affiliateStoreId, trx)
+  const affiliateStoreProduct = await getByProductIdAndAffiliateStoreIdWithoutActive(input.productId, affiliateStoreId, trx)
 
   const affiliateStoreProductLastOrder = await getAffiliateStoreOrderByAffiliateStoreId(affiliateStoreId, trx)
 
