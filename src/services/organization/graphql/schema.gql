@@ -167,7 +167,7 @@ type Organization {
   updatedAt: Datetime!
   freeTrial: Boolean!
   freeTrialExpires: Datetime
-  domain: String!
+  domain: String
   createdAt: Datetime!
   logo: String
   hasMember: Boolean!
