@@ -1,112 +1,168 @@
-import { ServiceRoles } from "../../services/types";
+import { ServiceRoles } from '../../services/types'
 
-export const organizationAdminMenu = [
-  {
-    group: "menu-items",
-    items: [
+export const organizationAdminMenu = (vtexIntegration: boolean) => {
+  if (vtexIntegration) {
+    return [
       {
-        name: "overview",
-        slug: "/overview",
-      },
-      {
-        name: "settings",
-        slug: "/settings",
-      },
-    ],
-  },
-  {
-    group: "services",
-    items: [
-      {
-        name: "affiliate",
-        children: [
+        group: 'menu-items',
+        items: [
           {
-            name: "orders",
-            slug: "/affiliate/orders",
+            name: 'overview',
+            slug: '/overview',
           },
           {
-            name: "commission",
-            slug: "/affiliate/commission",
-          },
-          {
-            name: "members",
-            slug: "/affiliate/members",
-          },
-          {
-            name: "payments",
-            slug: "/affiliate/payments",
+            name: 'settings',
+            slug: '/settings',
           },
         ],
       },
-    ],
-  },
-];
+      {
+        group: 'services',
+        items: [
+          {
+            name: 'affiliate',
+            children: [
+              {
+                name: 'orders',
+                slug: '/affiliate/orders',
+              },
+              {
+                name: 'commission',
+                slug: '/affiliate/commission',
+              },
+              {
+                name: 'members',
+                slug: '/affiliate/members',
+              },
+              {
+                name: 'payments',
+                slug: '/affiliate/payments',
+              },
+              {
+                name: 'showCase',
+                slug: '/affiliate/showcase',
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  }
+
+  return [
+    {
+      group: 'menu-items',
+      items: [
+        {
+          name: 'overview',
+          slug: '/overview',
+        },
+        {
+          name: 'settings',
+          slug: '/settings',
+        },
+      ],
+    },
+    {
+      group: 'services',
+      items: [
+        {
+          name: 'affiliate',
+          children: [
+            {
+              name: 'orders',
+              slug: '/affiliate/orders',
+            },
+            {
+              name: 'commission',
+              slug: '/affiliate/commission',
+            },
+            {
+              name: 'members',
+              slug: '/affiliate/members',
+            },
+            {
+              name: 'payments',
+              slug: '/affiliate/payments',
+            },
+          ],
+        },
+      ],
+    },
+  ]
+}
 
 export const organizationMemberMenu = [
   {
-    group: "menu-items",
+    group: 'menu-items',
     items: [
       {
-        name: "overview",
-        slug: "/overview",
+        name: 'overview',
+        slug: '/overview',
       },
     ],
   },
-];
+]
 
-export const affiliateMemberMountMenu = (serviceRole: string) => {
-  const affiliateAnalyst: any = {
-    name: "affiliate",
+export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: boolean) => {
+  let affiliateAnalyst: any = {
+    name: 'affiliate',
     children: [
       {
-        name: "orders",
-        slug: "/affiliate/orders",
+        name: 'orders',
+        slug: '/affiliate/orders',
       },
       {
-        name: "commission",
-        slug: "/affiliate/commission",
+        name: 'commission',
+        slug: '/affiliate/commission',
       },
       {
-        name: "payments",
-        slug: "/affiliate/payments",
+        name: 'payments',
+        slug: '/affiliate/payments',
       },
       {
-        name: "linkGenerator",
-        slug: "/affiliate/link-generator",
+        name: 'linkGenerator',
+        slug: '/affiliate/link-generator',
       },
     ],
-  };
+  }
 
   const affiliateSale: any = {
-    name: "affiliate",
+    name: 'affiliate',
     children: [
       {
-        name: "orders",
-        slug: "/affiliate/orders",
+        name: 'orders',
+        slug: '/affiliate/orders',
       },
       {
-        name: "commission",
-        slug: "/affiliate/commission",
+        name: 'commission',
+        slug: '/affiliate/commission',
       },
       {
-        name: "payments",
-        slug: "/affiliate/payments",
+        name: 'payments',
+        slug: '/affiliate/payments',
       },
     ],
-  };
+  }
 
   switch (serviceRole) {
     case ServiceRoles.ANALYST:
-      return [
-        ...organizationMemberMenu,
-        { group: "services", items: [affiliateAnalyst] },
-      ];
+      if (vtexIntegration) {
+        affiliateAnalyst = {
+          ...affiliateAnalyst,
+          children: [
+            ...affiliateAnalyst.children,
+            {
+              name: 'showCase',
+              slug: '/affiliate/showcase',
+            },
+          ],
+        }
+      }
+      return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
-      return [
-        ...organizationMemberMenu,
-        { group: "services", items: [affiliateSale] },
-      ];
+      return [...organizationMemberMenu, { group: 'services', items: [affiliateSale] }]
     default:
-      return;
+      return
   }
-};
+}
