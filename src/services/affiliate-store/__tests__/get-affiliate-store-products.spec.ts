@@ -5,9 +5,9 @@ import database from '../../../knex-database'
 import { Transaction } from 'knex'
 import { IUsersOrganizationServiceDB } from '../../services/types'
 import createAffiliateMock from '../../../__mocks__/full/create-affiliate-mock'
+import vtexSecretMock from '../../../__mocks__/vtexSecretMock'
 import OrganizationRulesService from '../../../services/organization-rules/service'
 import { IOrganizationFromDB } from '../../organization/types'
-import vtexSecretMock from '../../../__mocks__/vtexSecretMock'
 import knexDatabase from '../../../knex-database'
 jest.mock('../../../services/organization-rules/service')
 
@@ -67,7 +67,7 @@ describe('Affiliate Store', () => {
 
     await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
-    const productAdded = await service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const productAdded = await service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId: affiliateinserted.id, secret: vtexSecretMock }, trx)
 
     const affiliateStore = await (trx || knexDatabase.knex)('affiliate_store').first().select()
 
