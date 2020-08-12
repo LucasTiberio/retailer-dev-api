@@ -1,53 +1,53 @@
 import { ServiceRoles } from '../../services/types'
 
 export const organizationAdminMenu = (vtexIntegration: boolean) => {
-  if (vtexIntegration) {
-    return [
-      {
-        group: 'menu-items',
-        items: [
-          {
-            name: 'overview',
-            slug: '/overview',
-          },
-          {
-            name: 'settings',
-            slug: '/settings',
-          },
-        ],
-      },
-      {
-        group: 'services',
-        items: [
-          {
-            name: 'affiliate',
-            children: [
-              {
-                name: 'orders',
-                slug: '/affiliate/orders',
-              },
-              {
-                name: 'commission',
-                slug: '/affiliate/commission',
-              },
-              {
-                name: 'members',
-                slug: '/affiliate/members',
-              },
-              {
-                name: 'payments',
-                slug: '/affiliate/payments',
-              },
-              {
-                name: 'showCase',
-                slug: '/affiliate/showcase',
-              },
-            ],
-          },
-        ],
-      },
-    ]
-  }
+  // if (vtexIntegration) {
+  //   return [
+  //     {
+  //       group: 'menu-items',
+  //       items: [
+  //         {
+  //           name: 'overview',
+  //           slug: '/overview',
+  //         },
+  //         {
+  //           name: 'settings',
+  //           slug: '/settings',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       group: 'services',
+  //       items: [
+  //         {
+  //           name: 'affiliate',
+  //           children: [
+  //             {
+  //               name: 'orders',
+  //               slug: '/affiliate/orders',
+  //             },
+  //             {
+  //               name: 'commission',
+  //               slug: '/affiliate/commission',
+  //             },
+  //             {
+  //               name: 'members',
+  //               slug: '/affiliate/members',
+  //             },
+  //             {
+  //               name: 'payments',
+  //               slug: '/affiliate/payments',
+  //             },
+  //             {
+  //               name: 'showCase',
+  //               slug: '/affiliate/showcase',
+  //             },
+  //           ],
+  //         },
+  //       ],
+  //     },
+  //   ]
+  // }
 
   return [
     {
@@ -147,18 +147,18 @@ export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: b
 
   switch (serviceRole) {
     case ServiceRoles.ANALYST:
-      if (vtexIntegration) {
-        affiliateAnalyst = {
-          ...affiliateAnalyst,
-          children: [
-            ...affiliateAnalyst.children,
-            {
-              name: 'showCase',
-              slug: '/affiliate/showcase',
-            },
-          ],
-        }
-      }
+      // if (vtexIntegration) {
+      //   affiliateAnalyst = {
+      //     ...affiliateAnalyst,
+      //     children: [
+      //       ...affiliateAnalyst.children,
+      //       {
+      //         name: 'showCase',
+      //         slug: '/affiliate/showcase',
+      //       },
+      //     ],
+      //   }
+      // }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
       return [...organizationMemberMenu, { group: 'services', items: [affiliateSale] }]
