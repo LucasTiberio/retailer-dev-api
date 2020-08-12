@@ -36,7 +36,7 @@ const createIntegration = async (
           await VtexService.verifyVtexSecrets(secrets)
           await VtexService.createVtexHook(secrets)
           const jwtSecret = await _secretToJwt(input.secrets)
-          await attachIntegration(context.organizationId, jwtSecret, type, input.secrets.accountName, trx)
+          await attachIntegration(context.organizationId, jwtSecret, type, input.secrets.appKey, trx)
           return true
         }
         throw new Error('Vtex integration need other keys.')
