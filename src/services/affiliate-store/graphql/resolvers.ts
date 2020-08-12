@@ -7,10 +7,12 @@ const resolvers: IResolvers = {
   Mutation: {
     handleAffiliateStore: async (_, { input }, { userServiceOrganizationRolesId, organizationId }) => {
       if (input.cover) {
-        const { createReadStream: coverCreateReadStream, mimetype: coverMimetype } = await input.cover.data
-        input.cover = {
-          data: coverCreateReadStream(),
-          mimetype: coverMimetype,
+        if (!input.cover.url) {
+          const { createReadStream: coverCreateReadStream, mimetype: coverMimetype } = await input.cover.data
+          input.cover = {
+            data: coverCreateReadStream(),
+            mimetype: coverMimetype,
+          }
         }
       }
 

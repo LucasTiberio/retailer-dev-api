@@ -58,8 +58,12 @@ const handleAffiliateStore = async (
   }
 
   if (input.cover) {
-    const url = await handleAffiliateStoreImages(1120, 130, 'cover', input.cover, context.userServiceOrganizationRolesId, trx)
-    input.cover = url
+    if (!input.cover.url) {
+      const url = await handleAffiliateStoreImages(1120, 130, 'cover', input.cover, context.userServiceOrganizationRolesId, trx)
+      input.cover = url
+    } else {
+      input.cover = input.cover.url
+    }
   }
 
   const [affiliateStoreCreated] = await RepositoryAffiliateStore.findOrUpdate(context.organizationId, context.userServiceOrganizationRolesId, input, trx)
@@ -281,7 +285,9 @@ const addOrganizationAffiliateStoreBanner = async (
     throw new Error(onlyThreeBannersInAffiliateStore)
   }
 
-  let { data, mimetype } = input
+  let { mimetype, createReadStream } = await input.data
+
+  let data = createReadStream()
 
   if (!mimetype.match(/\/png/gi)?.length && !mimetype.match(/\/jpg/gi)?.length && !mimetype.match(/\/jpeg/gi)?.length) {
     throw new Error(onlyPnhAndJpgIsSupported)

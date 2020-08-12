@@ -151,7 +151,8 @@ input AffiliateAvatarInput {
 
 input AffiliateCoverInput {
   mimetype: String
-  data: Upload!
+  data: Upload
+  url: String
 }
 
 type AffiliateStore {
