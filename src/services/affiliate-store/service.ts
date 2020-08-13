@@ -13,6 +13,9 @@ import {
   onlyThreeBannersInAffiliateStore,
   affiliateStoreNotFound,
   organizationDoestNotHaveActiveIntegration,
+  onlyVtexIntegrationFeature,
+  organizationDoesNotExist,
+  organizationDomainNotFound,
 } from '../../common/errors'
 
 /** Utils */
@@ -21,6 +24,7 @@ import removeUndefinedOfObjects from '../../utils/removeUndefinedOfObjects'
 /** Services */
 import StorageService from '../storage/service'
 import IntegrationService from '../integration/service'
+import OrganizationService from '../organization/service'
 
 /** Repository */
 import RepositoryAffiliateStore from './repositories/affiliate-store'
@@ -39,6 +43,8 @@ import sharp from 'sharp'
 import knexDatabase from '../../knex-database'
 import { buildProductsHtmlVtexUrl } from '../vtex/helpers'
 import client from '../../lib/Redis'
+import { Integrations } from '../integration/types'
+import { OrganizationServiceMock } from '../../__mocks__'
 
 const handleAffiliateStore = async (
   input: ICreateAffiliateStore,
@@ -384,7 +390,13 @@ const getAffiliateStoreWithProducts = async (
   },
   trx: Transaction
 ) => {
+  const organization = await OrganizationService.getOrganizationById(input.organizationId, trx)
+
+  if (!organization) throw new Error(organizationDoesNotExist)
+
   const affiliateStore = await RepositoryAffiliateStore.getBySlugAndOrganizationId(input.affiliateStoreSlug, input.organizationId, trx)
+
+  if (!affiliateStore) throw new Error(affiliateStoreNotFound)
 
   const organizationAffiliateStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(input.organizationId, trx)
 
@@ -396,9 +408,11 @@ const getAffiliateStoreWithProducts = async (
 
   if (!integration) throw new Error(organizationDoestNotHaveActiveIntegration)
 
-  const decode: any = await common.jwtDecode(integration.secret)
+  if (integration.type !== Integrations.VTEX) throw new Error(onlyVtexIntegrationFeature)
 
-  const productsHtml = await fetchVtexProductsHtml(decode?.accountName, organizationAffiliateStore.shelf_id, affiliateStoreIds.join(','))
+  if (!organization.domain) throw new Error(organizationDomainNotFound)
+
+  const productsHtml = await fetchVtexProductsHtml(organization.domain, organizationAffiliateStore.shelf_id, affiliateStoreIds.join(','))
 
   const $ = cheerio.load(productsHtml)
 

@@ -12,6 +12,8 @@ import {
   organizationDoestNotHaveActiveIntegration,
   onlyThreeBannersInAffiliateStore,
   affiliateStoreNotFound,
+  organizationDoesNotExist,
+  organizationDomainNotFound,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -80,6 +82,16 @@ export default (message: string) => {
       return {
         code: 9,
         explication: 'Only image/png and image/jpg is supported!',
+      }
+    case organizationDoesNotExist:
+      return {
+        code: 3,
+        explication: 'Organization not found',
+      }
+    case organizationDomainNotFound:
+      return {
+        code: 4,
+        explication: 'Organization Domain not found',
       }
     case onlyThreeBannersInAffiliateStore:
       return {

@@ -12,4 +12,4 @@ export const buildGetProductsVtexUrl = (accountName: string) => `https://${accou
 
 export const buildGetDomainVtexUrl = (accountName: string) => `https://${accountName}.myvtex.com/api/vlm/account/stores`
 
-export const buildProductsHtmlVtexUrl = (accountName: string, shelfId: string, productsIds: string) => `https://${accountName}.myvtex.com/buscapagina?fq=${productsIds}&PS=15&sl=${shelfId}&cc=48&sm=0`
+export const buildProductsHtmlVtexUrl = (domain: string, shelfId: string, productsIds: string) => `https://${domain}/buscapagina?fq=${productsIds}&PS=15&sl=${shelfId}&cc=48&sm=0`

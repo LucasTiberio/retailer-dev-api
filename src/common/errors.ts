@@ -12,3 +12,5 @@ export const maxAffiliateStoreProductLength = 'max_affiliate_store_product_lengt
 export const organizationDoestNotHaveActiveIntegration = 'organization_doest_not_have_active_integration'
 export const onlyThreeBannersInAffiliateStore = 'max_three_banners_in_affiliate_store'
 export const affiliateStoreNotFound = 'affiliate_store_not_found'
+export const organizationDoesNotExist = 'organization_does_not_exist'
+export const organizationDomainNotFound = 'organization_domain_does_not_exist'
