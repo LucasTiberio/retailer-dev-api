@@ -363,11 +363,11 @@ const removeOrganizationAffiliateStoreBanner = async (
   try {
     const affiliateStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(context.organizationId, trx)
 
-    const [affiliateStoreBanner] = await RepositoryOrganizationAffiliateStoreBanner.getByAffiliateStoreId(affiliateStore.id, trx)
+    // const [affiliateStoreBanner] = await RepositoryOrganizationAffiliateStoreBanner.getByAffiliateStoreId(affiliateStore.id, trx)
 
-    const bucketKey = affiliateStoreBanner.url.replace(/https:\/\/.*?\//gi, '')
+    // const bucketKey = affiliateStoreBanner.url.replace(/https:\/\/.*?\//gi, '')
 
-    await StorageService.deleteImage(bucketKey)
+    // await StorageService.deleteImage(bucketKey)
 
     await RepositoryOrganizationAffiliateStoreBanner.remove(input.organizationAffiliateStoreBannerId, affiliateStore.id, trx)
 

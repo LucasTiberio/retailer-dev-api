@@ -409,10 +409,6 @@ const inviteAffiliateServiceMembers = async (
   } catch (error) {
     let errorMessage = error.message
 
-    if (error.response.config.url.match(/campaignConfiguration/)) {
-      errorMessage = createVtexCampaignFail
-    }
-
     throw new Error(errorMessage)
   }
 }
