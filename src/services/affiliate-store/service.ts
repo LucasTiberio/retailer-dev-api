@@ -428,6 +428,7 @@ const getAffiliateStoreWithProducts = async (
   return {
     affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
     productsHtml: htmlOrdered ?? null,
+    affiliateId: affiliateStore?.users_organization_service_roles_id,
   }
 }
 
