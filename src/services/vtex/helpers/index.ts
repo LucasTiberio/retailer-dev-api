@@ -10,6 +10,10 @@ export const buildGetCategoriesThreeVtexUrl = (accountName: string) => `https://
 
 export const buildGetProductsVtexUrl = (accountName: string) => `https://${accountName}.myvtex.com/api/catalog_system/pub/products/search`
 
+export const buildGetSellersVtexUrl = (accountName: string) => `https://${accountName}.myvtex.com/api/catalog_system/pvt/seller/list`
+
+export const buildGetProductByProductIdVtexUrl = (accountName: string, productId: string) => `https://${accountName}.myvtex.com/api/catalog/pvt/product/${productId}`
+
 export const buildGetDomainVtexUrl = (accountName: string) => `https://${accountName}.myvtex.com/api/vlm/account/stores`
 
 export const buildProductsHtmlVtexUrl = (domain: string, shelfId: string, productsIds: string) => `https://${domain}/buscapagina?fq=${productsIds}&PS=15&sl=${shelfId}&cc=48&sm=0`
