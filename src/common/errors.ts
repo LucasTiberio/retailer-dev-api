@@ -14,3 +14,5 @@ export const onlyThreeBannersInAffiliateStore = 'max_three_banners_in_affiliate_
 export const affiliateStoreNotFound = 'affiliate_store_not_found'
 export const organizationDoesNotExist = 'organization_does_not_exist'
 export const organizationDomainNotFound = 'organization_domain_does_not_exist'
+export const vtexProductNotFound = 'vtex_product_not_found'
+export const sellerDoesNotExistInLojaIntegrada = 'seller_does_not_exist_loja_integrada'
