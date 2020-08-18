@@ -16,7 +16,7 @@ export const fetchVtexProducts = async (accountName: string, term: string) => {
     const {
       commertialOffer: { Price },
     } = seller
-    return { name: item.name || item.nameComplete, productId: product.productId, price: `R$ ${Price}`, image: image.imageUrl }
+    return { name: product.productName || item.nameComplete, productId: product.productId, price: `R$ ${Price}`, image: image.imageUrl }
   })
 }
 
