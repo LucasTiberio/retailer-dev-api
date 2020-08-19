@@ -4,6 +4,7 @@ import {
   ISendRecoveryPasswordMail,
   IMail,
   ISendInviteUserMail,
+  ISendSpecialistHelp
 } from "./types";
 
 const frontUrl = process.env.FRONT_URL_STAGING;
@@ -1818,6 +1819,17 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
   }
 };
 
+const sendHelpToSpecialist = async (data: ISendSpecialistHelp) => {
+  if (process.env.NODE_ENV === "test") return;
+
+  await Mail.sendMail({
+    from: "PlugOne No-reply <noreply@plugone.io>",
+    to: `<${data.email}>`,
+    subject: `Você foi requisitado para ajudar ${data.organizationName} na plugone`,
+    html: ``,
+  });
+};
+
 const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
   if (process.env.NODE_ENV === "test") return;
 
@@ -2266,4 +2278,5 @@ export default {
   sendRecoveredPasswordMail,
   sendInviteUserMail,
   sendInviteNewUserMail,
+  sendHelpToSpecialist,
 };

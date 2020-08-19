@@ -41,7 +41,6 @@ import Repository from './repositories/organizations'
 import fetchVtexDomains from './clients/fetch-domains'
 
 /** Services */
-
 import IntegrationService from '../integration/service'
 
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {

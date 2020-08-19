@@ -14,6 +14,7 @@ import BankDataService from './bank-data'
 import PaymentsService from './payments'
 import IntegrationsService from './integration'
 import AffiliateStoreService from './affiliate-store'
+import InsideSalesService from './inside-sales'
 
 let services = [
   IntegrationsService,
@@ -30,6 +31,7 @@ let services = [
   BankDataService,
   PaymentsService,
   AffiliateStoreService,
+  InsideSalesService,
 ]
 
 export default {

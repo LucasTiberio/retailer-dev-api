@@ -16,3 +16,8 @@ export interface ISendInviteUserMail{
     organizationName: string
     hashToVerify: string
 }
+
+export interface ISendSpecialistHelp {
+    email: string
+    organizationName: string
+}

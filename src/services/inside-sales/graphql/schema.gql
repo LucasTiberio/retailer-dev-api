@@ -1,0 +1,7 @@
+extend type Mutation {
+  sendAffiliateInsideSalesSpecialistMail(input: SendAffiliateInsideSalesSpecialistMailInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+}
+
+input SendAffiliateInsideSalesSpecialistMailInput {
+  email: String!
+}
