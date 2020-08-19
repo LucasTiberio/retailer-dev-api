@@ -16,6 +16,7 @@ import {
   organizationDomainNotFound,
   vtexProductNotFound,
   sellerDoesNotExistInLojaIntegrada,
+  lojaIntegradaProductNotFound,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -65,9 +66,14 @@ export default (message: string) => {
         code: 58,
         explication: 'Vtex product not found',
       }
-    case sellerDoesNotExistInLojaIntegrada:
+    case lojaIntegradaProductNotFound:
       return {
         code: 59,
+        explication: 'Loja Integrada product not found',
+      }
+    case sellerDoesNotExistInLojaIntegrada:
+      return {
+        code: 60,
         explication: 'Seller does not exist in loja integrada plataform',
       }
     case affiliateDoesNotExist:

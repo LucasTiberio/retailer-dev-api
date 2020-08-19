@@ -32,7 +32,16 @@ import Axios from 'axios'
 import moment from 'moment'
 import { defaultCommissionAdapter, timeToPayCommissionAdapter, organizationCommissionAdapter } from './adapters'
 import { Integrations } from '../integration/types'
-import { generateVtexShortener, generateLojaIntegradaShortener, attachVtexCategoryName, attachVtexSubCategoryName, attachAffiliateName, attachSellerName, attachProductName } from './helpers'
+import {
+  generateVtexShortener,
+  generateLojaIntegradaShortener,
+  attachVtexCategoryName,
+  attachVtexSubCategoryName,
+  attachAffiliateName,
+  attachSellerName,
+  attachVtexProductName,
+  attachLojaIntegradaProductName,
+} from './helpers'
 import {
   integrationTypeShortenerGeneratorNotFound,
   organizationDoesNotHaveActiveIntegration,
@@ -40,6 +49,8 @@ import {
   tokenMustBeProvided,
   vtexProductNotFound,
   sellerDoesNotExistInLojaIntegrada,
+  lojaIntegradaProductNotFound,
+  onlyVtexIntegrationFeature,
 } from '../../common/errors'
 
 /** Services */
@@ -634,12 +645,20 @@ const handleOrganizationCommission = async (
   if (!integrationType.type) throw new Error(MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION)
 
   if (input.identifier === OrganizationCommissionIdentifiers.Product) {
-    const decode: any = await common.jwtDecode(integrationType.secret)
+    if (integrationType.type === Integrations.VTEX) {
+      const decode: any = await common.jwtDecode(integrationType.secret)
 
-    const vtexProduct = await ClientAffiliate.getVtexProductByProductId(decode, input.identifierId)
+      const vtexProduct = await ClientAffiliate.getVtexProductByProductId(decode, input.identifierId)
 
-    if (!vtexProduct) {
-      throw new Error(vtexProductNotFound)
+      if (!vtexProduct) {
+        throw new Error(vtexProductNotFound)
+      }
+    } else if (integrationType.type === Integrations.LOJA_INTEGRADA) {
+      const lojaIntegradaProduct = await ClientAffiliate.getLojaIntegradaProductByProductId(integrationType.identifier, input.identifierId)
+
+      if (!lojaIntegradaProduct) {
+        throw new Error(lojaIntegradaProductNotFound)
+      }
     }
   }
 
@@ -671,8 +690,16 @@ const getOrganizationCommissionByOrganizationId = async (context: { organization
 
   switch (integration.type) {
     case Integrations.LOJA_INTEGRADA:
-      const lojaIntegradaAttachedList = await attachLojaIntegradaCategoryName(organizationCommission, integration.identifier)
-      return lojaIntegradaAttachedList.map(organizationCommissionAdapter)
+      const lojaIntegradaDepartmentCommission = organizationCommission.filter((item) => item.identifier === OrganizationCommissionIdentifiers.Department)
+      const lojaIntegradaAttachedList = await attachLojaIntegradaCategoryName(lojaIntegradaDepartmentCommission, integration.identifier)
+
+      const lojaIntegradaAffiliateCommission = organizationCommission.filter((item) => item.identifier === OrganizationCommissionIdentifiers.Affiliate)
+      const lojaIntegradaAffiliateAttachedList = await attachAffiliateName(lojaIntegradaAffiliateCommission, trx)
+
+      const lojaIntegradaProductCommission = organizationCommission.filter((item) => item.identifier === OrganizationCommissionIdentifiers.Product)
+      const lojaIntegradaProductAttachedList = await attachLojaIntegradaProductName(lojaIntegradaProductCommission, integration.identifier)
+
+      return lojaIntegradaAttachedList.concat(lojaIntegradaAffiliateAttachedList).concat(lojaIntegradaProductAttachedList).map(organizationCommissionAdapter)
     case Integrations.VTEX:
       const departmentCommission = organizationCommission.filter((item) => item.identifier === OrganizationCommissionIdentifiers.Department)
       const vtexDepartmentAttachedList = await attachVtexCategoryName(departmentCommission, integration.secret)
@@ -687,7 +714,7 @@ const getOrganizationCommissionByOrganizationId = async (context: { organization
       const vtexSellerAttachedList = await attachSellerName(sellerCommission)
 
       const productCommission = organizationCommission.filter((item) => item.identifier === OrganizationCommissionIdentifiers.Product)
-      const vtexProductAttachedList = await attachProductName(productCommission, integration.secret)
+      const vtexProductAttachedList = await attachVtexProductName(productCommission, integration.secret)
 
       return vtexDepartmentAttachedList
         .concat(vtexCategoryAttachedList)
@@ -767,19 +794,16 @@ const getOrganizationCommissionsCategoriesName = async (organizationId: string, 
 
   if (!integration.type) throw new Error(MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION)
 
-  switch (integration.type) {
-    case Integrations.LOJA_INTEGRADA:
-      return null
-    case Integrations.VTEX:
-      const decode: any = await common.jwtDecode(integration.secret)
-      const vtexCategories = await ClientAffiliate.getVtexSubCategories(decode?.accountName)
-      return vtexCategories.map((item: any) => ({
-        name: item.name,
-        id: item.id,
-      }))
-    default:
-      return []
+  if (integration.type === Integrations.LOJA_INTEGRADA) {
+    throw new Error(onlyVtexIntegrationFeature)
   }
+
+  const decode: any = await common.jwtDecode(integration.secret)
+  const vtexCategories = await ClientAffiliate.getVtexSubCategories(decode?.accountName)
+  return vtexCategories.map((item: any) => ({
+    name: item.name,
+    id: item.id,
+  }))
 }
 
 const getOrganizationCommissionsAffiliatesName = async (organizationId: string, trx: Transaction) => {

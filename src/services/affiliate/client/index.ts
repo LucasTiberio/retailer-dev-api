@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { buildGetCategoriesThreeVtexUrl, buildGetProductByProductIdVtexUrl, buildGetSellersVtexUrl } from '../../vtex/helpers'
-import { vtexProductNotFound } from '../../../common/errors'
+import { LOJA_INTEGRADA_APPLICATION_KEY } from '../../../common/consts'
 
 const getLojaIntegradaCategories = async (identifier: string) => {
   const { data: dataLojaIntegradaCategories } = await Axios.get('https://api.awsli.com.br/v1/categoria', {
@@ -51,6 +51,36 @@ const getVtexProductByProductId = async (secret: any, productId: string) => {
   }
 }
 
+const getLojaIntegradaProductByProductId = async (identifier: any, productId: string) => {
+  try {
+    await Axios.get(`https://api.awsli.com.br/v1/produto/${productId}?descricao_completa=0`, {
+      params: {
+        chave_aplicacao: LOJA_INTEGRADA_APPLICATION_KEY,
+        chave_api: identifier,
+      },
+    })
+
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+const getLojaIntegradaProductDataByProductId = async (identifier: any, productId: string) => {
+  try {
+    const { data } = await Axios.get(`https://api.awsli.com.br/v1/produto/${productId}?descricao_completa=0`, {
+      params: {
+        chave_aplicacao: LOJA_INTEGRADA_APPLICATION_KEY,
+        chave_api: identifier,
+      },
+    })
+
+    return data
+  } catch (e) {
+    return false
+  }
+}
+
 const getVtexProductDataByProductId = async (secret: any, productId: string) => {
   try {
     const { data } = await Axios.get(buildGetProductByProductIdVtexUrl(secret.accountName, productId), {
@@ -90,4 +120,6 @@ export default {
   getVtexProductDataByProductId,
   getVtexProductByProductId,
   getVtexSubCategories,
+  getLojaIntegradaProductByProductId,
+  getLojaIntegradaProductDataByProductId,
 }

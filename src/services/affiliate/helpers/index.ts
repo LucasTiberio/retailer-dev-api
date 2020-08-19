@@ -91,7 +91,7 @@ export const attachSellerName = async (commissionList: IOrganizationCommission[]
   })
 }
 
-export const attachProductName = async (commissionList: IOrganizationCommission[], secret: string) => {
+export const attachVtexProductName = async (commissionList: IOrganizationCommission[], secret: string) => {
   const decode: any = await common.jwtDecode(secret)
 
   return await Promise.all(
@@ -99,6 +99,16 @@ export const attachProductName = async (commissionList: IOrganizationCommission[
       const vtexProductData = await ClientAffiliate.getVtexProductDataByProductId(decode, commission.identifier_id)
 
       return { ...commission, name: vtexProductData?.Name }
+    })
+  )
+}
+
+export const attachLojaIntegradaProductName = async (commissionList: IOrganizationCommission[], identifier: string) => {
+  return await Promise.all(
+    commissionList.map(async (commission) => {
+      const lojaIntegradaProductData = await ClientAffiliate.getLojaIntegradaProductDataByProductId(identifier, commission.identifier_id)
+
+      return { ...commission, name: lojaIntegradaProductData.nome || lojaIntegradaProductData.apelido }
     })
   )
 }
