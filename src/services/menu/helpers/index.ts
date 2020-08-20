@@ -1,8 +1,14 @@
 import { ServiceRoles } from '../../services/types'
 
-export const organizationAdminMenu = (vtexIntegration: boolean) => {
+/** Services */
+
+import OrganizationRulesService from '../../organization-rules/service'
+
+export const organizationAdminMenu = async (vtexIntegration: boolean, organizationId: string) => {
   if (vtexIntegration) {
-    return [
+    const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
+
+    const vtexBaseAdminMenu: any = [
       {
         group: 'menu-items',
         items: [
@@ -47,6 +53,15 @@ export const organizationAdminMenu = (vtexIntegration: boolean) => {
         ],
       },
     ]
+
+    if (paymentServiceStatus.maxSales > 0) {
+      vtexBaseAdminMenu[1].items[0].children.push({
+        name: 'insideSales',
+        slug: '/affiliate/inside-sales',
+      })
+    }
+
+    return vtexBaseAdminMenu
   }
 
   return [

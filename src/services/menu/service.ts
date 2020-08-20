@@ -24,7 +24,7 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
   const vtexIntegration = integration?.type === Integrations.VTEX
 
   if (organizationRole.name === OrganizationRoles.ADMIN) {
-    return organizationAdminMenu(vtexIntegration)
+    return organizationAdminMenu(vtexIntegration, context.organizationId)
   }
 
   const userOrganizationService = await ServicesService.getUserInOrganizationService({ userOrganizationId: userOrganization.id }, context, trx)
