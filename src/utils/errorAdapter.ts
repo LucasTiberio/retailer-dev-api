@@ -17,6 +17,7 @@ import {
   vtexProductNotFound,
   sellerDoesNotExistInLojaIntegrada,
   lojaIntegradaProductNotFound,
+  userAlreadyRegistered,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -75,6 +76,11 @@ export default (message: string) => {
       return {
         code: 60,
         explication: 'Seller does not exist in loja integrada plataform',
+      }
+    case userAlreadyRegistered:
+      return {
+        code: 61,
+        explication: 'User already registered',
       }
     case affiliateDoesNotExist:
       return {

@@ -32,7 +32,7 @@ import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from './loaders'
 import moment from 'moment'
-import { createVtexCampaignFail, organizationDoestNotHaveActiveIntegration } from '../../common/errors'
+import { createVtexCampaignFail, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
 
 /** Repositories */
 import Repository from './repositories/organizations'
@@ -443,13 +443,13 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
       })
       .where('invite_hash', responseInvitePayload.inviteHash)
 
+    if (!user) return { status: true, message: userAlreadyRegistered }
+
     await (trx || knexDatabase.knex)('users_organization_service_roles')
       .update({
         active: responseInvitePayload.response === OrganizationInviteStatus.ACCEPT,
       })
       .where('users_organization_id', user.user_organization_id)
-
-    if (!user) return { status: true }
 
     if (!user.encrypted_password || !user.username) {
       return {

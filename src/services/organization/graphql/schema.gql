@@ -107,6 +107,7 @@ input OrganizationUploadImageInput {
 type ResponseOrganizationInvitePayload {
   status: Boolean!
   email: String
+  message: String
 }
 
 input HandleUserPermissionInOrganizationInput {
