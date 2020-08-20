@@ -142,7 +142,7 @@ export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: b
     ],
   }
 
-  const affiliateSale: any = {
+  let affiliateSale: any = {
     name: 'affiliate',
     children: [
       {
@@ -176,6 +176,18 @@ export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: b
       }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
+      if (vtexIntegration) {
+        affiliateSale = {
+          ...affiliateSale,
+          children: [
+            ...affiliateSale.children,
+            {
+              name: 'showCase',
+              slug: '/affiliate/showcase',
+            },
+          ],
+        }
+      }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateSale] }]
     default:
       return
