@@ -2117,7 +2117,7 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp) => {
                                                     <h2 id="instru-es-de-instala-o">Instruções de instalação</h2>
                                                     <h2 id="vis-o-geral">Visão geral</h2>
                                                     <p>Este código de rastreamento é exclusivo para ${data.domain}. </p>
-                                                    <p>Cole o código da Plugone antes do fechamento da tag body (</body>) de todas as páginas de sua loja (geralmente coloca-se junto ao footer).</p>
+                                                    <p>Cole o código da Plugone antes do fechamento da tag body (&lt;/body&gt;) de todas as páginas de sua loja (geralmente coloca-se junto ao footer).</p>
                                                     <br/>
                                                     <hr/>
                                                     <br/>
