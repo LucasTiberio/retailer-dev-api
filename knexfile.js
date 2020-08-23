@@ -31,7 +31,7 @@ const config = {
     directory: __dirname + '/seeds',
   },
   pool: {
-    max: 47,
+    max: 24,
     min: 1,
     afterCreate: function (connection, callback) {
       connection.query("SET TIME ZONE 'UTC'", function (err) {
