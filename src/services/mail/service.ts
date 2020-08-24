@@ -6,17 +6,18 @@ import {
   ISendInviteUserMail,
   ISendSpecialistHelp
 } from "./types";
+import { BUCKET_URL, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH } from '../../common/consts'
 
-const frontUrl = process.env.FRONT_URL_STAGING;
+const frontUrl = process.env.FRONT_URL_STAGING
 
 const sendSignUpMail = async (data: ISendMail) => {
-  if (process.env.NODE_ENV === "test") return;
+  if (process.env.NODE_ENV === 'test') return
 
   try {
     await Mail.sendMail({
-      from: "PlugOne No-reply <noreply@plugone.io>",
-      to: `${data.username || ""} <${data.email}>`,
-      subject: "Bem vindo(a) a PlugOne!",
+      from: 'PlugOne No-reply <noreply@plugone.io>',
+      to: `${data.username || ''} <${data.email}>`,
+      subject: 'Bem vindo(a) a PlugOne!',
       html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -327,8 +328,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                         <tr>
                                                         <td class="col px-16" bgcolor="#FFFFFF" align="left" width="100%" style="padding: 48px 48px 0 48px;" >
                                                             <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
-                                                              data.username ||
-                                                              ""
+                                                              data.username || ''
                                                             }!</h1>
                                                             <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Hoje começa a sua jornada com a Plugone, por isso queremos mostrar tudo que você pode fazer com a nossa poderosa ferramenta. Mas pra isso precisamos que confirme seu e-mail, assim a gente garante com segurança que você é você mesmo.</p>
                                                             <table border="0" cellpadding="0" cellspacing="0" align="center" class="inter" style="font-family: 'Inter', sans-serif!important;" width="100%">
@@ -483,21 +483,21 @@ const sendSignUpMail = async (data: ISendMail) => {
             </body>
             </html>
             `,
-    });
+    })
   } catch (e) {
-    console.log(e);
-    throw new Error(e.message);
+    console.log(e)
+    throw new Error(e.message)
   }
-};
+}
 
 const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
-  if (process.env.NODE_ENV === "test") return;
+  if (process.env.NODE_ENV === 'test') return
 
   try {
     await Mail.sendMail({
-      from: "PlugOne No-reply <noreply@plugone.io>",
-      to: `${data.username || ""} <${data.email}>`,
-      subject: "Recuperacão de senha Plugone!",
+      from: 'PlugOne No-reply <noreply@plugone.io>',
+      to: `${data.username || ''} <${data.email}>`,
+      subject: 'Recuperacão de senha Plugone!',
       html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -814,8 +814,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                         <tr>
                                                           <td class="col px-16" bgcolor="#FFFFFF" align="left" width="352" style="padding: 48px 48px 32px 48px;" >
                                                             <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
-                                                              data.username ||
-                                                              ""
+                                                              data.username || ''
                                                             }!</h1>
                                                             <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;"><strong style="font-weight: 700;">Esqueceu sua senha? Não se preocupe. Isso acontece 😉                                                </p>
                                                             <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Para escolher uma nova, clique no link abaixo:</p>
@@ -823,8 +822,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                             <tr>
                                                             <td class="col px-16" bgcolor="#FFFFFF" align="left" width="100%" style="padding: 48px 48px 0 48px;" >
                                                                 <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
-                                                                  data.username ||
-                                                                  ""
+                                                                  data.username || ''
                                                                 }!</h1>
                                                                 <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Hoje começa a sua jornada com a Plugone, por isso queremos mostrar tudo que você pode fazer com a nossa poderosa ferramenta. Mas pra isso precisamos que confirme seu e-mail, assim a gente garante com segurança que você é você mesmo.</p>
                                                                 <table border="0" cellpadding="0" cellspacing="0" align="center" class="inter" style="font-family: 'Inter', sans-serif!important;" width="100%">
@@ -939,20 +937,20 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
             </html>
             
                  `,
-    });
+    })
   } catch (e) {
-    throw new Error(e.message);
+    throw new Error(e.message)
   }
-};
+}
 
 const sendRecoveredPasswordMail = async (data: IMail) => {
-  if (process.env.NODE_ENV === "test") return;
+  if (process.env.NODE_ENV === 'test') return
 
   try {
     await Mail.sendMail({
-      from: "PlugOne No-reply <noreply@plugone.io>",
-      to: `${data.username || ""} <${data.email}>`,
-      subject: "Senha recuperada Plugone!",
+      from: 'PlugOne No-reply <noreply@plugone.io>',
+      to: `${data.username || ''} <${data.email}>`,
+      subject: 'Senha recuperada Plugone!',
       html: `
                     <!DOCTYPE html>
                     <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -1266,8 +1264,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                                 <tr>
                                                                 <td class="col px-16" bgcolor="#FFFFFF" align="left" width="352" style="padding: 48px 48px 32px 48px;" >
                                                                     <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
-                                                                      data.username ||
-                                                                      ""
+                                                                      data.username || ''
                                                                     }!</h1>
                                                                     <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;"><strong style="font-weight: 700;">A sua senha da Plugone foi redefinida</strong>. Se você fez isso,  pode desconsiderar este email com segurança.</p>
                                                                     <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Se você não solicitou redefinir sua senha, <strong style="color:#3B24A8">entre em contato conosco</strong>.</p>
@@ -1374,18 +1371,18 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                     </html>
 
             `,
-    });
+    })
   } catch (e) {
-    throw new Error(e.message);
+    throw new Error(e.message)
   }
-};
+}
 
 const sendInviteUserMail = async (data: ISendInviteUserMail) => {
-  if (process.env.NODE_ENV === "test") return;
+  if (process.env.NODE_ENV === 'test') return
 
   try {
     await Mail.sendMail({
-      from: "PlugOne No-reply <noreply@plugone.io>",
+      from: 'PlugOne No-reply <noreply@plugone.io>',
       to: `<${data.email}>`,
       subject: `Você foi convidado por ${data.organizationName}!`,
       html: `
@@ -1813,11 +1810,11 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
   </body>
 </html>
                 `,
-    });
+    })
   } catch (e) {
-    throw new Error(e.message);
+    throw new Error(e.message)
   }
-};
+}
 
 const sendHelpToSpecialist = async (data: ISendSpecialistHelp) => {
   if (process.env.NODE_ENV === "test") return;
@@ -1831,11 +1828,11 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp) => {
 };
 
 const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
-  if (process.env.NODE_ENV === "test") return;
+  if (process.env.NODE_ENV === 'test') return
 
   try {
     await Mail.sendMail({
-      from: "PlugOne No-reply <noreply@plugone.io>",
+      from: 'PlugOne No-reply <noreply@plugone.io>',
       to: `<${data.email}>`,
       subject: `Você foi convidado à plugone por ${data.organizationName}!`,
       html: `
@@ -2266,11 +2263,11 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
 
   </body>
 </html>`,
-    });
+    })
   } catch (e) {
-    throw new Error(e.message);
+    throw new Error(e.message)
   }
-};
+}
 
 export default {
   sendSignUpMail,

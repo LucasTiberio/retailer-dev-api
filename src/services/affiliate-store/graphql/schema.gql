@@ -1,12 +1,12 @@
 extend type Mutation {
   handleAffiliateStore(input: HandleAffiliateStoreInput!): AffiliateStore!
-    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
     @isVerified
     @isAuthenticated
   addProductOnAffiliateStore(input: AddProductOnAffiliateStoreInput!): AffiliateStoreProduct!
-    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
     @isVerified
@@ -30,19 +30,19 @@ extend type Mutation {
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreActivity(input: HandleProductOnAffiliateStoreActivityInput!): AffiliateStoreProduct!
-    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreOrder(input: [HandleProductOnAffiliateStoreOrderInput]!): Boolean!
-    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreSearchable(input: HandleProductOnAffiliateStoreSearchableInput!): AffiliateStoreProduct!
-    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
     @isVerified
@@ -50,15 +50,15 @@ extend type Mutation {
 }
 
 extend type Query {
-  getAffiliateStore: AffiliateStore @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @isVerified @isAuthenticated
+  getAffiliateStore: AffiliateStore @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @isVerified @isAuthenticated
   getAffiliateStoreWithProducts(input: GetAffiliateStoreWithProductsInput!): AffiliateStoreWithProducts
   getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProductFormatted]!
-    @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @vtexFeature
     @isVerified
     @isAuthenticated
-  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
-  getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
+  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
+  getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @isVerified @isAuthenticated
   getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @isVerified @isAuthenticated
 }
 

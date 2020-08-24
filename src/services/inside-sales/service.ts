@@ -17,8 +17,10 @@ const sendAffiliateInsideSalesSpecialistMail = async (
     await MailService.sendHelpToSpecialist({
       email: input.email,
       organizationName: organization.name,
-    });
-    return true;
+      domain: organization.domain,
+      id: organization.id,
+    })
+    return true
   } catch (error) {
     throw new Error(error.message)
   }

@@ -1,6 +1,6 @@
-import { ICreateSubscribe, PaymentMethod, IUpdateSubscribe } from "../types";
-import Axios from "axios";
-import { PAYMENTS_URL } from "../../../common/consts";
+import { ICreateSubscribe, PaymentMethod, IUpdateSubscribe } from '../types'
+import Axios from 'axios'
+import { PAYMENTS_URL } from '../../../common/consts'
 
 export const paymentFactory = (payment: ICreateSubscribe) => {
   switch (payment.paymentMethod) {
@@ -12,12 +12,12 @@ export const paymentFactory = (payment: ICreateSubscribe) => {
         customer: {
           email: payment.contactEmail,
         },
-      };
+      }
     case PaymentMethod.credit_card:
       return {
         organizationId: payment.organizationId,
         planId: payment.plan,
-        cardId: "",
+        cardId: '',
         paymentMethod: payment.paymentMethod,
         billing: {
           name: payment.billing?.name,
@@ -35,11 +35,11 @@ export const paymentFactory = (payment: ICreateSubscribe) => {
         customer: {
           documentNumber: payment.customer?.documentNumber,
         },
-      };
+      }
     default:
-      return {};
+      return {}
   }
-};
+}
 
 export const updatePaymentsFactory = (payment: IUpdateSubscribe): any => {
   switch (payment.paymentMethod) {
@@ -51,28 +51,28 @@ export const updatePaymentsFactory = (payment: IUpdateSubscribe): any => {
         customer: {
           email: payment.contactEmail,
         },
-      };
+      }
     case PaymentMethod.credit_card:
       return {
         organizationId: payment.organizationId,
         planId: payment.plan,
         cardId: payment.cardId,
         paymentMethod: payment.paymentMethod,
-      };
+      }
     default:
-      return {};
+      return {}
   }
-};
+}
 
 export const fetchPaymentsService = async (query: string, variables?: any) => {
   const payload = {
     query,
     variables,
-  };
+  }
 
-  const res = await Axios.post(PAYMENTS_URL, payload, {
-    headers: { "Content-Type": "application/json" },
-  });
+  const res = await Axios.post(String(PAYMENTS_URL), payload, {
+    headers: { 'Content-Type': 'application/json' },
+  })
 
-  return res;
-};
+  return res
+}

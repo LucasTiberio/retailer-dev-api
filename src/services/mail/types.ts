@@ -1,23 +1,24 @@
 export interface IMail {
-    username: string
-    email: string
+  username: string
+  email: string
 }
 
-export interface ISendMail extends IMail{
-    hashToVerify: string
+export interface ISendMail extends IMail {
+  hashToVerify: string
 }
 
-export interface ISendRecoveryPasswordMail extends IMail{
-    hashToVerify: string
+export interface ISendRecoveryPasswordMail extends IMail {
+  hashToVerify: string
 }
-
-export interface ISendInviteUserMail{
-    email: string
-    organizationName: string
-    hashToVerify: string
+export interface ISendInviteUserMail {
+  email: string
+  organizationName: string
+  hashToVerify: string
 }
 
 export interface ISendSpecialistHelp {
-    email: string
-    organizationName: string
+  domain: string
+  organizationName: string
+  id: string
+  email: string
 }

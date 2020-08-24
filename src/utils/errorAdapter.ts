@@ -14,6 +14,7 @@ import {
   affiliateStoreNotFound,
   organizationDoesNotExist,
   organizationDomainNotFound,
+  userAlreadyRegistered,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -57,6 +58,11 @@ export default (message: string) => {
       return {
         code: 57,
         explication: 'Organization does not have a active plataform integration',
+      }
+    case userAlreadyRegistered:
+      return {
+        code: 60,
+        explication: 'User already registered',
       }
     case affiliateDoesNotExist:
       return {
