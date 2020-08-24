@@ -1,6 +1,5 @@
 import Mail from '../../lib/Mail'
 import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail, ISendSpecialistHelp } from './types'
-import { BUCKET_URL, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH } from '../../common/consts'
 
 const frontUrl = process.env.FRONT_URL_STAGING
 
