@@ -1,6 +1,5 @@
 import Mail from '../../lib/Mail'
 import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail, ISendSpecialistHelp } from './types'
-import { BUCKET_URL, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH } from '../../common/consts'
 
 const frontUrl = process.env.FRONT_URL_STAGING
 
@@ -1810,7 +1809,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
   }
 }
 
-const sendHelpToSpecialist = async (data: ISendSpecialistHelp, BUCKET_URL: any, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH: any) => {
+const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixelPath: any) => {
   if (process.env.NODE_ENV === 'test') return
 
   await Mail.sendMail({
@@ -2116,13 +2115,13 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, BUCKET_URL: any, 
                                                     <p>As instruções estão abaixo - mas se você tiver alguma dúvida, por favor nos avise.</p>
                                                     <h2 id="instru-es-de-instala-o">Instruções de instalação</h2>
                                                     <h2 id="vis-o-geral">Visão geral</h2>
-                                                    <p>Este código de rastreamento é exclusivo para ${data.domain}. </p>
+                                                    <p>Este código de rastreamento é exclusivo para ${data.domain}. teste ${bucket} </p>
                                                     <p>Cole o código da Plugone antes do fechamento da tag body (&lt;/body&gt;) de todas as páginas de sua loja (geralmente coloca-se junto ao footer).</p>
                                                     <br/>
                                                     <hr/>
                                                     <br/>
                                                     <div style="background: #EBEEF4;padding:16px;margin-bottom:32px">
-                                                      &lt;script id=&quot;plugone-inside-sales-pixel&quot;&gt; (function (window, document, organizationId) { const __plugone = window.__plugone || {}; __plugone.organizationId = organizationId || &quot;&quot;; window.__plugone = __plugone; const scripts = document.getElementsByTagName(&quot;script&quot;)[0]; const pixel = document.createElement(&quot;script&quot;); pixel.async = true; pixel.src = &quot;${BUCKET_URL}${BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH}&quot;; scripts.parentNode.insertBefore(pixel, scripts); })(window, document, &quot;${data.id}&quot;); &lt;/script&gt;
+                                                      &lt;script id=&quot;plugone-inside-sales-pixel&quot;&gt; (function (window, document, organizationId) { const __plugone = window.__plugone || {}; __plugone.organizationId = organizationId || &quot;&quot;; window.__plugone = __plugone; const scripts = document.getElementsByTagName(&quot;script&quot;)[0]; const pixel = document.createElement(&quot;script&quot;); pixel.async = true; pixel.src = &quot;${bucket}${pixelPath}&quot;; scripts.parentNode.insertBefore(pixel, scripts); })(window, document, &quot;${data.id}&quot;); &lt;/script&gt;
                                                     </div>
                                                   </td>
                                                 </tr>

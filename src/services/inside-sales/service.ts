@@ -4,6 +4,9 @@ import MailService from '../mail/service'
 import OrganizationService from '../organization/service'
 import { BUCKET_URL, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH } from '../../common/consts'
 
+const bucket = BUCKET_URL || 'fallback_value'
+const pixelPath = BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH || 'fallback_value'
+
 const sendAffiliateInsideSalesSpecialistMail = async (
   input: {
     email: string
@@ -22,8 +25,8 @@ const sendAffiliateInsideSalesSpecialistMail = async (
         domain: organization.domain,
         id: organization.id,
       },
-      BUCKET_URL,
-      BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH
+      bucket,
+      pixelPath
     )
     return true
   } catch (error) {
