@@ -2,6 +2,7 @@ require('dotenv')
 import { Transaction } from 'knex'
 import MailService from '../mail/service'
 import OrganizationService from '../organization/service'
+import { BUCKET_URL, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH } from '../../common/consts'
 
 const sendAffiliateInsideSalesSpecialistMail = async (
   input: {
@@ -14,12 +15,16 @@ const sendAffiliateInsideSalesSpecialistMail = async (
   if (!organization) throw new Error('Organization not found.')
 
   try {
-    await MailService.sendHelpToSpecialist({
-      email: input.email,
-      organizationName: organization.name,
-      domain: organization.domain,
-      id: organization.id,
-    })
+    await MailService.sendHelpToSpecialist(
+      {
+        email: input.email,
+        organizationName: organization.name,
+        domain: organization.domain,
+        id: organization.id,
+      },
+      BUCKET_URL,
+      BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH
+    )
     return true
   } catch (error) {
     throw new Error(error.message)

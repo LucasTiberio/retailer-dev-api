@@ -1,9 +1,10 @@
 import Mail from '../../lib/Mail'
 import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail, ISendSpecialistHelp } from './types'
+import { BUCKET_URL, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH } from '../../common/consts'
 
 const frontUrl = process.env.FRONT_URL_STAGING
 
-const sendSignUpMail = async (data: ISendMail, BUCKET_URL: any, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH: any) => {
+const sendSignUpMail = async (data: ISendMail) => {
   if (process.env.NODE_ENV === 'test') return
 
   try {
@@ -1809,7 +1810,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
   }
 }
 
-const sendHelpToSpecialist = async (data: ISendSpecialistHelp) => {
+const sendHelpToSpecialist = async (data: ISendSpecialistHelp, BUCKET_URL: any, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH: any) => {
   if (process.env.NODE_ENV === 'test') return
 
   await Mail.sendMail({
@@ -2121,7 +2122,7 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp) => {
                                                     <hr/>
                                                     <br/>
                                                     <div style="background: #EBEEF4;padding:16px;margin-bottom:32px">
-                                                      &lt;script id=&quot;plugone-inside-sales-pixel&quot;&gt; (function (window, document, organizationId) { const __plugone = window.__plugone || {}; __plugone.organizationId = organizationId || &quot;&quot;; window.__plugone = __plugone; const scripts = document.getElementsByTagName(&quot;script&quot;)[0]; const pixel = document.createElement(&quot;script&quot;); pixel.async = true; pixel.src = &quot;${BUCKET_URL}${BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH}"; scripts.parentNode.insertBefore(pixel, scripts); })(window, document, &quot;${data.id}&quot;); &lt;/script&gt;
+                                                      &lt;script id=&quot;plugone-inside-sales-pixel&quot;&gt; (function (window, document, organizationId) { const __plugone = window.__plugone || {}; __plugone.organizationId = organizationId || &quot;&quot;; window.__plugone = __plugone; const scripts = document.getElementsByTagName(&quot;script&quot;)[0]; const pixel = document.createElement(&quot;script&quot;); pixel.async = true; pixel.src = &quot;${BUCKET_URL}${BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH}&quot;; scripts.parentNode.insertBefore(pixel, scripts); })(window, document, &quot;${data.id}&quot;); &lt;/script&gt;
                                                     </div>
                                                   </td>
                                                 </tr>

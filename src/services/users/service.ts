@@ -5,7 +5,6 @@ import { Transaction } from 'knex'
 import database from '../../knex-database'
 import knexDatabase from '../../knex-database'
 import { IUserToken } from '../authentication/types'
-import { BUCKET_URL, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH } from '../../common/consts'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -62,11 +61,7 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
         .returning('*')
     }
 
-    await MailService.sendSignUpMail(
-      { email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash },
-      BUCKET_URL,
-      BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH
-    )
+    await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
 
     return _signUpAdapter(signUpCreated[0])
   } catch (e) {
