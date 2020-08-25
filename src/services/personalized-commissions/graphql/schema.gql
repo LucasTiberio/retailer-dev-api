@@ -3,13 +3,13 @@ extend type Mutation {
 }
 
 extend type Query {
-  getOrganizationCommissionOrder: [CommissionsOrder]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  getOrganizationCommissionOrder: [CommissionsOrder] @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
 }
 
 type CommissionsOrder {
+  id: String!
   type: String!
   order: Int!
-  id: Int!
 }
 
 input SendOrganizationCommissionOrderInput {
