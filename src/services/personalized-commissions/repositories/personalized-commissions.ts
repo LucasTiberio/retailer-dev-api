@@ -9,7 +9,7 @@ const getCommissionTypeByOrganizationId = async (organization_id: string, type: 
 }
 
 const getCommissionOrderByOrganizationId = async (organization_id: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knex)('organization_commission_order').where('organization_id', organization_id).select().orderBy('order', 'desc')
+  return await (trx || knexDatabase.knex)('organization_commission_order').where('organization_id', organization_id).select().orderBy('order', 'asc')
 }
 
 const findOrUpdate = async (input: CommissionsOrder, organization_id: string, trx: Transaction) => {
