@@ -1,0 +1,24 @@
+extend type Mutation {
+  sendOrganizationComissionOrder(input: SendOrganizationComissionOrderInput!): Boolean! 
+    @hasOrganizationRole(role: ["ADMIN"]) 
+    @organizationPaidVerify 
+    @isVerified 
+    @isAuthenticated
+}
+
+extend type Query {
+  getOrganizationComissionOrder: ComissionsI[]! 
+    @hasOrganizationRole(role: ["ADMIN"]) 
+    @organizationPaidVerify 
+    @isVerified 
+    @isAuthenticated
+}
+
+type ComissionsI {
+  type: String!
+  order: Number!
+}
+
+input SendOrganizationComissionOrderInput {
+  comissions: ComissionsI[]!
+}

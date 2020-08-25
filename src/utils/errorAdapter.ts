@@ -14,6 +14,9 @@ import {
   affiliateStoreNotFound,
   organizationDoesNotExist,
   organizationDomainNotFound,
+  vtexProductNotFound,
+  sellerDoesNotExistInLojaIntegrada,
+  lojaIntegradaProductNotFound,
   userAlreadyRegistered,
 } from '../common/errors'
 
@@ -59,9 +62,24 @@ export default (message: string) => {
         code: 57,
         explication: 'Organization does not have a active plataform integration',
       }
-    case userAlreadyRegistered:
+    case vtexProductNotFound:
+      return {
+        code: 58,
+        explication: 'Vtex product not found',
+      }
+    case lojaIntegradaProductNotFound:
+      return {
+        code: 59,
+        explication: 'Loja Integrada product not found',
+      }
+    case sellerDoesNotExistInLojaIntegrada:
       return {
         code: 60,
+        explication: 'Seller does not exist in loja integrada plataform',
+      }
+    case userAlreadyRegistered:
+      return {
+        code: 61,
         explication: 'User already registered',
       }
     case affiliateDoesNotExist:
