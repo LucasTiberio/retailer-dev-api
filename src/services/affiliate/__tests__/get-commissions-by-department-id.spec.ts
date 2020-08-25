@@ -70,7 +70,6 @@ describe('Affiliate - Handle Commission By Department Id', () => {
     }
 
     const organizationCommissions = await service.getOrganizationCommissionByOrganizationId(
-      getOrganizationCommissionByOrganizationIdInput,
       {
         organizationId: organizationInserted.id,
       },
