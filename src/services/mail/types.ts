@@ -17,7 +17,6 @@ export interface ISendInviteUserMail {
 }
 
 export interface ISendSpecialistHelp {
-  domain: string
   organizationName: string
   id: string
   email: string

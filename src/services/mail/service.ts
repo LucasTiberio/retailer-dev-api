@@ -1813,7 +1813,7 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
   if (process.env.NODE_ENV === 'test') return
 
   await Mail.sendMail({
-    from: "PlugOne No-reply <noreply@plugone.io>",
+    from: 'PlugOne No-reply <noreply@plugone.io>',
     to: `<${data.email}>`,
     subject: `Você foi requisitado para ajudar ${data.organizationName} na PlugOne`,
     html: `
@@ -2115,7 +2115,6 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
                                                     <p>As instruções estão abaixo - mas se você tiver alguma dúvida, por favor nos avise.</p>
                                                     <h2 id="instru-es-de-instala-o">Instruções de instalação</h2>
                                                     <h2 id="vis-o-geral">Visão geral</h2>
-                                                    <p>Este código de rastreamento é exclusivo para ${data.domain}. teste ${bucket} </p>
                                                     <p>Cole o código da Plugone antes do fechamento da tag body (&lt;/body&gt;) de todas as páginas de sua loja (geralmente coloca-se junto ao footer).</p>
                                                     <br/>
                                                     <hr/>
@@ -2670,4 +2669,4 @@ export default {
   sendInviteUserMail,
   sendInviteNewUserMail,
   sendHelpToSpecialist,
-};
+}
