@@ -8,9 +8,15 @@ extend type Query {
 
 type CommissionsOrder {
   type: String!
-  order: Number!
+  order: Int!
+  id: Int!
 }
 
 input SendOrganizationCommissionOrderInput {
-  commissions: [CommissionsOrder]!
+  commissions: [CommissionOrderInput]!
+}
+
+input CommissionOrderInput {
+  type: String!
+  order: Int!
 }
