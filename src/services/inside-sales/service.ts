@@ -14,7 +14,7 @@ const sendAffiliateInsideSalesSpecialistMail = async (
   context: { organizationId: string },
   trx: Transaction
 ) => {
-  const organization = await OrganizationService.getOrganizationById(context.organizationId, trx);
+  const organization = await OrganizationService.getOrganizationById(context.organizationId, trx)
   if (!organization) throw new Error('Organization not found.')
 
   try {
@@ -22,7 +22,6 @@ const sendAffiliateInsideSalesSpecialistMail = async (
       {
         email: input.email,
         organizationName: organization.name,
-        domain: organization.domain,
         id: organization.id,
       },
       bucket,
