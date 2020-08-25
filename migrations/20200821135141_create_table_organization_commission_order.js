@@ -8,8 +8,6 @@ exports.up = async function (knex) {
       table.uuid('organization_id').notNullable().references('organizations.id')
       table.integer('order').defaultTo(0)
       table.text('type').notNullable()
-      // table.unique(['organization_id', 'order'])
-
       table.timestamps(true, true)
     })
     .then(() => knex.raw(knexfile.onUpdateTrigger('organization_commission_order')))

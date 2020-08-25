@@ -80,109 +80,103 @@ describe('Organization', () => {
       ],
     }
 
-    const createdCommission = await service.sendOrganizationCommissionOrder(input, { organizationId: organizationInserted.id }, trx);
+    const createdCommission = await service.sendOrganizationCommissionOrder(input, { organizationId: organizationInserted.id }, trx)
 
-    expect(createdCommission).toBeTruthy();
+    expect(createdCommission).toBeTruthy()
 
-    done();
+    done()
   })
 
-  // it('should not sent same orders in commission order array', async (done) => {
-  //   const createInput = {
-  //     commissions: [
-  //       {
-  //         order: 0,
-  //         type: CommissionTypes.AFFILIATE,
-  //       },
-  //       {
-  //         order: 0,
-  //         type: CommissionTypes.CATEGORY,
-  //       },
-  //       {
-  //         order: 2,
-  //         type: CommissionTypes.DEPARTMENT,
-  //       },
-  //       {
-  //         order: 3,
-  //         type: CommissionTypes.PRODUCT,
-  //       },
-  //       {
-  //         order: 4,
-  //         type: CommissionTypes.SELLER,
-  //       },
-  //     ],
-  //   }
+  it('should not sent same orders in commission order array', async (done) => {
+    const createInput = {
+      commissions: [
+        {
+          order: 0,
+          type: CommissionTypes.AFFILIATE,
+        },
+        {
+          order: 0,
+          type: CommissionTypes.CATEGORY,
+        },
+        {
+          order: 2,
+          type: CommissionTypes.DEPARTMENT,
+        },
+        {
+          order: 3,
+          type: CommissionTypes.PRODUCT,
+        },
+        {
+          order: 4,
+          type: CommissionTypes.SELLER,
+        },
+      ],
+    }
 
-  //   try {
-  //     await service.sendOrganizationCommissionOrder(createInput, { organizationId: organizationInserted.id }, trx)
-  //   } catch (error) {
-  //     expect(error.message).toBe(organizationCommissionOrderDuplicated)
-  //     done()
-  //   }
-  // })
+    try {
+      await service.sendOrganizationCommissionOrder(createInput, { organizationId: organizationInserted.id }, trx)
+    } catch (error) {
+      expect(error.message).toBe(organizationCommissionOrderDuplicated)
+      done()
+    }
+  })
 
-  // it('should update commission order', async (done) => {
-  //   expect(1).toBe(1)
-  //   const createInput = {
-  //     commissions: [
-  //       {
-  //         order: 0,
-  //         type: CommissionTypes.AFFILIATE,
-  //       },
-  //       {
-  //         order: 1,
-  //         type: CommissionTypes.CATEGORY,
-  //       },
-  //       {
-  //         order: 2,
-  //         type: CommissionTypes.DEPARTMENT,
-  //       },
-  //       {
-  //         order: 3,
-  //         type: CommissionTypes.PRODUCT,
-  //       },
-  //       {
-  //         order: 4,
-  //         type: CommissionTypes.SELLER,
-  //       },
-  //     ],
-  //   }
+  it('should update commission order', async (done) => {
+    const createInput = {
+      commissions: [
+        {
+          order: 0,
+          type: CommissionTypes.AFFILIATE,
+        },
+        {
+          order: 1,
+          type: CommissionTypes.CATEGORY,
+        },
+        {
+          order: 2,
+          type: CommissionTypes.DEPARTMENT,
+        },
+        {
+          order: 3,
+          type: CommissionTypes.PRODUCT,
+        },
+        {
+          order: 4,
+          type: CommissionTypes.SELLER,
+        },
+      ],
+    }
 
-  //   await service.sendOrganizationCommissionOrder(createInput, { organizationId: organizationInserted.id }, trx);
+    await service.sendOrganizationCommissionOrder(createInput, { organizationId: organizationInserted.id }, trx)
 
-  //   console.log(1);
+    const updateInput = {
+      commissions: [
+        {
+          order: 1,
+          type: CommissionTypes.AFFILIATE,
+        },
+        {
+          order: 0,
+          type: CommissionTypes.CATEGORY,
+        },
+        {
+          order: 2,
+          type: CommissionTypes.DEPARTMENT,
+        },
+        {
+          order: 3,
+          type: CommissionTypes.PRODUCT,
+        },
+        {
+          order: 4,
+          type: CommissionTypes.SELLER,
+        },
+      ],
+    }
 
-  //   const updateInput = {
-  //     commissions: [
-  //       {
-  //         order: 1,
-  //         type: CommissionTypes.AFFILIATE,
-  //       },
-  //       {
-  //         order: 0,
-  //         type: CommissionTypes.CATEGORY,
-  //       },
-  //       {
-  //         order: 2,
-  //         type: CommissionTypes.DEPARTMENT,
-  //       },
-  //       {
-  //         order: 3,
-  //         type: CommissionTypes.PRODUCT,
-  //       },
-  //       {
-  //         order: 4,
-  //         type: CommissionTypes.SELLER,
-  //       },
-  //     ],
-  //   }
+    const updatedCommission = await service.sendOrganizationCommissionOrder(updateInput, { organizationId: organizationInserted.id }, trx)
 
-  //   console.log(2);
-    
-  //   await service.sendOrganizationCommissionOrder(updateInput, { organizationId: organizationInserted.id }, trx);
-    
-  //   console.log(3);
-  //   // expect(createdCommission).toBeTruthy()
-  //   done()
-  // }) 
+    expect(updatedCommission).toBeTruthy()
+    done()
+  })
 })

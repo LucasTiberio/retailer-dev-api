@@ -53,13 +53,53 @@ describe('Organization', () => {
     })
   })
 
-  it.only('should return commission', async (done) => {
-    const enumLength = Object.keys(CommissionTypes).length;
-    console.log(enumLength);
-    const comissions = await service.getOrganizationCommissionOrder({ organizationId: organizationInserted.id }, trx);
-    console.log(comissions)
+  it('should return null commission', async (done) => {
+    const comissions = await service.getOrganizationCommissionOrder({ organizationId: organizationInserted.id }, trx)
 
-    expect(5).toBeGreaterThanOrEqual(enumLength);
+    expect(comissions).toBeNull()
+
+    done()
+  })
+
+  it('should return commission', async (done) => {
+    const input = {
+      commissions: [
+        {
+          order: 0,
+          type: CommissionTypes.AFFILIATE,
+        },
+        {
+          order: 1,
+          type: CommissionTypes.CATEGORY,
+        },
+        {
+          order: 2,
+          type: CommissionTypes.DEPARTMENT,
+        },
+        {
+          order: 3,
+          type: CommissionTypes.PRODUCT,
+        },
+        {
+          order: 4,
+          type: CommissionTypes.SELLER,
+        },
+      ],
+    }
+
+    await service.sendOrganizationCommissionOrder(input, { organizationId: organizationInserted.id }, trx)
+
+    const comissions = await service.getOrganizationCommissionOrder({ organizationId: organizationInserted.id }, trx)
+
+    expect(comissions).toEqual(
+      expect.arrayContaining(
+        input.commissions.map((item) =>
+          expect.objectContaining({
+            ...item,
+          })
+        )
+      )
+    )
 
     done()
   })

@@ -6,6 +6,7 @@ import { CommissionsOrder } from './types'
 
 import PersonalizedCommissionRepository from './repositories/personalized-commissions'
 import { organizationCommissionOrderDuplicated } from '../../common/errors'
+import { commissionOrderAdapter } from './adapter'
 
 /**
  *
@@ -19,7 +20,8 @@ const getOrganizationCommissionOrder = async (
   trx: Transaction
 ) => {
   try {
-    await PersonalizedCommissionRepository.getCommissionOrderByOrganizationId(context.organizationId, trx)
+    const commissionOrdersFound = await PersonalizedCommissionRepository.getCommissionOrderByOrganizationId(context.organizationId, trx)
+    return commissionOrdersFound.length ? commissionOrdersFound.map(commissionOrderAdapter) : null
   } catch (error) {
     throw new Error(error.message)
   }
@@ -41,6 +43,12 @@ const sendOrganizationCommissionOrder = async (
   trx: Transaction
 ) => {
   try {
+    const uniqueValues = new Set(input.commissions.map((v) => v.order))
+
+    if (uniqueValues.size < input.commissions.length) {
+      throw new Error(organizationCommissionOrderDuplicated)
+    }
+
     await Promise.all(
       input.commissions.map(async (commission) => {
         await PersonalizedCommissionRepository.findOrUpdate(commission, context.organizationId, trx)
@@ -48,10 +56,6 @@ const sendOrganizationCommissionOrder = async (
     )
     return true
   } catch (error) {
-    if (error.message.includes('organization_commission_order_organization_id_order_unique')) {
-      throw new Error(organizationCommissionOrderDuplicated)
-    }
-
     throw new Error(error.message)
   }
 }
