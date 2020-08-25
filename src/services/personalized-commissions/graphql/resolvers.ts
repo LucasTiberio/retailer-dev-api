@@ -5,16 +5,16 @@ import service from '../service'
 
 const resolvers: IResolvers = {
   Mutation: {
-    sendOrganizationComissionOrder: async (_, { input }, { organizationId }) => {
+    sendOrganizationCommissionOrder: async (_, { input }, { organizationId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
-        return service.sendOrganizationComissionOrder(input, { organizationId }, trx)
+        return service.sendOrganizationCommissionOrder(input, { organizationId }, trx)
       })
     },
   },
   Query: {
-    getOrganizationComissionOrder: (_, __, { organizationId }) => {
+    getOrganizationCommissionOrder: (_, __, { organizationId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
-        return service.getOrganizationComissionOrder({organizationId}, trx);
+        return service.getOrganizationCommissionOrder({organizationId}, trx);
       })
     },
   },

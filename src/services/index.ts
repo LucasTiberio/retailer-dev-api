@@ -15,7 +15,7 @@ import PaymentsService from './payments'
 import IntegrationsService from './integration'
 import AffiliateStoreService from './affiliate-store'
 import InsideSalesService from './inside-sales'
-import PersonalizedComissions from './personalized-comissions'
+import PersonalizedComissions from './personalized-commissions'
 
 let services = [
   IntegrationsService,

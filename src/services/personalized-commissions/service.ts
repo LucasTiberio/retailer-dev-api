@@ -1,10 +1,10 @@
 import { Transaction } from 'knex'
 
-import { ComissionsOrder } from './types'
+import { CommissionsOrder } from './types'
 
 /** Repositories */
 
-import PersonalizedComissionRepository from './repositories/personalized-comissions'
+import PersonalizedCommissionRepository from './repositories/personalized-commissions'
 import { organizationCommissionOrderDuplicated } from '../../common/errors'
 
 /**
@@ -12,14 +12,14 @@ import { organizationCommissionOrderDuplicated } from '../../common/errors'
  * @param context graphql context with organizationId
  * @param trx knex transaction
  */
-const getOrganizationComissionOrder = async (
+const getOrganizationCommissionOrder = async (
   context: {
     organizationId: string
   },
   trx: Transaction
 ) => {
   try {
-    await PersonalizedComissionRepository.getComissionOrderByOrganizationId(context.organizationId, trx)
+    await PersonalizedCommissionRepository.getCommissionOrderByOrganizationId(context.organizationId, trx)
   } catch (error) {
     throw new Error(error.message)
   }
@@ -27,13 +27,13 @@ const getOrganizationComissionOrder = async (
 
 /**
  *
- * @param input array of ComissionI
+ * @param input array of CommissionI
  * @param context graphql context with organizationId
  * @param trx knex transaction
  */
-const sendOrganizationComissionOrder = async (
+const sendOrganizationCommissionOrder = async (
   input: {
-    comissions: ComissionsOrder[]
+    commissions: CommissionsOrder[]
   },
   context: {
     organizationId: string
@@ -42,8 +42,8 @@ const sendOrganizationComissionOrder = async (
 ) => {
   try {
     await Promise.all(
-      input.comissions.map(async (commission) => {
-        await PersonalizedComissionRepository.findOrUpdate(commission, context.organizationId, trx)
+      input.commissions.map(async (commission) => {
+        await PersonalizedCommissionRepository.findOrUpdate(commission, context.organizationId, trx)
       })
     )
     return true
@@ -57,6 +57,6 @@ const sendOrganizationComissionOrder = async (
 }
 
 export default {
-  sendOrganizationComissionOrder,
-  getOrganizationComissionOrder,
+  sendOrganizationCommissionOrder,
+  getOrganizationCommissionOrder,
 }

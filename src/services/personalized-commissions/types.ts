@@ -1,4 +1,4 @@
-export type ComissionsOrder = {
+export type CommissionsOrder = {
   type: string
   order: number
 }
