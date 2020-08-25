@@ -5,7 +5,8 @@ import { Transaction } from 'knex'
 import createOrganizationMock from '../../../__mocks__/full/create-organization-mock'
 import OrganizationRulesService from '../../../services/organization-rules/service'
 import { IOrganizationFromDB } from '../../organization/types'
-import imgGen from 'js-image-generator'
+import { CommissionTypes } from '../types'
+import { organizationCommissionOrderDuplicated } from '../../../common/errors'
 jest.mock('../../../services/organization-rules/service')
 
 describe('Organization', () => {
@@ -16,27 +17,27 @@ describe('Organization', () => {
   beforeAll(async () => {
     const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
 
-    // getAffiliateTeammateRulesSpy.mockImplementation(
-    //   () =>
-    //     new Promise((resolve) =>
-    //       resolve({
-    //         maxAnalysts: 5,
-    //         maxSales: 5,
-    //         maxTeammates: 5,
-    //         maxTransactionTax: 5,
-    //         providers: [
-    //           {
-    //             name: 'vtex',
-    //             status: true,
-    //           },
-    //           {
-    //             name: 'loja_integrada',
-    //             status: true,
-    //           },
-    //         ],
-    //       })
-    //     )
-    // )
+    getAffiliateTeammateRulesSpy.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          resolve({
+            maxAnalysts: 5,
+            maxSales: 5,
+            maxTeammates: 5,
+            maxTransactionTax: 5,
+            providers: [
+              {
+                name: 'vtex',
+                status: true,
+              },
+              {
+                name: 'loja_integrada',
+                status: true,
+              },
+            ],
+          })
+        )
+    )
   })
 
   beforeEach(async () => {
@@ -53,28 +54,132 @@ describe('Organization', () => {
     })
   })
 
-  it('should create comission with type and order', () => {});
+  it('should create comission with type and order', async (done) => {
+    const input = {
+      comissions: [
+        {
+          order: 0,
+          type: CommissionTypes.AFFILIATE,
+        },
+        {
+          order: 1,
+          type: CommissionTypes.CATEGORY,
+        },
+        {
+          order: 2,
+          type: CommissionTypes.DEPARTMENT,
+        },
+        {
+          order: 3,
+          type: CommissionTypes.PRODUCT,
+        },
+        {
+          order: 4,
+          type: CommissionTypes.SELLER,
+        },
+      ],
+    }
 
-  it('should update comission order', () => {});
+    const createdCommission = await service.sendOrganizationComissionOrder(input, { organizationId: organizationInserted.id }, trx)
 
-  // it('organization admin should add organization affiliate store banner', async (done) => {
-  //   imgGen.generateImage(50, 50, 80, async function (err: Error, image: any) {
-  //     const input = {
-  //       data: image.data,
-  //       mimetype: 'text/jpg',
-  //     }
+    console.log({ createdCommission })
 
-  //     const organizationAffiliateStore = await service.addOrganizationAffiliateStoreBanner(input, { organizationId: organizationInserted.id }, trx)
+    expect(createdCommission).toBeTruthy()
 
-  //     expect(organizationAffiliateStore).toEqual(
-  //       expect.objectContaining({
-  //         id: expect.any(String),
-  //         organizationAffiliateStoreId: expect.any(String),
-  //         url: expect.any(String),
-  //       })
-  //     )
+    done()
+  })
 
-  //     done()
-  //   })
-  // })
+  it('should not sent same orders in comission order array', async (done) => {
+    const createInput = {
+      comissions: [
+        {
+          order: 0,
+          type: CommissionTypes.AFFILIATE,
+        },
+        {
+          order: 0,
+          type: CommissionTypes.CATEGORY,
+        },
+        {
+          order: 2,
+          type: CommissionTypes.DEPARTMENT,
+        },
+        {
+          order: 3,
+          type: CommissionTypes.PRODUCT,
+        },
+        {
+          order: 4,
+          type: CommissionTypes.SELLER,
+        },
+      ],
+    }
+
+    try {
+      await service.sendOrganizationComissionOrder(createInput, { organizationId: organizationInserted.id }, trx)
+    } catch (error) {
+      expect(error.message).toBe(organizationCommissionOrderDuplicated)
+      done()
+    }
+  })
+
+  it.only('should update comission order', async (done) => {
+    const createInput = {
+      comissions: [
+        {
+          order: 0,
+          type: CommissionTypes.AFFILIATE,
+        },
+        {
+          order: 1,
+          type: CommissionTypes.CATEGORY,
+        },
+        {
+          order: 2,
+          type: CommissionTypes.DEPARTMENT,
+        },
+        {
+          order: 3,
+          type: CommissionTypes.PRODUCT,
+        },
+        {
+          order: 4,
+          type: CommissionTypes.SELLER,
+        },
+      ],
+    }
+
+    await service.sendOrganizationComissionOrder(createInput, { organizationId: organizationInserted.id }, trx)
+
+    const updateInput = {
+      comissions: [
+        {
+          order: 1,
+          type: CommissionTypes.AFFILIATE,
+        },
+        {
+          order: 0,
+          type: CommissionTypes.CATEGORY,
+        },
+        {
+          order: 2,
+          type: CommissionTypes.DEPARTMENT,
+        },
+        {
+          order: 3,
+          type: CommissionTypes.PRODUCT,
+        },
+        {
+          order: 4,
+          type: CommissionTypes.SELLER,
+        },
+      ],
+    }
+
+    await service.sendOrganizationComissionOrder(createInput, { organizationId: organizationInserted.id }, trx)
+
+    // expect(createdCommission).toBeTruthy()
+
+    done()
+  })
 })
