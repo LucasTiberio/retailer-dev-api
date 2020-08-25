@@ -1,12 +1,5 @@
-import Mail from "../../lib/Mail";
-import {
-  ISendMail,
-  ISendRecoveryPasswordMail,
-  IMail,
-  ISendInviteUserMail,
-  ISendSpecialistHelp
-} from "./types";
-import { BUCKET_URL, BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH } from '../../common/consts'
+import Mail from '../../lib/Mail'
+import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail, ISendSpecialistHelp } from './types'
 
 const frontUrl = process.env.FRONT_URL_STAGING
 
@@ -1816,16 +1809,417 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
   }
 }
 
-const sendHelpToSpecialist = async (data: ISendSpecialistHelp) => {
-  if (process.env.NODE_ENV === "test") return;
+const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixelPath: any) => {
+  if (process.env.NODE_ENV === 'test') return
 
   await Mail.sendMail({
     from: "PlugOne No-reply <noreply@plugone.io>",
     to: `<${data.email}>`,
-    subject: `Você foi requisitado para ajudar ${data.organizationName} na plugone`,
-    html: ``,
-  });
-};
+    subject: `Você foi requisitado para ajudar ${data.organizationName} na PlugOne`,
+    html: `
+    <!DOCTYPE html>
+    <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+      <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="x-apple-disable-message-reformatting">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <title>PLUGONE.io - Email Template</title>
+        <!--[if mso]>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+        <style>
+          table {border-collapse: collapse;}
+          td,th,div,p,a {font-size: 16px; line-height: 26px;}
+          .spacer,.divider,div,p,a,h1,h2,h3,h4,h5,h6 {mso-line-height-rule: exactly;}
+          td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family:"Segoe UI",Helvetica,Arial,sans-serif;}
+        </style>
+        <![endif]-->
+    
+        <style type="text/css">
+            
+        html, body, div, span, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        abbr, address, cite, code,
+        del, dfn, em, img, ins, kbd, q, samp,
+        small, strong, sub, sup, var,
+        b, i,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, figcaption, figure,
+        footer, header, hgroup, menu, nav, section, summary,
+        time, mark, audio, video {
+            margin:0;
+            padding:0;
+            border:0;
+            outline:0;
+            font-size:100%;
+            vertical-align:baseline;
+        }
+    
+        body {
+            line-height:1;
+        }
+    
+        article,aside,details,figcaption,figure,
+        footer,header,hgroup,menu,nav,section {
+            display:block;
+        }
+    
+    
+        a {
+            margin:0;
+            padding:0;
+            font-size:100%;
+            vertical-align:baseline;
+            background:transparent;
+        }
+    
+    
+    
+          @media only screen {
+            .col, td, th, div, p {font-family: "Inter",-apple-system,system-ui,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+            .inter {font-family: 'Inter', sans-serif!important;}
+            .btn {
+                margin: 48px auto;
+                color: #ffffff;
+                text-align: center;
+                font-weight: 700;
+                font-weight: bold;
+                font-size: 18px;
+                line-height: 24px;
+                box-sizing:border-box;
+                display: block;
+                padding: 16px 32px;
+    
+                width: 198px;
+                height: 56px;
+    
+                background: linear-gradient(200.34deg, #3C5ED9 -2.42%, #3B24A8 79.51%);
+                border-radius: 6px;
+            }
+          }
+    
+          #outlook a {padding: 0;}
+          img {border: 0; line-height: 100%; vertical-align: middle;}
+          .col {font-size: 16px; line-height: 26px; vertical-align: top;}
+    
+          @media only screen and (max-width: 500px) {
+            .wrapper img {max-width: 100%;}
+            u ~ div .wrapper {min-width: 100vw;}
+            .container {width: 100%!important; -webkit-text-size-adjust: 100%;}
+          }
+    
+          @media only screen and (max-width: 699px) {
+            .col {
+              box-sizing: border-box;
+              display: inline-block!important;
+              line-height: 23px;
+              width: 100%!important;
+            }
+    
+            .col-1  {max-width: 8.33333%;}
+            .col-2  {max-width: 16.66667%;}
+            .col-3  {max-width: 25%;}
+            .col-4  {max-width: 33.33333%;}
+            .col-5  {max-width: 41.66667%;}
+            .col-6  {max-width: 50%;}
+            .col-7  {max-width: 58.33333%;}
+            .col-8  {max-width: 66.66667%;}
+            .col-9  {max-width: 75%;}
+            .col-8 {max-width: 83.33333%;}
+            .col-11 {max-width: 91.66667%;}
+    
+            .col-push-1  {margin-left: 8.33333%;}
+            .col-push-2  {margin-left: 16.66667%;}
+            .col-push-3  {margin-left: 25%;}
+            .col-push-4  {margin-left: 33.33333%;}
+            .col-push-5  {margin-left: 41.66667%;}
+            .col-push-6  {margin-left: 50%;}
+            .col-push-7  {margin-left: 58.33333%;}
+            .col-push-8  {margin-left: 66.66667%;}
+            .col-push-9  {margin-left: 75%;}
+            .col-push-10 {margin-left: 83.33333%;}
+            .col-push-11 {margin-left: 91.66667%;}
+    
+            .full-width-sm {display: table!important; width: 100%!important;}
+            .stack-first {display: table-header-group!important;}
+            .stack-last {display: table-footer-group!important;}
+            .stack-top {display: table-caption!important; max-width: 100%; padding-left: 0!important;}
+    
+            .toggle-content {
+              max-height: 0;
+              overflow: auto;
+              transition: max-height .4s linear;
+                -webkit-transition: max-height .4s linear;
+            }
+            .toggle-trigger:hover + .toggle-content,
+            .toggle-content:hover {max-height: 999px!important;}
+    
+            .show-mobile {
+              display: inherit!important;
+              font-size: inherit!important;
+              line-height: inherit!important;
+              max-height: none!important;
+            }
+            .hide-mobile {display: none!important;}
+    
+            .align-center {
+              display: table!important;
+              float: none;
+              margin-left: auto!important;
+              margin-right: auto!important;
+            }
+            .align-left {float: left;}
+            .align-right {float: right;}
+    
+            .text-center {text-align: center!important;}
+            .text-left   {text-align: left!important;}
+            .text-right  {text-align: right!important;}
+    
+            .borderless-sm {border: none!important;}
+            .nav-vertical .nav-item {display: block;}
+            .nav-vertical .nav-item a {display: inline-block; padding: 4px 0!important;}
+    
+            .spacer {height: 0;}
+    
+            .p-0 {padding: 0!important;}
+            .p-8 {padding: 8px!important;}
+            .p-16 {padding: 16px!important;}
+            .p-24 {padding: 24px!important;}
+            .p-32 {padding: 32px!important;}
+            .pt-0 {padding-top: 0!important;}
+            .pt-8 {padding-top: 8px!important;}
+            .pt-16 {padding-top: 16px!important;}
+            .pt-24 {padding-top: 24px!important;}
+            .pt-32 {padding-top: 32px!important;}
+            .pr-0 {padding-right: 0!important;}
+            .pr-8 {padding-right: 8px!important;}
+            .pr-16 {padding-right: 16px!important;}
+            .pr-24 {padding-right: 24px!important;}
+            .pr-32 {padding-right: 32px!important;}
+            .pb-0 {padding-bottom: 0!important;}
+            .pb-8 {padding-bottom: 8px!important;}
+            .pb-16 {padding-bottom: 16px!important;}
+            .pb-24 {padding-bottom: 24px!important;}
+            .pb-32 {padding-bottom: 32px!important;}
+            .pl-0 {padding-left: 0!important;}
+            .pl-8 {padding-left: 8px!important;}
+            .pl-16 {padding-left: 16px!important;}
+            .pl-24 {padding-left: 24px!important;}
+            .pl-32 {padding-left: 32px!important;}
+            .pl-48 {padding-left: 48px!important;}
+            .px-0 {padding-right: 0!important; padding-left: 0!important;}
+            .px-8 {padding-right: 8px!important; padding-left: 8px!important;}
+            .px-16 {padding-right: 16px!important; padding-left: 16px!important;}
+            .px-24 {padding-right: 24px!important; padding-left: 24px!important;}
+            .px-32 {padding-right: 32px!important; padding-left: 32px!important;}
+            .py-0 {padding-top: 0!important; padding-bottom: 0!important;}
+            .py-8 {padding-top: 8px!important; padding-bottom: 8px!important;}
+            .py-16 {padding-top: 16px!important; padding-bottom: 16px!important;}
+            .py-24 {padding-top: 24px!important; padding-bottom: 24px!important;}
+            .py-32 {padding-top: 32px!important; padding-bottom: 32px!important;}
+            .chrink{font-size: 90px !important; line-height: 90px;}
+          }
+    
+    
+        </style>
+      </head>
+      <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
+    
+    
+        <div style="display:none;font-size:0;line-height:0;">Você foi convidado para a ${data.organizationName}!</div>
+    
+          <!-- WRAPPER -->
+          <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
+            <tbody>
+              <tr>
+                <td class="px-24" align="center" style="padding-top: 64px;padding-bottom: 64px;">
+                  <!-- CONTAINER -->
+                  <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="640" style="width: 640px; min-width: 640px; margin: 0 auto;">
+                     <tbody>
+                        <tr>
+                          <td align="center" style="padding-left:7px;padding-right:7px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:5px;padding-right:5px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:4px;padding-right:4px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:3px;padding-right:3px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:2px;padding-right:2px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:1px;padding-right:1px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:1px;padding-right:1px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="" style="">
+                            <!-- CONTAINER -->
+                                  <table class="container" cellpadding="0" cellspacing="0" role="presentation" width="640">
+                                    <tr>
+                                      <td align="left" class="px-16 py-24">
+                        
+                                        <!-- section : Logo -->
+                                        <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                          <tr>
+                                            <td style="padding: 0px;">
+                                              <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                                <tr>
+                                                  <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
+                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/logo-positive-horizontal.png" alt="Logo" width="116px" style="width:116px; max-width: 116px;">
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                        <!-- End Section -->
+                        
+                        
+                        
+                                        <!-- section : Banner -->
+                                        <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                          <tr>
+                                            <td style="padding: 0px;">
+                                              <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                                <tr>
+                                                  <td class="col" width="400" bgcolor="#FFFFFF" style="padding-left:66px;padding-right: 66px;margin-top:36px">
+                                                    <p>Olá, ${data.organizationName} precisa de sua ajuda para instalar um snippet javascript em seu site para mesclar os dados de engajamento com suas métricas financeiras. Deve demorar apenas 10 minutos.</p>
+                                                    <p>Algumas funcionalidades da plugone precisam que você adicione um pouco de JavaScript ao seu aplicativo para que ele possa identificar quando seus vendedores internos fazem login no seu e-commerce ou para criar as vitrines digitais.</p>
+                                                    <p>As instruções estão abaixo - mas se você tiver alguma dúvida, por favor nos avise.</p>
+                                                    <h2 id="instru-es-de-instala-o">Instruções de instalação</h2>
+                                                    <h2 id="vis-o-geral">Visão geral</h2>
+                                                    <p>Este código de rastreamento é exclusivo para ${data.domain}. teste ${bucket} </p>
+                                                    <p>Cole o código da Plugone antes do fechamento da tag body (&lt;/body&gt;) de todas as páginas de sua loja (geralmente coloca-se junto ao footer).</p>
+                                                    <br/>
+                                                    <hr/>
+                                                    <br/>
+                                                    <div style="background: #EBEEF4;padding:16px;margin-bottom:32px">
+                                                      &lt;script id=&quot;plugone-inside-sales-pixel&quot;&gt; (function (window, document, organizationId) { const __plugone = window.__plugone || {}; __plugone.organizationId = organizationId || &quot;&quot;; window.__plugone = __plugone; const scripts = document.getElementsByTagName(&quot;script&quot;)[0]; const pixel = document.createElement(&quot;script&quot;); pixel.async = true; pixel.src = &quot;${bucket}${pixelPath}&quot;; scripts.parentNode.insertBefore(pixel, scripts); })(window, document, &quot;${data.id}&quot;); &lt;/script&gt;
+                                                    </div>
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                        <!-- End Section -->
+                        
+                                        <!-- section : Bottom Section -->
+                                        <table cellpadding="0" cellspacing="0" role="presentation" width="100%" style="padding:0 20px" bgcolor="#FFFFFF">
+                                          <tr>
+                                            <td class="px-16" style="padding:0 24px;" bgcolor="#FFFFFF">
+                                              <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                                <tr>
+                        
+                                                  <hr/>
+                        
+                                                  <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px;line-height: 12px!important;" >
+                                                              <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                                  <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                                </a> -->
+                                                                <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                                  </a>
+                                                  </td>
+                        
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                        <!-- End Section -->
+                                      </td>
+                                    </tr>
+                                  </table>
+                            <!-- /CONTAINER -->
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:1px;padding-right:1px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:1px;padding-right:1px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:2px;padding-right:2px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:3px;padding-right:3px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:4px;padding-right:4px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:5px;padding-right:5px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="center" style="padding-left:7px;padding-right:7px;height:1px;line-height:1px;font-size:1px;">
+                            <div class="full-width-sm" style="display:block;height:1px;background-color:#ffffff;line-height:1px;font-size:1px;">&nbsp;</div>
+                          </td>
+                        </tr>
+                     </tbody>
+                  </table>
+                  <!-- /CONTAINER -->
+                </td>
+              </tr>
+              <!-- UNSUBSCRIBE -->
+              <!--
+              <tr>
+                <td align="center" style="padding-bottom: 60px; padding-top: 40px;">
+                  <a href="*|UNSUB|*" style="font-family: Inter, sans-serif; font-size: 14px; line-height: 16px; font-weight: normal; text-decoration: underline; color: #ffffff;">Unsubscribe</a>
+                </td>
+              </tr>
+              -->
+              <!-- /UNSUBSCRIBE -->
+            </tbody>
+          </table>
+          <!-- /WRAPPER -->
+    
+    
+      </body>
+    </html>
+    `,
+  })
+}
 
 const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
   if (process.env.NODE_ENV === 'test') return
