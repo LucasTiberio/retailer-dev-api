@@ -18,6 +18,7 @@ import {
   sellerDoesNotExistInLojaIntegrada,
   lojaIntegradaProductNotFound,
   userAlreadyRegistered,
+  organizationCommissionOrderDuplicated,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -81,6 +82,11 @@ export default (message: string) => {
       return {
         code: 61,
         explication: 'User already registered',
+      }
+    case organizationCommissionOrderDuplicated:
+      return {
+        code: 62,
+        explication: 'Organization Commission Order received are duplicated',
       }
     case affiliateDoesNotExist:
       return {
