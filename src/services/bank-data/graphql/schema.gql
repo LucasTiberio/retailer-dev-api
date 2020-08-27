@@ -1,12 +1,12 @@
 extend type Query {
-  getBrazilBanks(input: GetBrazilBanksInput): [BrazilBanks!]! @isVerified @isAuthenticated
+  getBrazilBanks(input: GetBrazilBanksInput): [BrazilBanks!]! @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
-extend type UserOrganizationService{
+extend type UserOrganizationService {
   bankData: UserBankValues
 }
 
-input GetBrazilBanksInput{
+input GetBrazilBanksInput {
   name: String
 }
 
@@ -27,14 +27,14 @@ type BrazilBanks {
 #   brazilBankId: String!
 # }
 
-type UserBankValues{
-    id: String!
-    name: String!
-    agency: String!
-    account: String!
-    accountDigit: String!
-    document: String!
-    brazilBank: BrazilBanks!
-    createdAt: Datetime!
-    updatedAt: Datetime!
+type UserBankValues {
+  id: String!
+  name: String!
+  agency: String!
+  account: String!
+  accountDigit: String!
+  document: String!
+  brazilBank: BrazilBanks!
+  createdAt: Datetime!
+  updatedAt: Datetime!
 }

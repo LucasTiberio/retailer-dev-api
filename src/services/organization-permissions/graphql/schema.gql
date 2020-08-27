@@ -1,27 +1,31 @@
-extend type Query{
-    userOrganizationPermissions(input: UserOrganizationPermissionsInput): [OrganizationPermissions]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated
+extend type Query {
+  userOrganizationPermissions(input: UserOrganizationPermissionsInput): [OrganizationPermissions]!
+    @hasOrganizationRole(role: ["ADMIN", "MEMBER"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
-input UserOrganizationPermissionsInput{
-    name: PermissionName!
+input UserOrganizationPermissionsInput {
+  name: PermissionName!
 }
 
-type OrganizationPermissions{
-    id: String!
-    permissionName: PermissionName!
-    organizationRoleName: OrganizationRoleName!
-    grant: PermissionGrant!
+type OrganizationPermissions {
+  id: String!
+  permissionName: PermissionName!
+  organizationRoleName: OrganizationRoleName!
+  grant: PermissionGrant!
 }
 
-enum PermissionName{
-    settings
-    members
-    integrations
-    affiliate
+enum PermissionName {
+  settings
+  members
+  integrations
+  affiliate
 }
 
-enum PermissionGrant{
-    write
-    read
-    hide
+enum PermissionGrant {
+  write
+  read
+  hide
 }

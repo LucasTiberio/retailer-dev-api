@@ -2,15 +2,26 @@ extend type Mutation {
   affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener!
     @hasServiceRole(role: ["ANALYST"])
     @organizationPaidVerify
+    @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
-  handleOrganizationCommission(input: HandleOrganizationCommissionInput!): OrganizationCommission! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  handleOrganizationCommission(input: HandleOrganizationCommissionInput!): OrganizationCommission!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
   generateSalesJwt(input: GenerateSalesJwtInput!): SalesSession!
-  createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
+  createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl! @hasSalesToken
-  paidAffiliateCommission(input: PaidAffiliateCommissionInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  handleTimeToPayCommission(input: HandleTimeToPayCommissionInput!): TimeToPayCommission! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
-  handleDefaultCommission(input: HandleDefaultCommissionInput!): DefaultCommission! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  paidAffiliateCommission(input: PaidAffiliateCommissionInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  handleTimeToPayCommission(input: HandleTimeToPayCommissionInput!): TimeToPayCommission!
+    @hasServiceRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  handleDefaultCommission(input: HandleDefaultCommissionInput!): DefaultCommission! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 input HandleOrganizationCommissionInput {
@@ -80,30 +91,32 @@ type DefaultCommission {
 }
 
 extend type Query {
-  timeToPayCommission: TimeToPayCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
-  defaultCommission: DefaultCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationCommissions: [OrganizationCommission]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationCommissionsName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationCommissionsSellerName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationCommissionsCategoriesName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationCommissionsAffiliatesName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]! @hasServiceRole(role: ["ANALYST"]) @organizationPaidVerify @isVerified @isAuthenticated
-  getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): AllOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
+  timeToPayCommission: TimeToPayCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  defaultCommission: DefaultCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationCommissions: [OrganizationCommission]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationCommissionsName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]!
+    @hasServiceRole(role: ["ANALYST"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): AllOrders! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationOrdersByAffiliateId(input: GetOrganizationOrdersByAffiliateIdInput): AllOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
-  getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationAverageTicket(input: GetOrganizationAverageTicketInput): OrganizationAverageTicket! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationTotalOrders(input: GetOrganizationTotalOrdersInput): OrganizationTotalOrders! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationCommission(input: GetOrganizationCommissionInput): OrganizationCommission! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated
-  getOrganizationTotalOrdersByAffiliate(input: GetOrganizationTotalOrdersByAffiliateInput!): OrganizationTotalOrders! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
-  getOrganizationCommissionByAffiliate(input: GetOrganizationCommissionByAffiliateInput!): OrganizationCommission! @hasServiceRole(role: ["ANALYST"]) @isVerified @isAuthenticated
-}
-
-enum OrganizationCommissionIdentifier {
-  affiliate
-  department
-  category
-  product
-  seller
+  getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationAverageTicket(input: GetOrganizationAverageTicketInput): OrganizationAverageTicket! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationTotalOrders(input: GetOrganizationTotalOrdersInput): OrganizationTotalOrders! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationCommission(input: GetOrganizationCommissionInput): OrganizationCommission! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationTotalOrdersByAffiliate(input: GetOrganizationTotalOrdersByAffiliateInput!): OrganizationTotalOrders!
+    @hasServiceRole(role: ["ANALYST"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getOrganizationCommissionByAffiliate(input: GetOrganizationCommissionByAffiliateInput!): OrganizationCommission!
+    @hasServiceRole(role: ["ANALYST"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 type OrganizationCommissionName {

@@ -1,36 +1,36 @@
-extend type Query{
-  getUser: User! @isVerified @isAuthenticated 
+extend type Query {
+  getUser: User! @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
-extend type Mutation{
+extend type Mutation {
   signUp(input: SignUpInput!): User!
   userVerifyEmail(input: UserVerifyEmailInput!): Boolean
   userRecoveryPassword(input: UserRecoveryPasswordInput!): Boolean
   userPasswordChange(input: UserPasswordChangeInput!): Boolean
 }
 
-input UserPasswordChangeInput{
+input UserPasswordChangeInput {
   hash: String!
   password: String!
 }
 
-input UserRecoveryPasswordInput{
+input UserRecoveryPasswordInput {
   email: String!
 }
 
-input UserVerifyEmailInput{
+input UserVerifyEmailInput {
   verificationHash: String!
 }
 
-input SignUpInput{
+input SignUpInput {
   username: String!
   email: String!
   password: String!
 }
 
-type User{
+type User {
   id: String!
   username: String
   email: String!
-  organizations(organizationId: String): [Organization]! 
+  organizations(organizationId: String): [Organization]!
 }

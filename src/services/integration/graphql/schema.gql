@@ -1,9 +1,5 @@
 extend type Mutation {
-  createIntegration(input: CreateIntegrationInput!): Boolean
-    @hasOrganizationRole(role: ["ADMIN"])
-    @organizationPaidVerify
-    @isVerified
-    @isAuthenticated
+  createIntegration(input: CreateIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 input CreateIntegrationInput {
