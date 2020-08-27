@@ -15,6 +15,7 @@ import {
   organizationDoesNotExist,
   organizationDomainNotFound,
   userAlreadyRegistered,
+  userDoesNotAcceptTermsAndConditions,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -83,6 +84,11 @@ export default (message: string) => {
       return {
         code: 8,
         explication: 'Upgrade your plan to use this feature',
+      }
+    case userDoesNotAcceptTermsAndConditions:
+      return {
+        code: 3,
+        explication: 'User doest not accept last terms and conditions',
       }
     case upgradeYourPlan:
       return {

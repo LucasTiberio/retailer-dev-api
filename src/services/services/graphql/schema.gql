@@ -1,104 +1,131 @@
-extend type Query{
-    listAvailableServices: [Service]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    listAvailableUsersToService(input: ListAvailableUsersToServiceInput!): [UserOrganization]! @hasServiceRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    listAffiliatesMembers(input: ListAffiliatesMembersInput): ListAffiliatesMembersPayload! @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"]) @isVerified @isAuthenticated 
-    getUserInOrganizationService(input: GetUserInOrganizationServiceInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @isAuthenticated 
-    getUserOrganizationByServiceName(input: GetUserOrganizationByServiceNameInput!): UserOrganizationService @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"]) @isVerified @isAuthenticated 
-    getUserInOrganizationServiceById(input: GetUserInOrganizationServiceByIdInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
-    affiliatesCapacities: AffiliatesCapacities @hasOrganizationRole(role: ["ADMIN"]) @isVerified @isAuthenticated 
+extend type Query {
+  listAvailableServices: [Service]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  listAvailableUsersToService(input: ListAvailableUsersToServiceInput!): [UserOrganization]! @hasServiceRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  listAffiliatesMembers(input: ListAffiliatesMembersInput): ListAffiliatesMembersPayload!
+    @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getUserInOrganizationService(input: GetUserInOrganizationServiceInput!): UserOrganizationService
+    @hasOrganizationRole(role: ["ADMIN", "MEMBER"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getUserOrganizationByServiceName(input: GetUserOrganizationByServiceNameInput!): UserOrganizationService
+    @hasServiceRole(role: ["ADMIN", "ANALYST", "RESPONSIBLE", "SALE"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getUserInOrganizationServiceById(input: GetUserInOrganizationServiceByIdInput!): UserOrganizationService @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  affiliatesCapacities: AffiliatesCapacities @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
-type AffiliatesCapacities{
-    analyst: CapacitiesValues!
-    sale: CapacitiesValues
+type AffiliatesCapacities {
+  analyst: CapacitiesValues!
+  sale: CapacitiesValues
 }
 
-type CapacitiesValues{
-    total: Int!
-    used: Int!
+type CapacitiesValues {
+  total: Int!
+  used: Int!
 }
 
-input ListAffiliatesMembersInput{
-    name: String
-    offset: Int
-    limit: Int
+input ListAffiliatesMembersInput {
+  name: String
+  offset: Int
+  limit: Int
 }
 
-type ListAffiliatesMembersPayload{
-    count: String!
-    offset: Int
-    limit: Int
-    affiliates: [UserOrganizationService]!
+type ListAffiliatesMembersPayload {
+  count: String!
+  offset: Int
+  limit: Int
+  affiliates: [UserOrganizationService]!
 }
 
-input GetUserOrganizationByServiceNameInput{
-    serviceName: ServiceName!
+input GetUserOrganizationByServiceNameInput {
+  serviceName: ServiceName!
 }
 
 input GetUserInOrganizationServiceInput {
-    userOrganizationId: String!
+  userOrganizationId: String!
 }
 
-input GetUserInOrganizationServiceByIdInput{
-    userOrganizationServiceId: String!
+input GetUserInOrganizationServiceByIdInput {
+  userOrganizationServiceId: String!
 }
 
-extend type Mutation{
-    createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated 
-    addUserInOrganizationService(input: AddUserInOrganizationServiceInput!): UserOrganizationService! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
-    handleServiceMembersRole(input: HandleServiceMembersRoleInput!): UserOrganizationService! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
-    inativeUserFromServiceOrganization(input: InativeUserFromServiceOrganizationInput!): UserOrganizationService! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+extend type Mutation {
+  createServiceInOrganization(input: CreateServiceInOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  addUserInOrganizationService(input: AddUserInOrganizationServiceInput!): UserOrganizationService!
+    @hasServiceRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  handleServiceMembersRole(input: HandleServiceMembersRoleInput!): UserOrganizationService!
+    @hasServiceRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  inativeUserFromServiceOrganization(input: InativeUserFromServiceOrganizationInput!): UserOrganizationService!
+    @hasServiceRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 input InativeUserFromServiceOrganizationInput {
-    serviceName: ServiceName!
-    userId: String!
+  serviceName: ServiceName!
+  userId: String!
 }
 
-input HandleServiceMembersRoleInput{
-    serviceName: ServiceName!
-    serviceRole: ServiceRolesName!
-    userOrganizationServiceRoleId: String!
+input HandleServiceMembersRoleInput {
+  serviceName: ServiceName!
+  serviceRole: ServiceRolesName!
+  userOrganizationServiceRoleId: String!
 }
 
-input ListAvailableUsersToServiceInput{
-    serviceName: ServiceName!
-    name: String!
+input ListAvailableUsersToServiceInput {
+  serviceName: ServiceName!
+  name: String!
 }
 
-type UserOrganizationService{
-    id: String!
-    showFirstSteps: Boolean!
-    service: Service!
-    serviceRoles: ServiceRoles!
-    active: Boolean!
-    userOrganization: UserOrganization
-    createdAt: Datetime!
-    updatedAt: Datetime!
+type UserOrganizationService {
+  id: String!
+  showFirstSteps: Boolean!
+  service: Service!
+  serviceRoles: ServiceRoles!
+  active: Boolean!
+  userOrganization: UserOrganization
+  createdAt: Datetime!
+  updatedAt: Datetime!
 }
 
-type ServiceRoles{
-    id: String!
-    name: String!
-    createdAt: Datetime!
-    updatedAt: Datetime!
+type ServiceRoles {
+  id: String!
+  name: String!
+  createdAt: Datetime!
+  updatedAt: Datetime!
 }
 
-input AddUserInOrganizationServiceInput{
-    userId: String!
-    serviceName: ServiceName!
+input AddUserInOrganizationServiceInput {
+  userId: String!
+  serviceName: ServiceName!
 }
 
 enum ServiceName {
-    affiliate
-    teste
+  affiliate
+  teste
 }
 
 enum ServiceRolesName {
-    ADMIN,
-    RESPONSIBLE,
-    ANALYST,
-    SALE
+  ADMIN
+  RESPONSIBLE
+  ANALYST
+  SALE
 }
 
 input ServiceInput {
@@ -106,18 +133,17 @@ input ServiceInput {
   role: ServiceRolesName
 }
 
-
-type Service{
-    id: String!
-    name: String!
-    active: Boolean!
-    updatedAt: Datetime!
-    createdAt: Datetime!
-    hasOrganization: Boolean
-    serviceRoles: [ServiceRoles]!
+type Service {
+  id: String!
+  name: String!
+  active: Boolean!
+  updatedAt: Datetime!
+  createdAt: Datetime!
+  hasOrganization: Boolean
+  serviceRoles: [ServiceRoles]!
 }
 
-input CreateServiceInOrganizationInput{
-    serviceId: String!
-    organizationId: String!
+input CreateServiceInOrganizationInput {
+  serviceId: String!
+  organizationId: String!
 }

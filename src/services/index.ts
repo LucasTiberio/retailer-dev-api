@@ -14,8 +14,10 @@ import BankDataService from './bank-data'
 import PaymentsService from './payments'
 import IntegrationsService from './integration'
 import AffiliateStoreService from './affiliate-store'
+import TermsAndConditionService from './terms-and-conditions'
 
 let services = [
+  TermsAndConditionService,
   IntegrationsService,
   UserService,
   ShortenerUrlService,

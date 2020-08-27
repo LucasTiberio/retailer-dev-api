@@ -1,0 +1,17 @@
+extend type Query {
+  getTermsAndConditions: TermsAndConditions @isVerified @isAuthenticated
+}
+
+extend type Mutation {
+  sendTermsAndConditions(input: SendTermsAndConditionsInput!): Boolean! @isVerified @isAuthenticated
+}
+
+type TermsAndConditions {
+  status: Boolean!
+  termsAndConditionsId: String
+  text: String
+}
+
+input SendTermsAndConditionsInput {
+  termsAndConditionsId: String!
+}

@@ -10,14 +10,15 @@ import * as FileType from 'file-type'
 import knexDatabase from './knex-database'
 import { NextFunction } from 'express'
 import { sortBy } from 'lodash'
-import { IOrganizationRoleResponse, OrganizationRoles, OrganizationInviteStatus } from './services/organization/types'
+import { IOrganizationRoleResponse, OrganizationRoles } from './services/organization/types'
 import redisClient from './lib/Redis'
 import { SALE_VTEX_PIXEL_NAMESPACE, MESSAGE_ERROR_SALE_TOKEN_INVALID, MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER } from './common/consts'
 import PaymentService from './services/payments/service'
 import IntegrationService from './services/integration/service'
 import { PaymentServiceStatus } from './services/payments/types'
 import { Integrations } from './services/integration/types'
-import { onlyVtexIntegrationFeature } from './common/errors'
+import { onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions } from './common/errors'
+import TermsAndConditionsService from './services/terms-and-conditions/service'
 
 declare var process: {
   env: {
@@ -38,6 +39,7 @@ const typeDefsBase = gql`
   scalar Date
   scalar Datetime
   scalar Upload
+  directive @acceptTermsAndConditions on FIELD | FIELD_DEFINITION
   directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
   directive @organizationPaidVerify on FIELD | FIELD_DEFINITION
@@ -205,6 +207,31 @@ const directiveResolvers: IDirectiveResolvers = {
     } catch (err) {
       throw new Error('You are not authorized.')
     }
+  },
+  async acceptTermsAndConditions(next, _, __, context): Promise<NextFunction> {
+    const cachedTermsAndConditions = await redisClient.getAsync(`termsAndConditions_${context.client.id}`)
+
+    console.log({ cachedTermsAndConditions })
+
+    if (cachedTermsAndConditions) {
+      return next()
+    }
+
+    const validTermsAndConditions = await TermsAndConditionsService.getTermsAndConditions({
+      client: {
+        id: context.client.id,
+        origin: 'user',
+      },
+    })
+
+    if (!validTermsAndConditions) return next()
+
+    if (validTermsAndConditions?.status) {
+      await redisClient.setAsync(`termsAndConditions_${context.client.id}`, validTermsAndConditions?.status, 'EX', 86400)
+      return next()
+    }
+
+    throw new Error(userDoesNotAcceptTermsAndConditions)
   },
   async vtexFeature(next, _, __, context): Promise<NextFunction> {
     const organizationId = await redisClient.getAsync(context.client.id)
