@@ -16,8 +16,10 @@ import IntegrationsService from './integration'
 import AffiliateStoreService from './affiliate-store'
 import InsideSalesService from './inside-sales'
 import PersonalizedComissions from './personalized-commissions'
+import TermsAndConditionService from './terms-and-conditions'
 
 let services = [
+  TermsAndConditionService,
   IntegrationsService,
   UserService,
   ShortenerUrlService,
