@@ -58,7 +58,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  getAffiliateStore: AffiliateStore @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAffiliateStore: AffiliateStore @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @acceptTermsAndConditions @isVerified @isAuthenticated
   getAffiliateStoreWithProducts(input: GetAffiliateStoreWithProductsInput!): AffiliateStoreWithProducts
   getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProductFormatted]!
     @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
@@ -66,14 +66,14 @@ extend type Query {
     @isVerified
     @acceptTermsAndConditions
     @isAuthenticated
-  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate") @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]!
     @hasServiceRole(role: ["ANALYST"], serviceName: "affiliate")
     @vtexFeature
     @isVerified
     @acceptTermsAndConditions
     @isAuthenticated
-  getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @isVerified @acceptTermsAndConditions @isAuthenticated
+  getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 type AffiliateStoreWithProducts {
