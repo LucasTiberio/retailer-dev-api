@@ -8,7 +8,14 @@ import { IContext } from '../../common/types'
  * @param context user id
  * @param trx knex transaction
  */
-const getTermsAndConditions = async (context: IContext, trx?: Transaction) => {
+const getTermsAndConditions = async (
+  context: {
+    client: {
+      id: string
+    }
+  },
+  trx?: Transaction
+) => {
   const userTermsAndConditions = await TermsAndConditionsRepositories.getTermsAndConditionsByUserId(context.client.id, trx)
 
   const lastTermsAndConditions = await TermsAndConditionsRepositories.getLastTermsAndConditions(trx)
@@ -41,7 +48,11 @@ const sendTermsAndConditions = async (
   input: {
     termsAndConditionsId: string
   },
-  context: IContext,
+  context: {
+    client: {
+      id: string
+    }
+  },
   trx: Transaction
 ) => {
   try {

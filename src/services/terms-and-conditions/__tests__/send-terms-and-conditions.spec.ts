@@ -12,7 +12,11 @@ describe('Organization', () => {
 
   let userToken: IUserToken
 
-  let context: IContext
+  let context: {
+    client: {
+      id: string
+    }
+  }
 
   beforeEach(async () => {
     trx = await database.knex.transaction()

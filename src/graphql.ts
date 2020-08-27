@@ -220,7 +220,6 @@ const directiveResolvers: IDirectiveResolvers = {
     const validTermsAndConditions = await TermsAndConditionsService.getTermsAndConditions({
       client: {
         id: context.client.id,
-        origin: 'user',
       },
     })
 

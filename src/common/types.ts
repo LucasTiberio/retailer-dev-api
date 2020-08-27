@@ -8,7 +8,7 @@ export interface IPagination {
 
 export interface IContext {
   client: IUserToken
-  organizationId?: string
+  organizationId: string
   redisClient?: RedisClient
   isOrganizationAdmin?: boolean
   userServiceOrganizationRolesId?: string
