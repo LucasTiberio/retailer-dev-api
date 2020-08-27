@@ -22,9 +22,6 @@ const getTermsAndConditions = async (
 
   if (!userTermsAndConditions && !lastTermsAndConditions) return null
 
-  console.log({ userTermsAndConditions })
-  console.log({ lastTermsAndConditions })
-
   if (userTermsAndConditions?.id === lastTermsAndConditions?.id) {
     return {
       status: true,

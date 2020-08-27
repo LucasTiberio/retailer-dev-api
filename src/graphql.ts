@@ -211,8 +211,6 @@ const directiveResolvers: IDirectiveResolvers = {
   async acceptTermsAndConditions(next, _, __, context): Promise<NextFunction> {
     const cachedTermsAndConditions = await redisClient.getAsync(`termsAndConditions_${context.client.id}`)
 
-    console.log({ cachedTermsAndConditions })
-
     if (cachedTermsAndConditions) {
       return next()
     }
