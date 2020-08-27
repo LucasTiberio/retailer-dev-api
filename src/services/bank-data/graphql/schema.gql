@@ -1,5 +1,5 @@
 extend type Query {
-  getBrazilBanks(input: GetBrazilBanksInput): [BrazilBanks!]! @isVerified @acceptTermsAndConditions @isAuthenticated
+  getBrazilBanks(input: GetBrazilBanksInput): [BrazilBanks!]! @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type UserOrganizationService {

@@ -15,12 +15,7 @@ input VtexAffiliateCommissionInput {
 }
 
 extend type Mutation {
-  handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions!
-    @hasServiceRole(role: ["ADMIN"])
-    @organizationPaidVerify
-    @acceptTermsAndConditions
-    @isVerified
-    @isAuthenticated
+  handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
   verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
