@@ -1,0 +1,96 @@
+extend type Query {
+  getAllCommissionsBonifications: [CommissionBonification]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getCommissionBonificationById(input: GetCommissionBonificationByIdInput!): CommissionBonificationWithRules!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+extend type Mutation {
+  createCommissionBonification(input: CreateCommissionBonificationInput!): CommissionBonificationWithRules!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  deleteCommissionBonification(input: DeleteCommissionBonificationInput!): CommissionBonification!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+type CommissionBonificationWithRules {
+  id: String!
+  title: String!
+  type: CommissionBonificationTypes!
+  goal: CommissionBonificationGoals!
+  recurrency: CommissionBonificationRecurrencies!
+  bonusType: CommissionBonificationBonusTypes!
+  startBonusValidAt: Datetime
+  endBonusValidAt: Datetime
+  rules: [CommissionBonificationRules!]!
+}
+
+type CommissionBonification {
+  id: String!
+  title: String!
+  type: CommissionBonificationTypes!
+  goal: CommissionBonificationGoals!
+  recurrency: CommissionBonificationRecurrencies!
+  bonusType: CommissionBonificationBonusTypes!
+  startBonusValidAt: Datetime
+  endBonusValidAt: Datetime
+}
+
+type CommissionBonificationRules {
+  id: String!
+  initialTarget: Float!
+  finalTarget: Float!
+  bonus: Float!
+}
+
+input DeleteCommissionBonificationInput {
+  organizationCommissionBonificationId: String!
+}
+
+input CreateCommissionBonificationInput {
+  title: String!
+  type: CommissionBonificationTypes!
+  goal: CommissionBonificationGoals!
+  recurrency: CommissionBonificationRecurrencies!
+  bonusType: CommissionBonificationBonusTypes!
+  rules: [CommissionBonificationRulesInput!]!
+  startBonusValidAt: Datetime
+  endBonusValidAt: Datetime
+}
+
+input CommissionBonificationRulesInput {
+  initialTarget: Float!
+  finalTarget: Float!
+  bonus: Float!
+}
+
+input GetCommissionBonificationByIdInput {
+  organizationCommissionBonificationId: String!
+}
+
+enum CommissionBonificationTypes {
+  absolute
+  percent
+}
+
+enum CommissionBonificationRecurrencies {
+  monthly
+  personalized
+}
+
+enum CommissionBonificationGoals {
+  total_sales
+}
+
+enum CommissionBonificationBonusTypes {
+  all_members
+}
