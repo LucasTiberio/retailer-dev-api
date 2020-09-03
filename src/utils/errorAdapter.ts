@@ -20,6 +20,11 @@ import {
   userAlreadyRegistered,
   organizationCommissionOrderDuplicated,
   userDoesNotAcceptTermsAndConditions,
+  commissionBonificationWithouRules,
+  commissionBonificationPastDate,
+  commissionBonificationWithFinalPeriodBeforeStartPeriod,
+  commissionBonificationOnlyWithTwoDates,
+  commissionBonificationRulesWithWrongTargets,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -88,6 +93,31 @@ export default (message: string) => {
       return {
         code: 62,
         explication: 'Organization Commission Order received are duplicated',
+      }
+    case commissionBonificationWithouRules:
+      return {
+        code: 63,
+        explication: 'Commission bonifications only be created with rules',
+      }
+    case commissionBonificationPastDate:
+      return {
+        code: 64,
+        explication: 'Only create commission bonification in future dates',
+      }
+    case commissionBonificationWithFinalPeriodBeforeStartPeriod:
+      return {
+        code: 65,
+        explication: 'Only create commission bonification with end date past start date',
+      }
+    case commissionBonificationOnlyWithTwoDates:
+      return {
+        code: 66,
+        explication: 'Commission bonification only with start and end date',
+      }
+    case commissionBonificationRulesWithWrongTargets:
+      return {
+        code: 67,
+        explication: 'Commission bonification with wrong rules targets sent',
       }
     case affiliateDoesNotExist:
       return {
