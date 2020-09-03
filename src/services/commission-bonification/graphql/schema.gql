@@ -28,6 +28,7 @@ type CommissionBonificationWithRules {
   type: CommissionBonificationTypes!
   goal: CommissionBonificationGoals!
   recurrency: CommissionBonificationRecurrencies!
+  active: Boolean!
   bonusType: CommissionBonificationBonusTypes!
   startBonusValidAt: Datetime
   endBonusValidAt: Datetime
@@ -39,6 +40,7 @@ type CommissionBonification {
   title: String!
   type: CommissionBonificationTypes!
   goal: CommissionBonificationGoals!
+  active: Boolean!
   recurrency: CommissionBonificationRecurrencies!
   bonusType: CommissionBonificationBonusTypes!
   startBonusValidAt: Datetime
