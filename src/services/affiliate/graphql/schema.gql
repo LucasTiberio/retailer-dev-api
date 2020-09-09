@@ -56,6 +56,7 @@ input PaidAffiliateCommissionInput {
 }
 
 input AffiliateCommissionSetPaid {
+  _id: String
   affiliateId: String!
   orderId: String!
 }
@@ -91,8 +92,8 @@ type DefaultCommission {
 }
 
 extend type Query {
-  timeToPayCommission: TimeToPayCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  defaultCommission: DefaultCommission! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  timeToPayCommission: TimeToPayCommission! @hasServiceRole(role: ["ANALYST", "SALE", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  defaultCommission: DefaultCommission! @hasServiceRole(role: ["ANALYST", "SALE", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationCommissions: [OrganizationCommission]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationCommissionsName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationCommissionsSellerName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
@@ -105,18 +106,18 @@ extend type Query {
     @isVerified
     @isAuthenticated
   getAllOrganizationOrders(input: GetAllOrganizationOrdersInput): AllOrders! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  getOrganizationOrdersByAffiliateId(input: GetOrganizationOrdersByAffiliateIdInput): AllOrders! @hasServiceRole(role: ["ANALYST"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationOrdersByAffiliateId(input: GetOrganizationOrdersByAffiliateIdInput): AllOrders! @hasServiceRole(role: ["ANALYST", "SALE"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationAverageTicket(input: GetOrganizationAverageTicketInput): OrganizationAverageTicket! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationTotalOrders(input: GetOrganizationTotalOrdersInput): OrganizationTotalOrders! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationCommission(input: GetOrganizationCommissionInput): OrganizationCommission! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationTotalOrdersByAffiliate(input: GetOrganizationTotalOrdersByAffiliateInput!): OrganizationTotalOrders!
-    @hasServiceRole(role: ["ANALYST"])
+    @hasServiceRole(role: ["ANALYST", "SALE"])
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   getOrganizationCommissionByAffiliate(input: GetOrganizationCommissionByAffiliateInput!): OrganizationCommission!
-    @hasServiceRole(role: ["ANALYST"])
+    @hasServiceRole(role: ["ANALYST", "SALE"])
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
@@ -148,16 +149,16 @@ type OrganizationCommission {
 
 type OrganizationCommissionItem {
   _id: String!
-  affiliateInfo: AffiliateInfo!
+  affiliateInfo: AffiliateInfo
 }
 
 type AffiliateInfo {
   affiliateId: String!
-  commission: AffiliateCommission!
+  commission: AffiliateCommission
 }
 
 type AffiliateCommission {
-  amount: Float!
+  amount: Float
   payDay: String
 }
 
@@ -272,15 +273,16 @@ type AllOrders {
 type Order {
   _id: String!
   isPaid: Boolean
-  orderId: String!
+  orderId: String
   organizationId: String!
-  sellerOrderId: String!
+  sellerOrderId: String
+  type: String!
   plugoneAffiliateStatus: PlugoneAffiliateStatus!
   creationDate: String!
   value: Float!
-  affiliateInfo: AffiliateInfo!
-  items: [OrderItem]!
-  clientData: ClientData!
+  affiliateInfo: AffiliateInfo
+  items: [OrderItem]
+  clientData: ClientData
 }
 
 type ClientData {
