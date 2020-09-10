@@ -19,7 +19,7 @@ const createCommissionBonification = async (input: CommissionBonificationWithRul
   if (!rules.length) throw new Error(commissionBonificationWithouRules)
 
   if (startBonusValidAt) {
-    if (moment(startBonusValidAt).isBefore(moment().utc())) throw new Error(commissionBonificationPastDate)
+    if (moment(startBonusValidAt).add(1, 'days').utc().isBefore(moment().utc())) throw new Error(commissionBonificationPastDate)
   }
 
   if (endBonusValidAt || startBonusValidAt) {
