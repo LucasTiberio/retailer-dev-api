@@ -109,7 +109,7 @@ extend type Query {
   getOrganizationRevenue(input: GetOrganizationRevenueInput): OrganizationRevenue! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationAverageTicket(input: GetOrganizationAverageTicketInput): OrganizationAverageTicket! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationTotalOrders(input: GetOrganizationTotalOrdersInput): OrganizationTotalOrders! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  getOrganizationCommission(input: GetOrganizationCommissionInput): OrganizationCommission! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationCommission(input: GetOrganizationCommissionInput): SimpleOrganizationCommission! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationTotalOrdersByAffiliate(input: GetOrganizationTotalOrdersByAffiliateInput!): OrganizationTotalOrders!
     @hasServiceRole(role: ["ANALYST"])
     @acceptTermsAndConditions
@@ -142,7 +142,7 @@ input GetOrganizationCommissionByAffiliateInput {
   serviceName: ServiceName
 }
 
-type OrganizationCommission {
+type SimpleOrganizationCommission {
   data: [OrganizationCommissionItem]!
 }
 
