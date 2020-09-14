@@ -115,7 +115,7 @@ extend type Query {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
-  getOrganizationCommissionByAffiliate(input: GetOrganizationCommissionByAffiliateInput!): OrganizationCommission!
+  getOrganizationCommissionByAffiliate(input: GetOrganizationCommissionByAffiliateInput!): SimpleOrganizationCommission!
     @hasServiceRole(role: ["ANALYST"])
     @acceptTermsAndConditions
     @isVerified
