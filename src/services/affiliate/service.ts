@@ -161,6 +161,19 @@ const getAllOrganizationOrders = async (
   }
 }
 
+const getAvailableBonifications = async (context: { client: IUserToken; organizationId: string; userServiceOrganizationRolesId: string }) => {
+  if (!context.client) throw new Error('token must be provided!')
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/affiliate/${context.userServiceOrganizationRolesId}/bonifications-details`
+
+  try {
+    const { data } = await Axios.get(url)
+    return data
+  } catch (err) {
+    throw new Error(err.message)
+  }
+}
+
 const paidAffiliateCommission = async (
   input: {
     userOrganizationServiceId: string
@@ -850,4 +863,5 @@ export default {
   handleDefaultommission,
   getTimeToPayCommission,
   handleOrganizationCommission,
+  getAvailableBonifications,
 }

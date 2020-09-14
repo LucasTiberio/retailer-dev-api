@@ -65,6 +65,11 @@ const resolvers: IResolvers = {
         return service.getOrganizationCommissionByOrganizationId({ organizationId }, trx)
       })
     },
+    getAffiliateAvailableBonifications: (_, __, { client, userServiceOrganizationRolesId, organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getAvailableBonifications({ client, userServiceOrganizationRolesId, organizationId })
+      })
+    },
     getOrganizationCommissionsName: (_, __, { organizationId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.getOrganizationCommissionsName(organizationId, trx)

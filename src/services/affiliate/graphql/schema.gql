@@ -91,6 +91,13 @@ type DefaultCommission {
   createdAt: Datetime!
 }
 
+type AffiliateBonification {
+  title: String!
+  goal: Float!
+  currentValue: Float!
+  endDate: String!
+}
+
 extend type Query {
   timeToPayCommission: TimeToPayCommission! @hasServiceRole(role: ["ANALYST", "SALE", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   defaultCommission: DefaultCommission! @hasServiceRole(role: ["ANALYST", "SALE", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
@@ -99,6 +106,7 @@ extend type Query {
   getOrganizationCommissionsSellerName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationCommissionsCategoriesName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationCommissionsAffiliatesName: [OrganizationCommissionName]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAffiliateAvailableBonifications: [AffiliateBonification]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @acceptTermsAndConditions @isVerified @isAuthenticated
   listAffiliateShorterUrl(input: ListAffiliateShorterUrlInput!): [UserOrganizationServiceRolesUrlShortener]!
     @hasServiceRole(role: ["ANALYST"])
     @organizationPaidVerify
