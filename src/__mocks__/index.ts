@@ -13,6 +13,9 @@ export const createOrganizationPayload = () => ({
     reason: 'Ter mais uma opção de canal de vendas',
     plataform: 'vtex',
   },
+  integration: {
+    ...vtexSecretsMock,
+  },
 })
 
 export const createOrganizationWithIntegrationVTEXPayload = () => ({

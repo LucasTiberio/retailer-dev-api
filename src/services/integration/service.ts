@@ -7,7 +7,7 @@ import { IVtexSecrets } from '../vtex/types'
 import knexDatabase from '../../knex-database'
 import { organizationServicesByOrganizationIdLoader } from './loaders'
 import Axios from 'axios'
-import { upgradeYourPlan } from '../../common/errors'
+import { upgradeYourPlan, userOnlyChangeToSameIntegrationType } from '../../common/errors'
 
 const _secretToJwt = (obj: object) => {
   return common.jwtEncode(obj)
@@ -27,6 +27,12 @@ const createIntegration = async (
 
   if (!affiliateRules.providers.some((item: { name: Integrations; status: boolean }) => item.name === type && item.status)) {
     throw new Error(upgradeYourPlan)
+  }
+
+  const integrationFound = await getIntegrationByOrganizationId(context.organizationId, trx)
+
+  if (integrationFound?.type !== input.type) {
+    throw new Error(userOnlyChangeToSameIntegrationType)
   }
 
   try {

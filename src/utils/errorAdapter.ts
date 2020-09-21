@@ -25,6 +25,7 @@ import {
   commissionBonificationWithFinalPeriodBeforeStartPeriod,
   commissionBonificationOnlyWithTwoDates,
   commissionBonificationRulesWithWrongTargets,
+  userOnlyChangeToSameIntegrationType,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -118,6 +119,11 @@ export default (message: string) => {
       return {
         code: 67,
         explication: 'Commission bonification with wrong rules targets sent',
+      }
+    case userOnlyChangeToSameIntegrationType:
+      return {
+        code: 68,
+        explication: 'Organization only change integration to same integration type. Eg: Vtex to Vtex, Loja Integrada to Loja Integrada',
       }
     case affiliateDoesNotExist:
       return {

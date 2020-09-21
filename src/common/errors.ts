@@ -25,3 +25,4 @@ export const commissionBonificationPastDate = 'commission_bonification_past_date
 export const commissionBonificationWithFinalPeriodBeforeStartPeriod = 'commission_bonification_with_final_period_before_start_period'
 export const commissionBonificationOnlyWithTwoDates = 'commission_bonification_only_with_two_dates'
 export const commissionBonificationRulesWithWrongTargets = 'commission_bonification_rules_with_wrong_targets'
+export const userOnlyChangeToSameIntegrationType = 'user_only_change_to_same_integration_type'
