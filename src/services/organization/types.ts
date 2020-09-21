@@ -1,11 +1,16 @@
 import { ISimpleUser } from '../users/types'
 import { ISimpleService } from '../services/types'
+import { Integrations } from '../integration/types'
 
 export interface IOrganizationPayload {
   organization: {
     name: string
     contactEmail: string
     phone: string
+  }
+  integration: {
+    secrets: any
+    type: Integrations
   }
   additionalInfos: IOrganizationAdittionalInfos
 }

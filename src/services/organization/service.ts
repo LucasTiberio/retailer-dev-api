@@ -42,6 +42,7 @@ import fetchVtexDomains from './clients/fetch-domains'
 
 /** Services */
 import IntegrationService from '../integration/service'
+import { Integrations } from '../integration/types'
 
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
   const { segment, resellersEstimate, reason, plataform } = input
@@ -59,10 +60,9 @@ const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalIn
 }
 
 const createOrganization = async (createOrganizationPayload: IOrganizationPayload, context: { redisClient: RedisClient; client: IUserToken }, trx: Transaction) => {
-  if (!context.client) throw new Error('invalid token')
-
   const {
     organization: { name, contactEmail, phone },
+    integration: { secrets, type },
   } = createOrganizationPayload
 
   try {
@@ -72,6 +72,12 @@ const createOrganization = async (createOrganizationPayload: IOrganizationPayloa
       if (organizationFound) {
         throw new Error('Only 1 organization per account an available')
       }
+    }
+
+    if (type === Integrations.VTEX) {
+      await VtexService.verifyVtexSecrets(secrets)
+    } else if (type === Integrations.LOJA_INTEGRADA) {
+      await IntegrationService.verifyLojaIntegradaSecrets(secrets)
     }
 
     const attachedOrganizationInfosId = await attachOrganizationAditionalInfos(createOrganizationPayload.additionalInfos, trx)
@@ -89,6 +95,17 @@ const createOrganization = async (createOrganizationPayload: IOrganizationPayloa
       })
       .into('organizations')
       .returning('*')
+
+    await IntegrationService.createIntegration(
+      {
+        secrets,
+        type,
+      },
+      {
+        organizationId: organizationCreated.id,
+      },
+      trx
+    )
 
     await organizationRolesAttach(context.client.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx)
 

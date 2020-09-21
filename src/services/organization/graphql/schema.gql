@@ -2,9 +2,19 @@ extend type Query {
   verifyOrganizationName(input: VerifyOrganizationNameInput!): Boolean @isAuthenticated
   listMyOrganizations: [Organization]! @acceptTermsAndConditions @isVerified @isAuthenticated
   organizationDetails: Organization! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  listUsersInOrganization(input: ListUsersInOrganizationInput!): ListUsersInOrganizationPayload! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  listUsersInOrganization(input: ListUsersInOrganizationInput!): ListUsersInOrganizationPayload!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
   listTeammates: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  findUsersToOrganization(input: FindUsersToOrganizationInput!): [FindUsersToOrganizationPayload]!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
   teammatesCapacities: TeammatesCapacities! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   fetchOrganizationDomain: [String]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
 }
@@ -49,7 +59,12 @@ extend type Mutation {
   organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
-  handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
   handleOrganizationDomain(input: HandleOrganizationDomainInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
@@ -141,6 +156,7 @@ input InviteUsersInput {
 input CreateOrganizationInput {
   organization: OrganizationInput!
   additionalInfos: AdditionalInfos!
+  integration: CreateIntegrationInput!
 }
 
 input AdditionalInfos {

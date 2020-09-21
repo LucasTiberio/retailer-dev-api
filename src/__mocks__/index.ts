@@ -15,6 +15,23 @@ export const createOrganizationPayload = () => ({
   },
 })
 
+export const createOrganizationWithIntegrationVTEXPayload = () => ({
+  organization: {
+    name: Faker.name.firstName(),
+    contactEmail: 'gabriel-tamura@b8one.com',
+    phone: '551123213123123',
+  },
+  additionalInfos: {
+    segment: 'Beleza e Cosméticos',
+    resellersEstimate: 500,
+    reason: 'Ter mais uma opção de canal de vendas',
+    plataform: 'vtex',
+  },
+  integration: {
+    ...vtexSecretsMock,
+  },
+})
+
 export const mockVtexDepartments = [
   {
     id: 1,

@@ -172,4 +172,5 @@ export default {
   createIntegration,
   verifyIntegration,
   getIntegrationByOrganizationId,
+  verifyLojaIntegradaSecrets,
 }
