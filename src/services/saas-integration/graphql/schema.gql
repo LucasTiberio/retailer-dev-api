@@ -16,6 +16,7 @@ input HandleSassDefaultCommissionInput {
   type: SaasDefaultCommissionTypes!
   value: Float!
   period: SaasDefaultCommissionPeriod!
+  paymentPeriod: Int!
   initPayCommission: Int!
 }
 
@@ -25,6 +26,7 @@ type SaasDefaultCommission {
   type: SaasDefaultCommissionTypes!
   value: Float!
   active: Boolean!
+  paymentPeriod: Int!
   period: SaasDefaultCommissionPeriod!
   initPayCommission: Int!
   createdAt: String!

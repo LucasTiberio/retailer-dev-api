@@ -12,6 +12,7 @@ const handleSassDefaultCommission = async (
     value: string
     period: SaasDefaultCommissionPeriod
     initPayCommission: number
+    paymentPeriod: number
   },
   context: { organizationId: string },
   trx: Transaction

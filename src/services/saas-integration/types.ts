@@ -13,6 +13,7 @@ export type SaasDefaultCommissionFromDB = {
   organization_id: string
   type: SaasDefaultCommissionTypes
   value: number
+  payment_period: number
   active: boolean
   period: SaasDefaultCommissionPeriod
   init_pay_commission: number
@@ -26,6 +27,7 @@ export type SaasDefaultCommissionAdapted = {
   type: SaasDefaultCommissionTypes
   value: number
   active: boolean
+  paymentPeriod: number
   period: SaasDefaultCommissionPeriod
   initPayCommission: number
   createdAt: string

@@ -10,4 +10,5 @@ export const SaasDefaultCommissionAdapter = (record: SaasDefaultCommissionFromDB
   initPayCommission: record.init_pay_commission,
   createdAt: record.created_at,
   updatedAt: record.updated_at,
+  paymentPeriod: record.payment_period,
 })

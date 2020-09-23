@@ -10,6 +10,7 @@ const findOrUpdate = async (
     value: string
     period: SaasDefaultCommissionPeriod
     initPayCommission: number
+    paymentPeriod: number
   },
   organizationId: string,
   trx: Transaction
