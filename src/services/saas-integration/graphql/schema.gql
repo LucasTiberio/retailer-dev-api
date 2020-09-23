@@ -1,0 +1,42 @@
+extend type Query {
+  getSaasDefaultCommission: SaasDefaultCommission! @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
+}
+
+extend type Mutation {
+  handleSassDefaultCommission(input: HandleSassDefaultCommissionInput!): SaasDefaultCommission!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @SaasIntegration
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+input HandleSassDefaultCommissionInput {
+  type: SaasDefaultCommissionTypes!
+  value: Float!
+  period: SaasDefaultCommissionPeriod!
+  initPayCommission: Int!
+}
+
+type SaasDefaultCommission {
+  id: String!
+  organizationId: String!
+  type: SaasDefaultCommissionTypes!
+  value: Float!
+  active: Boolean!
+  period: SaasDefaultCommissionPeriod!
+  initPayCommission: Int!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum SaasDefaultCommissionTypes {
+  absolute
+  percent
+}
+
+enum SaasDefaultCommissionPeriod {
+  lifetime
+  personalized
+}

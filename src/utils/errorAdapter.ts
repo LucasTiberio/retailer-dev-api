@@ -27,6 +27,7 @@ import {
   commissionBonificationRulesWithWrongTargets,
   userOnlyChangeToSameIntegrationType,
   onlyCreateOrganizationWithouIntegrationWithSecret,
+  onlyIuguIntegrationFeature,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -45,6 +46,11 @@ export default (message: string) => {
       return {
         code: 54,
         explication: 'This feature is only for accounts with vtex integration',
+      }
+    case onlyIuguIntegrationFeature:
+      return {
+        code: 98,
+        explication: 'This feature is only for accounts with iugu integration',
       }
     case minThreeLetters:
       return {
