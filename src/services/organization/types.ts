@@ -8,7 +8,7 @@ export interface IOrganizationPayload {
     contactEmail: string
     phone: string
   }
-  integration: {
+  integration?: {
     secrets: any
     type: Integrations
   }

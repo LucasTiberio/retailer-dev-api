@@ -32,7 +32,7 @@ import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from './loaders'
 import moment from 'moment'
-import { createVtexCampaignFail, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
+import { createVtexCampaignFail, onlyCreateOrganizationWithouIntegrationWithSecret, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
 
 /** Repositories */
 import Repository from './repositories/organizations'
@@ -59,10 +59,14 @@ const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalIn
   return attachedOrganizationInfosId
 }
 
-const createOrganization = async (createOrganizationPayload: IOrganizationPayload, context: { redisClient: RedisClient; client: IUserToken }, trx: Transaction) => {
+const createOrganization = async (
+  createOrganizationPayload: IOrganizationPayload,
+  context: { redisClient: RedisClient; client: IUserToken; createOrganizationWithoutIntegrationSecret?: string },
+  trx: Transaction
+) => {
   const {
     organization: { name, contactEmail, phone },
-    integration: { secrets, type },
+    integration,
   } = createOrganizationPayload
 
   try {
@@ -74,10 +78,14 @@ const createOrganization = async (createOrganizationPayload: IOrganizationPayloa
       }
     }
 
-    if (type === Integrations.VTEX) {
-      await VtexService.verifyVtexSecrets(secrets)
-    } else if (type === Integrations.LOJA_INTEGRADA) {
-      await IntegrationService.verifyLojaIntegradaSecrets(secrets)
+    if (!context.createOrganizationWithoutIntegrationSecret && !integration) {
+      throw new Error(onlyCreateOrganizationWithouIntegrationWithSecret)
+    }
+
+    if (integration?.type && integration.secrets && integration.type === Integrations.VTEX) {
+      await VtexService.verifyVtexSecrets(integration.secrets)
+    } else if (integration?.type && integration.secrets && integration.type === Integrations.LOJA_INTEGRADA) {
+      await IntegrationService.verifyLojaIntegradaSecrets(integration.secrets)
     }
 
     const attachedOrganizationInfosId = await attachOrganizationAditionalInfos(createOrganizationPayload.additionalInfos, trx)
@@ -96,16 +104,18 @@ const createOrganization = async (createOrganizationPayload: IOrganizationPayloa
       .into('organizations')
       .returning('*')
 
-    await IntegrationService.createIntegration(
-      {
-        secrets,
-        type,
-      },
-      {
-        organizationId: organizationCreated.id,
-      },
-      trx
-    )
+    if (integration && integration.secrets && integration.type) {
+      await IntegrationService.createIntegration(
+        {
+          secrets: integration.secrets,
+          type: integration.type,
+        },
+        {
+          organizationId: organizationCreated.id,
+        },
+        trx
+      )
+    }
 
     await organizationRolesAttach(context.client.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx)
 
@@ -961,7 +971,7 @@ const teammatesCapacities = async (context: { organizationId: string }, trx: Tra
   return {
     teammates: {
       total: affiliateTeammateRules.maxTeammates,
-      used: query.count - 1,
+      used: Number(query.count) - 1,
     },
   }
 }

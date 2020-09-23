@@ -26,6 +26,7 @@ import {
   commissionBonificationOnlyWithTwoDates,
   commissionBonificationRulesWithWrongTargets,
   userOnlyChangeToSameIntegrationType,
+  onlyCreateOrganizationWithouIntegrationWithSecret,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -124,6 +125,11 @@ export default (message: string) => {
       return {
         code: 68,
         explication: 'Organization only change integration to same integration type. Eg: Vtex to Vtex, Loja Integrada to Loja Integrada',
+      }
+    case onlyCreateOrganizationWithouIntegrationWithSecret:
+      return {
+        code: 69,
+        explication: 'Only create organization without integration with secret',
       }
     case affiliateDoesNotExist:
       return {

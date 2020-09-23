@@ -13,6 +13,37 @@ const _secretToJwt = (obj: object) => {
   return common.jwtEncode(obj)
 }
 
+const createIuguIntegration = async (
+  input: {
+    secrets: {
+      appKey: string
+    }
+  },
+  context: { organizationId: string },
+  trx: Transaction
+) => {
+  const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId, trx)
+
+  if (!affiliateRules.providers.some((item: { name: Integrations; status: boolean }) => item.name === Integrations.IUGU && item.status)) {
+    throw new Error(upgradeYourPlan)
+  }
+
+  const integrationFound = await getIntegrationByOrganizationId(context.organizationId, trx)
+
+  if (integrationFound && integrationFound.type !== Integrations.IUGU) {
+    throw new Error(userOnlyChangeToSameIntegrationType)
+  }
+
+  try {
+    await verifyIuguSecrets(input.secrets.appKey)
+    const jwtSecret = await _secretToJwt(input.secrets)
+    await attachIntegration(context.organizationId, jwtSecret, Integrations.IUGU, input.secrets.appKey, trx)
+    return true
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
 const createIntegration = async (
   input: {
     secrets: any
@@ -23,7 +54,7 @@ const createIntegration = async (
 ) => {
   const { secrets, type } = input
 
-  const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId)
+  const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId, trx)
 
   if (!affiliateRules.providers.some((item: { name: Integrations; status: boolean }) => item.name === type && item.status)) {
     throw new Error(upgradeYourPlan)
@@ -31,7 +62,7 @@ const createIntegration = async (
 
   const integrationFound = await getIntegrationByOrganizationId(context.organizationId, trx)
 
-  if (integrationFound?.type !== input.type) {
+  if (integrationFound && integrationFound.type !== input.type) {
     throw new Error(userOnlyChangeToSameIntegrationType)
   }
 
@@ -63,6 +94,20 @@ const createIntegration = async (
   }
 }
 
+const verifyIuguSecrets = async (appKey: string) => {
+  const listWebHooksIugu = await Axios.get('https://api.iugu.com/v1/web_hooks', {
+    params: {
+      api_token: appKey,
+    },
+  })
+
+  if (listWebHooksIugu.status === 200) {
+    return true
+  }
+
+  throw new Error('fail in Iugu app key verification.')
+}
+
 const verifyLojaIntegradaSecrets = async (secrets: ILojaIntegradaSecrets) => {
   const lojaIntegradaOrders = await Axios.get('https://api.awsli.com.br/v1/pedido/search', {
     params: {
@@ -87,7 +132,7 @@ const attachIntegration = async (organizationId: string, jwtSecret: string, type
     secret = await createIntegrationSecret(jwtSecret, trx)
   }
 
-  await inactiveOtherIntegrationsByOrganizationId(organizationId, type, trx)
+  // await inactiveOtherIntegrationsByOrganizationId(organizationId, type, trx)
 
   if (organizationIntegrationFound) {
     await updateOrganizationSecret(secret.id, organizationIntegrationFound.id, identifier, trx)
@@ -179,4 +224,5 @@ export default {
   verifyIntegration,
   getIntegrationByOrganizationId,
   verifyLojaIntegradaSecrets,
+  createIuguIntegration,
 }

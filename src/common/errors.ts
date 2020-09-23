@@ -26,3 +26,4 @@ export const commissionBonificationWithFinalPeriodBeforeStartPeriod = 'commissio
 export const commissionBonificationOnlyWithTwoDates = 'commission_bonification_only_with_two_dates'
 export const commissionBonificationRulesWithWrongTargets = 'commission_bonification_rules_with_wrong_targets'
 export const userOnlyChangeToSameIntegrationType = 'user_only_change_to_same_integration_type'
+export const onlyCreateOrganizationWithouIntegrationWithSecret = 'only_create_organization_withou_integration_with_secret'
