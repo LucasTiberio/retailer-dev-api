@@ -56,6 +56,7 @@ stages:
           --build-arg ENTERPRISE_TOKEN=$(ENTERPRISE_TOKEN)
           --build-arg BUCKET_URL=$(BUCKET_URL)
           --build-arg BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH=$(BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH)
+          --build-arg CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET=$(CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET)
         includeLatestTag: true
         tags: |
           $(Build.BuildId)
