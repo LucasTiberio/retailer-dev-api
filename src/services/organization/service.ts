@@ -43,6 +43,7 @@ import fetchVtexDomains from './clients/fetch-domains'
 /** Services */
 import IntegrationService from '../integration/service'
 import { Integrations } from '../integration/types'
+import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
   const { segment, resellersEstimate, reason, plataform } = input
@@ -78,7 +79,10 @@ const createOrganization = async (
       }
     }
 
-    if (!context.createOrganizationWithoutIntegrationSecret && !integration) {
+    if (
+      (!context.createOrganizationWithoutIntegrationSecret && !integration) ||
+      (!integration && context.createOrganizationWithoutIntegrationSecret !== CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET)
+    ) {
       throw new Error(onlyCreateOrganizationWithouIntegrationWithSecret)
     }
 

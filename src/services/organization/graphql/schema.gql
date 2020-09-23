@@ -156,7 +156,7 @@ input InviteUsersInput {
 input CreateOrganizationInput {
   organization: OrganizationInput!
   additionalInfos: AdditionalInfos!
-  integration: CreateIntegrationInput!
+  integration: CreateIntegrationInput
 }
 
 input AdditionalInfos {
