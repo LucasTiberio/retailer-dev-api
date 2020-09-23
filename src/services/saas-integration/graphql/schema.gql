@@ -1,5 +1,5 @@
 extend type Query {
-  getSaasDefaultCommission: SaasDefaultCommission! @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
+  getSaasDefaultCommission: SaasDefaultCommission @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {
