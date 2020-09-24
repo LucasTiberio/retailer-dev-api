@@ -8,6 +8,11 @@ export enum SaasDefaultCommissionTypes {
   percent = 'percent',
 }
 
+export enum SaasDefaultCommissionFormOfPayment {
+  unique = 'unique',
+  recurrency = 'recurrency',
+}
+
 export type SaasDefaultCommissionFromDB = {
   id: string
   organization_id: string
@@ -19,6 +24,8 @@ export type SaasDefaultCommissionFromDB = {
   init_pay_commission: number
   created_at: string
   updated_at: string
+  form_of_payment: SaasDefaultCommissionFormOfPayment
+  advanced_options: boolean
 }
 
 export type SaasDefaultCommissionAdapted = {
@@ -32,4 +39,6 @@ export type SaasDefaultCommissionAdapted = {
   initPayCommission: number
   createdAt: string
   updatedAt: string
+  formOfPayment: SaasDefaultCommissionFormOfPayment
+  advancedOptions: boolean
 }

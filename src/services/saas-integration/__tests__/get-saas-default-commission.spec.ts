@@ -2,7 +2,7 @@ process.env.NODE_ENV = 'test'
 import service from '../service'
 import Faker from 'faker'
 import { Transaction } from 'knex'
-import { SaasDefaultCommissionAdapted, SaasDefaultCommissionFromDB, SaasDefaultCommissionPeriod, SaasDefaultCommissionTypes } from '../types'
+import { SaasDefaultCommissionAdapted, SaasDefaultCommissionFormOfPayment, SaasDefaultCommissionFromDB, SaasDefaultCommissionPeriod, SaasDefaultCommissionTypes } from '../types'
 import redisClient from '../../../lib/Redis'
 import moment from 'moment'
 import OrganizationService from '../../organization/service'
@@ -115,6 +115,8 @@ describe('Saas default commission', () => {
       period: SaasDefaultCommissionPeriod.lifetime,
       initPayCommission: 3,
       paymentPeriod: 1,
+      formOfPayment: SaasDefaultCommissionFormOfPayment.unique,
+      advancedOptions: true,
     }
 
     await service.handleSassDefaultCommission(input, { organizationId: organizationInserted.id }, trx)
@@ -131,6 +133,8 @@ describe('Saas default commission', () => {
         period: input.period,
         paymentPeriod: input.paymentPeriod,
         initPayCommission: input.initPayCommission,
+        formOfPayment: input.formOfPayment,
+        advancedOptions: input.advancedOptions,
       })
     )
 

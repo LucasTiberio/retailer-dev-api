@@ -18,6 +18,8 @@ input HandleSassDefaultCommissionInput {
   period: SaasDefaultCommissionPeriod!
   paymentPeriod: Int!
   initPayCommission: Int!
+  formOfPayment: SaasDefaultCommissionFormOfPayment!
+  advancedOptions: Boolean!
 }
 
 type SaasDefaultCommission {
@@ -31,6 +33,13 @@ type SaasDefaultCommission {
   initPayCommission: Int!
   createdAt: String!
   updatedAt: String!
+  formOfPayment: SaasDefaultCommissionFormOfPayment!
+  advancedOptions: Boolean!
+}
+
+enum SaasDefaultCommissionFormOfPayment {
+  unique
+  recurrency
 }
 
 enum SaasDefaultCommissionTypes {

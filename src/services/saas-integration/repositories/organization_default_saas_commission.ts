@@ -1,6 +1,6 @@
 import knexDatabase from '../../../knex-database'
 import { Transaction } from 'knex'
-import { SaasDefaultCommissionTypes, SaasDefaultCommissionPeriod } from '../types'
+import { SaasDefaultCommissionTypes, SaasDefaultCommissionPeriod, SaasDefaultCommissionFormOfPayment } from '../types'
 import camelToSnakeCase from '../../../utils/camelToSnakeCase'
 import { SaasDefaultCommissionAdapter } from '../adapters'
 
@@ -11,6 +11,8 @@ const findOrUpdate = async (
     period: SaasDefaultCommissionPeriod
     initPayCommission: number
     paymentPeriod: number
+    formOfPayment: SaasDefaultCommissionFormOfPayment
+    advancedOptions: boolean
   },
   organizationId: string,
   trx: Transaction

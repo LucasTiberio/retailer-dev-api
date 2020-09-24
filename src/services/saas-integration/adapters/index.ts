@@ -11,4 +11,6 @@ export const SaasDefaultCommissionAdapter = (record: SaasDefaultCommissionFromDB
   createdAt: record.created_at,
   updatedAt: record.updated_at,
   paymentPeriod: record.payment_period,
+  formOfPayment: record.form_of_payment,
+  advancedOptions: record.advanced_options,
 })

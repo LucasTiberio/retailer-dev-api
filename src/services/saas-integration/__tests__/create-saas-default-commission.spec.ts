@@ -2,7 +2,7 @@ process.env.NODE_ENV = 'test'
 import service from '../service'
 import Faker from 'faker'
 import { Transaction } from 'knex'
-import { SaasDefaultCommissionPeriod, SaasDefaultCommissionTypes } from '../types'
+import { SaasDefaultCommissionFormOfPayment, SaasDefaultCommissionPeriod, SaasDefaultCommissionTypes } from '../types'
 import redisClient from '../../../lib/Redis'
 import OrganizationService from '../../organization/service'
 import IntegrationService from '../../integration/service'
@@ -112,6 +112,8 @@ describe('Saas default commission', () => {
       period: SaasDefaultCommissionPeriod.lifetime,
       initPayCommission: 3,
       paymentPeriod: 1,
+      formOfPayment: SaasDefaultCommissionFormOfPayment.unique,
+      advancedOptions: true,
     }
 
     const commissionBonification = await service.handleSassDefaultCommission(input, { organizationId: organizationInserted.id }, trx)
@@ -126,6 +128,8 @@ describe('Saas default commission', () => {
         active: true,
         period: input.period,
         initPayCommission: input.initPayCommission,
+        formOfPayment: input.formOfPayment,
+        advancedOptions: input.advancedOptions,
       })
     )
 
@@ -167,6 +171,8 @@ describe('Saas default commission', () => {
       period: SaasDefaultCommissionPeriod.lifetime,
       initPayCommission: 3,
       paymentPeriod: 1,
+      formOfPayment: SaasDefaultCommissionFormOfPayment.unique,
+      advancedOptions: true,
     }
 
     await service.handleSassDefaultCommission(input, { organizationId: organizationInserted.id }, trx)
@@ -177,6 +183,8 @@ describe('Saas default commission', () => {
       period: SaasDefaultCommissionPeriod.personalized,
       initPayCommission: 6,
       paymentPeriod: 2,
+      formOfPayment: SaasDefaultCommissionFormOfPayment.recurrency,
+      advancedOptions: false,
     }
 
     const commissionBonificationUpdated = await service.handleSassDefaultCommission(updateInput, { organizationId: organizationInserted.id }, trx)
@@ -191,6 +199,8 @@ describe('Saas default commission', () => {
         period: updateInput.period,
         paymentPeriod: updateInput.paymentPeriod,
         initPayCommission: updateInput.initPayCommission,
+        formOfPayment: updateInput.formOfPayment,
+        advancedOptions: updateInput.advancedOptions,
       })
     )
 

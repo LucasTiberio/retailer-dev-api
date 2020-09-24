@@ -1,7 +1,7 @@
 import { Transaction } from 'knex'
 
 /** types */
-import { SaasDefaultCommissionTypes, SaasDefaultCommissionPeriod } from './types'
+import { SaasDefaultCommissionTypes, SaasDefaultCommissionPeriod, SaasDefaultCommissionFormOfPayment } from './types'
 
 /** Repositories */
 import SaasDefaultCommissionRepository from './repositories/organization_default_saas_commission'
@@ -13,6 +13,8 @@ const handleSassDefaultCommission = async (
     period: SaasDefaultCommissionPeriod
     initPayCommission: number
     paymentPeriod: number
+    formOfPayment: SaasDefaultCommissionFormOfPayment
+    advancedOptions: boolean
   },
   context: { organizationId: string },
   trx: Transaction
