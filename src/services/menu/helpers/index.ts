@@ -3,9 +3,54 @@ import { ServiceRoles } from '../../services/types'
 /** Services */
 
 import OrganizationRulesService from '../../organization-rules/service'
+import { Integrations } from '../../integration/types'
 
-export const organizationAdminMenu = async (vtexIntegration: boolean, organizationId: string) => {
-  if (vtexIntegration) {
+export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string) => {
+  if (integrationType === Integrations.IUGU) {
+    return [
+      {
+        group: 'menu-items',
+        items: [
+          {
+            name: 'overview',
+            slug: '/overview',
+          },
+          {
+            name: 'settings',
+            slug: '/settings',
+          },
+        ],
+      },
+      {
+        group: 'services',
+        items: [
+          {
+            name: 'affiliate',
+            children: [
+              {
+                name: 'signatures',
+                slug: '/affiliate/signatures',
+              },
+              {
+                name: 'commission',
+                slug: '/affiliate/commission',
+              },
+              {
+                name: 'members',
+                slug: '/affiliate/members',
+              },
+              {
+                name: 'payments',
+                slug: '/affiliate/payments',
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  }
+
+  if (integrationType === Integrations.VTEX) {
     const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
 
     const vtexBaseAdminMenu: any = [
@@ -119,7 +164,47 @@ export const organizationMemberMenu = [
   },
 ]
 
-export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: boolean) => {
+export const affiliateMemberMountMenu = (serviceRole: string, integrationType: Integrations) => {
+  if (integrationType === Integrations.IUGU) {
+    return [
+      {
+        group: 'menu-items',
+        items: [
+          {
+            name: 'overview',
+            slug: '/overview',
+          },
+        ],
+      },
+      {
+        group: 'services',
+        items: [
+          {
+            name: 'affiliate',
+            children: [
+              {
+                name: 'signatures',
+                slug: '/affiliate/signatures',
+              },
+              {
+                name: 'commission',
+                slug: '/affiliate/commission',
+              },
+              {
+                name: 'linkGenerator',
+                slug: '/affiliate/link-generator',
+              },
+              {
+                name: 'payments',
+                slug: '/affiliate/payments',
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  }
+
   let affiliateAnalyst: any = {
     name: 'affiliate',
     children: [
@@ -162,7 +247,7 @@ export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: b
 
   switch (serviceRole) {
     case ServiceRoles.ANALYST:
-      if (vtexIntegration) {
+      if (integrationType === Integrations.VTEX) {
         affiliateAnalyst = {
           ...affiliateAnalyst,
           children: [
@@ -176,7 +261,7 @@ export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: b
       }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
-      if (vtexIntegration) {
+      if (integrationType === Integrations.VTEX) {
         affiliateSale = {
           ...affiliateSale,
           children: [
