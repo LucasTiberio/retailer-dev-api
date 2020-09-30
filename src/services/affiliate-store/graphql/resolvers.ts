@@ -85,14 +85,14 @@ const resolvers: IResolvers = {
         return service.getOrganizationAffiliateStore({ organizationId }, trx)
       })
     },
-    getAffiliateStoreAddedProducts: (_, __, { userServiceOrganizationRolesId, secret }) => {
+    getAffiliateStoreAddedProducts: (_, __, { userServiceOrganizationRolesId, secret, organizationId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
-        return service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId, secret }, trx)
+        return service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId, secret, organizationId }, trx)
       })
     },
-    getAffiliateStoreProducts: (_, { input }, { secret, userServiceOrganizationRolesId }) => {
+    getAffiliateStoreProducts: (_, { input }, { secret, userServiceOrganizationRolesId, organizationId }) => {
       return knexDatabase.knex.transaction((trx: Transaction) => {
-        return service.getAffiliateStoreProducts(input, { secret, userServiceOrganizationRolesId }, trx)
+        return service.getAffiliateStoreProducts(input, { secret, userServiceOrganizationRolesId, organizationId }, trx)
       })
     },
   },

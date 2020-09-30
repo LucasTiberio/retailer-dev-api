@@ -2,56 +2,48 @@ extend type Mutation {
   handleAffiliateStore(input: HandleAffiliateStoreInput!): AffiliateStore!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   addProductOnAffiliateStore(input: AddProductOnAffiliateStoreInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   handleOrganizationAffiliateStore(input: HandleOrganizationAffiliateStoreInput!): OrganizationAffiliateStore!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   addOrganizationAffiliateStoreBanner(input: AddOrganizationAffiliateStoreBannerInput!): OrganizationAffiliateStoreBanner!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   removeOrganizationAffiliateStoreBanner(input: RemoveOrganizationAffiliateStoreBannerInput!): Boolean!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreActivity(input: HandleProductOnAffiliateStoreActivityInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreOrder(input: [HandleProductOnAffiliateStoreOrderInput]!): Boolean!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreSearchable(input: HandleProductOnAffiliateStoreSearchableInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
@@ -62,18 +54,12 @@ extend type Query {
   getAffiliateStoreWithProducts(input: GetAffiliateStoreWithProductsInput!): AffiliateStoreWithProducts
   getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProductFormatted]!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
-    @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
-  getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]!
-    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
-    @vtexFeature
-    @acceptTermsAndConditions
-    @isVerified
-    @isAuthenticated
-  getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 type AffiliateStoreWithProducts {

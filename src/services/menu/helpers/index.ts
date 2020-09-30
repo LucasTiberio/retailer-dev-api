@@ -5,66 +5,9 @@ import { ServiceRoles } from '../../services/types'
 import OrganizationRulesService from '../../organization-rules/service'
 
 export const organizationAdminMenu = async (vtexIntegration: boolean, organizationId: string) => {
-  if (vtexIntegration) {
-    const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
+  const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
 
-    const vtexBaseAdminMenu: any = [
-      {
-        group: 'menu-items',
-        items: [
-          {
-            name: 'overview',
-            slug: '/overview',
-          },
-          {
-            name: 'settings',
-            slug: '/settings',
-          },
-        ],
-      },
-      {
-        group: 'services',
-        items: [
-          {
-            name: 'affiliate',
-            children: [
-              {
-                name: 'orders',
-                slug: '/affiliate/orders',
-              },
-              {
-                name: 'commission',
-                slug: '/affiliate/commission',
-              },
-              {
-                name: 'members',
-                slug: '/affiliate/members',
-              },
-              {
-                name: 'payments',
-                slug: '/affiliate/payments',
-              },
-              {
-                name: 'showCase',
-                slug: '/affiliate/showcase',
-              },
-            ],
-          },
-        ],
-      },
-    ]
-
-    if (paymentServiceStatus.maxSales > 0) {
-      vtexBaseAdminMenu[1].items[0].children.push({
-        name: 'insideSales',
-        slug: '/affiliate/inside-sales',
-      })
-    }
-
-    return vtexBaseAdminMenu
-  }
-
-  return [
+  const baseAdminMenu: any = [
     {
       group: 'menu-items',
       items: [
@@ -100,11 +43,24 @@ export const organizationAdminMenu = async (vtexIntegration: boolean, organizati
               name: 'payments',
               slug: '/affiliate/payments',
             },
+            {
+              name: 'showCase',
+              slug: '/affiliate/showcase',
+            },
           ],
         },
       ],
     },
   ]
+
+  if (paymentServiceStatus.maxSales > 0 && vtexIntegration) {
+    baseAdminMenu[1].items[0].children.push({
+      name: 'insideSales',
+      slug: '/affiliate/inside-sales',
+    })
+  }
+
+  return baseAdminMenu
 }
 
 export const organizationMemberMenu = [
@@ -162,31 +118,27 @@ export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: b
 
   switch (serviceRole) {
     case ServiceRoles.ANALYST:
-      if (vtexIntegration) {
-        affiliateAnalyst = {
-          ...affiliateAnalyst,
-          children: [
-            ...affiliateAnalyst.children,
-            {
-              name: 'showCase',
-              slug: '/affiliate/showcase',
-            },
-          ],
-        }
+      affiliateAnalyst = {
+        ...affiliateAnalyst,
+        children: [
+          ...affiliateAnalyst.children,
+          {
+            name: 'showCase',
+            slug: '/affiliate/showcase',
+          },
+        ],
       }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
-      if (vtexIntegration) {
-        affiliateSale = {
-          ...affiliateSale,
-          children: [
-            ...affiliateSale.children,
-            {
-              name: 'showCase',
-              slug: '/affiliate/showcase',
-            },
-          ],
-        }
+      affiliateSale = {
+        ...affiliateSale,
+        children: [
+          ...affiliateSale.children,
+          {
+            name: 'showCase',
+            slug: '/affiliate/showcase',
+          },
+        ],
       }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateSale] }]
     default:

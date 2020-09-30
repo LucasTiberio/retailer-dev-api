@@ -1,4 +1,4 @@
-require('dotenv').config({ path: __dirname + '/.env' });
+require('dotenv').config({ path: __dirname + '/.env' })
 
 const user = process.env.DB_USER
 const password = process.env.DB_PASSWORD
@@ -20,7 +20,7 @@ const config = {
     host,
     port,
     database,
-    ssl: true,
+    ssl: false,
   },
   requestTimeout: 10000,
   connectionTimeout: 10000,
@@ -28,7 +28,7 @@ const config = {
     directory: __dirname + '/migrations',
   },
   seeds: {
-    directory: __dirname + '/seeds',
+    directory: __dirname + '/seeds/test',
   },
   pool: {
     max: 12,

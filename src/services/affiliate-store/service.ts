@@ -45,6 +45,7 @@ import { buildProductsHtmlVtexUrl } from '../vtex/helpers'
 import client from '../../lib/Redis'
 import { Integrations } from '../integration/types'
 import { OrganizationServiceMock } from '../../__mocks__'
+import { fetchLojaIntegradaProductsByTerm, fetchLojaIntegradaProductsByIds, fetchLojaIntegradaProducts } from './client/loja-integrada'
 
 const handleAffiliateStore = async (
   input: ICreateAffiliateStore,
@@ -114,30 +115,53 @@ const handleAffiliateStoreImages = async (width: number, height: number, type: s
   return imageUploaded.url
 }
 
-const getAffiliateStoreProducts = async (input: { term: string }, context: { secret: string; userServiceOrganizationRolesId: string }, trx: Transaction) => {
+const getAffiliateStoreProducts = async (input: { term: string }, context: { secret: string; userServiceOrganizationRolesId: string; organizationId: string }, trx: Transaction) => {
+  let products: any[] = []
   if (input.term.length < 3) {
     throw new Error(minThreeLetters)
   }
 
   const decode: any = await common.jwtDecode(context.secret)
 
-  const products = await fetchVtexProducts(decode.accountName, input.term)
+  const integration = await IntegrationService.getIntegrationByOrganizationId(context.organizationId)
 
-  let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+  switch (integration.type) {
+    case Integrations.LOJA_INTEGRADA:
+      return async () => {
+        const token = integration.identifier
+        products = await fetchLojaIntegradaProductsByTerm(token, input.term)
 
-  if (affiliateStore) {
-    const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
+        const affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+        if (affiliateStore) {
+          const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
 
-    return products.map((item: { productId: string }) => {
-      const productFound = currentProducts.find((product) => product.product_id === item.productId)
-      return { ...item, added: !!productFound }
-    })
+          return (products = products.map((item: { id: number }) => {
+            const productFound = currentProducts.find((product) => product.product_id === item.id.toString())
+            return { ...item, added: !!productFound }
+          }))
+        }
+      }
+
+    case Integrations.VTEX:
+      return async () => {
+        products = await fetchVtexProducts(decode.accountName, input.term)
+
+        const affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+        if (affiliateStore) {
+          const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
+
+          return (products = products.map((item: { productId: string }) => {
+            const productFound = currentProducts.find((product) => product.product_id === item.productId)
+            return { ...item, added: !!productFound }
+          }))
+        }
+      }
   }
 
   return products
 }
 
-const getAffiliateStoreAddedProducts = async (context: { userServiceOrganizationRolesId: string; secret: string }, trx: Transaction) => {
+const getAffiliateStoreAddedProducts = async (context: { userServiceOrganizationRolesId: string; secret: string; organizationId: string }, trx: Transaction) => {
   if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
 
   let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
@@ -148,14 +172,36 @@ const getAffiliateStoreAddedProducts = async (context: { userServiceOrganization
 
   const affiliateStoreIds = products.map((item) => `productId:${item.product_id}`)
 
-  const productsData = await fetchVtexProductsByIds(decode.accountName, affiliateStoreIds.join(','))
+  const integration = await IntegrationService.getIntegrationByOrganizationId(context.organizationId)
 
-  const productsFormatted = products.map((item) => {
-    const productFound = productsData.find((product: { productId: string }) => {
-      return product.productId == item.product_id
-    })
-    return { ...item, name: productFound?.name, image: productFound?.image }
-  })
+  let productsFormatted: any[] = []
+
+  switch (integration.type) {
+    case Integrations.LOJA_INTEGRADA:
+      return async () => {
+        const token = integration.identifier
+        const productsData = await fetchLojaIntegradaProductsByIds(token, affiliateStoreIds)
+
+        productsFormatted = products.map((item) => {
+          const productFound = productsData.find((product: { id: number }) => {
+            return product.id.toString() == item.product_id
+          })
+          return { ...item, name: productFound?.name, image: productFound?.image }
+        })
+      }
+
+    case Integrations.VTEX:
+      return async () => {
+        const productsData = await fetchVtexProductsByIds(decode.accountName, affiliateStoreIds.join(','))
+
+        productsFormatted = products.map((item) => {
+          const productFound = productsData.find((product: { productId: string }) => {
+            return product.productId == item.product_id
+          })
+          return { ...item, name: productFound?.name, image: productFound?.image }
+        })
+      }
+  }
 
   return productsFormatted.map(affiliateStoreProductAdapter)
 }
@@ -408,9 +454,12 @@ const getAffiliateStoreWithProducts = async (
 
   if (!integration) throw new Error(organizationDoestNotHaveActiveIntegration)
 
-  if (integration.type !== Integrations.VTEX) throw new Error(onlyVtexIntegrationFeature)
-
   if (!organization.domain) throw new Error(organizationDomainNotFound)
+
+  if (integration.type === Integrations.LOJA_INTEGRADA) {
+    const token = integration.identifier
+    return await fetchLojaIntegradaProductsByIds(token, affiliateStoreIds)
+  }
 
   const productsHtml = await fetchVtexProductsHtml(organization.domain, organizationAffiliateStore.shelf_id, affiliateStoreIds.join(','))
 
