@@ -17,6 +17,7 @@ import { IContext } from '../../common/types'
 import { organizationAdminMenu, organizationMemberMenu, affiliateMemberMountMenu } from './helpers'
 import redisClient from '../../lib/Redis'
 import { PaymentMethod } from '../payments/types'
+import { Integrations } from '../integration/types'
 
 describe('Menu', () => {
   let trx: Transaction
@@ -112,7 +113,7 @@ describe('Menu', () => {
 
     const listServices = await service.getMenuTree(otherContext, trx)
 
-    expect(listServices).toEqual(affiliateMemberMountMenu(ServiceRoles.ANALYST, true))
+    expect(listServices).toEqual(affiliateMemberMountMenu(ServiceRoles.ANALYST, Integrations.VTEX))
 
     done()
   })
