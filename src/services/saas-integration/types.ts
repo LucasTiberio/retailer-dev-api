@@ -42,3 +42,24 @@ export type SaasDefaultCommissionAdapted = {
   formOfPayment: SaasDefaultCommissionFormOfPayment
   advancedOptions: boolean
 }
+
+export type SaasSignatureFromDB = {
+  _id: string
+  affiliateId: string
+  organizationId: string
+  createdAt: string
+  isPaid: boolean
+  plataform: string
+  plataformIdentifier: string
+  value: number
+  commission: number
+  planName: string
+  organizationClientName: string
+  status: string
+}
+
+export enum PlugoneSaasCommissionStatus {
+  approved = 'approved',
+  pendent = 'pendent',
+  reproved = 'reproved',
+}

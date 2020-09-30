@@ -5,6 +5,8 @@ import { SaasDefaultCommissionTypes, SaasDefaultCommissionPeriod, SaasDefaultCom
 
 /** Repositories */
 import SaasDefaultCommissionRepository from './repositories/organization_default_saas_commission'
+import SaasCommissionRepository from './repositories/saas_commission'
+import { SaasSignautreAdapter } from './adapters'
 
 const handleSassDefaultCommission = async (
   input: {
@@ -30,7 +32,19 @@ const getSaasDefaultCommission = async (context: { organizationId: string }, trx
   return commissionsBonifications
 }
 
+/** get signatures by organization id */
+const getSignaturesByOrganizationId = async (context: { organizationId: string }, trx: Transaction) => {
+  let signatures = await SaasCommissionRepository.getSignaturesByOrganizationId(context.organizationId)
+
+  return signatures.map(SaasSignautreAdapter)
+}
+
 export default {
   handleSassDefaultCommission,
   getSaasDefaultCommission,
+  getSignaturesByOrganizationId,
 }
+
+// client, value, status
+
+// ver mais -> planName, commissionType, paymentType

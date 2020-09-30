@@ -2,6 +2,8 @@ import { IResolvers } from 'apollo-server'
 import { Transaction } from 'knex'
 import knexDatabase from '../../../knex-database'
 import service from '../service'
+import OrganizationService from '../../organization/service'
+import ServiceService from '../../services/service'
 
 const resolvers: IResolvers = {
   Mutation: {
@@ -16,6 +18,19 @@ const resolvers: IResolvers = {
       return knexDatabase.knex.transaction((trx: Transaction) => {
         return service.getSaasDefaultCommission({ organizationId }, trx)
       })
+    },
+    getSignaturesByOrganizationId: (_, __, { organizationId }) => {
+      return knexDatabase.knex.transaction((trx: Transaction) => {
+        return service.getSignaturesByOrganizationId({ organizationId }, trx)
+      })
+    },
+  },
+  SaasSignature: {
+    organization: async (obj) => {
+      return OrganizationService.getOrganizationById(obj.organizationId)
+    },
+    affiliate: async (obj) => {
+      return ServiceService.getOrganizationServicesById(obj.affiliateId)
     },
   },
 }

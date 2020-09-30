@@ -1,5 +1,6 @@
 extend type Query {
   getSaasDefaultCommission: SaasDefaultCommission @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
+  getSignaturesByOrganizationId: [SaasSignature]! @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {
@@ -10,6 +11,27 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+}
+
+type SaasSignature {
+  id: String!
+  affiliate: UserOrganizationService!
+  organization: Organization!
+  createdAt: String!
+  isPaid: Boolean!
+  plataform: String!
+  plataformIdentifier: String!
+  commission: Float!
+  value: Float!
+  planName: String!
+  organizationClientName: String!
+  status: PlugoneSaasCommissionStatus!
+}
+
+enum PlugoneSaasCommissionStatus {
+  approved
+  pendent
+  reproved
 }
 
 input HandleSassDefaultCommissionInput {
