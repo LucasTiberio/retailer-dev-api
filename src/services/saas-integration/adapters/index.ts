@@ -23,7 +23,7 @@ export const SaasSignautreAdapter = (record: SaasSignatureFromDB) => ({
   isPaid: record.isPaid,
   plataform: record.plataform,
   plataformIdentifier: record.plataformIdentifier,
-  commission: record.value,
+  commission: record.commission,
   value: record.value,
   planName: record.planName,
   organizationClientName: record.organizationClientName,
