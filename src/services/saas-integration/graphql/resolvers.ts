@@ -20,9 +20,10 @@ const resolvers: IResolvers = {
       })
     },
     getSignaturesByOrganizationId: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
-        return service.getSignaturesByOrganizationId({ organizationId }, trx)
-      })
+      return service.getSignaturesByOrganizationId({ organizationId })
+    },
+    getSignaturesByOrganizationIdAndAffiliateId: (_, __, { organizationId, userServiceOrganizationRolesId }) => {
+      return service.getSignaturesByOrganizationIdAndAffiliateId({ organizationId, userServiceOrganizationRolesId })
     },
   },
   SaasSignature: {

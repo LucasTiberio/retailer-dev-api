@@ -5,6 +5,12 @@ const getSignaturesByOrganizationId = async (organizationId: string) => {
   return signatures
 }
 
+const getSignaturesByOrganizationIdAndAffiliateId = async (organizationId: string, affiliateId: string) => {
+  const signatures = await SaasCommissionSchema.find({ organizationId, affiliateId }).lean()
+  return signatures
+}
+
 export default {
   getSignaturesByOrganizationId,
+  getSignaturesByOrganizationIdAndAffiliateId,
 }

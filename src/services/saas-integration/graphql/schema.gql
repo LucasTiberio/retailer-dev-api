@@ -1,6 +1,12 @@
 extend type Query {
   getSaasDefaultCommission: SaasDefaultCommission @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
   getSignaturesByOrganizationId: [SaasSignature]! @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
+  getSignaturesByOrganizationIdAndAffiliateId: [SaasSignature]!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @SaasIntegration
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 extend type Mutation {

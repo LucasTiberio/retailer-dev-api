@@ -33,8 +33,15 @@ const getSaasDefaultCommission = async (context: { organizationId: string }, trx
 }
 
 /** get signatures by organization id */
-const getSignaturesByOrganizationId = async (context: { organizationId: string }, trx: Transaction) => {
+const getSignaturesByOrganizationId = async (context: { organizationId: string }) => {
   let signatures = await SaasCommissionRepository.getSignaturesByOrganizationId(context.organizationId)
+
+  return signatures.map(SaasSignautreAdapter)
+}
+
+/** get signatures by organization id and affiliate id */
+const getSignaturesByOrganizationIdAndAffiliateId = async (context: { organizationId: string; userServiceOrganizationRolesId: string }) => {
+  let signatures = await SaasCommissionRepository.getSignaturesByOrganizationIdAndAffiliateId(context.organizationId, context.userServiceOrganizationRolesId)
 
   return signatures.map(SaasSignautreAdapter)
 }
@@ -43,6 +50,7 @@ export default {
   handleSassDefaultCommission,
   getSaasDefaultCommission,
   getSignaturesByOrganizationId,
+  getSignaturesByOrganizationIdAndAffiliateId,
 }
 
 // client, value, status
