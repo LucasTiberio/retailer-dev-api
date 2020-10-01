@@ -13,6 +13,7 @@ extend type Query {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  getSignatureCountByOrganizationId: Int! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {

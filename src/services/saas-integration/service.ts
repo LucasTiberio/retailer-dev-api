@@ -53,10 +53,18 @@ const getSignatureCommissionByOrganizationAndAffiliateId = async (context: { org
   return signatureCommission.map(SaasSignatureCommissionAdapter)
 }
 
+/** get signature count by organization id */
+const getSignatureCountByOrganizationId = async (context: { organizationId: string }) => {
+  let signatureCount = await SaasCommissionRepository.getSignatureCountByOrganizationId(context.organizationId)
+
+  return signatureCount
+}
+
 export default {
   handleSassDefaultCommission,
   getSaasDefaultCommission,
   getSignaturesByOrganizationId,
   getSignaturesByOrganizationIdAndAffiliateId,
   getSignatureCommissionByOrganizationAndAffiliateId,
+  getSignatureCountByOrganizationId,
 }

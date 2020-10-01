@@ -28,6 +28,9 @@ const resolvers: IResolvers = {
     getSignatureCommissionByOrganizationAndAffiliateId: (_, __, { organizationId, userServiceOrganizationRolesId }) => {
       return service.getSignatureCommissionByOrganizationAndAffiliateId({ organizationId, userServiceOrganizationRolesId })
     },
+    getSignatureCountByOrganizationId: (_, __, { organizationId }) => {
+      return service.getSignatureCountByOrganizationId({ organizationId })
+    },
   },
   SaasSignature: {
     organization: async (obj) => {

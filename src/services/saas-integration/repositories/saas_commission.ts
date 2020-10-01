@@ -1,3 +1,4 @@
+import organization from '../../organization'
 import SaasCommissionSchema from '../models/SaasCommission'
 
 const getSignaturesByOrganizationId = async (organizationId: string) => {
@@ -15,8 +16,14 @@ const getSignaturesCommissionByOrganizationIdAndAffiliateId = async (organizatio
   return signatures
 }
 
+const getSignatureCountByOrganizationId = async (organizationId: string) => {
+  const signaturesCount = await SaasCommissionSchema.count({ organizationId })
+  return signaturesCount
+}
+
 export default {
   getSignaturesByOrganizationId,
   getSignaturesByOrganizationIdAndAffiliateId,
   getSignaturesCommissionByOrganizationIdAndAffiliateId,
+  getSignatureCountByOrganizationId,
 }
