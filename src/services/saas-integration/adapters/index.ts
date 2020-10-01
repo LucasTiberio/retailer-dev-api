@@ -1,4 +1,4 @@
-import { SaasDefaultCommissionFromDB, SaasSignatureFromDB } from '../types'
+import { SaasDefaultCommissionFromDB, SaasSignatureFromDB, SaasSignatureCommissionFromDB } from '../types'
 
 export const SaasDefaultCommissionAdapter = (record: SaasDefaultCommissionFromDB) => ({
   id: record.id,
@@ -28,4 +28,9 @@ export const SaasSignautreAdapter = (record: SaasSignatureFromDB) => ({
   planName: record.planName,
   organizationClientName: record.organizationClientName,
   status: record.status,
+})
+
+export const SaasSignatureCommissionAdapter = (record: SaasSignatureCommissionFromDB) => ({
+  id: record._id,
+  commission: record.commission,
 })

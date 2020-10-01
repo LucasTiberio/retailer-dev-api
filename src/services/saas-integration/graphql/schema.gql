@@ -7,6 +7,12 @@ extend type Query {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  getSignatureCommissionByOrganizationAndAffiliateId: [SaasSignatureCommission]!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @SaasIntegration
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 extend type Mutation {
@@ -17,6 +23,11 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+}
+
+type SaasSignatureCommission {
+  id: String!
+  commission: Float!
 }
 
 type SaasSignature {

@@ -63,3 +63,8 @@ export enum PlugoneSaasCommissionStatus {
   pendent = 'pendent',
   reproved = 'reproved',
 }
+
+export interface SaasSignatureCommissionFromDB {
+  _id: string
+  commission: number
+}
