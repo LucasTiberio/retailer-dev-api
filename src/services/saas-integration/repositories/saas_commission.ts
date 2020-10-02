@@ -21,9 +21,19 @@ const getSignatureCountByOrganizationId = async (organizationId: string) => {
   return signaturesCount
 }
 
+const handleSaasCommissionBulkPayments = async (organizationId: string, saasCommissionIds: string[]) => {
+  await SaasCommissionSchema.updateMany(
+    {
+      $and: [{ _id: { $in: saasCommissionIds } }, { organizationId }],
+    },
+    { isPaid: true }
+  )
+}
+
 export default {
   getSignaturesByOrganizationId,
   getSignaturesByOrganizationIdAndAffiliateId,
   getSignaturesCommissionByOrganizationIdAndAffiliateId,
   getSignatureCountByOrganizationId,
+  handleSaasCommissionBulkPayments,
 }

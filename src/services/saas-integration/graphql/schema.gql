@@ -24,6 +24,17 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  handleSaasCommissionBulkPayments(input: HandleSaasCommissionBulkPaymentsInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @SaasIntegration
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+input HandleSaasCommissionBulkPaymentsInput {
+  saasCommissionIds: [String!]!
 }
 
 type SaasSignatureCommission {

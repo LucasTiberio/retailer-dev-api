@@ -60,6 +60,16 @@ const getSignatureCountByOrganizationId = async (context: { organizationId: stri
   return signatureCount
 }
 
+/** set payment status to true in bulk */
+const handleSaasCommissionBulkPayments = async (input: { saasCommissionIds: string[] }, context: { organizationId: string }) => {
+  try {
+    await SaasCommissionRepository.handleSaasCommissionBulkPayments(context.organizationId, input.saasCommissionIds)
+    return true;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
 export default {
   handleSassDefaultCommission,
   getSaasDefaultCommission,
@@ -67,4 +77,5 @@ export default {
   getSignaturesByOrganizationIdAndAffiliateId,
   getSignatureCommissionByOrganizationAndAffiliateId,
   getSignatureCountByOrganizationId,
+  handleSaasCommissionBulkPayments,
 }

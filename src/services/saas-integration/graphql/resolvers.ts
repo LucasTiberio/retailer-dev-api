@@ -12,6 +12,9 @@ const resolvers: IResolvers = {
         return service.handleSassDefaultCommission(input, { organizationId }, trx)
       })
     },
+    handleSaasCommissionBulkPayments: async (_, { input }, { organizationId }) => {
+      return service.handleSaasCommissionBulkPayments(input, { organizationId })
+    },
   },
   Query: {
     getSaasDefaultCommission: (_, __, { organizationId }) => {
