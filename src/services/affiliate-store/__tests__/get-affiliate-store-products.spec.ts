@@ -67,7 +67,7 @@ describe('Affiliate Store', () => {
 
     await service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId: affiliateinserted.id, organizationId: organizationInserted.id }, trx)
 
-    const productAdded = await service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId: affiliateinserted.id, secret: vtexSecretMock }, trx)
+    const productAdded = await service.getAffiliateStoreAddedProducts({ userServiceOrganizationRolesId: affiliateinserted.id, secret: vtexSecretMock, organizationId: 'xxx' }, trx)
 
     const affiliateStore = await (trx || knexDatabase.knex)('affiliate_store').first().select()
 

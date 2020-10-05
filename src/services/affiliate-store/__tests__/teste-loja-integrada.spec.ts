@@ -3,7 +3,7 @@ import { fetchLojaIntegradaProducts, fetchLojaIntegradaProductsByTerm } from '..
 
 describe('Loja Integrada', () => {
   it('should return 4 products', async (done) => {
-    const products = await fetchLojaIntegradaProducts()
+    const products = await fetchLojaIntegradaProducts('xxx')
     expect(products.length).toBeGreaterThanOrEqual(4)
     done()
   })
