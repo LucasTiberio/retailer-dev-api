@@ -1,5 +1,4 @@
-require('dotenv').config({ path: __dirname + '/.env' })
-
+require('dotenv')
 const user = process.env.DB_USER
 const password = process.env.DB_PASSWORD
 const database = process.env.DB_DATABASE
@@ -20,7 +19,7 @@ const config = {
     host,
     port,
     database,
-    ssl: false,
+    ssl: true,
   },
   requestTimeout: 10000,
   connectionTimeout: 10000,
