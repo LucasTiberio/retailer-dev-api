@@ -49,56 +49,55 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
       },
     ]
   }
+  const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
+
+  const baseAdminMenu: any = [
+    {
+      group: 'menu-items',
+      items: [
+        {
+          name: 'overview',
+          slug: '/overview',
+        },
+        {
+          name: 'settings',
+          slug: '/settings',
+        },
+      ],
+    },
+    {
+      group: 'services',
+      items: [
+        {
+          name: 'affiliate',
+          children: [
+            {
+              name: 'orders',
+              slug: '/affiliate/orders',
+            },
+            {
+              name: 'commission',
+              slug: '/affiliate/commission',
+            },
+            {
+              name: 'members',
+              slug: '/affiliate/members',
+            },
+            {
+              name: 'payments',
+              slug: '/affiliate/payments',
+            },
+            {
+              name: 'showCase',
+              slug: '/affiliate/showcase',
+            },
+          ],
+        },
+      ],
+    },
+  ]
 
   if (integrationType === Integrations.VTEX) {
-    const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
-
-    const baseAdminMenu: any = [
-      {
-        group: 'menu-items',
-        items: [
-          {
-            name: 'overview',
-            slug: '/overview',
-          },
-          {
-            name: 'settings',
-            slug: '/settings',
-          },
-        ],
-      },
-      {
-        group: 'services',
-        items: [
-          {
-            name: 'affiliate',
-            children: [
-              {
-                name: 'orders',
-                slug: '/affiliate/orders',
-              },
-              {
-                name: 'commission',
-                slug: '/affiliate/commission',
-              },
-              {
-                name: 'members',
-                slug: '/affiliate/members',
-              },
-              {
-                name: 'payments',
-                slug: '/affiliate/payments',
-              },
-              {
-                name: 'showCase',
-                slug: '/affiliate/showcase',
-              },
-            ],
-          },
-        ],
-      },
-    ]
-
     if (paymentServiceStatus.maxSales > 0 && integrationType === Integrations.VTEX) {
       baseAdminMenu[1].items[0].children.push({
         name: 'insideSales',
@@ -108,6 +107,8 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
 
     return baseAdminMenu
   }
+
+  return baseAdminMenu
 }
 
 export const organizationMemberMenu = [
