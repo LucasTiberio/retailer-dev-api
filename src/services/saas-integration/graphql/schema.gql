@@ -1,5 +1,19 @@
 extend type Query {
   getSaasDefaultCommission: SaasDefaultCommission @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
+  getSignaturesByOrganizationId: [SaasSignature]! @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
+  getSignaturesByOrganizationIdAndAffiliateId: [SaasSignature]!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @SaasIntegration
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getSignatureCommissionByOrganizationAndAffiliateId: [SaasSignatureCommission]!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @SaasIntegration
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getSignatureCountByOrganizationId: Int! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {
@@ -10,6 +24,43 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  handleSaasCommissionBulkPayments(input: HandleSaasCommissionBulkPaymentsInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @SaasIntegration
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+input HandleSaasCommissionBulkPaymentsInput {
+  saasCommissionIds: [String!]!
+}
+
+type SaasSignatureCommission {
+  id: String!
+  commission: Float!
+}
+
+type SaasSignature {
+  id: String!
+  affiliate: UserOrganizationService!
+  organization: Organization!
+  createdAt: String!
+  isPaid: Boolean!
+  plataform: String!
+  plataformIdentifier: String!
+  commission: Float!
+  value: Float!
+  planName: String!
+  organizationClientName: String!
+  status: PlugoneSaasCommissionStatus!
+}
+
+enum PlugoneSaasCommissionStatus {
+  approved
+  pendent
+  reproved
 }
 
 input HandleSassDefaultCommissionInput {

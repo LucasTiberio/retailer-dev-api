@@ -33,6 +33,7 @@ interface ProductI {
   descricao_completa: string
   id: number
   nome?: string
+  url: string
 }
 
 export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Promise<ProductI[]> => {
@@ -95,4 +96,15 @@ export const fetchLojaIntegradaProductsByIds = async (lojaIntegradaToken: string
   }
 
   return products
+}
+
+export const fetchLojaIntegradaProductById = async (lojaIntegradaToken: string, id: number) => {
+  params.chave_api = lojaIntegradaToken
+  try {
+    let { data } = await instance.get(`/produto/${id}`, { params })
+
+    return data
+  } catch (error) {
+    console.log(error.data)
+  }
 }

@@ -62,10 +62,11 @@ extend type Query {
   getAffiliateStoreWithProducts(input: GetAffiliateStoreWithProductsInput!): AffiliateStoreWithProducts
   getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProductFormatted]!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @hasIntegration
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
-  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @hasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @acceptTermsAndConditions @isVerified @isAuthenticated
   getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
 }
@@ -74,6 +75,7 @@ type AffiliateStoreWithProducts {
   affiliateStore: AffiliateStore!
   productsHtml: String
   affiliateId: String!
+  integration: Integrations!
 }
 
 input GetAffiliateStoreWithProductsInput {
@@ -134,7 +136,7 @@ input GetAffiliateStoreProductsInput {
 
 type AffiliateStoreProductFormatted {
   productId: String!
-  price: String!
+  price: String
   image: String!
   name: String!
   added: Boolean!

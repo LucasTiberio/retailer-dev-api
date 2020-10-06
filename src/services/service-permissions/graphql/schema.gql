@@ -1,6 +1,14 @@
 extend type Query {
-  userOrganizationPermissions(input: UserOrganizationPermissionsInput): [OrganizationPermissions]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  userServicePermissions(input: UserServicePermissionsInput!): [ServicePermissions]! @hasServiceRole(role: ["ADMIN", "RESPONSIBLE", "ANALYST", "SALE"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  userOrganizationPermissions(input: UserOrganizationPermissionsInput): [OrganizationPermissions]!
+    @hasOrganizationRole(role: ["ADMIN", "MEMBER"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  userServicePermissions(input: UserServicePermissionsInput!): [ServicePermissions]!
+    @hasServiceRole(role: ["ADMIN", "RESPONSIBLE", "ANALYST", "SALE"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 input UserOrganizationPermissionsInput {
@@ -38,6 +46,7 @@ enum ServicePermissionName {
   commission
   orders
   generateLink
+  signatures
   showcase
   payments
   members
