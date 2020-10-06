@@ -23,11 +23,11 @@ const mailConfig: any = {
   maxMessages: 3,
 }
 
-// if (process.env.NODE_ENV !== 'test') {
-//   mailConfig.auth = {
-//     user: process.env.MAIL_USER,
-//     pass: process.env.MAIL_PASS,
-//   }
-// }
+if (process.env.NODE_ENV !== 'test') {
+  mailConfig.auth = {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  }
+}
 
 export default nodemailer.createTransport(mailConfig)
