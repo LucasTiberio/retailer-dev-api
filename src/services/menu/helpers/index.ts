@@ -3,8 +3,53 @@ import { ServiceRoles } from '../../services/types'
 /** Services */
 
 import OrganizationRulesService from '../../organization-rules/service'
+import { Integrations } from '../../integration/types'
 
-export const organizationAdminMenu = async (vtexIntegration: boolean, organizationId: string) => {
+export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string) => {
+  if (integrationType === Integrations.IUGU) {
+    return [
+      {
+        group: 'menu-items',
+        items: [
+          {
+            name: 'overview',
+            slug: '/overview',
+          },
+          {
+            name: 'settings',
+            slug: '/settings',
+          },
+        ],
+      },
+      {
+        group: 'services',
+        items: [
+          {
+            name: 'affiliate',
+            children: [
+              {
+                name: 'signatures',
+                slug: '/affiliate/signatures',
+              },
+              {
+                name: 'commission',
+                slug: '/affiliate/commission',
+              },
+              {
+                name: 'members',
+                slug: '/affiliate/members',
+              },
+              {
+                name: 'payments',
+                slug: '/affiliate/payments',
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  }
+
   const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
 
   const baseAdminMenu: any = [
@@ -43,21 +88,30 @@ export const organizationAdminMenu = async (vtexIntegration: boolean, organizati
               name: 'payments',
               slug: '/affiliate/payments',
             },
-            {
-              name: 'showCase',
-              slug: '/affiliate/showcase',
-            },
           ],
         },
       ],
     },
   ]
 
-  if (paymentServiceStatus.maxSales > 0 && vtexIntegration) {
-    baseAdminMenu[1].items[0].children.push({
-      name: 'insideSales',
-      slug: '/affiliate/inside-sales',
-    })
+  if (integrationType === Integrations.VTEX || integrationType === Integrations.LOJA_INTEGRADA) {
+    if (paymentServiceStatus.affiliateStore) {
+      baseAdminMenu[1].items[0].children.push({
+        name: 'showCase',
+        slug: '/affiliate/showcase',
+      })
+    }
+  }
+
+  if (integrationType === Integrations.VTEX) {
+    if (paymentServiceStatus.maxSales > 0) {
+      baseAdminMenu[1].items[0].children.push({
+        name: 'insideSales',
+        slug: '/affiliate/inside-sales',
+      })
+    }
+
+    return baseAdminMenu
   }
 
   return baseAdminMenu

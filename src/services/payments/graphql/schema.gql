@@ -121,6 +121,7 @@ type Rules {
   support: String!
   training: Boolean!
   sso: Boolean!
+  affiliateStore: Boolean!
 }
 
 type Subscription {

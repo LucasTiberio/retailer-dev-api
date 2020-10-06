@@ -1,48 +1,56 @@
 extend type Mutation {
   handleAffiliateStore(input: HandleAffiliateStoreInput!): AffiliateStore!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @hasAffiliateStore
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   addProductOnAffiliateStore(input: AddProductOnAffiliateStoreInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @hasAffiliateStore
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   handleOrganizationAffiliateStore(input: HandleOrganizationAffiliateStoreInput!): OrganizationAffiliateStore!
     @hasOrganizationRole(role: ["ADMIN"])
+    @hasAffiliateStore
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   addOrganizationAffiliateStoreBanner(input: AddOrganizationAffiliateStoreBannerInput!): OrganizationAffiliateStoreBanner!
     @hasOrganizationRole(role: ["ADMIN"])
+    @hasAffiliateStore
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   removeOrganizationAffiliateStoreBanner(input: RemoveOrganizationAffiliateStoreBannerInput!): Boolean!
     @hasOrganizationRole(role: ["ADMIN"])
+    @hasAffiliateStore
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreActivity(input: HandleProductOnAffiliateStoreActivityInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @hasAffiliateStore
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreOrder(input: [HandleProductOnAffiliateStoreOrderInput]!): Boolean!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @hasAffiliateStore
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   handleProductOnAffiliateStoreSearchable(input: HandleProductOnAffiliateStoreSearchableInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @hasAffiliateStore
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
