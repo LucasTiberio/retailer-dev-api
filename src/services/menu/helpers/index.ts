@@ -94,6 +94,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
     },
   ]
 
+<<<<<<< HEAD
   if (integrationType === Integrations.VTEX || integrationType === Integrations.LOJA_INTEGRADA) {
     if (paymentServiceStatus.affiliateStore) {
       baseAdminMenu[1].items[0].children.push({
@@ -105,6 +106,10 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
 
   if (integrationType === Integrations.VTEX) {
     if (paymentServiceStatus.maxSales > 0) {
+=======
+  if (integrationType === Integrations.VTEX) {
+    if (paymentServiceStatus.maxSales > 0 && integrationType === Integrations.VTEX) {
+>>>>>>> de38a728988f43e1010bc1d969dfcc659efd5179
       baseAdminMenu[1].items[0].children.push({
         name: 'insideSales',
         slug: '/affiliate/inside-sales',
@@ -129,7 +134,47 @@ export const organizationMemberMenu = [
   },
 ]
 
-export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: boolean) => {
+export const affiliateMemberMountMenu = (serviceRole: string, integrationType: Integrations) => {
+  if (integrationType === Integrations.IUGU) {
+    return [
+      {
+        group: 'menu-items',
+        items: [
+          {
+            name: 'overview',
+            slug: '/overview',
+          },
+        ],
+      },
+      {
+        group: 'services',
+        items: [
+          {
+            name: 'affiliate',
+            children: [
+              {
+                name: 'signatures',
+                slug: '/affiliate/signatures',
+              },
+              {
+                name: 'commission',
+                slug: '/affiliate/commission',
+              },
+              {
+                name: 'linkGenerator',
+                slug: '/affiliate/link-generator',
+              },
+              {
+                name: 'payments',
+                slug: '/affiliate/payments',
+              },
+            ],
+          },
+        ],
+      },
+    ]
+  }
+
   let affiliateAnalyst: any = {
     name: 'affiliate',
     children: [
@@ -172,27 +217,31 @@ export const affiliateMemberMountMenu = (serviceRole: string, vtexIntegration: b
 
   switch (serviceRole) {
     case ServiceRoles.ANALYST:
-      affiliateAnalyst = {
-        ...affiliateAnalyst,
-        children: [
-          ...affiliateAnalyst.children,
-          {
-            name: 'showCase',
-            slug: '/affiliate/showcase',
-          },
-        ],
+      if (integrationType === Integrations.VTEX) {
+        affiliateAnalyst = {
+          ...affiliateAnalyst,
+          children: [
+            ...affiliateAnalyst.children,
+            {
+              name: 'showCase',
+              slug: '/affiliate/showcase',
+            },
+          ],
+        }
       }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
-      affiliateSale = {
-        ...affiliateSale,
-        children: [
-          ...affiliateSale.children,
-          {
-            name: 'showCase',
-            slug: '/affiliate/showcase',
-          },
-        ],
+      if (integrationType === Integrations.VTEX) {
+        affiliateSale = {
+          ...affiliateSale,
+          children: [
+            ...affiliateSale.children,
+            {
+              name: 'showCase',
+              slug: '/affiliate/showcase',
+            },
+          ],
+        }
       }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateSale] }]
     default:
