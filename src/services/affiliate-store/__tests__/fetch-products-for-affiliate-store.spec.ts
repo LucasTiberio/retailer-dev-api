@@ -64,7 +64,7 @@ describe('Affiliate', () => {
       term: 'torta',
     }
 
-    const products = await service.getAffiliateStoreProducts(input, { secret: vtexSecretMock, userServiceOrganizationRolesId: affiliateinserted.id }, trx)
+    const products = await service.getAffiliateStoreProducts(input, { secret: vtexSecretMock, userServiceOrganizationRolesId: affiliateinserted.id, organizationId: 'xxx' }, trx)
 
     expect(products).toEqual(
       expect.arrayContaining([

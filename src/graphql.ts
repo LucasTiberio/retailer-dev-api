@@ -17,8 +17,9 @@ import PaymentService from './services/payments/service'
 import IntegrationService from './services/integration/service'
 import { PaymentServiceStatus } from './services/payments/types'
 import { Integrations } from './services/integration/types'
-import { onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions } from './common/errors'
+import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions } from './common/errors'
 import TermsAndConditionsService from './services/terms-and-conditions/service'
+import OrganizationRulesService from './services/organization-rules/service'
 
 declare var process: {
   env: {
@@ -47,10 +48,12 @@ const typeDefsBase = gql`
   directive @ordersService on FIELD | FIELD_DEFINITION
   directive @hasEnterpriseToken on FIELD | FIELD_DEFINITION
   directive @vtexFeature on FIELD | FIELD_DEFINITION
+  directive @hasIntegration on FIELD | FIELD_DEFINITION
   directive @hasSalesToken on FIELD | FIELD_DEFINITION
   directive @SaasIntegration on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
   directive @hasServiceRole(role: [String]!, serviceName: String) on FIELD | FIELD_DEFINITION
+  directive @hasAffiliateStore on FIELD | FIELD_DEFINITION
 `
 
 const resolversBase: IResolvers = {
@@ -245,6 +248,20 @@ const directiveResolvers: IDirectiveResolvers = {
     context.secret = integration.secret
     return next()
   },
+  async hasIntegration(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+
+    if (!organizationId) throw new Error('Organization identifier invalid!')
+
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
+
+    if (integration.type !== Integrations.VTEX && integration.type !== Integrations.LOJA_INTEGRADA) {
+      throw new Error('Organization doesnt have integrations')
+    }
+
+    context.secret = integration.secret
+    return next()
+  },
   async SaasIntegration(next, _, __, context): Promise<NextFunction> {
     const organizationId = await redisClient.getAsync(context.client.id)
 
@@ -346,6 +363,27 @@ const directiveResolvers: IDirectiveResolvers = {
     if (!user) throw new Error('user not found!')
     if (!user.verified) throw new Error('you need verify your email!')
     return next()
+  },
+  async hasAffiliateStore(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+
+    if (!organizationId) throw new Error('Organization identifier invalid!')
+
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
+
+    if (integration.type === Integrations.IUGU) throw new Error('Iugu does not have access to affiliate store')
+
+    const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
+    const organizationPlanHasAffiliateStore = paymentServiceStatus.affiliateStore
+
+    if (integration.type === Integrations.VTEX || (integration.type === Integrations.LOJA_INTEGRADA && organizationPlanHasAffiliateStore)) {
+      // context.secret = integration.secret
+      // context.organizationId = organizationId;
+
+      return next()
+    }
+
+    throw new Error(organizationsPlanDoesNotHaveAffiliateStore)
   },
 }
 

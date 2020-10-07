@@ -16,6 +16,7 @@ const getAffiliateTeammateRules = async (organizationId: string, trx?: Transacti
               maxSales
               support
               training
+              affiliateStore
               sso
               providers{
                 name
