@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import server from './server';
-import knexDatabase from './knex-database';
 
 const app = express();
 
@@ -12,6 +11,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
     res.send('Hello B8ONE!');
+});
+
+app.get("/health", async (req, res) => {
+  console.log("Checking health Status");
+  res.json({ status: "UP" });
 });
 
 server.applyMiddleware({app, cors: true});
