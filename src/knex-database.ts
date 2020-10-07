@@ -1,6 +1,6 @@
 // @ts-nocheck
 require('dotenv');
-import config from '../knexfile';
+import config from './knexfile';
 import knexCleaner from 'knex-cleaner';
 
 declare var process : {
