@@ -18,13 +18,13 @@ import { Integrations } from "../../integration/types";
 const app = require("../../../app");
 const request = require("supertest").agent(app);
 
-const backendRedirectUrl = process.env.REDIRECT_URL_STAGING;
+const backendRedirectUrl = process.env.REDIRECT_URL;
 
 declare var process: {
   env: {
     NODE_ENV: "production" | "development" | "test";
     JWT_SECRET: string;
-    REDIRECT_URL_STAGING: string;
+    REDIRECT_URL: string;
   };
 };
 

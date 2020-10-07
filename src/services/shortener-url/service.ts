@@ -4,7 +4,7 @@ import { IShortenerUrlFromDB } from "./types";
 import shortid from 'shortid';
 import store from '../../store';
 
-const backendRedirectUrl = process.env.REDIRECT_URL_STAGING;
+const backendRedirectUrl = process.env.REDIRECT_URL;
 
 const shortUrlAdapter = (record : IShortenerUrlFromDB) => ({
   id: record.id,

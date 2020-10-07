@@ -7,7 +7,7 @@ import { ISignUpAdapted } from '../users/types';
 import { IUserToken } from '../authentication/types';
 import knexDatabase from '../../knex-database';
 
-const backendRedirectUrl = process.env.REDIRECT_URL_STAGING;
+const backendRedirectUrl = process.env.REDIRECT_URL;
 
 describe('shortener', () => {
 

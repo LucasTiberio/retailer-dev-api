@@ -48,7 +48,7 @@ const getImageByUrl = async (url: string, trx: Transaction) => {
 
 const getFileByName = (filename: string) => {
   var getParams = {
-    Bucket: process.env.BUCKET_NAME,
+    Bucket: process.env.DIGITAL_OCEAN_BUCKET_NAME,
     Key: filename,
   }
 
@@ -64,7 +64,7 @@ const getFileByName = (filename: string) => {
 const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: Transaction) => {
   var params = {
     Key: path,
-    Bucket: process.env.BUCKET_NAME,
+    Bucket: process.env.DIGITAL_OCEAN_BUCKET_NAME,
     Body: stream,
     ACL: 'public-read',
     ContentType: mimetype,
@@ -99,7 +99,7 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
 }
 
 const deleteImage = async (key: string) => {
-  const params = { Bucket: process.env.BUCKET_NAME, Key: key }
+  const params = { Bucket: process.env.DIGITAL_OCEAN_BUCKET_NAME, Key: key }
 
   try {
     await s3

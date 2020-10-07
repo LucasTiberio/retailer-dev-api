@@ -1,7 +1,7 @@
 import Mail from '../../lib/Mail'
 import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail, ISendSpecialistHelp } from './types'
 
-const frontUrl = process.env.FRONT_URL_STAGING
+const frontUrl = process.env.FRONT_URL
 
 const sendSignUpMail = async (data: ISendMail) => {
   if (process.env.NODE_ENV === 'test') return

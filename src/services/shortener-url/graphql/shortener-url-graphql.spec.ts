@@ -10,7 +10,7 @@ const GET_ORIGINAL_URL_BY_CODE = `
     }
 `
 
-const backendRedirectUrl = process.env.REDIRECT_URL_STAGING;
+const backendRedirectUrl = process.env.REDIRECT_URL;
 
 describe('shortener graphql', () => {
 
