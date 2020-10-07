@@ -25,6 +25,9 @@ import {
   commissionBonificationWithFinalPeriodBeforeStartPeriod,
   commissionBonificationOnlyWithTwoDates,
   commissionBonificationRulesWithWrongTargets,
+  userOnlyChangeToSameIntegrationType,
+  onlyCreateOrganizationWithouIntegrationWithSecret,
+  onlyIuguIntegrationFeature,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -43,6 +46,11 @@ export default (message: string) => {
       return {
         code: 54,
         explication: 'This feature is only for accounts with vtex integration',
+      }
+    case onlyIuguIntegrationFeature:
+      return {
+        code: 98,
+        explication: 'This feature is only for accounts with iugu integration',
       }
     case minThreeLetters:
       return {
@@ -118,6 +126,16 @@ export default (message: string) => {
       return {
         code: 67,
         explication: 'Commission bonification with wrong rules targets sent',
+      }
+    case userOnlyChangeToSameIntegrationType:
+      return {
+        code: 68,
+        explication: 'Organization only change integration to same integration type. Eg: Vtex to Vtex, Loja Integrada to Loja Integrada',
+      }
+    case onlyCreateOrganizationWithouIntegrationWithSecret:
+      return {
+        code: 69,
+        explication: 'Only create organization without integration with secret',
       }
     case affiliateDoesNotExist:
       return {

@@ -17,10 +17,12 @@ import AffiliateStoreService from './affiliate-store'
 import InsideSalesService from './inside-sales'
 import PersonalizedComissions from './personalized-commissions'
 import TermsAndConditionService from './terms-and-conditions'
-import CommissionBonification from './commission-bonification'
+import CommissionBonificationService from './commission-bonification'
+import SaasIntegrationService from './saas-integration'
 
 let services = [
-  CommissionBonification,
+  SaasIntegrationService,
+  CommissionBonificationService,
   TermsAndConditionService,
   IntegrationsService,
   UserService,

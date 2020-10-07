@@ -32,7 +32,7 @@ import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from './loaders'
 import moment from 'moment'
-import { createVtexCampaignFail, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
+import { createVtexCampaignFail, onlyCreateOrganizationWithouIntegrationWithSecret, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
 
 /** Repositories */
 import Repository from './repositories/organizations'
@@ -42,6 +42,8 @@ import fetchVtexDomains from './clients/fetch-domains'
 
 /** Services */
 import IntegrationService from '../integration/service'
+import { Integrations } from '../integration/types'
+import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
   const { segment, resellersEstimate, reason, plataform } = input
@@ -58,11 +60,14 @@ const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalIn
   return attachedOrganizationInfosId
 }
 
-const createOrganization = async (createOrganizationPayload: IOrganizationPayload, context: { redisClient: RedisClient; client: IUserToken }, trx: Transaction) => {
-  if (!context.client) throw new Error('invalid token')
-
+const createOrganization = async (
+  createOrganizationPayload: IOrganizationPayload,
+  context: { redisClient: RedisClient; client: IUserToken; createOrganizationWithoutIntegrationSecret?: string },
+  trx: Transaction
+) => {
   const {
     organization: { name, contactEmail, phone },
+    integration,
   } = createOrganizationPayload
 
   try {
@@ -72,6 +77,19 @@ const createOrganization = async (createOrganizationPayload: IOrganizationPayloa
       if (organizationFound) {
         throw new Error('Only 1 organization per account an available')
       }
+    }
+
+    if (
+      (!context.createOrganizationWithoutIntegrationSecret && !integration) ||
+      (!integration && context.createOrganizationWithoutIntegrationSecret !== CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET)
+    ) {
+      throw new Error(onlyCreateOrganizationWithouIntegrationWithSecret)
+    }
+
+    if (integration?.type && integration.secrets && integration.type === Integrations.VTEX) {
+      await VtexService.verifyVtexSecrets(integration.secrets)
+    } else if (integration?.type && integration.secrets && integration.type === Integrations.LOJA_INTEGRADA) {
+      await IntegrationService.verifyLojaIntegradaSecrets(integration.secrets)
     }
 
     const attachedOrganizationInfosId = await attachOrganizationAditionalInfos(createOrganizationPayload.additionalInfos, trx)
@@ -89,6 +107,19 @@ const createOrganization = async (createOrganizationPayload: IOrganizationPayloa
       })
       .into('organizations')
       .returning('*')
+
+    if (integration && integration.secrets && integration.type) {
+      await IntegrationService.createIntegration(
+        {
+          secrets: integration.secrets,
+          type: integration.type,
+        },
+        {
+          organizationId: organizationCreated.id,
+        },
+        trx
+      )
+    }
 
     await organizationRolesAttach(context.client.id, organizationCreated.id, OrganizationRoles.ADMIN, OrganizationInviteStatus.ACCEPT, trx)
 
@@ -944,7 +975,7 @@ const teammatesCapacities = async (context: { organizationId: string }, trx: Tra
   return {
     teammates: {
       total: affiliateTeammateRules.maxTeammates,
-      used: query.count - 1,
+      used: Number(query.count) - 1,
     },
   }
 }

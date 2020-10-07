@@ -17,7 +17,7 @@ import PaymentService from './services/payments/service'
 import IntegrationService from './services/integration/service'
 import { PaymentServiceStatus } from './services/payments/types'
 import { Integrations } from './services/integration/types'
-import { onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions } from './common/errors'
+import { onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions } from './common/errors'
 import TermsAndConditionsService from './services/terms-and-conditions/service'
 
 declare var process: {
@@ -47,7 +47,9 @@ const typeDefsBase = gql`
   directive @ordersService on FIELD | FIELD_DEFINITION
   directive @hasEnterpriseToken on FIELD | FIELD_DEFINITION
   directive @vtexFeature on FIELD | FIELD_DEFINITION
+  directive @hasIntegration on FIELD | FIELD_DEFINITION
   directive @hasSalesToken on FIELD | FIELD_DEFINITION
+  directive @SaasIntegration on FIELD | FIELD_DEFINITION
   directive @isVerified on FIELD | FIELD_DEFINITION
   directive @hasServiceRole(role: [String]!, serviceName: String) on FIELD | FIELD_DEFINITION
 `
@@ -239,6 +241,34 @@ const directiveResolvers: IDirectiveResolvers = {
 
     if (integration.type !== Integrations.VTEX) {
       throw new Error(onlyVtexIntegrationFeature)
+    }
+
+    context.secret = integration.secret
+    return next()
+  },
+  async hasIntegration(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+
+    if (!organizationId) throw new Error('Organization identifier invalid!')
+
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
+
+    if (integration.type !== Integrations.VTEX && integration.type !== Integrations.LOJA_INTEGRADA) {
+      throw new Error('Organization doesnt have integrations')
+    }
+
+    context.secret = integration.secret
+    return next()
+  },
+  async SaasIntegration(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+
+    if (!organizationId) throw new Error('Organization identifier invalid!')
+
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
+
+    if (integration.type !== Integrations.IUGU) {
+      throw new Error(onlyIuguIntegrationFeature)
     }
 
     context.secret = integration.secret

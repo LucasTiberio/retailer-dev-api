@@ -133,6 +133,10 @@ const sendRecurrencyTransaction = async (
   input: {
     planIdentifier: string
     payableWith: PaymentMethod
+    marketingData?: {
+      utmSource?: string
+      utmCampaign?: string
+    }
   },
   context: { organizationId: string }
 ) => {
