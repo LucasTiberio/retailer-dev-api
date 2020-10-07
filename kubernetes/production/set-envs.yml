@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plugone-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: plugone-api-container
+          envFrom:
+            - configMapRef:
+                name: plugone-api-config          
+            - secretRef:
+                name: plugone-api-secret

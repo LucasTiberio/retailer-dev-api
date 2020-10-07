@@ -1,0 +1,10 @@
+bases:
+  - ../base
+
+resources:
+  - secret.yml
+  - ingress.yml
+
+patchesStrategicMerge:
+  - set-docker-secret.yml
+  - set-envs.yml
