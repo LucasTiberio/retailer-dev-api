@@ -1,4 +1,6 @@
 require('dotenv')
+import { uniqBy } from 'lodash'
+
 import knexDatabase from '../../knex-database'
 
 import ShortenerUrlService from '../shortener-url/service'
@@ -61,6 +63,7 @@ import ServicesService from '../services/service'
 
 import RepositoryOrganizationCommission from './repository/organization-commission'
 import RepositoryServices from '../services/repository/users_organization_service_roles'
+import RepositoryUsersOrganizationServiceRoles from './repository/users-organization-service-roles'
 
 /** Clients */
 
@@ -155,7 +158,28 @@ const getAllOrganizationOrders = async (
 
   try {
     const { data } = await Axios.get(url)
-    return data
+
+    let affiliateIds = data.data.map((payment: any, i: number) => payment.affiliateInfo.affiliateId)
+
+    affiliateIds = [...new Set(affiliateIds)]
+
+    const affiliates = await RepositoryUsersOrganizationServiceRoles.getAffiliateInfos(affiliateIds)
+
+    const response = data.data.map((payment: any) => {
+      const affiliate = affiliates.find((affiliate) => affiliate.id === payment.affiliateInfo.affiliateId)
+
+      if (affiliate) {
+        return {
+          ...payment,
+          affiliateName: affiliate?.username ?? affiliate.email,
+        }
+      }
+    })
+
+    return {
+      ...data,
+      data: response,
+    }
   } catch (error) {
     throw new Error(error.message)
   }
