@@ -514,7 +514,7 @@ const getOrganizationCommission = async (
 
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate${endDate}`
 
-  if (input.paid) {
+  if (input?.paid) {
     url += `&isCommissionPaid=${input?.paid}`
   }
 
