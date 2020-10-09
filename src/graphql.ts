@@ -291,9 +291,11 @@ const directiveResolvers: IDirectiveResolvers = {
 
     if (!organizationId) throw new Error('Invalid session!')
 
-    const [organization] = await knexDatabase.knex('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires')
+    const [organization] = await knexDatabase.knex('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires', 'free_plan')
 
     if (!organization) throw new Error('Organization not found.')
+
+    if (organization.free_plan) return next();
 
     if (moment(organization.free_trial_expires).isAfter(moment())) {
       return next()
