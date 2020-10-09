@@ -6,7 +6,6 @@ import IntegrationService from '../integration/service'
 import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE } from '../../common/consts'
 import { OrganizationRoles } from '../organization/types'
 import { organizationAdminMenu, organizationMemberMenu, affiliateMemberMountMenu } from './helpers'
-import { Integrations } from '../integration/types'
 
 const getMenuTree = async (context: { organizationId: string; client: IUserToken }, trx: Transaction) => {
   if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
