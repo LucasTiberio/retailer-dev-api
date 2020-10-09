@@ -27,12 +27,13 @@ const getAffiliateTeammateRules = async (organizationId: string, trx?: Transacti
         }
     }`
 
-  const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires')
+  const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires', 'free_plan')
 
   const variables = {
     input: {
       organizationId,
       freeTrial: organizationFound.free_trial && moment(organizationFound.free_trial_expires).isAfter(moment()),
+      freePlan: organizationFound.free_plan
     },
   }
 
