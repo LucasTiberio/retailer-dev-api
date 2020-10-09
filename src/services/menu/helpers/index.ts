@@ -49,6 +49,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
       },
     ]
   }
+
   const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
 
   const baseAdminMenu: any = [
@@ -87,18 +88,23 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
               name: 'payments',
               slug: '/affiliate/payments',
             },
-            {
-              name: 'showCase',
-              slug: '/affiliate/showcase',
-            },
           ],
         },
       ],
     },
   ]
 
+  if (integrationType === Integrations.VTEX || integrationType === Integrations.LOJA_INTEGRADA) {
+    if (paymentServiceStatus.affiliateStore) {
+      baseAdminMenu[1].items[0].children.push({
+        name: 'showCase',
+        slug: '/affiliate/showcase',
+      })
+    }
+  }
+
   if (integrationType === Integrations.VTEX) {
-    if (paymentServiceStatus.maxSales > 0 && integrationType === Integrations.VTEX) {
+    if (paymentServiceStatus.maxSales > 0) {
       baseAdminMenu[1].items[0].children.push({
         name: 'insideSales',
         slug: '/affiliate/inside-sales',
