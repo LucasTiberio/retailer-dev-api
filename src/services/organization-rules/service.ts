@@ -45,7 +45,8 @@ const getAffiliateTeammateRules = async (organizationId: string, trx?: Transacti
 
     return res.data.data.getCurrentOrganizationPlan.planRules[0].rules
   } catch (error) {
-    throw new Error(error.message)
+    let message = error.response?.data?.errors[0]?.message
+    throw new Error(message ?? error.message)
   }
 }
 
