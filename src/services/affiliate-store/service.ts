@@ -37,6 +37,7 @@ import { affiliateStoreAdapter, affiliateStoreProductAdapter, organizationAffili
 
 /** Clients */
 import { fetchVtexProducts, fetchVtexProductsHtml, fetchVtexProductsByIds } from './client/vtex'
+import { fetchLojaIntegradaProductsByTerm, fetchLojaIntegradaProductsByIds, fetchLojaIntegradaProductById } from './client/loja-integrada'
 
 import common from '../../common'
 import sharp from 'sharp'
@@ -114,30 +115,64 @@ const handleAffiliateStoreImages = async (width: number, height: number, type: s
   return imageUploaded.url
 }
 
-const getAffiliateStoreProducts = async (input: { term: string }, context: { secret: string; userServiceOrganizationRolesId: string }, trx: Transaction) => {
+const getAffiliateStoreProducts = async (input: { term: string }, context: { secret: string; userServiceOrganizationRolesId: string; organizationId: string }, trx: Transaction) => {
+  let products: any[] = []
   if (input.term.length < 3) {
     throw new Error(minThreeLetters)
   }
 
   const decode: any = await common.jwtDecode(context.secret)
 
-  const products = await fetchVtexProducts(decode.accountName, input.term)
+  const integration = await IntegrationService.getIntegrationByOrganizationId(context.organizationId)
 
-  let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+  switch (integration.type) {
+    case Integrations.LOJA_INTEGRADA:
+      const token = integration.identifier
 
-  if (affiliateStore) {
-    const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStore.id, trx)
+      products = await fetchLojaIntegradaProductsByTerm(token, input.term)
 
-    return products.map((item: { productId: string }) => {
-      const productFound = currentProducts.find((product) => product.product_id === item.productId)
-      return { ...item, added: !!productFound }
-    })
+      let affiliateStoreLI = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+
+      if (affiliateStoreLI) {
+        const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStoreLI.id, trx)
+
+        return await Promise.all(
+          products.map(async (item: { id: number; nome: string }) => {
+            const productFound = currentProducts.find((product) => product.product_id === item.id.toString())
+
+            const x = await fetchLojaIntegradaProductById(token, item.id)
+
+            return {
+              productId: item.id,
+              price: undefined,
+              image: x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+              name: item.nome,
+              added: !!productFound,
+            }
+          })
+        )
+      }
+
+      return null
+    case Integrations.VTEX:
+      products = await fetchVtexProducts(decode.accountName, input.term)
+
+      let affiliateStoreVTEX = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
+      if (affiliateStoreVTEX) {
+        const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStoreVTEX.id, trx)
+
+        return (products = products.map((item: { productId: string }) => {
+          const productFound = currentProducts.find((product) => product.product_id === item.productId)
+          return { ...item, added: !!productFound }
+        }))
+      }
+      return null
+    default:
+      return []
   }
-
-  return products
 }
 
-const getAffiliateStoreAddedProducts = async (context: { userServiceOrganizationRolesId: string; secret: string }, trx: Transaction) => {
+const getAffiliateStoreAddedProducts = async (context: { userServiceOrganizationRolesId: string; secret: string; organizationId: string }, trx: Transaction) => {
   if (!context.userServiceOrganizationRolesId) throw new Error(affiliateDoesNotExist)
 
   let affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
@@ -148,16 +183,39 @@ const getAffiliateStoreAddedProducts = async (context: { userServiceOrganization
 
   const affiliateStoreIds = products.map((item) => `productId:${item.product_id}`)
 
-  const productsData = await fetchVtexProductsByIds(decode.accountName, affiliateStoreIds.join(','))
+  const integration = await IntegrationService.getIntegrationByOrganizationId(context.organizationId)
 
-  const productsFormatted = products.map((item) => {
-    const productFound = productsData.find((product: { productId: string }) => {
-      return product.productId == item.product_id
-    })
-    return { ...item, name: productFound?.name, image: productFound?.image }
-  })
+  switch (integration.type) {
+    case Integrations.LOJA_INTEGRADA:
+      const token = integration.identifier
 
-  return productsFormatted.map(affiliateStoreProductAdapter)
+      return await Promise.all(
+        products.map(async (item) => {
+          const x = await fetchLojaIntegradaProductById(token, item.product_id)
+
+          console.log(x)
+
+          return affiliateStoreProductAdapter({
+            ...item,
+            name: x.nome,
+            image: x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+          })
+        })
+      )
+
+    case Integrations.VTEX:
+      const productsDataVTEX = await fetchVtexProductsByIds(decode.accountName, affiliateStoreIds.join(','))
+
+      let vtexProductsFormatted = products.map((item) => {
+        const productFound = productsDataVTEX.find((product: { productId: string }) => {
+          return product.productId == item.product_id
+        })
+        return { ...item, name: productFound?.name, image: productFound?.image }
+      })
+      return vtexProductsFormatted.map(affiliateStoreProductAdapter)
+    default:
+      return []
+  }
 }
 
 const addProductOnAffiliateStore = async (input: { productId: string }, context: { userServiceOrganizationRolesId: string; organizationId: string }, trx: Transaction) => {
@@ -408,9 +466,38 @@ const getAffiliateStoreWithProducts = async (
 
   if (!integration) throw new Error(organizationDoestNotHaveActiveIntegration)
 
-  if (integration.type !== Integrations.VTEX) throw new Error(onlyVtexIntegrationFeature)
-
   if (!organization.domain) throw new Error(organizationDomainNotFound)
+
+  if (integration.type === Integrations.LOJA_INTEGRADA) {
+    const token = integration.identifier
+    const productsIds = affiliateStoreProducts.map((item) => item.product_id)
+    const products = await fetchLojaIntegradaProductsByIds(token, productsIds)
+
+    const liHtmlOrdered = await Promise.all(
+      products.map(async (item) => {
+        const x = await fetchLojaIntegradaProductById(token, item.id)
+
+        return `
+        <li style="display: flex; flex-direction: column; align-items: center; justify-content: center">
+          <div style="font-size: 1.25rem; margin-bottom: 0.5rem"> ${item.nome} </div>
+          <img style="width: 183px; height: 308px; object-fit: contain; margin-bottom: 0.5rem" src="${
+            x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'
+          }"/>
+          <a style="border: 1px solid gray ; padding: 0.5rem ;font-size: 0.875rem; border-radius: 8px" href="${item.url}?utmSource=plugone-affiliate_${
+          affiliateStore.users_organization_service_roles_id
+        }_${input.organizationId}"> Comprar </a>
+        </li>
+      `
+      })
+    )
+
+    return {
+      affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
+      productsHtml: liHtmlOrdered.join('') ?? null,
+      affiliateId: affiliateStore?.users_organization_service_roles_id,
+      integration: Integrations.LOJA_INTEGRADA,
+    }
+  }
 
   const productsHtml = await fetchVtexProductsHtml(organization.domain, organizationAffiliateStore.shelf_id, affiliateStoreIds.join(','))
 
@@ -429,6 +516,7 @@ const getAffiliateStoreWithProducts = async (
     affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
     productsHtml: htmlOrdered ?? null,
     affiliateId: affiliateStore?.users_organization_service_roles_id,
+    integration: Integrations.VTEX,
   }
 }
 

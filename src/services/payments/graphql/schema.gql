@@ -1,5 +1,5 @@
 extend type Query {
-  listAvailablePlans: [Plan]! @acceptTermsAndConditions @isVerified @isAuthenticated
+  listAvailablePlans: [Plan]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   listOrganizationCustomerPayment: [OrganizationCustomerPayment]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   getSubscriptionByOrganizationId(input: GetSubscriptionByOrganizationIdInput): Subscription @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
 }
@@ -44,6 +44,12 @@ input UpdateRecurrencyTransactionInput {
 input SendRecurrencyTransactionInput {
   planIdentifier: String!
   payableWith: PayableWith!
+  marketingData: RecurrencyMarketingData
+}
+
+input RecurrencyMarketingData {
+  utmSource: String
+  utmCampaign: String
 }
 
 enum PayableWith {
@@ -115,6 +121,7 @@ type Rules {
   support: String!
   training: Boolean!
   sso: Boolean!
+  affiliateStore: Boolean!
 }
 
 type Subscription {

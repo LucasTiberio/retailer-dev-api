@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-require('dotenv').config()
+require('dotenv').config({ path: __dirname + '/.env' })
 
 declare var process: {
   env: {

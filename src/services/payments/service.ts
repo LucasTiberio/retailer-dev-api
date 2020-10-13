@@ -2,6 +2,7 @@ import { PaymentMethod } from './types'
 import { fetchPaymentsService } from './helpers'
 import OrganizationService from '../organization/service'
 import OrganizationRulesService from '../organization-rules/service'
+import IntegrationService from '../integration/service'
 import knexDatabase from '../../knex-database'
 import { Integrations } from '../integration/types'
 import { deactivateVtexIntegrationByOrganizationId } from './repository/organizationIntegrationSecrets'
@@ -133,6 +134,10 @@ const sendRecurrencyTransaction = async (
   input: {
     planIdentifier: string
     payableWith: PaymentMethod
+    marketingData?: {
+      utmSource?: string
+      utmCampaign?: string
+    }
   },
   context: { organizationId: string }
 ) => {
@@ -172,40 +177,50 @@ const sendRecurrencyTransaction = async (
   }
 }
 
-const listAvailablePlans = async () => {
+const listAvailablePlans = async (organizationId: string) => {
   const query = `
-  query listAvailablePlans{
-    listAvailablePlans{
-      id
-      name
-      interval
-      intervalType
-      payableWith
-      price
-      bestPrice
-      planRules{
-        serviceName
-        rules{
-          maxTransactionTax
-          maxTeammates
-          maxAnalysts
-          maxSales
-          support
-          training
-          sso
+    query listAvailablePlans{
+      listAvailablePlans{
+        id
+        name
+        interval
+        intervalType
+        payableWith
+        price
+        bestPrice
+        planRules{
+          serviceName
+          rules{
+            maxTransactionTax
+            maxTeammates
+            maxAnalysts
+            maxSales
+            support
+            training
+            affiliateStore
+            sso
+            providers {
+              name
+              status
+            }
+          }
         }
       }
     }
-  }`
+  `
 
   try {
     const res = await fetchPaymentsService(query)
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
     if (res.data?.errors) {
       throw new Error(res.data.errors[0].message)
     }
 
-    return res.data.data.listAvailablePlans
+    const integrationType = integration.type
+    const listAvailablePlans = res.data.data.listAvailablePlans.filter((plan: any) => plan.planRules[0].rules.providers.find((provider: any) => provider.name === integrationType && provider.status))
+
+    return listAvailablePlans
   } catch (error) {
     throw new Error(error.message)
   }

@@ -1,5 +1,6 @@
 extend type Mutation {
   createIntegration(input: CreateIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  createIuguIntegration(input: CreateIuguIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 input CreateIntegrationInput {
@@ -7,9 +8,18 @@ input CreateIntegrationInput {
   type: Integrations!
 }
 
+input CreateIuguIntegrationInput {
+  secrets: IuguSecret!
+}
+
+input IuguSecret {
+  appKey: String!
+}
+
 enum Integrations {
   vtex
   loja_integrada
+  iugu
 }
 
 input IntegrationSecrets {

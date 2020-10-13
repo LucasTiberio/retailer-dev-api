@@ -13,6 +13,43 @@ export const createOrganizationPayload = () => ({
     reason: 'Ter mais uma opção de canal de vendas',
     plataform: 'vtex',
   },
+  integration: {
+    ...vtexSecretsMock,
+  },
+})
+
+export const createOrganizationWithIntegrationLojaIntegradaPayload = () => ({
+  organization: {
+    name: Faker.name.firstName(),
+    contactEmail: 'gabriel-tamura@b8one.com',
+    phone: '551123213123123',
+  },
+  additionalInfos: {
+    segment: 'Beleza e Cosméticos',
+    resellersEstimate: 500,
+    reason: 'Ter mais uma opção de canal de vendas',
+    plataform: 'vtex',
+  },
+  integration: {
+    ...lojaIntegradaSecretsMock,
+  },
+})
+
+export const createOrganizationWithIntegrationVTEXPayload = () => ({
+  organization: {
+    name: Faker.name.firstName(),
+    contactEmail: 'gabriel-tamura@b8one.com',
+    phone: '551123213123123',
+  },
+  additionalInfos: {
+    segment: 'Beleza e Cosméticos',
+    resellersEstimate: 500,
+    reason: 'Ter mais uma opção de canal de vendas',
+    plataform: 'vtex',
+  },
+  integration: {
+    ...vtexSecretsMock,
+  },
 })
 
 export const mockVtexDepartments = [
@@ -88,6 +125,13 @@ export const vtexSecretsMock = {
     accountName: 'beightoneagency',
   },
   type: Integrations.VTEX,
+}
+
+export const lojaIntegradaSecretsMock = {
+  secrets: {
+    appKey: 'f0ceb7be2309c30ba3bd',
+  },
+  type: Integrations.LOJA_INTEGRADA,
 }
 
 export { default as IntegrationSecretMock } from './integration-secret'

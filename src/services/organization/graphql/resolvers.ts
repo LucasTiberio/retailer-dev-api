@@ -37,9 +37,10 @@ const resolvers: IResolvers = {
         return service.handleServiceMembersActivity(input, { organizationId }, trx)
       })
     },
-    createOrganization: (_, { input }, { client, redisClient }) => {
+    createOrganization: (_, { input }, { client, redisClient, headers }) => {
+      let createOrganizationWithoutIntegrationSecret = headers['create-organization-without-integration-secret']
       return database.knex.transaction((trx: Transaction) => {
-        return service.createOrganization(input, { client, redisClient }, trx)
+        return service.createOrganization(input, { client, redisClient, createOrganizationWithoutIntegrationSecret }, trx)
       })
     },
     setCurrentOrganization: (_, { input }, context) => {

@@ -1,8 +1,9 @@
 import { fetchPaymentsService } from '../payments/helpers'
 import knexDatabase from '../../knex-database'
 import moment from 'moment'
+import { Transaction } from 'knex'
 
-const getAffiliateTeammateRules = async (organizationId: string) => {
+const getAffiliateTeammateRules = async (organizationId: string, trx?: Transaction) => {
   const query = `
     query getCurrentOrganizationPlan($input: GetCurrentOrganizationPlanInput!) {
         getCurrentOrganizationPlan(input: $input){
@@ -15,6 +16,7 @@ const getAffiliateTeammateRules = async (organizationId: string) => {
               maxSales
               support
               training
+              affiliateStore
               sso
               providers{
                 name
@@ -25,7 +27,7 @@ const getAffiliateTeammateRules = async (organizationId: string) => {
         }
     }`
 
-  const [organizationFound] = await knexDatabase.knex('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires')
+  const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires')
 
   const variables = {
     input: {
