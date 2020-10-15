@@ -113,7 +113,7 @@ describe('Menu', () => {
 
     const listServices = await service.getMenuTree(otherContext, trx)
 
-    expect(listServices).toEqual(affiliateMemberMountMenu(ServiceRoles.ANALYST, Integrations.VTEX))
+    expect(listServices).toEqual(affiliateMemberMountMenu(ServiceRoles.ANALYST, Integrations.VTEX, 'xxx'))
 
     done()
   })
