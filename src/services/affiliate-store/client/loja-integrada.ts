@@ -61,7 +61,7 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Pr
         .get('/produto', {
           params: {
             ...params,
-            offset,
+            offset: offset * params.limit,
           },
         })
         .then(({ data }) => {
@@ -79,23 +79,25 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Pr
 export const fetchLojaIntegradaProductsByTerm = async (lojaIntegradaToken: string, term = ''): Promise<ProductI[]> => {
   const productList = await fetchLojaIntegradaProducts(lojaIntegradaToken)
 
-  const filtredProductList = productList.filter((product) => product.nome?.toUpperCase().includes(term.toUpperCase()))
+  const filtredProductList = productList.filter((product) => {
+    return product.nome?.toUpperCase().includes(term.toUpperCase())
+  })
 
   return filtredProductList
 }
 
-export const fetchLojaIntegradaProductsByIds = async (lojaIntegradaToken: string, ids: string[]): Promise<ProductI[]> => {
+export const fetchLojaIntegradaProductsByIds = async (lojaIntegradaToken: string, ids: string[]) => {
   let products: ProductI[] = []
 
   try {
     products = await fetchLojaIntegradaProducts(lojaIntegradaToken)
 
     products = products.filter((product) => ids.includes(product.id.toString()))
+
+    return products
   } catch (error) {
     console.log(error.data)
   }
-
-  return products
 }
 
 export const fetchLojaIntegradaProductById = async (lojaIntegradaToken: string, id: number) => {

@@ -136,21 +136,25 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
       if (affiliateStoreLI) {
         const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStoreLI.id, trx)
 
-        return await Promise.all(
-          products.map(async (item: { id: number; nome: string }) => {
-            const productFound = currentProducts.find((product) => product.product_id === item.id.toString())
+        return (
+          await Promise.all(
+            products.map(async (item: { id: number; nome: string }) => {
+              const productFound = currentProducts.find((product) => product.product_id === item.id.toString())
 
-            const x = await fetchLojaIntegradaProductById(token, item.id)
+              const x = await fetchLojaIntegradaProductById(token, item.id)
 
-            return {
-              productId: item.id,
-              price: undefined,
-              image: x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
-              name: item.nome,
-              added: !!productFound,
-            }
-          })
-        )
+              if (!x) return null
+
+              return {
+                productId: item.id,
+                price: undefined,
+                image: x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+                name: item.nome,
+                added: !!productFound,
+              }
+            })
+          )
+        ).filter((item: any) => item)
       }
 
       return null
@@ -473,23 +477,35 @@ const getAffiliateStoreWithProducts = async (
     const productsIds = affiliateStoreProducts.map((item) => item.product_id)
     const products = await fetchLojaIntegradaProductsByIds(token, productsIds)
 
-    const liHtmlOrdered = await Promise.all(
-      products.map(async (item) => {
-        const x = await fetchLojaIntegradaProductById(token, item.id)
+    if (!products)
+      return {
+        affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
+        productsHtml: '',
+        affiliateId: affiliateStore?.users_organization_service_roles_id,
+        integration: Integrations.LOJA_INTEGRADA,
+      }
 
-        return `
+    const liHtmlOrdered = (
+      await Promise.all(
+        products.map(async (item) => {
+          const x = await fetchLojaIntegradaProductById(token, item.id)
+
+          if (!x) return null
+
+          return `
         <li style="display: flex; flex-direction: column; align-items: center; justify-content: center">
           <div style="font-size: 1.25rem; margin-bottom: 0.5rem"> ${item.nome} </div>
           <img style="width: 183px; height: 308px; object-fit: contain; margin-bottom: 0.5rem" src="${
             x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'
           }"/>
           <a style="border: 1px solid gray ; padding: 0.5rem ;font-size: 0.875rem; border-radius: 8px" href="${item.url}?utmSource=plugone-affiliate_${
-          affiliateStore.users_organization_service_roles_id
-        }_${input.organizationId}"> Comprar </a>
+            affiliateStore.users_organization_service_roles_id
+          }_${input.organizationId}"> Comprar </a>
         </li>
       `
-      })
-    )
+        })
+      )
+    ).filter((item) => item)
 
     return {
       affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
