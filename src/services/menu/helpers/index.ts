@@ -129,7 +129,7 @@ export const organizationMemberMenu = [
   },
 ]
 
-export const affiliateMemberMountMenu = (serviceRole: string, integrationType: Integrations) => {
+export const affiliateMemberMountMenu = async (serviceRole: string, integrationType: Integrations, organizationId: string) => {
   if (integrationType === Integrations.IUGU) {
     return [
       {
@@ -210,9 +210,11 @@ export const affiliateMemberMountMenu = (serviceRole: string, integrationType: I
     ],
   }
 
+  const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
+
   switch (serviceRole) {
     case ServiceRoles.ANALYST:
-      if (integrationType === Integrations.VTEX) {
+      if (paymentServiceStatus.affiliateStore) {
         affiliateAnalyst = {
           ...affiliateAnalyst,
           children: [
@@ -226,7 +228,7 @@ export const affiliateMemberMountMenu = (serviceRole: string, integrationType: I
       }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
-      if (integrationType === Integrations.VTEX) {
+      if (paymentServiceStatus.affiliateStore) {
         affiliateSale = {
           ...affiliateSale,
           children: [
