@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 import { DBInput } from './types'
 
+const logger = require('pino')()
+
 export default ({ databaseUri }: DBInput) => {
   const connect = () => {
     mongoose
@@ -11,10 +13,10 @@ export default ({ databaseUri }: DBInput) => {
         useFindAndModify: false,
       })
       .then(() => {
-        return console.info(`Successfully connected to MongoDB`)
+        return logger.info(`Successfully connected to MongoDB`)
       })
       .catch((err: Error) => {
-        console.error(`Error connecting to database :`, err.message)
+        logger.error(`Error connecting to database :`, err.message)
 
         return process.exit(1)
       })

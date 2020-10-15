@@ -12,8 +12,6 @@ config
 kubernetes
 node_modules
 
-azure-pipelines-build-staging.yml
-azure-pipelines-build-production.yml
-azure-pipelines-staging-aws.yml
+azure-*
 
 *.log

@@ -4,11 +4,11 @@ kind: ConfigMap
 metadata:
   name: plugone-api-config
 data:  
-  BUCKET_URL: https://plugone-staging.nyc3.digitaloceanspaces.com
+  BUCKET_URL: https://plugone-production.nyc3.digitaloceanspaces.com
   BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH: /pixel-affiliate/staging-pixel-sale-affiliate.js  
-  DIGITAL_OCEAN_BUCKET_NAME: plugone-staging
-  FRONT_URL: https://staging.plugone.io
-  REDIRECT_URL: https://go-staging.plugone.io
-  PAYMENTS_URL: "http://plugone-payments-staging.plugone-payments-staging.svc.cluster.local/graphql"
-  VTEX_HOOK_URL: http://plugone-affiliate-orders-hook-staging.plugone-affiliate-orders-hook-staging.svc.cluster.local/feed/affiliate/vtex/orders/sync
-  ORDER_SERVICE_URL: http://plugone-affiliate-orders-hook-staging.plugone-affiliate-orders-hook-staging.svc.cluster.local
+  DIGITAL_OCEAN_BUCKET_NAME: plugone-production
+  FRONT_URL: https://app.plugone.io
+  REDIRECT_URL: https://go.plugone.io
+  PAYMENTS_URL: "http://plugone-payments-production.plugone-payments-production.svc.cluster.local/graphql"
+  VTEX_HOOK_URL: http://plugone-affiliate-orders-hook-production.plugone-affiliate-orders-hook-production.svc.cluster.local/feed/affiliate/vtex/orders/sync
+  ORDER_SERVICE_URL: http://plugone-affiliate-orders-hook-production.plugone-affiliate-orders-hook-production.svc.cluster.local

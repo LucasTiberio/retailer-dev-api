@@ -3,7 +3,6 @@ bases:
 
 resources:
   - secret.yml
-  - ingress.yml
 
 patchesStrategicMerge:
   - configmap.yml
