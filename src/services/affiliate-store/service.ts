@@ -475,9 +475,16 @@ const getAffiliateStoreWithProducts = async (
   if (integration.type === Integrations.LOJA_INTEGRADA) {
     const token = integration.identifier
     const productsIds = affiliateStoreProducts.map((item) => item.product_id)
-    const products = await fetchLojaIntegradaProductsByIds(token, productsIds)
 
-    if (!products)
+    const products = await Promise.all(
+      productsIds.map(async (item) => {
+        const product = await fetchLojaIntegradaProductById(token, item)
+
+        return product
+      })
+    )
+
+    if (products && !products.length)
       return {
         affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
         productsHtml: '',
