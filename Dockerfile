@@ -11,5 +11,6 @@ COPY yarn.lock yarn.lock
 RUN yarn --production && yarn cache clean
 
 COPY dist .
+COPY src/knexfile.js .
 
 CMD ["/bin/sh", "-c", "yarn start"]
