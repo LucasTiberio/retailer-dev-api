@@ -55,20 +55,31 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Pr
       products = [...products, ...filtredProducts]
     })
 
-    //Loop to get products from other pages
+    const promises = []
+
     for (let offset = 1; offset <= pages; offset++) {
-      await instance
-        .get('/produto', {
-          params: {
-            ...params,
-            offset: offset * params.limit,
-          },
-        })
-        .then(({ data }) => {
-          const filtredProducts = filterProducts(data.objects)
-          products = [...products, ...filtredProducts]
-        })
+      promises.push(offset * params.limit)
     }
+
+    await promises.reduce((accumulatorPromise: any, offset: any) => {
+      return accumulatorPromise.then(async () => {
+        return await new Promise(async (resolve) => {
+          console.log(offset)
+          await instance
+            .get('/produto', {
+              params: {
+                ...params,
+                offset,
+              },
+            })
+            .then(({ data }) => {
+              const filtredProducts = filterProducts(data.objects)
+              products = [...products, ...filtredProducts]
+              resolve('resolved')
+            })
+        })
+      }, [])
+    }, Promise.resolve())
   } catch (error) {
     console.log(error.data)
   }
