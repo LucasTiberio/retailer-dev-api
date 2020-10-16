@@ -3,6 +3,8 @@ import Knex from "knex";
 import { DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE, DB_PORT,
          DB_HOST_TEST, DB_USER_TEST, DB_PASSWORD_TEST, DB_DATABASE_TEST, DB_PORT_TEST } from "./common/envs"
 
+const logger = require('pino')();
+
 export const config: Knex.Config = {
   client: "pg",
   connection: {
@@ -31,6 +33,19 @@ export const config: Knex.Config = {
       });
     },
   },
+  log: {
+    warn(message) {
+      logger.warn(message);
+    },
+    error(message) {
+      logger.error(message);
+    },
+    deprecate(message) {
+    },
+    debug(message) {
+      logger.info(message);
+    },
+  }  
 };
 
 export const configTest: Knex.Config = {
