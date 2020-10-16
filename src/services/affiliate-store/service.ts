@@ -129,7 +129,7 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
     case Integrations.LOJA_INTEGRADA:
       const token = integration.identifier
 
-      products = await fetchLojaIntegradaProductsByTerm(token, input.term)
+      products = await fetchLojaIntegradaProductsByTerm(token, input.term, context.organizationId)
 
       let affiliateStoreLI = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
 

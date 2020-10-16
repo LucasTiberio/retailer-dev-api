@@ -1,4 +1,5 @@
 import axios from 'axios'
+import redisClient from '../../../lib/Redis'
 import { LOJA_INTEGRADA_APPLICATION_KEY } from '../../../common/envs'
 
 const params = {
@@ -36,7 +37,7 @@ interface ProductI {
   url: string
 }
 
-export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Promise<ProductI[]> => {
+export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string, organizationId?: string): Promise<ProductI[]> => {
   params.chave_api = lojaIntegradaToken
 
   let products: any[] = []
@@ -45,6 +46,13 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Pr
   const filterProducts = (products: ProductI[]) => products.filter((product) => product.nome !== null)
 
   try {
+    if (organizationId) {
+      const cachedLiItems = await redisClient.getAsync(`lojaIntegradaProducts_${organizationId}`)
+
+      if (cachedLiItems) {
+        return JSON.parse(cachedLiItems)
+      }
+    }
     //First fetch to get initial products & total items
     await instance.get('/produto', { params }).then(({ data }) => {
       if (data.meta.next) {
@@ -66,7 +74,7 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Pr
         await new Promise(async (resolve) => {
           setTimeout(() => {
             resolve()
-          }, 500)
+          }, 100)
         })
         return await new Promise(async (resolve) => {
           console.log(offset)
@@ -85,6 +93,12 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Pr
         })
       }, [])
     }, Promise.resolve())
+
+    const cleanProducts = products.map((item) => ({ nome: item.nome, id: item.id }))
+
+    if (organizationId) {
+      await redisClient.setAsync(`lojaIntegradaProducts_${organizationId}`, JSON.stringify(cleanProducts), 'EX', 1800)
+    }
   } catch (error) {
     console.log(error.data)
   }
@@ -92,8 +106,8 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Pr
   return products
 }
 
-export const fetchLojaIntegradaProductsByTerm = async (lojaIntegradaToken: string, term = ''): Promise<ProductI[]> => {
-  const productList = await fetchLojaIntegradaProducts(lojaIntegradaToken)
+export const fetchLojaIntegradaProductsByTerm = async (lojaIntegradaToken: string, term = '', organizationId: string): Promise<ProductI[]> => {
+  const productList = await fetchLojaIntegradaProducts(lojaIntegradaToken, organizationId)
 
   const filtredProductList = productList.filter((product) => {
     return product.nome?.toUpperCase().includes(term.toUpperCase())
