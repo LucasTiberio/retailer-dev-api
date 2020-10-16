@@ -500,8 +500,8 @@ const getAffiliateStoreWithProducts = async (
           if (!x) return null
 
           return `
-        <li style="display: flex; flex-direction: column; align-items: center; justify-content: center">
-          <div style="font-size: 1.25rem; margin-bottom: 0.5rem"> ${item.nome} </div>
+        <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem">
+          <div style="min-height: 80px; font-size: 1.25rem; margin-bottom: 0.5rem"> ${item.nome} </div>
           <img style="width: 183px; height: 308px; object-fit: contain; margin-bottom: 0.5rem" src="${
             x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'
           }"/>
