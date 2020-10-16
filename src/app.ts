@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import server from './server';
 import { MONGO_URI } from './common/envs';
 import database from './database';
+import { connectDB } from './knex-database';
 
 const logger = require('pino')();
 const app = express();
@@ -18,7 +19,8 @@ const prometheusMiddleware = prometheusBundle({
 });
 
 try {
-  database({ databaseUri: MONGO_URI })
+  database({ databaseUri: MONGO_URI });
+  connectDB();
 } catch (e) {
   logger.error(e.message)
   process.exit(0)

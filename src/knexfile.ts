@@ -10,9 +10,9 @@ export const config: Knex.Config = {
     password: DB_PASSWORD,
     host: DB_HOST,
     port: DB_PORT,
-    database: DB_DATABASE,
-    ssl: true,
+    database: DB_DATABASE
   },  
+  debug: true,
   migrations: {
     directory: __dirname + '/migrations',
   },
@@ -40,8 +40,7 @@ export const configTest: Knex.Config = {
     password: DB_PASSWORD_TEST,
     host: DB_HOST_TEST,
     port: DB_PORT_TEST,
-    database: DB_DATABASE_TEST,
-    ssl: true,
+    database: DB_DATABASE_TEST
   },  
   migrations: {
     directory: __dirname + '/migrations',
