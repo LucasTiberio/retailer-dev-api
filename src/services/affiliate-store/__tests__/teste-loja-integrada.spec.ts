@@ -9,10 +9,10 @@ describe('Loja Integrada', () => {
   })
 
   it('should return at least a product with name "camisa" and "cama"', async (done) => {
-    const camisasProducts = await fetchLojaIntegradaProductsByTerm('camisa')
+    const camisasProducts = await fetchLojaIntegradaProductsByTerm('camisa', 'xxx', 'xxx')
     expect(camisasProducts.length).toBeGreaterThanOrEqual(1)
 
-    const camaProducts = await fetchLojaIntegradaProductsByTerm('cama')
+    const camaProducts = await fetchLojaIntegradaProductsByTerm('cama', 'xxx', 'xxx')
     expect(camaProducts.length).toBeGreaterThanOrEqual(1)
     done()
   })
