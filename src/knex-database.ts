@@ -1,16 +1,10 @@
 // @ts-nocheck
-require('dotenv');
-import config from './knexfile';
+import { config, configTest } from './knexfile';
+import knex from "knex";
 import knexCleaner from 'knex-cleaner';
 
-declare var process : {
-	env: {
-	  NODE_ENV: "production" | "development" | "test"
-	}
-}
-
-let knex = require('knex')(config[process.env.NODE_ENV || 'test']);
-let knexTest = require('knex')(config.test);
+let knexConfig = knex(config);
+let knexConfigTest = knex(configTest);
 
 const options = {
 	mode: 'truncate',
@@ -19,11 +13,11 @@ const options = {
 }
   
 const cleanMyTestDB = () => {
-	return knexCleaner.clean(knexTest, options);
+	return knexCleaner.clean(knexConfigTest, options);
 };
 
 export default {
-	knex, 
-	cleanMyTestDB,
-	knexTest
+	knexConfig, 
+	knexConfigTest,
+	cleanMyTestDB
 };

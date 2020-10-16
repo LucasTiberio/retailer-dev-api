@@ -255,9 +255,9 @@ describe("services graphql", () => {
 
   beforeEach(async () => {
     await knexDatabase
-      .knex("users_organization_service_roles_url_shortener")
+      .knexConfig("users_organization_service_roles_url_shortener")
       .del();
-    await knexDatabase.knex("users_organization_service_roles").del();
+    await knexDatabase.knexConfig("users_organization_service_roles").del();
 
     const signUpPayload = {
       username: Faker.name.firstName(),
@@ -282,7 +282,7 @@ describe("services graphql", () => {
     userToken = await jwt.sign(userClient, process.env.JWT_SECRET);
 
     const [userFromDb] = await knexDatabase
-      .knex("users")
+      .knexConfig("users")
       .where("id", signUpCreated.id)
       .select("verification_hash");
 
@@ -331,12 +331,12 @@ describe("services graphql", () => {
       });
 
     const [serviceFoundDB] = await knexDatabase
-      .knex("services")
+      .knexConfig("services")
       .where("name", Services.AFFILIATE)
       .select("id", "name", "active");
     serviceFound = serviceFoundDB;
 
-    await knexDatabase.knex("organization_vtex_secrets").del();
+    await knexDatabase.knexConfig("organization_vtex_secrets").del();
 
     const createIntegrationInput = {
       secrets: {
@@ -385,7 +385,7 @@ describe("services graphql", () => {
     let otherSignUpCreated = otherSignUpResponse.body.data.signUp;
 
     const [userFromDb] = await knexDatabase
-      .knex("users")
+      .knexConfig("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
 
@@ -430,7 +430,7 @@ describe("services graphql", () => {
       });
 
     const [invitedUserToOrganization] = await knexDatabase
-      .knex("users_organizations")
+      .knexConfig("users_organizations")
       .where("user_id", otherSignUpCreated.id)
       .select("invite_hash", "id");
 
@@ -493,7 +493,7 @@ describe("services graphql", () => {
     const shortUrlBefore = `${backendRedirectUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
     const [userInOrganizationService] = await knexDatabase
-      .knex("users_organization_service_roles")
+      .knexConfig("users_organization_service_roles")
       .select();
 
     expect(
@@ -540,7 +540,7 @@ describe("services graphql", () => {
     let otherSignUpCreated = otherSignUpResponse.body.data.signUp;
 
     const [userFromDb] = await knexDatabase
-      .knex("users")
+      .knexConfig("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
 
@@ -585,7 +585,7 @@ describe("services graphql", () => {
       });
 
     const [invitedUserToOrganization] = await knexDatabase
-      .knex("users_organizations")
+      .knexConfig("users_organizations")
       .where("user_id", otherSignUpCreated.id)
       .select("invite_hash", "id");
 
@@ -648,7 +648,7 @@ describe("services graphql", () => {
     const shortUrlBefore = `${backendRedirectUrl}/${affiliateGenerateShortenerUrlResponse.body.data.affiliateGenerateShortenerUrl.shortenerUrl.urlCode}`;
 
     const [userInOrganizationService] = await knexDatabase
-      .knex("users_organization_service_roles")
+      .knexConfig("users_organization_service_roles")
       .select();
 
     const affiliateId = userInOrganizationService.id;
@@ -672,7 +672,7 @@ describe("services graphql", () => {
     expect(listAffiliateShorterUrlResponse.statusCode).toBe(200);
 
     const [organizationService] = await knexDatabase
-      .knex("organization_services")
+      .knexConfig("organization_services")
       .where("organization_id", organizationCreated.id)
       .select("id");
 
@@ -721,7 +721,7 @@ describe("services graphql", () => {
     let otherSignUpCreated = otherSignUpResponse.body.data.signUp;
 
     const [userFromDb] = await knexDatabase
-      .knex("users")
+      .knexConfig("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
 
@@ -766,7 +766,7 @@ describe("services graphql", () => {
       });
 
     const [invitedUserToOrganization] = await knexDatabase
-      .knex("users_organizations")
+      .knexConfig("users_organizations")
       .where("user_id", otherSignUpCreated.id)
       .select("invite_hash", "id");
 
@@ -809,7 +809,7 @@ describe("services graphql", () => {
       });
 
     const brazilBanks = await knexDatabase
-      .knex("brazil_banks")
+      .knexConfig("brazil_banks")
       .limit(1)
       .select();
 
@@ -835,7 +835,7 @@ describe("services graphql", () => {
       });
 
     const [userInOrganizationService] = await knexDatabase
-      .knex("users_organization_service_roles")
+      .knexConfig("users_organization_service_roles")
       .select();
 
     expect(createAffiliateBankValuesResponse.statusCode).toBe(200);
@@ -873,7 +873,7 @@ describe("services graphql", () => {
     let otherSignUpCreated = otherSignUpResponse.body.data.signUp;
 
     const [userFromDb] = await knexDatabase
-      .knex("users")
+      .knexConfig("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash", "id");
 
@@ -919,7 +919,7 @@ describe("services graphql", () => {
       });
 
     const [invitedUserToOrganization] = await knexDatabase
-      .knex("users_organizations")
+      .knexConfig("users_organizations")
       .where("user_id", otherSignUpCreated.id)
       .andWhere("organization_id", organizationCreated.id)
       .select("invite_hash", "id");
@@ -999,7 +999,7 @@ describe("services graphql", () => {
     let otherSignUpCreated = otherSignUpResponse.body.data.signUp;
 
     const [userFromDb] = await knexDatabase
-      .knex("users")
+      .knexConfig("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash", "id");
 
@@ -1045,7 +1045,7 @@ describe("services graphql", () => {
       });
 
     const [invitedUserToOrganization] = await knexDatabase
-      .knex("users_organizations")
+      .knexConfig("users_organizations")
       .where("user_id", otherSignUpCreated.id)
       .andWhere("organization_id", organizationCreated.id)
       .select("invite_hash", "id");

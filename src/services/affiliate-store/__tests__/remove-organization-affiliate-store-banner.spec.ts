@@ -41,7 +41,7 @@ describe('Organization', () => {
   })
 
   beforeEach(async () => {
-    trx = await database.knex.transaction()
+    trx = await database.knexConfig.transaction()
 
     organizationInserted = await createOrganizationMock(trx)
   })
@@ -71,7 +71,7 @@ describe('Organization', () => {
 
       expect(removedOrganizationAffiliateStoreBanner).toBeTruthy()
 
-      const affiliateStoreBanner = await (trx || knexDatabase.knex)('organization_affiliate_store_banner').select()
+      const affiliateStoreBanner = await (trx || knexDatabase.knexConfig)('organization_affiliate_store_banner').select()
 
       expect(affiliateStoreBanner).toHaveLength(0)
 

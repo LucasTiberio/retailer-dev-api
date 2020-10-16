@@ -6,14 +6,14 @@ import service from '../service'
 const resolvers: IResolvers = {
   Mutation: {
     sendOrganizationCommissionOrder: async (_, { input }, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.sendOrganizationCommissionOrder(input, { organizationId }, trx)
       })
     },
   },
   Query: {
     getOrganizationCommissionOrder: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getOrganizationCommissionOrder({organizationId}, trx);
       })
     },

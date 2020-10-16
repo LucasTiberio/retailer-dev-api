@@ -6,7 +6,7 @@ import database from '../../../knex-database'
 const resolvers: IResolvers = {
   Mutation: {
     sendAffiliateInsideSalesSpecialistMail: (_, { input }, { organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.sendAffiliateInsideSalesSpecialistMail(input, { organizationId }, trx)
       })
     },

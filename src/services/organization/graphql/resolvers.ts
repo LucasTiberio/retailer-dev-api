@@ -8,49 +8,49 @@ import ServicesService from '../../services/service'
 const resolvers: IResolvers = {
   Mutation: {
     inviteTeammates: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.inviteTeammates(input, { client, organizationId }, trx)
       })
     },
     reinviteServiceMember: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.reinviteServiceMember(input, { client, organizationId }, trx)
       })
     },
     handleOrganizationDomain: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.handleOrganizationDomain(input, { organizationId }, trx)
       })
     },
     handleTeammatesActivity: (_, { input }, { organizationId, client }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.handleTeammatesActivity(input, { organizationId, client }, trx)
       })
     },
     inviteAffiliate: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.inviteAffiliateServiceMembers(input, { client, organizationId }, trx)
       })
     },
     handleServiceMembersActivity: (_, { input }, { organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.handleServiceMembersActivity(input, { organizationId }, trx)
       })
     },
     createOrganization: (_, { input }, { client, redisClient, headers }) => {
       let createOrganizationWithoutIntegrationSecret = headers['create-organization-without-integration-secret']
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.createOrganization(input, { client, redisClient, createOrganizationWithoutIntegrationSecret }, trx)
       })
     },
     setCurrentOrganization: (_, { input }, context) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.setCurrentOrganization(input, context, trx)
       })
     },
     organizationUploadImage: async (_, { input }, { client, organizationId }) => {
       const { createReadStream, filename, mimetype } = await input.data
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.organizationUploadImage(
           {
             imageName: filename,
@@ -63,54 +63,54 @@ const resolvers: IResolvers = {
       })
     },
     responseOrganizationInvite: (_, { input }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.responseInvite(input, trx)
       })
     },
     handleUserPermissionInOrganization: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.handleUserPermissionInOrganization(input, { client, organizationId }, trx)
       })
     },
   },
   Query: {
     verifyOrganizationName: (_, { input }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.verifyOrganizationName(input.name, trx)
       })
     },
     fetchOrganizationDomain: (_, __, { organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.fetchOrganizationDomain({ organizationId }, trx)
       })
     },
     teammatesCapacities: (_, __, { organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.teammatesCapacities({ organizationId }, trx)
       })
     },
     listTeammates: (_, __, { organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.listTeammates({ organizationId }, trx)
       })
     },
     organizationDetails: (_, __, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.organizationDetails({ client, organizationId }, trx)
       })
     },
     listMyOrganizations: (_, __, { client }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.listMyOrganizations(client, trx)
       })
     },
     listUsersInOrganization: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.listUsersInOrganization(input, { client, organizationId }, trx)
       })
     },
     findUsersToOrganization: (_, { input }, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.findUsersToOrganization(input, { client, organizationId }, trx)
       })
     },

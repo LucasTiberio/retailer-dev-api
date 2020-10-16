@@ -20,7 +20,7 @@ describe('shortener graphql', () => {
         const fakeShortId = "123456"
         const shortUrlBefore = `${backendRedirectUrl}/${fakeShortId}`;
 
-        const [urlShorten] = await knexDatabase.knex('url_shorten')
+        const [urlShorten] = await knexDatabase.knexConfig('url_shorten')
             .insert({
             original_url: originalUrl,
             short_url: shortUrlBefore,

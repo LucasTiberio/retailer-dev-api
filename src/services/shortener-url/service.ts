@@ -18,7 +18,7 @@ const shortUrlAdapter = (record : IShortenerUrlFromDB) => ({
 
 const getShortenerUrlByLoader = store.registerOneToOneLoader(
   async (shortenerUrlIds : string[]) => {
-    const query = await knexDatabase.knex('url_shorten')
+    const query = await knexDatabase.knexConfig('url_shorten')
     .whereIn('id', shortenerUrlIds)
     .select('*')
     return query;
@@ -31,7 +31,7 @@ const shortIdGenerator = async (trx: Transaction) => {
 
   const shortId = shortid.generate();
 
-  const shortIdFoundOnDb = await (trx || knexDatabase.knex)('url_shorten')
+  const shortIdFoundOnDb = await (trx || knexDatabase.knexConfig)('url_shorten')
     .where('short_url', shortId)
     .select('id');
 
@@ -50,7 +50,7 @@ const shortenerUrl = async (originalUrl: string, trx: Transaction) => {
 
       const shortId = await shortIdGenerator(trx);
 
-      const [shortIdFoundOnDb] = await (trx || knexDatabase.knex)('url_shorten')
+      const [shortIdFoundOnDb] = await (trx || knexDatabase.knexConfig)('url_shorten')
         .insert({
           original_url: originalUrl,
           short_url: `${backendRedirectUrl}/${shortId}`,
@@ -67,7 +67,7 @@ const shortenerUrl = async (originalUrl: string, trx: Transaction) => {
 
 const getShortnerUrlByOriginalUrl = async (originalUrl: string, trx: Transaction) => {
 
-  const [shortIdFoundOnDb] = await (trx || knexDatabase.knex)('url_shorten')
+  const [shortIdFoundOnDb] = await (trx || knexDatabase.knexConfig)('url_shorten')
     .where('original_url', originalUrl)
     .select('*');
 
@@ -77,13 +77,13 @@ const getShortnerUrlByOriginalUrl = async (originalUrl: string, trx: Transaction
 
 const getOriginalUrlByCode = async (urlCode: string ,trx: Transaction) => {
 
-  const [shortIdFoundOnDb] = await (trx || knexDatabase.knex)('url_shorten')
+  const [shortIdFoundOnDb] = await (trx || knexDatabase.knexConfig)('url_shorten')
   .where('url_code', urlCode)
   .select('original_url', 'id');
 
   if(!shortIdFoundOnDb) throw new Error("Shortener url doesnt exists");
 
-  await (trx || knexDatabase.knex)('url_shorten')
+  await (trx || knexDatabase.knexConfig)('url_shorten')
   .where('id', shortIdFoundOnDb.id)
   .increment('count', 1)
 

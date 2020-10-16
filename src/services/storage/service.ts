@@ -82,7 +82,7 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
     let imageFound = await getImageByUrl(image, trx)
 
     if (!imageFound) {
-      let query = (trx || knexDatabase.knex)('image')
+      let query = (trx || knexDatabase.knexConfig)('image')
       if (trx) {
         query = query.transacting(trx)
       }

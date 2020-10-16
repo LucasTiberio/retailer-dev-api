@@ -6,7 +6,7 @@ import service from '../service';
 const resolvers : IResolvers = {
   Query: {
     getBrazilBanks: async (_, { input }, { client })  => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getBrazilBanks(input, {client}, trx);
       });
     }

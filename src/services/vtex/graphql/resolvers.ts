@@ -10,7 +10,7 @@ const resolvers: IResolvers = {
       { input },
       { client, organizationId }
     ) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.handleOrganizationVtexComission(
           input,
           { client, organizationId },
@@ -21,7 +21,7 @@ const resolvers: IResolvers = {
   },
   Query: {
     vtexDepartmentsCommissions: (_, __, { client, organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getVtexDepartmentsCommissions(
           { client, organizationId },
           trx
@@ -29,7 +29,7 @@ const resolvers: IResolvers = {
       });
     },
     vtexAffiliateCommission: (_, { input }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getVtexCommissionInfosByAffiliateIdAndDepartmentId(
           input,
           trx

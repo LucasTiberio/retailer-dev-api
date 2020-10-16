@@ -30,7 +30,7 @@ describe('Storage', () => {
     let organizationCreated: IOrganizationAdapted;
 
     beforeAll(async () => {
-        trx = await knexDatabase.knex.transaction(); 
+        trx = await knexDatabase.knexConfig.transaction(); 
     });
 
     afterAll(async () => {

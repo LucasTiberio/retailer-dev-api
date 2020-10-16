@@ -19,7 +19,7 @@ const findOrUpdate = async (
 ) => {
   const saasDefaultCommissionFound = await getSaasDefaultCommissionByOrganizationId(organizationId, trx)
 
-  let query = (trx || knexDatabase.knex)('organization_default_saas_commission')
+  let query = (trx || knexDatabase.knexConfig)('organization_default_saas_commission')
 
   const inputAddapted = camelToSnakeCase(input)
 
@@ -43,7 +43,7 @@ const findOrUpdate = async (
 }
 
 const getSaasDefaultCommissionByOrganizationId = async (organizationId: string, trx: Transaction) => {
-  const CommissionBonificationCreatedRules = await (trx || knexDatabase.knex)('organization_default_saas_commission').where('organization_id', organizationId).first().select()
+  const CommissionBonificationCreatedRules = await (trx || knexDatabase.knexConfig)('organization_default_saas_commission').where('organization_id', organizationId).first().select()
   return CommissionBonificationCreatedRules ? SaasDefaultCommissionAdapter(CommissionBonificationCreatedRules) : null
 }
 

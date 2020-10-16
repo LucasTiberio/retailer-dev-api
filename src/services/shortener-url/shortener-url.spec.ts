@@ -25,7 +25,7 @@ describe('shortener', () => {
     let userToken : IUserToken;
 
     beforeAll(async () => {
-        trx = await knexDatabase.knex.transaction(); 
+        trx = await knexDatabase.knexConfig.transaction(); 
     });
 
     afterAll(async () => {
@@ -69,7 +69,7 @@ describe('shortener', () => {
         const fakeShortId = "123456"
         const shortUrlBefore = `${backendRedirectUrl}/${fakeShortId}`;
 
-        await (trx || knexDatabase.knex)('url_shorten')
+        await (trx || knexDatabase.knexConfig)('url_shorten')
         .insert({
           original_url: originalUrl,
           short_url: shortUrlBefore,
@@ -101,7 +101,7 @@ describe('shortener', () => {
         const shortUrl = await service.shortenerUrl(originalUrl, trx);
 
         const getOriginalUrl = await service.getOriginalUrlByCode(shortUrl.urlCode, trx);
-        const [urlShortenFoundOnDB] = await (trx || knexDatabase.knex)('url_shorten').where('id', shortUrl.id).select('count');
+        const [urlShortenFoundOnDB] = await (trx || knexDatabase.knexConfig)('url_shorten').where('id', shortUrl.id).select('count');
 
         expect(urlShortenFoundOnDB.count).toBe(1);
         expect(getOriginalUrl).toBe(originalUrl)

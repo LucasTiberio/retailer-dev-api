@@ -205,13 +205,13 @@ const handleOrganizationVtexComission = async (
 
   const { vtexDepartmentId, vtexCommissionPercentage, active } = handleOrganizationVtexComissionPayload
 
-  const [organizationVtexCommissionFound] = await (trx || knexDatabase.knex)('organization_vtex_comission')
+  const [organizationVtexCommissionFound] = await (trx || knexDatabase.knexConfig)('organization_vtex_comission')
     .where('organization_id', context.organizationId)
     .andWhere('vtex_department_id', vtexDepartmentId)
     .select('id', 'active')
 
   if (!organizationVtexCommissionFound) {
-    const [organizationVtexCommission] = await (trx || knexDatabase.knex)('organization_vtex_comission')
+    const [organizationVtexCommission] = await (trx || knexDatabase.knexConfig)('organization_vtex_comission')
       .insert({
         organization_id: context.organizationId,
         vtex_department_id: vtexDepartmentId,
@@ -223,7 +223,7 @@ const handleOrganizationVtexComission = async (
     return vtexCommissionsAdapter(organizationVtexCommission)
   }
 
-  const [organizationVtexCommissionUpdated] = await (trx || knexDatabase.knex)('organization_vtex_comission')
+  const [organizationVtexCommissionUpdated] = await (trx || knexDatabase.knexConfig)('organization_vtex_comission')
     .update({
       organization_id: context.organizationId,
       vtex_department_id: vtexDepartmentId,
