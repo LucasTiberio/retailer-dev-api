@@ -18,6 +18,21 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
+const apiTimeout = 100 * 10000
+app.use((req, res, next) => {
+  // Set the timeout for all HTTP requests
+  req.setTimeout(apiTimeout, () => {
+    let err = new Error('Request Timeout')
+    next(err)
+  })
+  // Set the server response timeout for all HTTP requests
+  res.setTimeout(apiTimeout, () => {
+    let err = new Error('Service Unavailable')
+    next(err)
+  })
+  next()
+})
+
 app.get('/', (req, res) => {
   res.send('Hello B8ONE!')
 })
