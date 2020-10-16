@@ -63,6 +63,11 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string): Pr
 
     await promises.reduce((accumulatorPromise: any, offset: any) => {
       return accumulatorPromise.then(async () => {
+        await new Promise(async (resolve) => {
+          setTimeout(() => {
+            resolve()
+          }, 500)
+        })
         return await new Promise(async (resolve) => {
           console.log(offset)
           await instance
