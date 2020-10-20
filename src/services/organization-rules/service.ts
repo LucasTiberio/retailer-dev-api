@@ -3,7 +3,7 @@ import knexDatabase from '../../knex-database'
 import moment from 'moment'
 import { Transaction } from 'knex'
 
-const getAffiliateTeammateRules = async (organizationId: string, trx?: Transaction) => {
+const getAffiliateTeammateRules = async (organizationId: string, trx?: Transaction, needReturn?: boolean) => {
   const query = `
     query getCurrentOrganizationPlan($input: GetCurrentOrganizationPlanInput!) {
         getCurrentOrganizationPlan(input: $input){
@@ -33,7 +33,7 @@ const getAffiliateTeammateRules = async (organizationId: string, trx?: Transacti
     input: {
       organizationId,
       freeTrial: organizationFound.free_trial && moment(organizationFound.free_trial_expires).isAfter(moment()),
-      freePlan: organizationFound.free_plan
+      freePlan: organizationFound.free_plan,
     },
   }
 
@@ -46,6 +46,9 @@ const getAffiliateTeammateRules = async (organizationId: string, trx?: Transacti
 
     return res.data.data.getCurrentOrganizationPlan.planRules[0].rules
   } catch (error) {
+    if (needReturn) {
+      return false
+    }
     let message = error.response?.data?.errors[0]?.message
     throw new Error(message ?? error.message)
   }

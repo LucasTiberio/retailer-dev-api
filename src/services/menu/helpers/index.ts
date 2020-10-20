@@ -50,7 +50,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
     ]
   }
 
-  const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
+  const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId, undefined, true)
 
   const baseAdminMenu: any = [
     {
@@ -93,6 +93,8 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
       ],
     },
   ]
+
+  if (!paymentServiceStatus) return baseAdminMenu
 
   if (integrationType === Integrations.VTEX || integrationType === Integrations.LOJA_INTEGRADA) {
     if (paymentServiceStatus.affiliateStore) {
