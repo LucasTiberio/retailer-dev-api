@@ -68,7 +68,7 @@ describe('authentication graphql', () => {
 
         test("user should sign in graphql", async done => {
 
-            const [userFromDb] = await database.knex('users').where('id', signUpCreated.id).select('verification_hash');
+            const [userFromDb] = await database.knexConfig('users').where('id', signUpCreated.id).select('verification_hash');
 
             const userVerifyEmailPayload = {
                 verificationHash: userFromDb.verification_hash
@@ -111,7 +111,7 @@ describe('authentication graphql', () => {
                 })
             );
 
-            const userOnDb = await database.knex('users').where('id', signUpCreated.id).select();
+            const userOnDb = await database.knexConfig('users').where('id', signUpCreated.id).select();
 
             expect(userOnDb).toHaveLength(1);
             expect(userOnDb[0]).toEqual(

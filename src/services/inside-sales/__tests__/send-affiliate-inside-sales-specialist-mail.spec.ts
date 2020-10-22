@@ -11,7 +11,7 @@ describe('Send affiliate specialist mail (Inside-Sales)', () => {
   let organizationInserted: IOrganizationFromDB
 
   beforeEach(async () => {
-    trx = await database.knex.transaction()
+    trx = await database.knexConfig.transaction()
 
     organizationInserted = await createOrganizationMock(trx)
   })

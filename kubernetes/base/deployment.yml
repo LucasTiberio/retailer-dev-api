@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plugone-api
+spec:
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: plugone-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        service: plugone-api
+    spec:
+      containers:
+        - name: plugone-api-container
+          image: plugone-api:latest
+          imagePullPolicy: Always
+          ports:
+            - name: "web"
+              containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: "web"
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: "web"
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 5

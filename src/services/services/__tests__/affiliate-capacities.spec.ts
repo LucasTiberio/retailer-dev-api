@@ -34,9 +34,9 @@ describe("Services", () => {
   let context: IContext;
 
   beforeAll(async () => {
-    trx = await database.knex.transaction();
+    trx = await database.knexConfig.transaction();
 
-    const [serviceFoundDB] = await (trx || knexDatabase.knex)("services")
+    const [serviceFoundDB] = await (trx || knexDatabase.knexConfig)("services")
       .where("name", Services.AFFILIATE)
       .select("id");
     serviceFound = serviceFoundDB;
@@ -82,7 +82,7 @@ describe("Services", () => {
       { client: userToken, redisClient },
       trx
     );
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", signUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);

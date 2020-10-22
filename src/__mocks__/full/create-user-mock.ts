@@ -5,7 +5,7 @@ import knexDatabase from '../../knex-database'
 const createUserMock = async (trx?: Transaction) => {
   const userMock = UserMock()
 
-  const [user] = await (trx || knexDatabase.knex)('users')
+  const [user] = await (trx || knexDatabase.knexConfig)('users')
     .insert({ ...userMock })
     .returning('*')
 

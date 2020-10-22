@@ -27,7 +27,7 @@ describe("teste", () => {
   let userToken: IUserToken;
 
   beforeAll(async () => {
-    trx = await knexDatabase.knex.transaction();
+    trx = await knexDatabase.knexConfig.transaction();
   });
 
   beforeEach(async () => {
@@ -99,7 +99,7 @@ describe("teste", () => {
 
     expect(invitedUserToOrganization).toBeTruthy();
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     ).select();
 
@@ -153,7 +153,7 @@ describe("teste", () => {
       await service.inviteTeammates(inviteTeammatesInput, context, trx);
     } catch (e) {
       expect(e.message).toBe(MESSAGE_ERROR_UPGRADE_PLAN);
-      const usersOrganization = await (trx || knexDatabase.knex)(
+      const usersOrganization = await (trx || knexDatabase.knexConfig)(
         "users_organizations"
       ).select();
       expect(usersOrganization).toHaveLength(1);
@@ -216,7 +216,7 @@ describe("teste", () => {
 
     expect(reinvitedUserToOrganization).toBeTruthy();
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     ).select();
 
@@ -276,7 +276,7 @@ describe("teste", () => {
       await service.inviteTeammates(reinviteTeammatesInput, context, trx);
     } catch (e) {
       expect(e.message).toBe(MESSAGE_ERROR_UPGRADE_PLAN);
-      const usersOrganization = await (trx || knexDatabase.knex)(
+      const usersOrganization = await (trx || knexDatabase.knexConfig)(
         "users_organizations"
       ).select();
       expect(usersOrganization).toHaveLength(6);
@@ -349,13 +349,13 @@ describe("teste", () => {
 
     await service.inviteTeammates(inviteTeammatesInput, context, trx);
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     ).select();
 
     expect(usersOrganization).toHaveLength(2);
 
-    const usersOrganizationService = await (trx || knexDatabase.knex)(
+    const usersOrganizationService = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .where("active", true)

@@ -107,7 +107,7 @@ describe('invite service members graphql', () => {
 
         await redisClient.flushall('ASYNC');
         
-        const [userFromDb] = await knexDatabase.knex('users').where('id', signUpCreated.id).select('verification_hash');
+        const [userFromDb] = await knexDatabase.knexConfig('users').where('id', signUpCreated.id).select('verification_hash');
 
         const userVerifyEmailPayload = {
             verificationHash: userFromDb.verification_hash
@@ -123,7 +123,7 @@ describe('invite service members graphql', () => {
             }
         });
 
-        await knexDatabase.knex('organization_vtex_secrets').del();
+        await knexDatabase.knexConfig('organization_vtex_secrets').del();
 
         let createOrganizationPayload = {
             organization: {

@@ -3,7 +3,7 @@ import { Transaction } from 'knex'
 import camelToSnakeCase from '../../../utils/camelToSnakeCase'
 
 const getByOrganizationId = async (organizationId: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knex)('organization_affiliate_store').where('organization_id', organizationId).first().select()
+  return await (trx || knexDatabase.knexConfig)('organization_affiliate_store').where('organization_id', organizationId).first().select()
 }
 
 const findOrUpdate = async (
@@ -17,7 +17,7 @@ const findOrUpdate = async (
 ) => {
   const organizationAffiliateStore = await getByOrganizationId(organizationId, trx)
 
-  let query = (trx || knexDatabase.knex)('organization_affiliate_store')
+  let query = (trx || knexDatabase.knexConfig)('organization_affiliate_store')
 
   const inputAddapted = camelToSnakeCase(input)
 

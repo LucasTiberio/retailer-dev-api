@@ -42,7 +42,7 @@ describe('Affiliate - Handle Commission By Department Id', () => {
   })
 
   beforeEach(async () => {
-    trx = await knexDatabase.knex.transaction()
+    trx = await knexDatabase.knexConfig.transaction()
 
     organizationInserted = await createOrganizationMock(trx)
   })

@@ -4,7 +4,7 @@ import { _serviceAdapter, _usersOrganizationServiceAdapter, _serviceRolesAdapter
 
 export const organizationServicesByOrganizationIdLoader = store.registerOneToManyLoader(
 async (userOrganizationIds : string[]) => {
-    const query = await knexDatabase.knex('users_organization_service_roles AS uosr')
+    const query = await knexDatabase.knexConfig('users_organization_service_roles AS uosr')
     .innerJoin('organization_services AS os', 'os.id', 'uosr.organization_services_id')
     .innerJoin('services AS serv', 'serv.id', 'os.service_id')
     .whereIn('uosr.users_organization_id', userOrganizationIds)
@@ -17,7 +17,7 @@ async (userOrganizationIds : string[]) => {
   
 export const userOrganizationServicesByIdLoader = store.registerOneToOneLoader(
 async (userOrganizationServiceIds : string[]) => {
-    const query = await knexDatabase.knex('users_organization_service_roles')
+    const query = await knexDatabase.knexConfig('users_organization_service_roles')
     .whereIn('id', userOrganizationServiceIds)
     .select('*');
     return query;
@@ -28,7 +28,7 @@ async (userOrganizationServiceIds : string[]) => {
   
 export const userOrganizationServicesHasLinkGeneratedByIdLoader = store.registerOneToOneLoader(
     async (userOrganizationServiceIds : string[]) => {
-        const query = await knexDatabase.knex('users_organization_service_roles_url_shortener')
+        const query = await knexDatabase.knexConfig('users_organization_service_roles_url_shortener')
         .whereIn('users_organization_service_roles_id', userOrganizationServiceIds)
         .limit(1)
         .select('*');
@@ -40,7 +40,7 @@ export const userOrganizationServicesHasLinkGeneratedByIdLoader = store.register
   
 export const organizationServicesRolesByIdLoader = store.registerOneToManyLoader(
     async (serviceRolesId : string[]) => {
-        const query = await knexDatabase.knex('service_roles')
+        const query = await knexDatabase.knexConfig('service_roles')
         .whereIn('id', serviceRolesId)
         .select();
         return query;
@@ -51,7 +51,7 @@ export const organizationServicesRolesByIdLoader = store.registerOneToManyLoader
   
 export const organizationServicesRolesByIdOneToOneLoader = store.registerOneToOneLoader(
     async (serviceRolesId : string[]) => {
-        const query = await knexDatabase.knex('service_roles')
+        const query = await knexDatabase.knexConfig('service_roles')
         .whereIn('id', serviceRolesId)
         .select();
         return query;

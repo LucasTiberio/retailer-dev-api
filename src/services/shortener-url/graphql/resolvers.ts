@@ -7,7 +7,7 @@ const resolvers : IResolvers = {
     Query: {
         getOriginalUrlByCode: (_, attrs) => {
             const { input } = attrs;
-            return knexDatabase.knex.transaction((trx: Transaction) => {
+            return knexDatabase.knexConfig.transaction((trx: Transaction) => {
                 return service.getOriginalUrlByCode(input.urlCode, trx);
             });
         }
