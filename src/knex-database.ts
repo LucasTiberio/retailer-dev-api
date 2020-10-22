@@ -27,7 +27,7 @@ export async function connectDB(retries = 5) {
 			});
 			break;
 		} catch (error) {
-			logger.error("Couldn't connect to DB: ", error);
+			logger.error(`Couldn't connect to DB: ${error}`);
 
 			retries -= 1
 			logger.info(`retries left: ${retries}`)
