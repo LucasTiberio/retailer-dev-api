@@ -70,7 +70,7 @@ describe('bank-data graphql', () => {
 
         signUpCreated = signUpResponse.body.data.signUp
 
-        const [userFromDb] = await knexDatabase.knex('users').where('id', signUpCreated.id).select('verification_hash');
+        const [userFromDb] = await knexDatabase.knexConfig('users').where('id', signUpCreated.id).select('verification_hash');
 
         const userVerifyEmailPayload = {
             verificationHash: userFromDb.verification_hash

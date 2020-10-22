@@ -129,8 +129,8 @@ describe("services graphql", () => {
   let organizationCreated: IOrganizationAdapted;
 
   beforeEach(async () => {
-    await knexDatabase.knex("organization_vtex_comission").del();
-    await knexDatabase.knex("organization_vtex_secrets").del();
+    await knexDatabase.knexConfig("organization_vtex_comission").del();
+    await knexDatabase.knexConfig("organization_vtex_secrets").del();
 
     const signUpPayload = {
       username: Faker.name.firstName(),
@@ -155,7 +155,7 @@ describe("services graphql", () => {
     userToken = await jwt.sign(userClient, process.env.JWT_SECRET);
 
     const [userFromDb] = await knexDatabase
-      .knex("users")
+      .knexConfig("users")
       .where("id", signUpCreated.id)
       .select("verification_hash");
 
@@ -256,7 +256,7 @@ describe("services graphql", () => {
           },
         });
 
-      await knexDatabase.knex("organization_vtex_comission").insert({
+      await knexDatabase.knexConfig("organization_vtex_comission").insert({
         organization_id: organizationCreated.id,
         vtex_department_id: 1,
         vtex_commission_percentage: 15,
@@ -496,7 +496,7 @@ describe("services graphql", () => {
       let otherSignUpCreated = otherSignUpResponse.body.data.signUp;
 
       const [userFromDb] = await knexDatabase
-        .knex("users")
+        .knexConfig("users")
         .where("id", otherSignUpCreated.id)
         .select("verification_hash");
 
@@ -559,7 +559,7 @@ describe("services graphql", () => {
         });
 
       const [invitedUserToOrganization] = await knexDatabase
-        .knex("users_organizations")
+        .knexConfig("users_organizations")
         .where("user_id", otherSignUpCreated.id)
         .select("invite_hash", "id");
 
@@ -601,7 +601,7 @@ describe("services graphql", () => {
           .handleOrganizationVtexCommission;
 
       const [userInOrganizationService] = await knexDatabase
-        .knex("users_organization_service_roles")
+        .knexConfig("users_organization_service_roles")
         .select();
 
       const vtexComissionsByAffiliateIdAndDepartmentIdPayload = {

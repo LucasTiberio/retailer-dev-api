@@ -31,7 +31,7 @@ describe('create integration', () => {
   let context: IContext
 
   beforeAll(async () => {
-    trx = await knexDatabase.knex.transaction()
+    trx = await knexDatabase.knexConfig.transaction()
 
     const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
     getAffiliateTeammateRulesSpy.mockImplementation(
@@ -107,7 +107,7 @@ describe('create integration', () => {
 
     expect(secretCreated).toBe(true)
 
-    const integrationSecrets = await (trx || knexDatabase.knex)('integration_secrets').first().select()
+    const integrationSecrets = await (trx || knexDatabase.knexConfig)('integration_secrets').first().select()
 
     expect(integrationSecrets).toEqual(
       expect.objectContaining({
@@ -118,7 +118,7 @@ describe('create integration', () => {
       })
     )
 
-    const organizationIntegration = await (trx || knexDatabase.knex)('organization_integration_secrets').first().select()
+    const organizationIntegration = await (trx || knexDatabase.knexConfig)('organization_integration_secrets').first().select()
 
     expect(organizationIntegration).toEqual(
       expect.objectContaining({
@@ -161,11 +161,11 @@ describe('create integration', () => {
 
     expect(secretCreated).toBe(true)
 
-    const integrationSecrets = await (trx || knexDatabase.knex)('integration_secrets').select()
+    const integrationSecrets = await (trx || knexDatabase.knexConfig)('integration_secrets').select()
 
     expect(integrationSecrets).toHaveLength(1)
 
-    const organizationIntegration = await (trx || knexDatabase.knex)('organization_integration_secrets').select()
+    const organizationIntegration = await (trx || knexDatabase.knexConfig)('organization_integration_secrets').select()
 
     expect(organizationIntegration).toHaveLength(1)
 
@@ -194,7 +194,7 @@ describe('create integration', () => {
 
     expect(secretCreated).toBe(true)
 
-    const integrationSecrets = await (trx || knexDatabase.knex)('integration_secrets').first().select()
+    const integrationSecrets = await (trx || knexDatabase.knexConfig)('integration_secrets').first().select()
 
     expect(integrationSecrets).toEqual(
       expect.objectContaining({
@@ -205,7 +205,7 @@ describe('create integration', () => {
       })
     )
 
-    const organizationIntegration = await (trx || knexDatabase.knex)('organization_integration_secrets').first().select()
+    const organizationIntegration = await (trx || knexDatabase.knexConfig)('organization_integration_secrets').first().select()
 
     expect(organizationIntegration).toEqual(
       expect.objectContaining({
@@ -253,7 +253,7 @@ describe('create integration', () => {
 
     expect(secretCreated).toBe(true)
 
-    const integrationSecrets = await (trx || knexDatabase.knex)('integration_secrets').first().select()
+    const integrationSecrets = await (trx || knexDatabase.knexConfig)('integration_secrets').first().select()
 
     expect(integrationSecrets).toEqual(
       expect.objectContaining({
@@ -264,7 +264,7 @@ describe('create integration', () => {
       })
     )
 
-    const organizationIntegration = await (trx || knexDatabase.knex)('organization_integration_secrets').first().select()
+    const organizationIntegration = await (trx || knexDatabase.knexConfig)('organization_integration_secrets').first().select()
 
     expect(organizationIntegration).toEqual(
       expect.objectContaining({

@@ -27,7 +27,7 @@ const userServicePermissions = async (input: { name?: string, serviceName: Servi
 
     const adminServiceRole = await ServicesService.getServiceRolesByName(ServiceRoles.ADMIN, trx);
 
-    query  = (trx || knexDatabase.knex)('service_roles_permissions AS srp')
+    query  = (trx || knexDatabase.knexConfig)('service_roles_permissions AS srp')
     .innerJoin('permissions AS perm', 'srp.permission_id', 'perm.id')
     .innerJoin('service_roles AS sr', 'sr.id', 'srp.service_role_id')
     .where('srp.service_role_id', adminServiceRole.id)
@@ -39,7 +39,7 @@ const userServicePermissions = async (input: { name?: string, serviceName: Servi
 
     if(!userOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION)
 
-    query  = (trx || knexDatabase.knex)('service_roles_permissions AS srp')
+    query  = (trx || knexDatabase.knexConfig)('service_roles_permissions AS srp')
     .innerJoin('permissions AS perm', 'srp.permission_id', 'perm.id')
     .innerJoin('service_roles AS sr', 'sr.id', 'srp.service_role_id')
     .innerJoin('users_organization_service_roles AS uosr', 'uosr.service_roles_id', 'srp.service_role_id')

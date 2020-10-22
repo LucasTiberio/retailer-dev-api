@@ -48,7 +48,7 @@ import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/env
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
   const { segment, resellersEstimate, reason, plataform } = input
 
-  const [attachedOrganizationInfosId] = await (trx || knexDatabase.knex)('organization_additional_infos')
+  const [attachedOrganizationInfosId] = await (trx || knexDatabase.knexConfig)('organization_additional_infos')
     .insert({
       segment,
       resellers_estimate: resellersEstimate,
@@ -71,7 +71,7 @@ const createOrganization = async (
   } = createOrganizationPayload
 
   try {
-    const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('user_id', context.client.id).select()
+    const [organizationFound] = await (trx || knexDatabase.knexConfig)('organizations').where('user_id', context.client.id).select()
 
     if (process.env.NODE_ENV === 'production') {
       if (organizationFound) {
@@ -94,7 +94,7 @@ const createOrganization = async (
 
     const attachedOrganizationInfosId = await attachOrganizationAditionalInfos(createOrganizationPayload.additionalInfos, trx)
 
-    const [organizationCreated] = await (trx || database.knex)
+    const [organizationCreated] = await (trx || database.knexConfig)
       .insert({
         name,
         contact_email: contactEmail,
@@ -138,7 +138,7 @@ const createOrganization = async (
 }
 
 const verifyOrganizationName = async (name: string, trx: Transaction) => {
-  const organizationFound = await (trx || knexDatabase.knex)('organizations').where('name', name).select()
+  const organizationFound = await (trx || knexDatabase.knexConfig)('organizations').where('name', name).select()
 
   return !!organizationFound.length
 }
@@ -148,7 +148,7 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
 
   if (!organizationRole) throw new Error('Organization role not found.')
 
-  const [userOrganizationCreated] = await (trx || knexDatabase.knex)('users_organizations')
+  const [userOrganizationCreated] = await (trx || knexDatabase.knexConfig)('users_organizations')
     .insert({
       user_id: userId,
       organization_id: organizationId,
@@ -157,7 +157,7 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
     })
     .returning('*')
 
-  const [organizationRoleId] = await (trx || knexDatabase.knex)('users_organization_roles')
+  const [organizationRoleId] = await (trx || knexDatabase.knexConfig)('users_organization_roles')
     .insert({
       users_organization_id: userOrganizationCreated.id,
       organization_role_id: organizationRole.id,
@@ -171,12 +171,12 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
 }
 
 const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transaction) => {
-  const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', roleName).select('id')
+  const [organizationRole] = await (trx || knexDatabase.knexConfig)('organization_roles').where('name', roleName).select('id')
   return organizationRole
 }
 
 const listTeammates = async (context: { organizationId: string }, trx: Transaction) => {
-  const teammates = await (trx || knexDatabase.knex)('users_organizations AS uo')
+  const teammates = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
     .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')
     .innerJoin('users AS u', 'u.id', 'uo.user_id')
@@ -189,7 +189,7 @@ const listTeammates = async (context: { organizationId: string }, trx: Transacti
 }
 
 const userTeammatesOrganizationCount = async (organizationId: string, userId: string, emails: string[], trx: Transaction) => {
-  const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+  const [userOrganizationCreatedId] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
     .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')
     .innerJoin('users AS u', 'u.id', 'uo.user_id')
@@ -204,7 +204,7 @@ const userTeammatesOrganizationCount = async (organizationId: string, userId: st
 }
 
 const userTeammatesOrganizationCountByUserOrganizationId = async (organizationId: string, userId: string, trx: Transaction) => {
-  const [userOrganizationCreatedId] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+  const [userOrganizationCreatedId] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
     .innerJoin('organization_roles AS or', 'or.id', 'uor.organization_role_id')
     .innerJoin('users AS u', 'u.id', 'uo.user_id')
@@ -234,7 +234,7 @@ const inviteTeammates = async (
 
   if (uniqueEmails.length > maxTeammates || Number(currentTeammates) + uniqueEmails.length > maxTeammates) throw new Error(MESSAGE_ERROR_UPGRADE_PLAN)
 
-  const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', context.organizationId).select('name')
+  const [organization] = await (trx || knexDatabase.knexConfig)('organizations').where('id', context.organizationId).select('name')
 
   if (!organization) throw new Error('Organization not found.')
 
@@ -255,7 +255,7 @@ const inviteTeammates = async (
           const usersOrganizationFound = await getUserOrganizationByIds(userEmailFound.id, context.organizationId, trx)
 
           if (usersOrganizationFound) {
-            const [userOrganizationCreated] = await (trx || knexDatabase.knex)('users_organizations')
+            const [userOrganizationCreated] = await (trx || knexDatabase.knexConfig)('users_organizations')
               .update({
                 invite_status: OrganizationInviteStatus.PENDENT,
                 active: true,
@@ -279,7 +279,7 @@ const inviteTeammates = async (
 
               const adminRole = await getOrganizationRoleByName(OrganizationRoles.ADMIN, trx)
 
-              await (trx || knexDatabase.knex)('users_organization_roles')
+              await (trx || knexDatabase.knexConfig)('users_organization_roles')
                 .update({
                   organization_role_id: adminRole.id,
                 })
@@ -316,7 +316,7 @@ const inviteTeammates = async (
 }
 
 const getUserOrganizationByUserOrganizationId = async (usersOrganizationId: string, trx: Transaction) => {
-  const userInOrganizationServices = await (trx || knexDatabase.knex)('users_organizations').where('id', usersOrganizationId)
+  const userInOrganizationServices = await (trx || knexDatabase.knexConfig)('users_organizations').where('id', usersOrganizationId)
 
   return userInOrganizationServices
 }
@@ -333,7 +333,7 @@ const inviteAffiliateServiceMembers = async (
 ) => {
   const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId)
 
-  const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', context.organizationId).select('name')
+  const [organization] = await (trx || knexDatabase.knexConfig)('organizations').where('id', context.organizationId).select('name')
 
   if (!organization) throw new Error('Organization not found.')
 
@@ -368,7 +368,7 @@ const inviteAffiliateServiceMembers = async (
           const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, context.organizationId, trx)
 
           if (usersOrganizationFound) {
-            const [userOrganizationUpdated] = await (trx || knexDatabase.knex)('users_organizations')
+            const [userOrganizationUpdated] = await (trx || knexDatabase.knexConfig)('users_organizations')
               .update({
                 invite_status: usersOrganizationFound.invite_status === OrganizationInviteStatus.ACCEPT ? OrganizationInviteStatus.ACCEPT : OrganizationInviteStatus.PENDENT,
                 active: true,
@@ -444,7 +444,7 @@ const inviteAffiliateServiceMembers = async (
 }
 
 const getOrganizationRoleByName = async (organizationRoleName: OrganizationRoles, trx: Transaction) => {
-  const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', organizationRoleName).select()
+  const [organizationRole] = await (trx || knexDatabase.knexConfig)('organization_roles').where('name', organizationRoleName).select()
 
   return organizationRole
 }
@@ -452,7 +452,7 @@ const getOrganizationRoleByName = async (organizationRoleName: OrganizationRoles
 const changeOrganizationAdminToMember = async (userOrganizationIds: string[], trx: Transaction) => {
   const memberOrganizationRole = await getOrganizationRoleByName(OrganizationRoles.MEMBER, trx)
 
-  await (trx || knexDatabase.knex)('users_organization_roles')
+  await (trx || knexDatabase.knexConfig)('users_organization_roles')
     .update({
       organization_role_id: memberOrganizationRole.id,
     })
@@ -460,13 +460,13 @@ const changeOrganizationAdminToMember = async (userOrganizationIds: string[], tr
 }
 
 const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx: Transaction) => {
-  const [user] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+  const [user] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .where('invite_hash', responseInvitePayload.inviteHash)
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id')
 
   try {
-    await (trx || knexDatabase.knex)('users_organizations')
+    await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
         invite_hash: null,
         invite_status: responseInvitePayload.response,
@@ -475,7 +475,7 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
 
     if (!user) return { status: true, message: userAlreadyRegistered }
 
-    await (trx || knexDatabase.knex)('users_organization_service_roles')
+    await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
       .update({
         active: responseInvitePayload.response === OrganizationInviteStatus.ACCEPT,
       })
@@ -508,7 +508,7 @@ const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes,
 
   const searchTerm = findUserAttributes.name.toLowerCase()
 
-  const userFoundWithResponses = await (trx || knexDatabase.knex).raw(
+  const userFoundWithResponses = await (trx || knexDatabase.knexConfig).raw(
     `
     SELECT usr.id, usr.username, usr.email, uo.invite_status
     FROM users AS usr
@@ -524,20 +524,20 @@ const findUsersToOrganization = async (findUserAttributes: IFindUsersAttributes,
 }
 
 const userOrganizationInviteStatus = async (userId: string, organizationId: string, trx: Transaction) => {
-  const [userOrganizationInviteStatusFound] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', userId).andWhere('organization_id', organizationId).select()
+  const [userOrganizationInviteStatusFound] = await (trx || knexDatabase.knexConfig)('users_organizations').where('user_id', userId).andWhere('organization_id', organizationId).select()
 
   return _usersOrganizationsAdapter(userOrganizationInviteStatusFound)
 }
 
 const getUserOrganizationById = async (userOrganizationId: string, trx?: Transaction) => {
-  const [userOrganization] = await (trx || knexDatabase.knex)('users_organizations').where('id', userOrganizationId).select()
+  const [userOrganization] = await (trx || knexDatabase.knexConfig)('users_organizations').where('id', userOrganizationId).select()
 
   return userOrganization ? _usersOrganizationsAdapter(userOrganization) : null
 }
 
 const getOrganizationById = async (organizationId: string, trx?: Transaction) => {
   if (trx) {
-    const [organization] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select()
+    const [organization] = await (trx || knexDatabase.knexConfig)('organizations').where('id', organizationId).select()
 
     return _organizationAdapter(organization)
   }
@@ -550,7 +550,7 @@ const getOrganizationById = async (organizationId: string, trx?: Transaction) =>
 const getOrganizationByUserId = async (userId: string, organizationId?: string) => {
   if (organizationId) {
     const organization = await knexDatabase
-      .knex('users_organizations AS uo')
+      .knexConfig('users_organizations AS uo')
       .innerJoin('organizations AS org', 'org.id', 'uo.organization_id')
       .where('uo.user_id', userId)
       .andWhere('uo.organization_id', organizationId)
@@ -565,19 +565,19 @@ const getOrganizationByUserId = async (userId: string, organizationId?: string) 
 }
 
 const getOrganizationByName = async (organizationName: string, trx?: Transaction) => {
-  const [organization] = await (trx || knexDatabase.knexTest)('organizations').where('name', organizationName).select()
+  const [organization] = await (trx || knexDatabase.knexConfigTest)('organizations').where('name', organizationName).select()
 
   return _organizationAdapter(organization)
 }
 
 const getOrganizationRoleId = async (organizationRoleName: OrganizationRoles, trx: Transaction) => {
-  const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('name', organizationRoleName).select()
+  const [organizationRole] = await (trx || knexDatabase.knexConfig)('organization_roles').where('name', organizationRoleName).select()
 
   return organizationRole
 }
 
 const getOrganizationRoleById = async (organizationRoleId: string, trx?: Transaction) => {
-  const [organizationRole] = await (trx || knexDatabase.knex)('organization_roles').where('id', organizationRoleId).select()
+  const [organizationRole] = await (trx || knexDatabase.knexConfig)('organization_roles').where('id', organizationRoleId).select()
 
   return organizationRole
 }
@@ -594,7 +594,7 @@ const listUsersInOrganization = async (
 
   const { name, offset, limit, showActive } = listUsersInOrganizationPayload
 
-  let query = (trx || knexDatabase.knex)('users_organizations AS uo')
+  let query = (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
     .where('uo.organization_id', context.organizationId)
@@ -627,19 +627,19 @@ const listUsersInOrganization = async (
 }
 
 const getUserOrganizationByIds = async (userId: string, organizationId: string, trx: Transaction) => {
-  const [userOrganization] = await (trx || knexDatabase.knex)('users_organizations').where('user_id', userId).andWhere('organization_id', organizationId).select()
+  const [userOrganization] = await (trx || knexDatabase.knexConfig)('users_organizations').where('user_id', userId).andWhere('organization_id', organizationId).select()
 
   return userOrganization
 }
 
 const getUserOrganizationRoleById = async (userOrganizationId: string, trx: Transaction) => {
-  const [userOrganizationRole] = await (trx || knexDatabase.knex)('users_organization_roles').where('users_organization_id', userOrganizationId).select()
+  const [userOrganizationRole] = await (trx || knexDatabase.knexConfig)('users_organization_roles').where('users_organization_id', userOrganizationId).select()
 
   return _usersOrganizationsRolesAdapter(userOrganizationRole)
 }
 
 const isOrganizationAdmin = async (userOrganizationId: string, trx: Transaction) => {
-  const [userOrganizationRole] = await (trx || knexDatabase.knex)('users_organization_roles AS uor')
+  const [userOrganizationRole] = await (trx || knexDatabase.knexConfig)('users_organization_roles AS uor')
     .innerJoin('organization_roles AS or', 'uor.organization_role_id', 'or.id')
     .where('uor.users_organization_id', userOrganizationId)
     .select('or.name')
@@ -648,13 +648,13 @@ const isOrganizationAdmin = async (userOrganizationId: string, trx: Transaction)
 }
 
 const isFounder = async (organizationId: string, userId: string, trx: Transaction) => {
-  const [organizationFound] = await (trx || knexDatabase.knex)('organizations').where('id', organizationId).select('user_id')
+  const [organizationFound] = await (trx || knexDatabase.knexConfig)('organizations').where('id', organizationId).select('user_id')
 
   return organizationFound.user_id === userId
 }
 
 const isFounderBulk = async (organizationId: string, usersEmail: string[], trx: Transaction) => {
-  const [founder] = await (trx || knexDatabase.knex)('organizations AS org').innerJoin('users AS usr', 'usr.id', 'org.user_id').where('org.id', organizationId).select('usr.email')
+  const [founder] = await (trx || knexDatabase.knexConfig)('organizations AS org').innerJoin('users AS usr', 'usr.id', 'org.user_id').where('org.id', organizationId).select('usr.email')
 
   return usersEmail.includes(founder.email)
 }
@@ -682,15 +682,15 @@ const handleUserPermissionInOrganization = async (
 
     if (!userOrganization) throw new Error('User not found in organization!')
 
-    const [userPermissionUpdated] = await (trx || knexDatabase.knex)('users_organization_roles')
+    const [userPermissionUpdated] = await (trx || knexDatabase.knexConfig)('users_organization_roles')
       .update({ organization_role_id: newPermission.id })
       .where('users_organization_id', userOrganization.id)
       .returning('*')
 
     if (permission === OrganizationRoles.MEMBER) {
-      await (trx || knexDatabase.knex)('users_organization_service_roles').update({ active: true }).where('users_organization_id', userOrganization.id)
+      await (trx || knexDatabase.knexConfig)('users_organization_service_roles').update({ active: true }).where('users_organization_id', userOrganization.id)
     } else if (permission === OrganizationRoles.ADMIN) {
-      await (trx || knexDatabase.knex)('users_organization_service_roles').update({ active: false }).where('users_organization_id', userOrganization.id)
+      await (trx || knexDatabase.knexConfig)('users_organization_service_roles').update({ active: false }).where('users_organization_id', userOrganization.id)
     }
 
     return _usersOrganizationsRolesAdapter(userPermissionUpdated)
@@ -703,7 +703,7 @@ const listMyOrganizations = async (userToken: IUserToken, trx: Transaction) => {
   if (!userToken) throw new Error('token must be provided.')
 
   try {
-    const organizations = await (trx || knexDatabase.knex)('users_organizations AS uo')
+    const organizations = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
       .innerJoin('organizations AS orgn', 'orgn.id', 'uo.organization_id')
       .where('uo.user_id', userToken.id)
       .andWhere('uo.active', true)
@@ -718,7 +718,7 @@ const listMyOrganizations = async (userToken: IUserToken, trx: Transaction) => {
 const organizationDetails = async (context: { organizationId: string; client: IUserToken }, trx: Transaction) => {
   if (!context.client) throw new Error('token must be provided.')
 
-  const [organizations] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+  const [organizations] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .innerJoin('organizations AS orgn', 'orgn.id', 'uo.organization_id')
     .where('uo.user_id', context.client.id)
     .andWhere('uo.active', true)
@@ -769,7 +769,7 @@ const organizationUploadImage = async (
 
   const imageUploaded = await StorageService.uploadImage(process.env.NODE_ENV === 'test' ? `tdd/${path}` : path, process.env.NODE_ENV === 'test' ? data : newData, mimetype, trx)
 
-  const [organizationAttachLogo] = await (trx || knexDatabase.knex)('organizations')
+  const [organizationAttachLogo] = await (trx || knexDatabase.knexConfig)('organizations')
     .where('id', context.organizationId)
     .update({
       logo: imageUploaded.url,
@@ -824,7 +824,7 @@ const handleServiceMembersActivity = async (
 
     if (!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
 
-    const userOrganizationServiceRoleFound = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+    const userOrganizationServiceRoleFound = await (trx || knexDatabase.knexConfig)('users_organization_service_roles AS uosr')
       .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
       .where('users_organization_id', userOrganizationId)
       .andWhere('organization_services_id', organizationService.id)
@@ -845,7 +845,7 @@ const handleServiceMembersActivity = async (
       )
     }
 
-    await (trx || knexDatabase.knex)('users_organization_service_roles').update({ active: activity }).where('id', userOrganizationServiceRoleFound.id)
+    await (trx || knexDatabase.knexConfig)('users_organization_service_roles').update({ active: activity }).where('id', userOrganizationServiceRoleFound.id)
 
     const hasMoreServices = await ServicesService.getUserInOrganizationServiceByUserOrganizationId(
       {
@@ -882,7 +882,7 @@ const handleServiceMembersActivity = async (
 }
 
 const getUserByUserOrganizationId = async (userOrganizationId: string, trx: Transaction) => {
-  const user = await (trx || knexDatabase.knex)('users_organizations AS uo').innerJoin('users AS usr', 'usr.id', 'uo.user_id').where('uo.id', userOrganizationId).first().select('usr.*')
+  const user = await (trx || knexDatabase.knexConfig)('users_organizations AS uo').innerJoin('users AS usr', 'usr.id', 'uo.user_id').where('uo.id', userOrganizationId).first().select('usr.*')
 
   return user
 }
@@ -914,7 +914,7 @@ const handleTeammatesActivity = async (input: { userOrganizationId: string; acti
     }
   }
 
-  const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations').update({ active: activity }).where('id', userOrganizationId).returning('*')
+  const [userOrganizationInatived] = await (trx || knexDatabase.knexConfig)('users_organizations').update({ active: activity }).where('id', userOrganizationId).returning('*')
 
   return _usersOrganizationsAdapter(userOrganizationInatived)
 }
@@ -926,7 +926,7 @@ const _handleMemberActivity = async (input: { userOrganizationId: string; activi
 
   if (organizationAdmin) throw new Error(MESSAGE_ERROR_USER_TEAMMATE)
 
-  const [userOrganizationInatived] = await (trx || knexDatabase.knex)('users_organizations').update({ active: activity }).where('id', userOrganizationId).returning('*')
+  const [userOrganizationInatived] = await (trx || knexDatabase.knexConfig)('users_organizations').update({ active: activity }).where('id', userOrganizationId).returning('*')
 
   return _usersOrganizationsAdapter(userOrganizationInatived)
 }
@@ -939,7 +939,7 @@ const reinviteServiceMember = async (
   trx: Transaction
 ) => {
   try {
-    const usersOrganizationFound = await (trx || knexDatabase.knex)('users_organizations AS uo')
+    const usersOrganizationFound = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
       .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
       .innerJoin('organizations AS org', 'org.id', 'uo.organization_id')
       .where('uo.id', input.userOrganizationId)
@@ -963,7 +963,7 @@ const reinviteServiceMember = async (
 const teammatesCapacities = async (context: { organizationId: string }, trx: Transaction) => {
   const organizationAdminRole = await getOrganizationRoleByName(OrganizationRoles.ADMIN, trx)
 
-  let [query] = await (trx || knexDatabase.knex)('users_organizations AS uo')
+  let [query] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
     .where('organization_id', context.organizationId)
     .andWhere('active', true)
@@ -983,8 +983,10 @@ const teammatesCapacities = async (context: { organizationId: string }, trx: Tra
 const organizationHasBillingPendency = async (organizationId: string) => {
   try {
     const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId)
-    const organizationFound = await knexDatabase.knex('organizations').where('id', organizationId).first().select()
-    if (organizationFound.free_trial) {
+    const organizationFound = await knexDatabase.knexConfig('organizations').where('id', organizationId).first().select()
+    if (organizationFound.free_plan) {
+      return false
+    } else if (organizationFound.free_trial) {
       return null
     } else if (moment(paymentServiceStatus.expiresAt).isAfter(moment())) {
       return false

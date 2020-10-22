@@ -279,11 +279,11 @@ const getOrganizationOrdersByAffiliateId = async (
 }
 
 const attachShorterUrlOnAffiliate = async (userOrganizationServiceId: string, shorterUrlId: string, trx: Transaction) => {
-  const [shorterUrlFoundOnAffiliate] = await (trx || knexDatabase.knex)('users_organization_service_roles_url_shortener').where('url_shorten_id', shorterUrlId).returning('*')
+  const [shorterUrlFoundOnAffiliate] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles_url_shortener').where('url_shorten_id', shorterUrlId).returning('*')
 
   if (shorterUrlFoundOnAffiliate) return affiliateShorterUrlAdapter(shorterUrlFoundOnAffiliate)
 
-  const [attachedShorterUrlOnAffiliate] = await (trx || knexDatabase.knex)('users_organization_service_roles_url_shortener')
+  const [attachedShorterUrlOnAffiliate] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles_url_shortener')
     .insert({
       users_organization_service_roles_id: userOrganizationServiceId,
       url_shorten_id: shorterUrlId,
@@ -298,7 +298,7 @@ const getShorterUrlByUserOrganizationServiceId = async (input: { userOrganizatio
 
   const { userOrganizationServiceId } = input
 
-  const affiliateShortenerUrls = await (trx || knexDatabase.knex)('users_organization_service_roles_url_shortener').where('users_organization_service_roles_id', userOrganizationServiceId).select()
+  const affiliateShortenerUrls = await (trx || knexDatabase.knexConfig)('users_organization_service_roles_url_shortener').where('users_organization_service_roles_id', userOrganizationServiceId).select()
 
   return affiliateShortenerUrls.map(affiliateShorterUrlAdapter)
 }
@@ -316,7 +316,7 @@ const createAffiliateBankValues = async (
 
   if (!context.userServiceOrganizationRolesId) throw new Error(MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE)
 
-  const [affiliateBankDataFound] = await (trx || knexDatabase.knex)('users_organization_service_roles').where('id', context.userServiceOrganizationRolesId).select('*')
+  const [affiliateBankDataFound] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles').where('id', context.userServiceOrganizationRolesId).select('*')
 
   if (affiliateBankDataFound.bank_data_id) {
     await BankDataService.updateBankValues(
@@ -332,7 +332,7 @@ const createAffiliateBankValues = async (
 
   const bankData = await BankDataService.createBankValues(createUserBankValuesPayload, context, trx)
 
-  const [affiliateBankData] = await (trx || knexDatabase.knex)('users_organization_service_roles')
+  const [affiliateBankData] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
     .update('bank_data_id', bankData.id)
     .where('id', context.userServiceOrganizationRolesId)
     .returning('*')
@@ -565,18 +565,18 @@ const handleTimeToPayCommission = async (
 
   if (!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
 
-  const [timeToPayCommission] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+  const [timeToPayCommission] = await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay')
     .where('organization_service_id', organizationService.id)
     .andWhere('type', 'commission')
     .select('id')
 
   if (timeToPayCommission) {
-    const [timeToPayCommissionUpdated] = await (trx || knexDatabase.knex)('organization_services_time_to_pay').update({ days }).where('id', timeToPayCommission.id).returning('*')
+    const [timeToPayCommissionUpdated] = await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay').update({ days }).where('id', timeToPayCommission.id).returning('*')
 
     return timeToPayCommissionAdapter(timeToPayCommissionUpdated)
   }
 
-  const [timeToPayCommissionUpdated] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+  const [timeToPayCommissionUpdated] = await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay')
     .insert({
       days,
       type: 'commission',
@@ -594,7 +594,7 @@ const getTimeToPayCommission = async (context: { organizationId: string; client:
 
   if (!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
 
-  const [timeToPayCommission] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+  const [timeToPayCommission] = await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay')
     .where('organization_service_id', organizationService.id)
     .andWhere('type', 'commission')
     .select('*')
@@ -607,7 +607,7 @@ const getTimeToPayCommissionById = async (input: { organizationId: string }, trx
 
   if (!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
 
-  const [timeToPayCommission] = await (trx || knexDatabase.knex)('organization_services_time_to_pay')
+  const [timeToPayCommission] = await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay')
     .where('organization_service_id', organizationService.id)
     .andWhere('type', 'commission')
     .select('*')
@@ -616,7 +616,7 @@ const getTimeToPayCommissionById = async (input: { organizationId: string }, trx
 }
 
 const getDefaultCommissionByOrganizationServiceId = async (organizationServiceId: string, trx: Transaction) => {
-  const [defaultCommission] = await (trx || knexDatabase.knex)('organization_services_def_commission').where('organization_service_id', organizationServiceId).select('*')
+  const [defaultCommission] = await (trx || knexDatabase.knexConfig)('organization_services_def_commission').where('organization_service_id', organizationServiceId).select('*')
 
   return defaultCommission ? defaultCommissionAdapter(defaultCommission) : null
 }
@@ -640,10 +640,10 @@ const handleDefaultommission = async (handleDefaultCommission: { percentage: num
 
   if (!organizationService) throw new Error(MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST)
 
-  const [defaultCommission] = await (trx || knexDatabase.knex)('organization_services_def_commission').where('organization_service_id', organizationService.id).select('id')
+  const [defaultCommission] = await (trx || knexDatabase.knexConfig)('organization_services_def_commission').where('organization_service_id', organizationService.id).select('id')
 
   if (defaultCommission) {
-    const [defaultCommissionUpdated] = await (trx || knexDatabase.knex)('organization_services_def_commission')
+    const [defaultCommissionUpdated] = await (trx || knexDatabase.knexConfig)('organization_services_def_commission')
       .update({
         percentage,
       })
@@ -653,7 +653,7 @@ const handleDefaultommission = async (handleDefaultCommission: { percentage: num
     return defaultCommissionAdapter(defaultCommissionUpdated)
   }
 
-  const [defaultCommissionCreated] = await (trx || knexDatabase.knex)('organization_services_def_commission')
+  const [defaultCommissionCreated] = await (trx || knexDatabase.knexConfig)('organization_services_def_commission')
     .insert({
       percentage,
       organization_service_id: organizationService.id,

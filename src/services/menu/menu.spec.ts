@@ -36,9 +36,9 @@ describe('Menu', () => {
   let context: IContext
 
   beforeAll(async () => {
-    trx = await database.knex.transaction()
+    trx = await database.knexConfig.transaction()
 
-    const [serviceFoundDB] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id')
+    const [serviceFoundDB] = await (trx || knexDatabase.knexConfig)('services').where('name', Services.AFFILIATE).select('id')
     serviceFound = serviceFoundDB
   })
 
@@ -62,7 +62,7 @@ describe('Menu', () => {
     signUpCreated = await UserService.signUp(signUpPayload, trx)
     userToken = { origin: 'user', id: signUpCreated.id }
     organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), { client: userToken, redisClient }, trx)
-    const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash')
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)('users').where('id', signUpCreated.id).select('verification_hash')
     await UserService.verifyEmail(userFromDb.verification_hash, trx)
     context = { client: userToken, organizationId: organizationCreated.id }
   })
@@ -84,7 +84,7 @@ describe('Menu', () => {
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx)
     let otherUserToken = { origin: 'user', id: otherSignUpCreated.id }
-    const [otherUserFromDb] = await (trx || knexDatabase.knex)('users').where('id', otherSignUpCreated.id).select('verification_hash')
+    const [otherUserFromDb] = await (trx || knexDatabase.knexConfig)('users').where('id', otherSignUpCreated.id).select('verification_hash')
     await UserService.verifyEmail(otherUserFromDb.verification_hash, trx)
     let otherContext = {
       client: otherUserToken,

@@ -232,7 +232,7 @@ describe('organizations graphql', () => {
     let createOrganizationPayload: IOrganizationPayload
 
     beforeEach(async () => {
-      const [userFromDb] = await knexDatabase.knex('users').where('id', signUpCreated.id).select('verification_hash')
+      const [userFromDb] = await knexDatabase.knexConfig('users').where('id', signUpCreated.id).select('verification_hash')
 
       const userVerifyEmailPayload = {
         verificationHash: userFromDb.verification_hash,
@@ -248,7 +248,7 @@ describe('organizations graphql', () => {
           },
         })
 
-      await knexDatabase.knex('organization_vtex_secrets').del()
+      await knexDatabase.knexConfig('organization_vtex_secrets').del()
 
       createOrganizationPayload = createOrganizationWithIntegrationVTEXPayload()
     })
@@ -281,7 +281,7 @@ describe('organizations graphql', () => {
         })
       )
 
-      const organizationOnDb = await knexDatabase.knex('organizations').select()
+      const organizationOnDb = await knexDatabase.knexConfig('organizations').select()
 
       expect(organizationOnDb).toHaveLength(1)
       expect(organizationOnDb[0]).toEqual(

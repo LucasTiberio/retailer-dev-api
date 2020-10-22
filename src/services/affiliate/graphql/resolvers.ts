@@ -8,23 +8,23 @@ import ServicesService from '../../services/service'
 const resolvers: IResolvers = {
   Mutation: {
     handleOrganizationCommission: (_, { input }, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.handleOrganizationCommission(input, { organizationId }, trx)
       })
     },
     handleTimeToPayCommission: (_, { input }, { organizationId, client }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.handleTimeToPayCommission(input, { organizationId, client }, trx)
       })
     },
     handleDefaultCommission: (_, { input }, { organizationId, client }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.handleDefaultommission(input, { organizationId, client }, trx)
       })
     },
     affiliateGenerateShortenerUrl: (_, attrs, { client, organizationId }) => {
       const { input } = attrs
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.generateShortenerUrl(input, { client, organizationId }, trx)
       })
     },
@@ -34,19 +34,19 @@ const resolvers: IResolvers = {
     },
     generateSalesShorten: (_, attrs, { salesId }) => {
       const { input } = attrs
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.generateSalesShorten(input, { salesId }, trx)
       })
     },
     generateSalesJwt: (_, attrs, { redisClient }) => {
       const { input } = attrs
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.generateSalesJWT(input, { redisClient }, trx)
       })
     },
     createAffiliateBankValues: (_, attrs, { client, organizationId, userServiceOrganizationRolesId }) => {
       const { input } = attrs
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.createAffiliateBankValues(
           input,
           {
@@ -61,48 +61,48 @@ const resolvers: IResolvers = {
   },
   Query: {
     getOrganizationCommissions: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getOrganizationCommissionByOrganizationId({ organizationId }, trx)
       })
     },
     getAffiliateAvailableBonifications: (_, __, { client, userServiceOrganizationRolesId, organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getAvailableBonifications({ client, userServiceOrganizationRolesId, organizationId })
       })
     },
     getOrganizationCommissionsName: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getOrganizationCommissionsName(organizationId, trx)
       })
     },
     getOrganizationCommissionsSellerName: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getOrganizationCommissionsSellerName(organizationId, trx)
       })
     },
     getOrganizationCommissionsCategoriesName: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getOrganizationCommissionsCategoriesName(organizationId, trx)
       })
     },
     getOrganizationCommissionsAffiliatesName: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getOrganizationCommissionsAffiliatesName(organizationId, trx)
       })
     },
     timeToPayCommission: (_, __, { client, organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getTimeToPayCommission({ client, organizationId }, trx)
       })
     },
     defaultCommission: (_, __, { client, organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getDefaultCommission({ client, organizationId }, trx)
       })
     },
     listAffiliateShorterUrl: (_, attrs, { client }) => {
       const { input } = attrs
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getShorterUrlByUserOrganizationServiceId(input, client, trx)
       })
     },

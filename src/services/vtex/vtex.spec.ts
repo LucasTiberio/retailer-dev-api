@@ -36,7 +36,7 @@ describe("Vtex", () => {
   let organizationCreated: IOrganizationAdapted;
 
   beforeAll(async () => {
-    trx = await database.knex.transaction();
+    trx = await database.knexConfig.transaction();
   });
 
   afterAll(async () => {
@@ -60,7 +60,7 @@ describe("Vtex", () => {
     await trx("users").del();
     signUpCreated = await UserService.signUp(signUpPayload, trx);
     userToken = { origin: "user", id: signUpCreated.id };
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", signUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -91,7 +91,7 @@ describe("Vtex", () => {
 
     // expect(verifyVtexOrderResource).toBeTruthy();
 
-    const vtexSecretsOnDb = await (trx || knexDatabase.knex)(
+    const vtexSecretsOnDb = await (trx || knexDatabase.knexConfig)(
       "organization_vtex_secrets"
     ).select();
 
@@ -165,7 +165,7 @@ describe("Vtex", () => {
 
     // expect(verifyVtexOrderResourceChange).toBeTruthy();
 
-    const vtexSecretsOnDb = await (trx || knexDatabase.knex)(
+    const vtexSecretsOnDb = await (trx || knexDatabase.knexConfig)(
       "organization_vtex_secrets"
     ).select();
 
@@ -227,7 +227,7 @@ describe("Vtex", () => {
 
     // await service.verifyAndAttachVtexSecrets(vtexSecrets, context, trx);
 
-    await (trx || knexDatabase.knex)("organization_vtex_comission").insert({
+    await (trx || knexDatabase.knexConfig)("organization_vtex_comission").insert({
       organization_id: organizationCreated.id,
       vtex_department_id: 1,
       vtex_commission_percentage: 15,
@@ -403,7 +403,7 @@ describe("Vtex", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -432,7 +432,7 @@ describe("Vtex", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -468,7 +468,7 @@ describe("Vtex", () => {
       trx
     );
 
-    const [userInOrganizationService] = await (trx || knexDatabase.knex)(
+    const [userInOrganizationService] = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     ).select();
 
@@ -511,7 +511,7 @@ describe("Vtex", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -540,7 +540,7 @@ describe("Vtex", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -564,7 +564,7 @@ describe("Vtex", () => {
       trx
     );
 
-    const [userInOrganizationService] = await (trx || knexDatabase.knex)(
+    const [userInOrganizationService] = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     ).select();
 

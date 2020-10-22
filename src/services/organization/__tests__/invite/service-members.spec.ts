@@ -28,7 +28,7 @@ describe("teste", () => {
   let userToken: IUserToken;
 
   beforeAll(async () => {
-    trx = await knexDatabase.knex.transaction();
+    trx = await knexDatabase.knexConfig.transaction();
   });
 
   beforeEach(async () => {
@@ -114,13 +114,13 @@ describe("teste", () => {
 
     expect(invitedServiceMembers).toBeTruthy();
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     ).select();
 
     expect(usersOrganization).toHaveLength(6);
 
-    const usersOrganizationService = await (trx || knexDatabase.knex)(
+    const usersOrganizationService = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     ).select();
 
@@ -205,13 +205,13 @@ describe("teste", () => {
 
     expect(invitedServiceMembers).toBeTruthy();
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     ).select();
 
     expect(usersOrganization).toHaveLength(6);
 
-    const usersOrganizationService = await (trx || knexDatabase.knex)(
+    const usersOrganizationService = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     ).select();
 
@@ -296,23 +296,23 @@ describe("teste", () => {
 
     expect(invitedServiceMembers).toBeTruthy();
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     ).select();
 
     expect(usersOrganization).toHaveLength(6);
 
-    const usersOrganizationService = await (trx || knexDatabase.knex)(
+    const usersOrganizationService = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     ).select();
 
     expect(usersOrganizationService).toHaveLength(5);
 
-    const [saleRole] = await (trx || knexDatabase.knex)("service_roles")
+    const [saleRole] = await (trx || knexDatabase.knexConfig)("service_roles")
       .where("name", ServiceRoles.SALE)
       .select("id");
 
-    const usersOrganizationServiceSale = await (trx || knexDatabase.knex)(
+    const usersOrganizationServiceSale = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .where("service_roles_id", saleRole.id)
@@ -320,11 +320,11 @@ describe("teste", () => {
 
     expect(usersOrganizationServiceSale).toHaveLength(1);
 
-    const [analystRole] = await (trx || knexDatabase.knex)("service_roles")
+    const [analystRole] = await (trx || knexDatabase.knexConfig)("service_roles")
       .where("name", ServiceRoles.ANALYST)
       .select("id");
 
-    const usersOrganizationServiceAnalyst = await (trx || knexDatabase.knex)(
+    const usersOrganizationServiceAnalyst = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .where("service_roles_id", analystRole.id)
@@ -396,11 +396,11 @@ describe("teste", () => {
       );
     } catch (e) {
       expect(e.message).toBe(MESSAGE_ERROR_UPGRADE_PLAN);
-      const usersOrganization = await (trx || knexDatabase.knex)(
+      const usersOrganization = await (trx || knexDatabase.knexConfig)(
         "users_organizations"
       ).select();
       expect(usersOrganization).toHaveLength(1);
-      const usersOrganizationService = await (trx || knexDatabase.knex)(
+      const usersOrganizationService = await (trx || knexDatabase.knexConfig)(
         "users_organization_service_roles"
       ).select();
       expect(usersOrganizationService).toHaveLength(0);
@@ -477,11 +477,11 @@ describe("teste", () => {
       );
     } catch (e) {
       expect(e.message).toBe(MESSAGE_ERROR_UPGRADE_PLAN);
-      const usersOrganization = await (trx || knexDatabase.knex)(
+      const usersOrganization = await (trx || knexDatabase.knexConfig)(
         "users_organizations"
       ).select();
       expect(usersOrganization).toHaveLength(1);
-      const usersOrganizationService = await (trx || knexDatabase.knex)(
+      const usersOrganizationService = await (trx || knexDatabase.knexConfig)(
         "users_organization_service_roles"
       ).select();
       expect(usersOrganizationService).toHaveLength(0);
@@ -565,11 +565,11 @@ describe("teste", () => {
       );
     } catch (e) {
       expect(e.message).toBe(MESSAGE_ERROR_UPGRADE_PLAN);
-      const usersOrganization = await (trx || knexDatabase.knex)(
+      const usersOrganization = await (trx || knexDatabase.knexConfig)(
         "users_organizations"
       ).select();
       expect(usersOrganization).toHaveLength(6);
-      const usersOrganizationService = await (trx || knexDatabase.knex)(
+      const usersOrganizationService = await (trx || knexDatabase.knexConfig)(
         "users_organization_service_roles"
       ).select();
       expect(usersOrganizationService).toHaveLength(5);
@@ -644,13 +644,13 @@ describe("teste", () => {
       trx
     );
 
-    const [organizationAdminRole] = await (trx || knexDatabase.knex)(
+    const [organizationAdminRole] = await (trx || knexDatabase.knexConfig)(
       "organization_roles"
     )
       .where("name", OrganizationRoles.ADMIN)
       .select("id");
 
-    const userOrganizationAdmin = await (trx || knexDatabase.knex)(
+    const userOrganizationAdmin = await (trx || knexDatabase.knexConfig)(
       "users_organization_roles"
     )
       .where("organization_role_id", organizationAdminRole.id)
@@ -658,13 +658,13 @@ describe("teste", () => {
 
     expect(userOrganizationAdmin).toHaveLength(1);
 
-    const [organizationMemberRole] = await (trx || knexDatabase.knex)(
+    const [organizationMemberRole] = await (trx || knexDatabase.knexConfig)(
       "organization_roles"
     )
       .where("name", OrganizationRoles.MEMBER)
       .select("id");
 
-    const userOrganizationMember = await (trx || knexDatabase.knex)(
+    const userOrganizationMember = await (trx || knexDatabase.knexConfig)(
       "users_organization_roles"
     )
       .where("organization_role_id", organizationMemberRole.id)
@@ -672,7 +672,7 @@ describe("teste", () => {
 
     expect(userOrganizationMember).toHaveLength(1);
 
-    const usersOrganizationServiceSale = await (trx || knexDatabase.knex)(
+    const usersOrganizationServiceSale = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     ).select();
 

@@ -249,8 +249,8 @@ describe('services graphql', () => {
 
     beforeEach(async () => {
 
-        await knexDatabase.knex('users_organization_service_roles_url_shortener').del();
-        await knexDatabase.knex('users_organization_service_roles').del();
+        await knexDatabase.knexConfig('users_organization_service_roles_url_shortener').del();
+        await knexDatabase.knexConfig('users_organization_service_roles').del();
 
         const signUpPayload = {
             username: Faker.name.firstName(),
@@ -274,7 +274,7 @@ describe('services graphql', () => {
 
         userToken = await jwt.sign(userClient, process.env.JWT_SECRET);
 
-        const [userFromDb] = await knexDatabase.knex('users').where('id', signUpCreated.id).select('verification_hash');
+        const [userFromDb] = await knexDatabase.knexConfig('users').where('id', signUpCreated.id).select('verification_hash');
 
         const userVerifyEmailPayload = {
             verificationHash: userFromDb.verification_hash
@@ -329,7 +329,7 @@ describe('services graphql', () => {
 
         test("user should list services availables to organization", async done => {
 
-            const servicesFound = await knexDatabase.knex('services').select('id', 'name');
+            const servicesFound = await knexDatabase.knexConfig('services').select('id', 'name');
 
             const listAvailableServicesResponse = await request
             .post('/graphql')
@@ -363,10 +363,10 @@ describe('services graphql', () => {
             let serviceFound : IServiceAdaptedFromDB;
     
             beforeEach(async () => {
-                const [serviceFoundDB] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id', 'name', 'active');
+                const [serviceFoundDB] = await knexDatabase.knexConfig('services').where('name', Services.AFFILIATE).select('id', 'name', 'active');
                 serviceFound = serviceFoundDB
 
-                await knexDatabase.knex('organization_vtex_secrets').del();
+                await knexDatabase.knexConfig('organization_vtex_secrets').del();
 
                 const vtexSecrets = {
                     xVtexApiAppKey: "vtexappkey-beightoneagency-NQFTPH",
@@ -407,7 +407,7 @@ describe('services graphql', () => {
         
             //     let otherSignUpCreated = otherSignUpResponse.body.data.signUp
 
-            //     const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash');
+            //     const [userFromDb] = await knexDatabase.knexConfig('users').where('id', otherSignUpCreated.id).select('verification_hash');
 
             //     const userVerifyEmailPayload = {
             //         verificationHash: userFromDb.verification_hash
@@ -441,7 +441,7 @@ describe('services graphql', () => {
             //         }
             //     });
 
-            //     const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+            //     const [invitedUserToOrganization] = await knexDatabase.knexConfig('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
     
             //     const responseOrganizationInvitePayload = {
             //         inviteHash: invitedUserToOrganization.invite_hash,
@@ -477,7 +477,7 @@ describe('services graphql', () => {
 
             //     expect(addUserInOrganizationServiceResponse.statusCode).toBe(200);
 
-            //     const [serviceRoles] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+            //     const [serviceRoles] = await knexDatabase.knexConfig('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
             //     expect(addUserInOrganizationServiceResponse.body.data.addUserInOrganizationService).toEqual(
             //         expect.objectContaining({
@@ -534,7 +534,7 @@ describe('services graphql', () => {
         
             //     let otherSignUpCreated = otherSignUpResponse.body.data.signUp
         
-            //     const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+            //     const [userFromDb] = await knexDatabase.knexConfig('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
         
             //     const userVerifyEmailPayload = {
             //         verificationHash: userFromDb.verification_hash,
@@ -569,7 +569,7 @@ describe('services graphql', () => {
             //         }
             //     });
     
-            //     const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+            //     const [invitedUserToOrganization] = await knexDatabase.knexConfig('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
     
             //     const responseOrganizationInvitePayload = {
             //         inviteHash: invitedUserToOrganization.invite_hash,
@@ -646,7 +646,7 @@ describe('services graphql', () => {
         
             //     let otherSignUpCreated = otherSignUpResponse.body.data.signUp
         
-            //     const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+            //     const [userFromDb] = await knexDatabase.knexConfig('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
         
             //     const userVerifyEmailPayload = {
             //         verificationHash: userFromDb.verification_hash,
@@ -681,7 +681,7 @@ describe('services graphql', () => {
             //         }
             //     });
     
-            //     const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+            //     const [invitedUserToOrganization] = await knexDatabase.knexConfig('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
     
             //     const responseOrganizationInvitePayload = {
             //         inviteHash: invitedUserToOrganization.invite_hash,
@@ -732,7 +732,7 @@ describe('services graphql', () => {
 
             //     expect(listUsersInOrganizationServiceResponse.statusCode).toBe(200);
     
-            //     const [analystServiceRole] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+            //     const [analystServiceRole] = await knexDatabase.knexConfig('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
             //     expect(listUsersInOrganizationServiceResponse.body.data.listUsersInOrganizationService).toEqual(
             //         expect.arrayContaining([
@@ -779,7 +779,7 @@ describe('services graphql', () => {
         
             //     let otherSignUpCreated = otherSignUpResponse.body.data.signUp
         
-            //     const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+            //     const [userFromDb] = await knexDatabase.knexConfig('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
         
             //     const userVerifyEmailPayload = {
             //         verificationHash: userFromDb.verification_hash,
@@ -814,7 +814,7 @@ describe('services graphql', () => {
             //         }
             //     });
     
-            //     const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+            //     const [invitedUserToOrganization] = await knexDatabase.knexConfig('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
     
             //     const responseOrganizationInvitePayload = {
             //         inviteHash: invitedUserToOrganization.invite_hash,
@@ -865,7 +865,7 @@ describe('services graphql', () => {
 
             //     expect(getUserInOrganizationServiceResponse.statusCode).toBe(200);
     
-            //     const [analystServiceRole] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+            //     const [analystServiceRole] = await knexDatabase.knexConfig('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
             //     expect(getUserInOrganizationServiceResponse.body.data.getUserInOrganizationService).toEqual(
             //             expect.objectContaining({
@@ -910,7 +910,7 @@ describe('services graphql', () => {
         
                 let otherSignUpCreated = otherSignUpResponse.body.data.signUp
         
-                const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+                const [userFromDb] = await knexDatabase.knexConfig('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
         
                 const userVerifyEmailPayload = {
                     verificationHash: userFromDb.verification_hash,
@@ -966,7 +966,7 @@ describe('services graphql', () => {
                     }
                 });
     
-                const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+                const [invitedUserToOrganization] = await knexDatabase.knexConfig('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
     
                 const responseOrganizationInvitePayload = {
                     inviteHash: invitedUserToOrganization.invite_hash,
@@ -1003,9 +1003,9 @@ describe('services graphql', () => {
 
                 expect(userInServiceHandleRoleResponse.statusCode).toBe(200)
     
-                const [adminServiceRoles] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ADMIN).select('id');
+                const [adminServiceRoles] = await knexDatabase.knexConfig('service_roles').where('name', ServiceRoles.ADMIN).select('id');
                 
-                const [userInOrganizationService] = await knexDatabase.knex('users_organization_service_roles').select();
+                const [userInOrganizationService] = await knexDatabase.knexConfig('users_organization_service_roles').select();
     
                 expect(userInServiceHandleRoleResponse.body.data.userInServiceHandleRole).toEqual(
                     expect.objectContaining({
@@ -1055,7 +1055,7 @@ describe('services graphql', () => {
         
             //     let otherSignUpCreated = otherSignUpResponse.body.data.signUp
         
-            //     const [userFromDb] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+            //     const [userFromDb] = await knexDatabase.knexConfig('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
         
             //     const userVerifyEmailPayload = {
             //         verificationHash: userFromDb.verification_hash,
@@ -1090,7 +1090,7 @@ describe('services graphql', () => {
             //         }
             //     });
     
-            //     const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
+            //     const [invitedUserToOrganization] = await knexDatabase.knexConfig('users_organizations').where("user_id", otherSignUpCreated.id).andWhere('organization_id', organizationCreated.id).select('invite_hash', 'id');
     
             //     const responseOrganizationInvitePayload = {
             //         inviteHash: invitedUserToOrganization.invite_hash,
@@ -1142,7 +1142,7 @@ describe('services graphql', () => {
 
             //     expect(inativeUserFromServiceOrganizationResponse.statusCode).toBe(200);
     
-            //     const [responsibleServiceRoles] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+            //     const [responsibleServiceRoles] = await knexDatabase.knexConfig('service_roles').where('name', ServiceRoles.ANALYST).select('id');
     
             //     expect(inativeUserFromServiceOrganizationResponse.body.data.inativeUserFromServiceOrganization).toEqual(
             //         expect.objectContaining({
@@ -1191,7 +1191,7 @@ describe('services graphql', () => {
         
             //     let otherSignUpCreated = otherSignUpResponse.body.data.signUp
         
-            //     const [otherUserFromDB] = await knexDatabase.knex('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
+            //     const [otherUserFromDB] = await knexDatabase.knexConfig('users').where('id', otherSignUpCreated.id).select('verification_hash', 'id');
         
             //     const userVerifyEmailPayload = {
             //         verificationHash: otherUserFromDB.verification_hash
@@ -1225,7 +1225,7 @@ describe('services graphql', () => {
             //         }
             //     });
 
-            //     const [invitedUserToOrganization] = await knexDatabase.knex('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
+            //     const [invitedUserToOrganization] = await knexDatabase.knexConfig('users_organizations').where("user_id", otherSignUpCreated.id).select('invite_hash', 'id');
 
     
             //     const responseOrganizationInvitePayload = {
@@ -1296,7 +1296,7 @@ describe('services graphql', () => {
 
             //     expect(getUserOrganizationByServiceNameResponse.statusCode).toBe(200);
     
-            //     const [analystServiceRole] = await knexDatabase.knex('service_roles').where('name', ServiceRoles.ANALYST).select('id');
+            //     const [analystServiceRole] = await knexDatabase.knexConfig('service_roles').where('name', ServiceRoles.ANALYST).select('id');
 
             //     expect(getUserOrganizationByServiceNameResponse.body.data.getUserOrganizationByServiceName).toEqual(
             //             expect.objectContaining({

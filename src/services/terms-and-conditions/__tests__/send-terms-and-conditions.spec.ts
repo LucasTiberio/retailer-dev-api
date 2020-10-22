@@ -19,7 +19,7 @@ describe('Organization', () => {
   }
 
   beforeEach(async () => {
-    trx = await database.knex.transaction()
+    trx = await database.knexConfig.transaction()
 
     let signUpCreated = await createUserMock(trx)
 

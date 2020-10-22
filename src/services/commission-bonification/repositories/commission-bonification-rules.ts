@@ -7,12 +7,12 @@ import { CommissionBonificationRuleAdapter } from '../adapters'
 const createCommissionBonificationRules = async (input: CommissionBonificationRule[], organizationCommissionBonificationId: string, trx: Transaction) => {
   const inputAdapted = input.map(camelToSnakeCase).map((item) => ({ ...item, organization_commission_bonification_id: organizationCommissionBonificationId }))
 
-  const CommissionBonificationCreatedRules = await (trx || knexDatabase.knex)('commission_bonification_rules').insert(inputAdapted).returning('*')
+  const CommissionBonificationCreatedRules = await (trx || knexDatabase.knexConfig)('commission_bonification_rules').insert(inputAdapted).returning('*')
   return CommissionBonificationCreatedRules.map(CommissionBonificationRuleAdapter)
 }
 
 const getOrganizationCommissionBonificationRulesByCommissionBonificationId = async (organizationCommissionBonificationId: string, trx: Transaction) => {
-  const CommissionBonificationCreatedRules = await (trx || knexDatabase.knex)('commission_bonification_rules')
+  const CommissionBonificationCreatedRules = await (trx || knexDatabase.knexConfig)('commission_bonification_rules')
     .where('organization_commission_bonification_id', organizationCommissionBonificationId)
     .select()
   return CommissionBonificationCreatedRules.map(CommissionBonificationRuleAdapter)

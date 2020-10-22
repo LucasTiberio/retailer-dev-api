@@ -6,24 +6,24 @@ import service from '../service'
 const resolvers: IResolvers = {
   Mutation: {
     createCommissionBonification: async (_, { input }, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.createCommissionBonification(input, { organizationId }, trx)
       })
     },
     deleteCommissionBonification: async (_, { input }, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.deleteCommissionBonification(input, { organizationId }, trx)
       })
     },
   },
   Query: {
     getAllCommissionsBonifications: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getAllCommissionsBonifications({ organizationId }, trx)
       })
     },
     getCommissionBonificationById: (_, { input }, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getCommissionBonificationById(input, { organizationId }, trx)
       })
     },

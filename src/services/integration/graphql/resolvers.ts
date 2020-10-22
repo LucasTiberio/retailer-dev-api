@@ -6,12 +6,12 @@ import { Transaction } from 'knex'
 const resolvers: IResolvers = {
   Mutation: {
     createIntegration: (_, { input }, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.createIntegration(input, { organizationId }, trx)
       })
     },
     createIuguIntegration: (_, { input }, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.createIuguIntegration(input, { organizationId }, trx)
       })
     },
