@@ -115,7 +115,7 @@ const resolvers: IResolvers = {
       })
     },
     organizationPaymentsDetails: (_, __, { client, organizationId }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.getOrganizationPaymentsDetails({ client, organizationId }, trx)
       })
     },

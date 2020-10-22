@@ -5,16 +5,16 @@ import service from '../service';
 
 const resolvers: IResolvers = {
   Query: {
-    getOrganizationFinantialReconciliation: (_, { }, { organizationId }) => {
+    getOrganizationFinantialConciliation: (_, { }, { organizationId }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.getFinantialConciliationByOrganizationId({ organizationId }, trx);
+        return service.getFinantialConciliationConfigurationByOrganizationId({ organizationId }, trx);
       })
     },
   },
   Mutation: {
-    handleOrganizationFinancialReconciliation: (_, { input }, { organizationId }) => {
+    handleOrganizationFinantialConciliationConfiguration: (_, { input }, { organizationId }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.handleOrganizationFinancialReconciliation(input, { organizationId }, trx);
+        return service.handleOrganizationFinantialConciliationConfiguration(input, { organizationId }, trx);
       })
     },
   }

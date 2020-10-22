@@ -31,17 +31,28 @@ type TeammatesCapacities {
 
 type FinantialConciliation {
   orders: Int!
-  revenue: String!
-  commissionsToPay: String!
-  closeDate: String!
-  monthly: [FinantialConciliationMonthlyList]
+  revenue: Float!
+  commissionsToPay: Float!
+  finantialConciliations: [FinantialConciliationsI]
+  lastYearFinantialConciliations: [FinantialConciliationsI]
 }
 
 type FinantialConciliationMonthlyList {
   revenue: String!
   affiliateCommission: String!
   status: String!
-  report: String
+}
+
+type FinantialConciliationsI {
+  status: String!
+  organizationId: String
+  orders: Int
+  payment_day: String
+  close_day: String
+  revenue: Float!
+  commissionsToPay: Float!
+  createdAt: String
+  referenceMonth: String
 }
 
 type ListUsersInOrganizationPayload {

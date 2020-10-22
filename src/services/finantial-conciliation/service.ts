@@ -3,7 +3,7 @@ import { Transaction } from 'knex'
 import OrganizationService from '../organization/service'
 import ServicesTimeToPayRepository from './repository/organization_services_time_to_pay';
 
-const handleOrganizationFinancialReconciliation = async (
+const handleOrganizationFinantialConciliationConfiguration = async (
   input: {
     close_day: number,
     payment_day: number,
@@ -24,9 +24,9 @@ const handleOrganizationFinancialReconciliation = async (
   }
 }
 
-const getFinantialConciliationByOrganizationId = async (context: { organizationId: string}, trx: Transaction) => {
+const getFinantialConciliationConfigurationByOrganizationId = async (context: { organizationId: string}, trx: Transaction) => {
   try {
-    const finantialConciliation = await ServicesTimeToPayRepository.getFinantialConciliationByOrganizationId(context.organizationId, trx);
+    const finantialConciliation = await ServicesTimeToPayRepository.getFinantialConciliationConfigurationByOrganizationId(context.organizationId, trx);
     return finantialConciliation;
   } catch (error) {
     throw new Error(error.mesage);
@@ -34,6 +34,6 @@ const getFinantialConciliationByOrganizationId = async (context: { organizationI
 }
 
 export default {
-  handleOrganizationFinancialReconciliation,
-  getFinantialConciliationByOrganizationId,
+  handleOrganizationFinantialConciliationConfiguration,
+  getFinantialConciliationConfigurationByOrganizationId,
 }
