@@ -14,3 +14,21 @@ spec:
       targetPort: "web"
   selector:
     app: plugone-api
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: plugone-api
+  labels:
+    app: plugone-api
+    service: plugone-api
+spec:
+  endpoints:
+    - port: web
+      interval: 30s
+      honorLabels: true
+      path: /metrics
+  selector:
+    matchLabels:
+      service: plugone-api
