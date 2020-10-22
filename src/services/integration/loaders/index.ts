@@ -5,7 +5,7 @@ import { integrationAdapter } from "../adapters";
 export const organizationServicesByOrganizationIdLoader = store.registerOneToOneLoader(
   async (organizationIds: string[]) => {
     const query = await knexDatabase
-      .knex("organization_integration_secrets")
+      .knexConfig("organization_integration_secrets")
       .whereIn("organization_id", organizationIds)
       .andWhere("active", true)
       .select("*");

@@ -44,7 +44,7 @@ describe('Affiliate Store', () => {
   })
 
   beforeEach(async () => {
-    trx = await database.knex.transaction()
+    trx = await database.knexConfig.transaction()
 
     const { organization, affiliate } = await createAffiliateMock(trx)
 
@@ -86,7 +86,7 @@ describe('Affiliate Store', () => {
 
     const productHandled = await service.handleProductOnAffiliateStoreOrder(orderInput, { userServiceOrganizationRolesId: affiliateinserted.id }, trx)
 
-    const affiliateStoreProducts = await (trx || knexDatabase.knex)('affiliate_store_product').select()
+    const affiliateStoreProducts = await (trx || knexDatabase.knexConfig)('affiliate_store_product').select()
 
     expect(productHandled).toBeTruthy()
     expect(affiliateStoreProducts).toEqual(

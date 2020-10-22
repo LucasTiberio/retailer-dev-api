@@ -69,7 +69,7 @@ describe('users graphql', () => {
             })    
         );
 
-        const userOnDb = await database.knex('users').where("id", signUpResponse.body.data.signUp.id).select();
+        const userOnDb = await database.knexConfig('users').where("id", signUpResponse.body.data.signUp.id).select();
 
         expect(userOnDb).toHaveLength(1);
         expect(userOnDb[0]).toEqual(
@@ -114,7 +114,7 @@ describe('users graphql', () => {
 
         test("user should verify your sign up graphql", async done => {
 
-            const [userFromDb] = await database.knex('users').where('id', signUpCreated.id).select('verification_hash');
+            const [userFromDb] = await database.knexConfig('users').where('id', signUpCreated.id).select('verification_hash');
 
             const userVerifyEmailPayload = {
                 verificationHash: userFromDb.verification_hash
@@ -133,7 +133,7 @@ describe('users graphql', () => {
             expect(userVerifyEmailResponse.statusCode).toBe(200);
             expect(userVerifyEmailResponse.body.data.userVerifyEmail).toBeTruthy();
 
-            const userOnDb = await database.knex('users').where('id', signUpCreated.id).select();
+            const userOnDb = await database.knexConfig('users').where('id', signUpCreated.id).select();
 
             expect(userOnDb).toHaveLength(1);
             expect(userOnDb[0]).toEqual(
@@ -167,7 +167,7 @@ describe('users graphql', () => {
             expect(userRecoveryPasswordResponse.statusCode).toBe(200);
             expect(userRecoveryPasswordResponse.body.data.userRecoveryPassword).toBeTruthy();
 
-            const userOnDb = await database.knex('users').where('id', signUpCreated.id).select();
+            const userOnDb = await database.knexConfig('users').where('id', signUpCreated.id).select();
 
             expect(userOnDb).toHaveLength(1);
             expect(userOnDb[0]).toEqual(
@@ -197,7 +197,7 @@ describe('users graphql', () => {
                 }
             });
 
-            const [userFound] = await database.knex('users').where('id', signUpCreated.id).select();
+            const [userFound] = await database.knexConfig('users').where('id', signUpCreated.id).select();
 
             const newPassword = "B8oneTeste12345!"
 
@@ -219,7 +219,7 @@ describe('users graphql', () => {
             expect(userPasswordChangedResponse.statusCode).toBe(200);
             expect(userPasswordChangedResponse.body.data.userPasswordChange).toBeTruthy();
 
-            const userOnDb = await database.knex('users').where('id', signUpCreated.id).select();
+            const userOnDb = await database.knexConfig('users').where('id', signUpCreated.id).select();
 
             expect(userOnDb).toHaveLength(1);
             expect(userOnDb[0]).toEqual(

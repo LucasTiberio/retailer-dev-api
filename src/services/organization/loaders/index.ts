@@ -4,7 +4,7 @@ import knexDatabase from "../../../knex-database";
 
 export const organizationRoleByUserIdLoader = store.registerOneToManyLoader(
     async (userOrganizationIds : string[]) => {
-      return await knexDatabase.knex('users_organization_roles AS uor')
+      return await knexDatabase.knexConfig('users_organization_roles AS uor')
       .innerJoin('organization_roles AS orgr', 'orgr.id', 'uor.organization_role_id')
       .whereIn('users_organization_id', userOrganizationIds)
       .select('orgr.*', "uor.users_organization_id")
@@ -15,7 +15,7 @@ export const organizationRoleByUserIdLoader = store.registerOneToManyLoader(
   
 export const organizationByIdLoader = store.registerOneToOneLoader(
     async (organizationIds : string[]) => {
-      return knexDatabase.knex('organizations').whereIn('id', organizationIds).select()
+      return knexDatabase.knexConfig('organizations').whereIn('id', organizationIds).select()
     },
       'id',
       _organizationAdapter
@@ -23,7 +23,7 @@ export const organizationByIdLoader = store.registerOneToOneLoader(
   
 export const organizationByUserIdLoader = store.registerOneToManyLoader(
     async (userIds : string[]) => {
-      const query = await knexDatabase.knex('users_organizations AS uo')
+      const query = await knexDatabase.knexConfig('users_organizations AS uo')
       .innerJoin('organizations AS org', 'org.id', 'uo.organization_id')
       .whereIn('uo.user_id', userIds)
       .select('org.*', 'uo.id AS users_organizations_id', 'uo.user_id')
@@ -35,7 +35,7 @@ export const organizationByUserIdLoader = store.registerOneToManyLoader(
   
 export const organizationHasMemberLoader = store.registerOneToManyLoader(
     async (organizationIds : string[]) => {
-      const query = await knexDatabase.knex('users_organizations')
+      const query = await knexDatabase.knexConfig('users_organizations')
       .where('active', true)
       .whereIn('organization_id', organizationIds)
       .limit(2)
@@ -48,7 +48,7 @@ export const organizationHasMemberLoader = store.registerOneToManyLoader(
   
 export const organizationHasAnyMemberLoader = store.registerOneToManyLoader(
     async (organizationIds : string[]) => {
-      const query = await knexDatabase.knex('users_organizations')
+      const query = await knexDatabase.knexConfig('users_organizations')
       .whereIn('organization_id', organizationIds)
       .limit(2)
       .select('*')

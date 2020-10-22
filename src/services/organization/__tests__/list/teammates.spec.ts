@@ -31,7 +31,7 @@ describe("teste", () => {
     let context: IContext;
 
     beforeAll(async () => {
-        trx = await knexDatabase.knex.transaction();
+        trx = await knexDatabase.knexConfig.transaction();
         const getAffiliateTeammateRulesSpy = jest.spyOn(OrganizationRulesService, 'getAffiliateTeammateRules')
         getAffiliateTeammateRulesSpy.mockImplementation(() => new Promise((resolve) => resolve({
             maxAnalysts: 5,

@@ -47,7 +47,7 @@ describe("Affiliate", () => {
   let context: IContext;
 
   beforeAll(async () => {
-    trx = await database.knex.transaction();
+    trx = await database.knexConfig.transaction();
 
     const getAffiliateTeammateRulesSpy = jest.spyOn(
       OrganizationRulesService,
@@ -67,7 +67,7 @@ describe("Affiliate", () => {
 
     await redisClient.flushall("ASYNC");
 
-    const [serviceFoundDB] = await (trx || knexDatabase.knex)("services")
+    const [serviceFoundDB] = await (trx || knexDatabase.knexConfig)("services")
       .where("name", Services.AFFILIATE)
       .select("id");
     serviceFound = serviceFoundDB;
@@ -79,7 +79,7 @@ describe("Affiliate", () => {
       { client: userToken, redisClient },
       trx
     );
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", signUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -114,7 +114,7 @@ describe("Affiliate", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -134,7 +134,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -192,7 +192,7 @@ describe("Affiliate", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -212,7 +212,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -283,7 +283,7 @@ describe("Affiliate", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -303,7 +303,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -376,7 +376,7 @@ describe("Affiliate", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -396,7 +396,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -502,7 +502,7 @@ describe("Affiliate", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -522,7 +522,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -562,7 +562,7 @@ describe("Affiliate", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -582,7 +582,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -626,7 +626,7 @@ describe("Affiliate", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -646,7 +646,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -704,7 +704,7 @@ describe("Affiliate", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -724,7 +724,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [invitedUserToOrganization] = await (trx || knexDatabase.knex)(
+    const [invitedUserToOrganization] = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("user_id", otherSignUpCreated.id)
@@ -777,7 +777,7 @@ describe("Affiliate", () => {
     );
 
     const usersOrganizationServiceRolesUrlShorter = await (
-      trx || knexDatabase.knex
+      trx || knexDatabase.knexConfig
     )("users_organization_service_roles_url_shortener").select();
 
     expect(usersOrganizationServiceRolesUrlShorter).toHaveLength(1);
@@ -809,7 +809,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [organizationService] = await (trx || knexDatabase.knex)(
+    const [organizationService] = await (trx || knexDatabase.knexConfig)(
       "organization_services"
     )
       .where("organization_id", organizationCreated.id)
@@ -854,7 +854,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [organizationService] = await (trx || knexDatabase.knex)(
+    const [organizationService] = await (trx || knexDatabase.knexConfig)(
       "organization_services"
     )
       .where("organization_id", organizationCreated.id)
@@ -889,7 +889,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [organizationService] = await (trx || knexDatabase.knex)(
+    const [organizationService] = await (trx || knexDatabase.knexConfig)(
       "organization_services"
     )
       .where("organization_id", organizationCreated.id)
@@ -929,7 +929,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [organizationService] = await (trx || knexDatabase.knex)(
+    const [organizationService] = await (trx || knexDatabase.knexConfig)(
       "organization_services"
     )
       .where("organization_id", organizationCreated.id)
@@ -969,7 +969,7 @@ describe("Affiliate", () => {
       trx
     );
 
-    const [organizationService] = await (trx || knexDatabase.knex)(
+    const [organizationService] = await (trx || knexDatabase.knexConfig)(
       "organization_services"
     )
       .where("organization_id", organizationCreated.id)
@@ -985,7 +985,7 @@ describe("Affiliate", () => {
       })
     );
 
-    const defComissionFoundDb = await (trx || knexDatabase.knex)(
+    const defComissionFoundDb = await (trx || knexDatabase.knexConfig)(
       "organization_services_def_commission"
     ).select();
 
@@ -1005,7 +1005,7 @@ describe("Affiliate", () => {
 
     await service.handleDefaultommission(handleDefaultCommission, context, trx);
 
-    const [organizationService] = await (trx || knexDatabase.knex)(
+    const [organizationService] = await (trx || knexDatabase.knexConfig)(
       "organization_services"
     )
       .where("organization_id", organizationCreated.id)

@@ -6,14 +6,14 @@ import service from '../service'
 const resolvers: IResolvers = {
   Mutation: {
     sendTermsAndConditions: (_, { input }, { client }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.sendTermsAndConditions(input, { client }, trx)
       })
     },
   },
   Query: {
     getTermsAndConditions: (_, __, { client }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getTermsAndConditions({ client }, trx)
       })
     },

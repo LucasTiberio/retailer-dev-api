@@ -48,7 +48,7 @@ describe("inative teammates", () => {
   };
 
   beforeAll(async () => {
-    trx = await knexDatabase.knex.transaction();
+    trx = await knexDatabase.knexConfig.transaction();
 
     const getAffiliateTeammateRulesSpy = jest.spyOn(
       OrganizationRulesService,
@@ -120,7 +120,7 @@ describe("inative teammates", () => {
 
     await service.handleTeammatesActivity(inativeTeammatesIds, context, trx);
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("active", true)
@@ -156,7 +156,7 @@ describe("inative teammates", () => {
       await service.handleTeammatesActivity(inativeAffiliateIds, context, trx);
     } catch (error) {
       expect(error.message).toBe(MESSAGE_ERROR_USER_NOT_TEAMMATE);
-      const usersOrganization = await (trx || knexDatabase.knex)(
+      const usersOrganization = await (trx || knexDatabase.knexConfig)(
         "users_organizations"
       )
         .where("active", true)

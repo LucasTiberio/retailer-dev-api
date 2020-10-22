@@ -135,7 +135,7 @@ const directiveResolvers: IDirectiveResolvers = {
     if (!organizationId) throw new Error('Organization identifier invalid!')
 
     const userOrganizationRoles = await knexDatabase
-      .knex('users as usr')
+      .knexConfig('users as usr')
       .where('usr.id', context.client.id)
       .andWhere('uo.organization_id', organizationId)
       .innerJoin('users_organizations AS uo', 'uo.user_id', 'usr.id')
@@ -164,7 +164,7 @@ const directiveResolvers: IDirectiveResolvers = {
     if (!userOrganizationRoles.length) throw new Error('User not found in organization.')
 
     const userServiceOrganizationRoles = await knexDatabase
-      .knex('users_organization_service_roles as uosr')
+      .knexConfig('users_organization_service_roles as uosr')
       .where('uosr.users_organization_id', userOrganizationRoles[0].users_organizations_id)
       .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
       .select('sr.name', 'uosr.id')
@@ -184,7 +184,7 @@ const directiveResolvers: IDirectiveResolvers = {
     if (!organizationId) throw new Error('Invalid session!')
 
     const userOrganizationRoles = await knexDatabase
-      .knex('users as usr')
+      .knexConfig('users as usr')
       .where('usr.id', context.client.id)
       .andWhere('uo.organization_id', organizationId)
       .andWhere('uo.active', true)
@@ -291,7 +291,7 @@ const directiveResolvers: IDirectiveResolvers = {
 
     if (!organizationId) throw new Error('Invalid session!')
 
-    const [organization] = await knexDatabase.knex('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires', 'free_plan')
+    const [organization] = await knexDatabase.knexConfig('organizations').where('id', organizationId).select('free_trial', 'free_trial_expires', 'free_plan')
 
     if (!organization) throw new Error('Organization not found.')
 
@@ -332,7 +332,7 @@ const directiveResolvers: IDirectiveResolvers = {
 
     if (!organizationId) throw new Error('Invalid session!')
 
-    const [organizationFounder] = await knexDatabase.knex('organizations').where('user_id', context.client.id).select('id')
+    const [organizationFounder] = await knexDatabase.knexConfig('organizations').where('user_id', context.client.id).select('id')
 
     if (!organizationFounder) throw new Error(MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER)
 
@@ -361,7 +361,7 @@ const directiveResolvers: IDirectiveResolvers = {
     return next()
   },
   async isVerified(next, _, __, context): Promise<NextFunction> {
-    const [user] = await knexDatabase.knex('users').where('id', context.client.id).select()
+    const [user] = await knexDatabase.knexConfig('users').where('id', context.client.id).select()
     if (!user) throw new Error('user not found!')
     if (!user.verified) throw new Error('you need verify your email!')
     return next()

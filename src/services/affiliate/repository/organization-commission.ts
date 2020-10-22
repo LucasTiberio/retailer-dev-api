@@ -5,7 +5,7 @@ import { Transaction } from 'knex'
 import { OrganizationCommissionIdentifiers } from '../types'
 
 const getOrganizationCommissionByType = async (identifier: OrganizationCommissionIdentifiers, identifierId: string, organizationId: string, integrationType: Integrations, trx: Transaction) => {
-  const organizationCommission = await (trx || knexDatabase.knex)('organization_commission')
+  const organizationCommission = await (trx || knexDatabase.knexConfig)('organization_commission')
     .where('organization_id', organizationId)
     .andWhere('identifier_id', identifierId)
     .andWhere('identifier', identifier)
@@ -27,7 +27,7 @@ const createOrganizationCommission = async (
   integrationType: Integrations,
   trx: Transaction
 ) => {
-  const [organizationCommission] = await (trx || knexDatabase.knex)('organization_commission')
+  const [organizationCommission] = await (trx || knexDatabase.knexConfig)('organization_commission')
     .insert({
       identifier_id: input.identifierId,
       identifier: input.identifier,
@@ -49,7 +49,7 @@ const updateOrganizationCommission = async (
   commissionId: string,
   trx: Transaction
 ) => {
-  const [organizationCommission] = await (trx || knexDatabase.knex)('organization_commission')
+  const [organizationCommission] = await (trx || knexDatabase.knexConfig)('organization_commission')
     .update({
       commission_percentage: input.commissionPercentage,
       active: input.active,
@@ -61,7 +61,7 @@ const updateOrganizationCommission = async (
 }
 
 const getByOrganizationIdAndType = async (organizationId: string, integrationType: Integrations, trx: Transaction) => {
-  const organizationCommission = await (trx || knexDatabase.knex)('organization_commission')
+  const organizationCommission = await (trx || knexDatabase.knexConfig)('organization_commission')
     .where('organization_id', organizationId)
     .andWhere('type', integrationType)
     .andWhere('active', true)

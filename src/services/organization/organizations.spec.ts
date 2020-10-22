@@ -28,7 +28,7 @@ describe('Organizations', () => {
   let userToken: IUserToken
 
   beforeAll(async () => {
-    trx = await knexDatabase.knex.transaction()
+    trx = await knexDatabase.knexConfig.transaction()
   })
 
   afterAll(async () => {
@@ -138,7 +138,7 @@ describe('Organizations', () => {
       })
     )
 
-    const organizationOnDb = await (trx || knexDatabase.knex)('organizations').select()
+    const organizationOnDb = await (trx || knexDatabase.knexConfig)('organizations').select()
 
     expect(organizationOnDb).toHaveLength(1)
     expect(organizationOnDb[0]).toEqual(
@@ -157,7 +157,7 @@ describe('Organizations', () => {
       })
     )
 
-    const [organizationAdditionalInfosOnDb] = await (trx || knexDatabase.knex)('organization_additional_infos').select()
+    const [organizationAdditionalInfosOnDb] = await (trx || knexDatabase.knexConfig)('organization_additional_infos').select()
 
     expect(organizationAdditionalInfosOnDb).toEqual(
       expect.objectContaining({
@@ -168,7 +168,7 @@ describe('Organizations', () => {
       })
     )
 
-    const [organizationRoles] = await (trx || knexDatabase.knex)('organization_roles').where('name', OrganizationRoles.ADMIN).select()
+    const [organizationRoles] = await (trx || knexDatabase.knexConfig)('organization_roles').where('name', OrganizationRoles.ADMIN).select()
 
     expect(organizationRoles).toEqual(
       expect.objectContaining({
@@ -179,7 +179,7 @@ describe('Organizations', () => {
       })
     )
 
-    const userOrganizations = await (trx || knexDatabase.knex)('users_organizations').select()
+    const userOrganizations = await (trx || knexDatabase.knexConfig)('users_organizations').select()
 
     expect(userOrganizations).toHaveLength(1)
     expect(userOrganizations[0]).toEqual(
@@ -192,7 +192,7 @@ describe('Organizations', () => {
       })
     )
 
-    const userOrganizationRoles = await (trx || knexDatabase.knex)('users_organization_roles').select()
+    const userOrganizationRoles = await (trx || knexDatabase.knexConfig)('users_organization_roles').select()
 
     expect(userOrganizationRoles).toHaveLength(1)
     expect(userOrganizationRoles[0]).toEqual(
@@ -281,7 +281,7 @@ describe('Organizations', () => {
   })
 
   test('user should search other members', async (done) => {
-    const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash')
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)('users').where('id', signUpCreated.id).select('verification_hash')
 
     await UserService.verifyEmail(userFromDb.verification_hash, trx)
 
@@ -310,11 +310,11 @@ describe('Organizations', () => {
     let signUpCreated2 = await UserService.signUp(signUpPayload2, trx)
     let signUpCreated3 = await UserService.signUp(signUpPayload3, trx)
 
-    const [userFromDb2] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated2.id).select('verification_hash')
+    const [userFromDb2] = await (trx || knexDatabase.knexConfig)('users').where('id', signUpCreated2.id).select('verification_hash')
 
     await UserService.verifyEmail(userFromDb2.verification_hash, trx)
 
-    const [userFromDb3] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated3.id).select('verification_hash')
+    const [userFromDb3] = await (trx || knexDatabase.knexConfig)('users').where('id', signUpCreated3.id).select('verification_hash')
 
     await UserService.verifyEmail(userFromDb3.verification_hash, trx)
 
@@ -345,7 +345,7 @@ describe('Organizations', () => {
       ])
     )
 
-    const userFoundsOnDB = await (trx || knexDatabase.knexTest)('users').select()
+    const userFoundsOnDB = await (trx || knexDatabase.knexConfigTest)('users').select()
 
     expect(userFoundsOnDB).toHaveLength(3)
     expect(userFoundsOnDB).toEqual(

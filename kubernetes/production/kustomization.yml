@@ -1,0 +1,11 @@
+bases:
+  - ../base
+
+resources:
+  - secret.yml
+
+patchesStrategicMerge:
+  - configmap.yml
+  - set-docker-secret.yml
+  - set-envs.yml
+  - set-service-monitor.yml

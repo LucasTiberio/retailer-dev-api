@@ -42,7 +42,7 @@ describe("handle affiliate activity teammates", () => {
   };
 
   beforeAll(async () => {
-    trx = await knexDatabase.knex.transaction();
+    trx = await knexDatabase.knexConfig.transaction();
 
     const getAffiliateTeammateRulesSpy = jest.spyOn(
       OrganizationRulesService,
@@ -130,7 +130,7 @@ describe("handle affiliate activity teammates", () => {
       trx
     );
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("active", true)
@@ -138,7 +138,7 @@ describe("handle affiliate activity teammates", () => {
 
     expect(usersOrganization).toHaveLength(1);
 
-    const usersInOrganizationService = await (trx || knexDatabase.knex)(
+    const usersInOrganizationService = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .where("active", false)
@@ -146,7 +146,7 @@ describe("handle affiliate activity teammates", () => {
 
     expect(usersInOrganizationService).toHaveLength(1);
 
-    const usersInOrganizationServiceActive = await (trx || knexDatabase.knex)(
+    const usersInOrganizationServiceActive = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .where("active", true)
@@ -182,7 +182,7 @@ describe("handle affiliate activity teammates", () => {
       trx
     );
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .where("active", true)
@@ -190,7 +190,7 @@ describe("handle affiliate activity teammates", () => {
 
     expect(usersOrganization).toHaveLength(2);
 
-    const usersInOrganizationService = await (trx || knexDatabase.knex)(
+    const usersInOrganizationService = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .where("active", false)
@@ -198,7 +198,7 @@ describe("handle affiliate activity teammates", () => {
 
     expect(usersInOrganizationService).toHaveLength(0);
 
-    const usersInOrganizationServiceActive = await (trx || knexDatabase.knex)(
+    const usersInOrganizationServiceActive = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .where("active", true)

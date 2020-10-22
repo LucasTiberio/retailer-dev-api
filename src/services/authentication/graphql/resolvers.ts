@@ -6,7 +6,7 @@ import database from '../../../knex-database';
 const resolvers : IResolvers = {
   Mutation: {
     signIn: (_, { input }) => {
-      return database.knex.transaction((trx: Transaction) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
         return service.signIn(input, trx);
       });
     },

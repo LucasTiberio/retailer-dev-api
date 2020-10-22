@@ -27,7 +27,7 @@ const userBanksValuesAdapter = (record : IUserBankValuesFromDb) => ({
 
 const bankDataByIdLoader = store.registerOneToOneLoader(
   async (bankDataIds : string[]) => {
-    const query = await knexDatabase.knex('banks_data')
+    const query = await knexDatabase.knexConfig('banks_data')
     .whereIn('id', bankDataIds)
     .select('*');
     return query;
@@ -38,7 +38,7 @@ const bankDataByIdLoader = store.registerOneToOneLoader(
 
 const brazilBankByIdLoader = store.registerOneToOneLoader(
   async (brazilBankIds : string[]) => {
-    const query = await knexDatabase.knex('brazil_banks')
+    const query = await knexDatabase.knexConfig('brazil_banks')
     .whereIn('id', brazilBankIds)
     .select('*');
     return query;

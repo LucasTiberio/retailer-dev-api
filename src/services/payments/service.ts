@@ -160,7 +160,7 @@ const sendRecurrencyTransaction = async (
       throw new Error(res.data.errors[0].message)
     }
 
-    await knexDatabase.knex('organizations').where('id', context.organizationId).update({
+    await knexDatabase.knexConfig('organizations').where('id', context.organizationId).update({
       free_trial: false,
       free_trial_expires: null,
     })
@@ -360,7 +360,7 @@ const createEnterpriseRecurrencyTransaction = async (input: { zipCode: string; n
       throw new Error('error on create plan')
     }
 
-    await knexDatabase.knex('organizations').where('id', organization.id).update({
+    await knexDatabase.knexConfig('organizations').where('id', organization.id).update({
       free_trial: false,
       free_trial_expires: null,
     })
