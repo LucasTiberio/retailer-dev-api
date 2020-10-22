@@ -34,7 +34,7 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
 
   const userOrganizationServiceRole = await ServicesService.getUserOrganizationServiceRoleById(userOrganizationService.id, trx)
 
-  return affiliateMemberMountMenu(userOrganizationServiceRole.name, integration?.type)
+  return affiliateMemberMountMenu(userOrganizationServiceRole.name, integration?.type, context.organizationId)
 }
 
 export default {
