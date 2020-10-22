@@ -2,7 +2,7 @@ exports.up = function (knex) {
   return knex.schema.alterTable('organization_services_time_to_pay', (table) => {
     table.integer('close_day')
     table.integer('payment_day')
-    table.boolean('automatic_closure')
+    table.boolean('automatic_closure').notNullable().defaultsTo(false);
   })
 }
 

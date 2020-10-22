@@ -17,10 +17,31 @@ extend type Query {
     @isAuthenticated
   teammatesCapacities: TeammatesCapacities! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   fetchOrganizationDomain: [String]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  organizationPaymentsDetails: FinantialConciliation
+    @hasOrganizationRole(role: ["ADMIN"])
+    # @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 type TeammatesCapacities {
   teammates: CapacitiesValues!
+}
+
+type FinantialConciliation {
+  orders: Int!
+  revenue: String!
+  commissionsToPay: String!
+  closeDate: String!
+  monthly: [FinantialConciliationMonthlyList]
+}
+
+type FinantialConciliationMonthlyList {
+  revenue: String!
+  affiliateCommission: String!
+  status: String!
+  report: String
 }
 
 type ListUsersInOrganizationPayload {

@@ -1,4 +1,5 @@
 require('dotenv')
+import axios from 'axios';
 import { IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IResponseInvitePayload, IFindUsersAttributes } from './types'
 import { IUserToken } from '../authentication/types'
 import { Transaction } from 'knex'
@@ -32,7 +33,7 @@ import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from './loaders'
 import moment from 'moment'
-import { createVtexCampaignFail, onlyCreateOrganizationWithouIntegrationWithSecret, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
+import { onlyCreateOrganizationWithouIntegrationWithSecret, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
 
 /** Repositories */
 import Repository from './repositories/organizations'
@@ -44,6 +45,8 @@ import fetchVtexDomains from './clients/fetch-domains'
 import IntegrationService from '../integration/service'
 import { Integrations } from '../integration/types'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
+
+const ordersServiceUrl = process.env.ORDER_SERVICE_URL
 
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
   const { segment, resellersEstimate, reason, plataform } = input
@@ -173,6 +176,21 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
 const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transaction) => {
   const [organizationRole] = await (trx || knexDatabase.knexConfig)('organization_roles').where('name', roleName).select('id')
   return organizationRole
+}
+
+const getOrganizationPaymentsDetails = async (context: {organizationId: string, client: IUserToken}, trx: Transaction) => {
+  if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/finantial-conciliation`
+
+  try {
+    const { data } = await axios.get(url);
+
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+
 }
 
 const listTeammates = async (context: { organizationId: string }, trx: Transaction) => {
@@ -711,6 +729,7 @@ const listMyOrganizations = async (userToken: IUserToken, trx: Transaction) => {
 
     return organizations.map(_organizationAdapter)
   } catch (e) {
+    console.log(e);
     throw new Error(e.message)
   }
 }
@@ -1067,4 +1086,5 @@ export default {
   teammatesCapacities,
   getOrganizationRoleByName,
   handleOrganizationDomain,
+  getOrganizationPaymentsDetails,
 }

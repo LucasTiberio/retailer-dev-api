@@ -114,6 +114,11 @@ const resolvers: IResolvers = {
         return service.findUsersToOrganization(input, { client, organizationId }, trx)
       })
     },
+    organizationPaymentsDetails: (_, __, { client, organizationId }) => {
+      return database.knex.transaction((trx: Transaction) => {
+        return service.getOrganizationPaymentsDetails({ client, organizationId }, trx)
+      })
+    },
   },
   Organization: {
     user: async (obj) => {

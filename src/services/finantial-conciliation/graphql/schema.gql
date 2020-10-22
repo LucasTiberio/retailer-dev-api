@@ -1,0 +1,22 @@
+extend type Mutation {
+  handleOrganizationFinancialReconciliation(input: handleOrganizationFinancialReconciliationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+}
+
+extend type Query {
+  getOrganizationFinantialReconciliation: getOrganizationFinancialReconciliationQuery!
+}
+
+type getOrganizationFinancialReconciliationQuery {
+  id: String
+  close_day: Int
+  payment_day: Int
+  automatic_closure: Boolean
+  createdAt: Datetime
+  updatedAt: Datetime
+}
+
+input handleOrganizationFinancialReconciliationInput {
+  close_day: Int!
+  payment_day: Int!
+  automatic_closure: Boolean!
+}
