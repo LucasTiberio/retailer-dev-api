@@ -50,7 +50,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
     ]
   }
 
-  const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
+  const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId, undefined, true)
 
   const baseAdminMenu: any = [
     {
@@ -94,6 +94,8 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
     },
   ]
 
+  if (!paymentServiceStatus) return baseAdminMenu
+
   if (integrationType === Integrations.VTEX || integrationType === Integrations.LOJA_INTEGRADA) {
     if (paymentServiceStatus.affiliateStore) {
       baseAdminMenu[1].items[0].children.push({
@@ -129,7 +131,7 @@ export const organizationMemberMenu = [
   },
 ]
 
-export const affiliateMemberMountMenu = (serviceRole: string, integrationType: Integrations) => {
+export const affiliateMemberMountMenu = async (serviceRole: string, integrationType: Integrations, organizationId: string) => {
   if (integrationType === Integrations.IUGU) {
     return [
       {
@@ -210,9 +212,11 @@ export const affiliateMemberMountMenu = (serviceRole: string, integrationType: I
     ],
   }
 
+  const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
+
   switch (serviceRole) {
     case ServiceRoles.ANALYST:
-      if (integrationType === Integrations.VTEX) {
+      if (paymentServiceStatus.affiliateStore) {
         affiliateAnalyst = {
           ...affiliateAnalyst,
           children: [
@@ -226,7 +230,7 @@ export const affiliateMemberMountMenu = (serviceRole: string, integrationType: I
       }
       return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
-      if (integrationType === Integrations.VTEX) {
+      if (paymentServiceStatus.affiliateStore) {
         affiliateSale = {
           ...affiliateSale,
           children: [
