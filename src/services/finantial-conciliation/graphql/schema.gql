@@ -9,6 +9,12 @@ extend type Mutation {
 
 extend type Query {
   getOrganizationFinantialConciliation: getOrganizationFinantialConciliationQuery! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAffiliatesValuesByMonth(input: getAffiliatesValuesByMonthInput!): getAffiliatesValuesByMonthQuery! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getDailyRevenueAndCommissions(input: getDailyRevenueAndCommissionsInput!): getDailyRevenueAndCommissionsQuery!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 type getOrganizationFinantialConciliationQuery {
@@ -23,4 +29,39 @@ input handleOrganizationFinantialConciliationConfigurationInput {
   close_day: Int
   payment_day: Int
   automatic_closure: Boolean
+}
+
+type getAffiliatesValuesByMonthQuery {
+  affiliates: [AffiliateValues]!
+}
+
+type AffiliateValues {
+  affiliate_id: String!
+  revenue: Float!
+  commission: Float!
+  name: String
+  document: String
+  agency: String
+  account: String
+  bank: String
+}
+
+input getAffiliatesValuesByMonthInput {
+  organization_id: String!
+  year_month: String!
+}
+
+type getDailyRevenueAndCommissionsQuery {
+  days: [DailyRevenueAndCommission]!
+}
+
+type DailyRevenueAndCommission {
+  day: Int!
+  revenue: Float!
+  commission: Float!
+}
+
+input getDailyRevenueAndCommissionsInput {
+  organization_id: String!
+  year_month: String!
 }
