@@ -12,8 +12,7 @@ export const config: Knex.Config = {
     password: DB_PASSWORD,
     host: DB_HOST,
     port: DB_PORT,
-    database: DB_DATABASE,
-    ssl: true,
+    database: DB_DATABASE
   },  
   debug: true,
   migrations: {

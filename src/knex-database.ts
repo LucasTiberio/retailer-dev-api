@@ -21,7 +21,7 @@ const cleanMyTestDB = () => {
 	return knexCleaner.clean(knexConfigTest, options);
 };
 
-export async function connectDB(retries = 5) {
+export async function connectPostgres(retries = 5) {
 	while (retries) {
 		try {
 			await knexConfig.raw("select 1 as result")
@@ -51,5 +51,5 @@ export default {
 	knexConfig, 
 	knexConfigTest,
 	cleanMyTestDB,
-	connectDB
+	connectPostgres
 };

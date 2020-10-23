@@ -20,7 +20,7 @@ export default ({ databaseUri }: DBInput) => {
       })
       .catch((err: Error) => {
         dbMongoUp.set(0);
-        logger.error(`Error connecting to database :`, err.message)
+        logger.error(`Error connecting to database : ${err.message}`)
         logger.error(`Unsuccessfully connecting to MongoDB`);
 
         return process.exit(1);

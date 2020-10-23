@@ -4,8 +4,8 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import server from './server';
 import { MONGO_URI } from './common/envs';
-import database from './database';
-import { connectDB } from './knex-database';
+import connectMongo from './database';
+import { connectPostgres } from './knex-database';
 
 const logger = require('pino')();
 const app = express();
@@ -19,8 +19,8 @@ const prometheusMiddleware = prometheusBundle({
 });
 
 try {
-  database({ databaseUri: MONGO_URI });
-  connectDB();
+  connectMongo({ databaseUri: MONGO_URI });
+  connectPostgres();
 } catch (e) {
   logger.error(e.message)
   process.exit(0)
