@@ -59,6 +59,8 @@ const handleAffiliateStore = async (
 
   removeUndefinedOfObjects(input)
 
+  console.log()
+
   if (input.avatar) {
     const url = await handleAffiliateStoreImages(192, 192, 'avatar', input.avatar, context.userServiceOrganizationRolesId, trx)
     input.avatar = url
@@ -196,8 +198,6 @@ const getAffiliateStoreAddedProducts = async (context: { userServiceOrganization
       return await Promise.all(
         products.map(async (item) => {
           const x = await fetchLojaIntegradaProductById(token, item.product_id)
-
-          console.log(x)
 
           return affiliateStoreProductAdapter({
             ...item,
@@ -505,7 +505,7 @@ const getAffiliateStoreWithProducts = async (
           <img style="width: 183px; height: 308px; object-fit: contain; margin-bottom: 0.5rem" src="${
             x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'
           }"/>
-          <a style="border: 1px solid gray ; padding: 0.5rem ;font-size: 0.875rem; border-radius: 8px" href="${item.url}?utmSource=plugone-affiliate_${
+          <a style="border: 1px solid gray ; padding: 0.5rem ;font-size: 0.875rem; border-radius: 8px" href="${item.url}?utm_campaign=plugone-affiliate_${
             affiliateStore.users_organization_service_roles_id
           }_${input.organizationId}"> Comprar </a>
         </li>
