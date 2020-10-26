@@ -4,9 +4,9 @@ kind: ConfigMap
 metadata:
   name: plugone-api-config
 data:  
-  BUCKET_URL: https://plugone-production.nyc3.digitaloceanspaces.com
+  BUCKET_URL: https://plugone-staging.nyc3.digitaloceanspaces.com
   BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH: /pixel-affiliate/staging-pixel-sale-affiliate.js  
-  DIGITAL_OCEAN_BUCKET_NAME: plugone-production
+  DIGITAL_OCEAN_BUCKET_NAME: plugone-staging
   FRONT_URL: https://app.plugone.io
   ORDER_SERVICE_URL: http://plugone-affiliate-orders-hook-production.plugone-affiliate-orders-hook-production.svc.cluster.local  
   PAYMENTS_URL: "http://plugone-payments-production.plugone-payments-production.svc.cluster.local/graphql"
