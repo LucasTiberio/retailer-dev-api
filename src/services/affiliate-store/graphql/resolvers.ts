@@ -6,6 +6,8 @@ import service from '../service'
 const resolvers: IResolvers = {
   Mutation: {
     handleAffiliateStore: async (_, { input }, { userServiceOrganizationRolesId, organizationId }) => {
+      console.log({ input })
+
       if (input.cover) {
         if (!input.cover.url) {
           const { createReadStream: coverCreateReadStream, mimetype: coverMimetype } = await input.cover.data
@@ -23,6 +25,8 @@ const resolvers: IResolvers = {
           mimetype: avatarMimetype,
         }
       }
+
+      console.log('depois', { input })
 
       return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.handleAffiliateStore(input, { userServiceOrganizationRolesId, organizationId }, trx)

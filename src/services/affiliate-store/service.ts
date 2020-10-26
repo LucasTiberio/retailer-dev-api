@@ -59,8 +59,6 @@ const handleAffiliateStore = async (
 
   removeUndefinedOfObjects(input)
 
-  console.log()
-
   if (input.avatar) {
     const url = await handleAffiliateStoreImages(192, 192, 'avatar', input.avatar, context.userServiceOrganizationRolesId, trx)
     input.avatar = url
@@ -74,6 +72,8 @@ const handleAffiliateStore = async (
       input.cover = input.cover.url
     }
   }
+
+  console.log('final', { input })
 
   const [affiliateStoreCreated] = await RepositoryAffiliateStore.findOrUpdate(context.organizationId, context.userServiceOrganizationRolesId, input, trx)
 

@@ -1,3 +1,4 @@
+require('dotenv')
 import { Stream } from 'stream'
 import { Transaction } from 'knex'
 import knexDatabase from '../../knex-database'
@@ -61,6 +62,8 @@ const getFileByName = (filename: string) => {
     })
 }
 
+console.log({ DIGITAL_OCEAN_BUCKET_NAME: process.env.DIGITAL_OCEAN_BUCKET_NAME })
+
 const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: Transaction) => {
   var params = {
     Key: path,
@@ -69,6 +72,8 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
     ACL: 'public-read',
     ContentType: mimetype,
   }
+
+  console.log({ params })
 
   try {
     const image = await s3
@@ -79,7 +84,11 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
         throw new Error(err.message)
       })
 
+    console.log({ image })
+
     let imageFound = await getImageByUrl(image, trx)
+
+    console.log({ imageFound })
 
     if (!imageFound) {
       let query = (trx || knexDatabase.knexConfig)('image')
@@ -91,6 +100,8 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
 
       imageFound = imageInserted
     }
+
+    console.log('depois', { imageFound })
 
     return imageAdapter(imageFound)
   } catch (error) {
