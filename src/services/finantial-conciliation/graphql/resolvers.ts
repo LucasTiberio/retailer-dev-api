@@ -17,7 +17,7 @@ const resolvers: IResolvers = {
       })
     },
     getDailyRevenueAndCommissions: async (_, { input: { year_month } }, { organizationId }) => {
-      return await helpers.getDailyRevenueAndCommissions(organizationId, year_month);
+      return await helpers.getDailyRevenueAndCommissions(organizationId, year_month)
     },
   },
   Mutation: {
@@ -25,6 +25,9 @@ const resolvers: IResolvers = {
       return database.knexConfig.transaction((trx: Transaction) => {
         return service.handleOrganizationFinantialConciliationConfiguration(input, { organizationId }, trx)
       })
+    },
+    handleOrganizationFinantialConciliationStatusAdvance: async (_, { input: { finantialConciliationId } }, { organizationId }) => {
+      return await helpers.advanceFinancialConciliationStatus(organizationId, finantialConciliationId)
     },
   },
 }

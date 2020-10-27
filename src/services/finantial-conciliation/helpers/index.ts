@@ -3,6 +3,7 @@ import AffiliateOrders from '../model/AffiliateOrders'
 import Bonifications from '../model/Bonifications'
 import LojaIntegradaOrders from '../model/LojaIntegradaOrders'
 import SaasCommissions from '../../saas-integration/models/SaasCommission'
+import FinancialReconciliation, { FinancialReconciliationStatus } from '../model/FinancialReconciliation'
 
 const getAffiliateOrdersDict = async (organizationId: string, yearMonth: string) => {
   const date = moment(yearMonth, 'YYYY-MM').utc()
@@ -248,11 +249,37 @@ const getDailyRevenueAndCommissions = async (organizationId: string, yearMonth: 
   dict = mergeToDailyDict(await getSaasCommissionsDailyDict(organizationId, yearMonth), dict)
 
   return {
-    days: Object.values(dict)
-  };
+    days: Object.values(dict),
+  }
+}
+
+const advanceFinancialConciliationStatus = async (organizationId: string, objId: string) => {
+  const financialReconciliationItem = await FinancialReconciliation.findOne({ _id: objId, organizationId })
+  if (!financialReconciliationItem) {
+    throw new Error('financial_reconciliation_not_found')
+  }
+  const { status } = financialReconciliationItem
+  let nextStatus: string
+  switch (status) {
+    case FinancialReconciliationStatus.OPEN:
+      nextStatus = FinancialReconciliationStatus.CLOSED
+      financialReconciliationItem.status = FinancialReconciliationStatus.CLOSED
+      break
+    case FinancialReconciliationStatus.CLOSED:
+      nextStatus = FinancialReconciliationStatus.PAID
+      financialReconciliationItem.status = FinancialReconciliationStatus.PAID
+      break
+    default:
+      throw new Error('financial_reconciliation_cannot_advance')
+  }
+
+  await financialReconciliationItem.save()
+
+  return nextStatus
 }
 
 export default {
   getAffiliatesDict,
   getDailyRevenueAndCommissions,
+  advanceFinancialConciliationStatus,
 }

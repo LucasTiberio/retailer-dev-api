@@ -5,6 +5,12 @@ extend type Mutation {
     @organizationPaidVerify
     @isVerified
     @isAuthenticated
+  handleOrganizationFinantialConciliationStatusAdvance(input: handleOrganizationFinantialConciliationStatusAdvanceInput!): String!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
 }
 
 extend type Query {
@@ -29,6 +35,10 @@ input handleOrganizationFinantialConciliationConfigurationInput {
   close_day: Int
   payment_day: Int
   automatic_closure: Boolean
+}
+
+input handleOrganizationFinantialConciliationStatusAdvanceInput {
+  finantialConciliationId: String!
 }
 
 type getAffiliatesValuesByMonthQuery {
