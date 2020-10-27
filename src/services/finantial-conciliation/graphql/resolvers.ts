@@ -26,8 +26,8 @@ const resolvers: IResolvers = {
         return service.handleOrganizationFinantialConciliationConfiguration(input, { organizationId }, trx)
       })
     },
-    handleOrganizationFinantialConciliationStatusAdvance: async (_, { input: { finantialConciliationId } }, { organizationId }) => {
-      return await helpers.advanceFinancialConciliationStatus(organizationId, finantialConciliationId)
+    handleOrganizationFinantialConciliationStatusAdvance: async (_, { input: { referenceMonth } }, { organizationId }) => {
+      return await helpers.advanceFinancialConciliationStatus(organizationId, referenceMonth)
     },
   },
 }

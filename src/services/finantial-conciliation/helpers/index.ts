@@ -253,8 +253,8 @@ const getDailyRevenueAndCommissions = async (organizationId: string, yearMonth: 
   }
 }
 
-const advanceFinancialConciliationStatus = async (organizationId: string, objId: string) => {
-  const financialReconciliationItem = await FinancialReconciliation.findOne({ _id: objId, organizationId })
+const advanceFinancialConciliationStatus = async (organizationId: string, referenceMonth: string) => {
+  const financialReconciliationItem = await FinancialReconciliation.findOne({ referenceMonth, organizationId })
   if (!financialReconciliationItem) {
     throw new Error('financial_reconciliation_not_found')
   }

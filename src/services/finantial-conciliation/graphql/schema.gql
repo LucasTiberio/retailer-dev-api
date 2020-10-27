@@ -38,7 +38,7 @@ input handleOrganizationFinantialConciliationConfigurationInput {
 }
 
 input handleOrganizationFinantialConciliationStatusAdvanceInput {
-  finantialConciliationId: String!
+  referenceMonth: String!
 }
 
 type getAffiliatesValuesByMonthQuery {
