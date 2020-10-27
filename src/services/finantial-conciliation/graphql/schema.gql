@@ -26,6 +26,11 @@ extend type Query {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  downloadFinantialConciliationCSVByReferenceMonth(input: downloadFinantialConciliationCSVByReferenceMonthInput!): String!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 type getOrganizationFinantialConciliationQuery {
@@ -99,4 +104,8 @@ type OrderList {
   date: String!
   value: Float!
   commission: Float!
+}
+
+input downloadFinantialConciliationCSVByReferenceMonthInput {
+  referenceMonth: String!
 }
