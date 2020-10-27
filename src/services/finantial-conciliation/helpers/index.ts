@@ -140,7 +140,6 @@ const getAffiliateOrdersDailyDict = async (organizationId: string, yearMonth: st
     creationDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
     organizationId,
   })
-  console.log(firstDayOfMonth, lastDayOfMonth);
   const affiliateOrdersDict = affiliateOrders.reduce((acc: any, cur: any) => {
     const day = moment(cur.creationDate).date()
     if (!acc[day]) {
