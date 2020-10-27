@@ -1,18 +1,18 @@
-import mongoose, { Schema, Document } from "mongoose";
-import { PlugoneSaasCommissionStatus } from "../types";
+import mongoose, { Schema, Document } from 'mongoose'
+import { PlugoneSaasCommissionStatus } from '../types'
 
 interface ISaasCommission extends Document {
-    plataformIdentifier: string;
-    plataform: string;
-    createdAt: string;
-    value: number;
-    affiliateId: string;
-    organizationId: string;
-    organizationClientName: string;
-    isPaid: boolean;
-    commission: number;
-    status: PlugoneSaasCommissionStatus;
-    planName: string;
+  plataformIdentifier: string
+  plataform: string
+  createdAt: string
+  value: number
+  affiliateId: string
+  organizationId: string
+  organizationClientName: string
+  isPaid: boolean
+  commission: number
+  status: PlugoneSaasCommissionStatus
+  planName: string
 }
 
 const SaasCommissionSchema = new Schema<ISaasCommission>({
@@ -29,8 +29,4 @@ const SaasCommissionSchema = new Schema<ISaasCommission>({
   isPaid: { type: Boolean, required: true },
 })
 
-// export default mongoose.model<ISaasCommission>(
-//     "SaasCommission",
-//     SaasCommissionSchema,
-//     "SaasCommissions"
-// );
+export default mongoose.model<ISaasCommission>('SaasCommission', SaasCommissionSchema, 'SaasCommissions')

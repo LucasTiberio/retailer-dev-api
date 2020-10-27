@@ -19,6 +19,11 @@ const resolvers: IResolvers = {
     getDailyRevenueAndCommissions: async (_, { input: { year_month } }, { organizationId }) => {
       return await helpers.getDailyRevenueAndCommissions(organizationId, year_month)
     },
+    getOrderListByAffiliateIdAndReferenceMonth: async (_, { input: { affiliateId, referenceMonth } }, { organizationId }) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
+        return service.getOrderListByAffiliateIdAndReferenceMonth({ organizationId, affiliateId, referenceMonth }, trx)
+      })
+    },
   },
   Mutation: {
     handleOrganizationFinantialConciliationConfiguration: (_, { input }, { organizationId }) => {

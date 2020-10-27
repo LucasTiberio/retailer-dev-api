@@ -21,6 +21,11 @@ extend type Query {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  getOrderListByAffiliateIdAndReferenceMonth(input: getOrderListByAffiliateIdAndReferenceMonthInput!): getOrderListByAffiliateIdAndReferenceMonthQuery!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 type getOrganizationFinantialConciliationQuery {
@@ -73,4 +78,25 @@ type DailyRevenueAndCommission {
 
 input getDailyRevenueAndCommissionsInput {
   year_month: String!
+}
+
+input getOrderListByAffiliateIdAndReferenceMonthInput {
+  affiliateId: String!
+  referenceMonth: String!
+}
+
+type getOrderListByAffiliateIdAndReferenceMonthQuery {
+  id: String! #affiliateId
+  orders: Int!
+  revenue: Float!
+  commission: Float!
+  orderList: [OrderList]!
+}
+
+type OrderList {
+  id: String!
+  client: String!
+  date: String!
+  value: Float!
+  commission: Float!
 }

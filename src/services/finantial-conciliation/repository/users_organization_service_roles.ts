@@ -12,6 +12,18 @@ const getBankDataByAffiliateIds = async (ids: string[], trx: Transaction) => {
   return affiliatesBankData
 }
 
+const getAffiliateNameById = async (id: string, trx: Transaction) => {
+  const affiliateNameAndEmail = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
+    .where('uosr.id', id)
+    .innerJoin('users_organizations as uo', 'uo.id', 'uosr.users_organization_id')
+    .innerJoin('users as u', 'u.id', 'uo.user_id')
+    .select('u.username', 'u.email')
+    .first()
+
+  return affiliateNameAndEmail.username ?? affiliateNameAndEmail.email
+}
+
 export default {
   getBankDataByAffiliateIds,
+  getAffiliateNameById,
 }
