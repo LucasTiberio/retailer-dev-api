@@ -1,13 +1,15 @@
 name: $(SourceBranchName)_$(date:yyyyMMdd)$(rev:.r)
 
 trigger:
-- staging
+- master
 
 resources:
 - repo: self
 
 variables:
-  - group: staging-common-variables
+  - group: production-common-variables
+  - name: YARN_CACHE_FOLDER
+    value: $(Pipeline.Workspace)/.yarn
 
 pool:
   vmImage: 'ubuntu-20.04'
@@ -25,6 +27,14 @@ stages:
               checkLatest: true
             displayName: Install Node
 
+          - task: Cache@2
+            inputs:
+              key: 'yarn | "$(Agent.OS)" | yarn.lock'
+              restoreKeys: |
+                yarn | "$(Agent.OS)"
+              path: $(YARN_CACHE_FOLDER)
+            displayName: Cache Yarn packages
+
           - script: yarn install --frozen-lockfile
           - script: yarn build
 
@@ -32,7 +42,7 @@ stages:
             displayName: Build Docker image
             inputs:
               command: build
-              containerRegistry: "plugonestage-dockerhub"
+              containerRegistry: "plugoneproduction-dockerhub"
               repository: $(DOCKER_REPOSITORY)/$(Build.Repository.Name)
               Dockerfile: "**/Dockerfile"
               tags: |
@@ -43,7 +53,7 @@ stages:
             displayName: Run Docker Push
             inputs:
               command: push
-              containerRegistry: "plugonestage-dockerhub"
+              containerRegistry: "plugoneproduction-dockerhub"
               repository: $(DOCKER_REPOSITORY)/$(Build.Repository.Name) 
               tags: |
                 $(Build.BuildId)-aws

@@ -8,7 +8,7 @@ interface AffiliateInfoI {
 
 const getAffiliateInfos = async (affiliateIds: string[]): Promise<AffiliateInfoI[]> => {
   const affiliates = await knexDatabase
-    .knex('users_organization_service_roles as uosr')
+    .knexConfig('users_organization_service_roles as uosr')
     .whereIn('uosr.id', affiliateIds)
     .innerJoin('users_organizations as uo', 'uo.id', 'uosr.users_organization_id')
     .innerJoin('users as u', 'u.id', 'uo.user_id')

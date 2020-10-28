@@ -8,7 +8,7 @@ data:
   BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH: /pixel-affiliate/staging-pixel-sale-affiliate.js  
   DIGITAL_OCEAN_BUCKET_NAME: plugone-staging
   FRONT_URL: https://staging.plugone.io
-  REDIRECT_URL: https://go-staging.plugone.io
-  PAYMENTS_URL: "http://plugone-payments-staging.plugone-payments-staging.svc.cluster.local/graphql"
-  VTEX_HOOK_URL: http://plugone-affiliate-orders-hook-staging.plugone-affiliate-orders-hook-staging.svc.cluster.local/feed/affiliate/vtex/orders/sync
   ORDER_SERVICE_URL: http://plugone-affiliate-orders-hook-staging.plugone-affiliate-orders-hook-staging.svc.cluster.local
+  PAYMENTS_URL: "http://plugone-payments-staging.plugone-payments-staging.svc.cluster.local/graphql"
+  REDIRECT_URL: https://go-staging.plugone.io
+  VTEX_HOOK_URL: http://plugone-affiliate-orders-hook-staging.plugone-affiliate-orders-hook-staging.svc.cluster.local/feed/affiliate/vtex/orders/sync
