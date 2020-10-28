@@ -92,6 +92,8 @@ input getOrderListByAffiliateIdAndReferenceMonthInput {
 
 type getOrderListByAffiliateIdAndReferenceMonthQuery {
   id: String! #affiliateId
+  name: String!
+  document: String!
   orders: Int!
   revenue: Float!
   commission: Float!
