@@ -56,7 +56,7 @@ type getAffiliatesValuesByMonthQuery {
 }
 
 type AffiliateValues {
-  affiliate_id: String!
+  affiliateId: String!
   revenue: Float!
   commission: Float!
   name: String
