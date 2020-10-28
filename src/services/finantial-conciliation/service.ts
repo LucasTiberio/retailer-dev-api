@@ -75,17 +75,20 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
 
 const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizationId: string; affiliateId: string; referenceMonth: string }, trx: Transaction) => {
   try {
+    const date = moment(context.referenceMonth, 'YYYY-MM').utc()
+    const firstDayOfMonth = date.startOf('month').toISOString()
+    const lastDayOfMonth = date.endOf('month').toISOString()
+    const clientNameAndDocument = await UsersOrganizationServiceRoleRepository.getAffiliateNameAndDocumentById(context.affiliateId, trx)
+
     const returnObj: any = {
       id: context.affiliateId,
+      name: clientNameAndDocument.name,
+      document: clientNameAndDocument.document,
       orders: 0,
       revenue: 0,
       commission: 0,
       orderList: [],
     }
-    const date = moment(context.referenceMonth, 'YYYY-MM').utc()
-    const firstDayOfMonth = date.startOf('month').toISOString()
-    const lastDayOfMonth = date.endOf('month').toISOString()
-    const clientName = await UsersOrganizationServiceRoleRepository.getAffiliateNameById(context.affiliateId, trx)
 
     const affiliateOrders = await AffiliateOrders.find({
       creationDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
@@ -96,13 +99,13 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
     affiliateOrders.forEach((order) => {
       returnObj.orders++
       returnObj.revenue += Number(order.value)
-      returnObj.commission += order.affiliateInfo.commission?.amount
+      returnObj.commission += order.affiliateInfo.commission?.amount ?? 0
       returnObj.orderList.push({
         id: order._id,
         client: `${order.clientProfileData?.firstName} ${order.clientProfileData?.lastName}`,
         date: moment(order.creationDate).format('DD/MM/YYYY - HH:mm:ss'),
         value: Number(order.value),
-        commission: order.affiliateInfo.commission?.amount,
+        commission: order.affiliateInfo.commission?.amount ?? 0,
       })
     })
 
@@ -115,13 +118,13 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
     lojaIntegradaOrders.forEach((order) => {
       returnObj.orders++
       returnObj.revenue += order.valor_total
-      returnObj.commission += order.affiliateInfo.commission?.amount
+      returnObj.commission += order.affiliateInfo.commission?.amount ?? 0
       returnObj.orderList.push({
         id: order._id,
         client: order.cliente.nome,
         date: moment(order.data_criacao).format('DD/MM/YYYY - HH:mm:ss'),
         value: order.valor_total,
-        commission: order.affiliateInfo.commission?.amount,
+        commission: order.affiliateInfo.commission?.amount ?? 0,
       })
     })
 
@@ -137,7 +140,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
       returnObj.commission += order.value
       returnObj.orderList.push({
         id: order._id,
-        client: clientName,
+        client: clientNameAndDocument.name,
         date: moment(order.createdAt).format('DD/MM/YYYY - HH:mm:ss'),
         value: order.value,
         commission: order.value,
@@ -156,7 +159,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
       returnObj.commission += order.commission
       returnObj.orderList.push({
         id: order._id,
-        client: clientName,
+        client: clientNameAndDocument.name,
         date: moment(order.createdAt).format('DD/MM/YYYY - HH:mm:ss'),
         value: order.value,
         commission: order.commission,
