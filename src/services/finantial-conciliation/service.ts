@@ -6,7 +6,7 @@ import AffiliateHelper from './helpers'
 import AffiliateOrders from './model/AffiliateOrders'
 import Bonifications from './model/Bonifications'
 import LojaIntegradaOrders from './model/LojaIntegradaOrders'
-import SaasCommissions from './model/SaasCommissions'
+import SaasCommissions from '../saas-integration/models/SaasCommission'
 import ServicesTimeToPayRepository from './repository/organization_services_time_to_pay'
 import UsersOrganizationServiceRoleRepository from './repository/users_organization_service_roles'
 
