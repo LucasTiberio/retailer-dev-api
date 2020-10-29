@@ -40,7 +40,7 @@ export const fetchVtexProductsByIds = async (accountName: string, productIds: st
 }
 
 export const fetchVtexProductsHtml = async (accountName: string, shelfId: string, affiliateStoreIds: string) => {
-  const { data: vtexProductsData } = await Axios.get(buildProductsHtmlVtexUrl(accountName, shelfId, affiliateStoreIds), {
+  const { data: vtexProductsData } = await Axios.get(buildProductsHtmlVtexUrl(accountName.replace('https://', '').replace('http://', ''), shelfId, affiliateStoreIds), {
     headers: {
       'content-type': 'Content-Type',
     },
