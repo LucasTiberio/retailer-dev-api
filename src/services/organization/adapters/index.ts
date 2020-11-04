@@ -15,6 +15,8 @@ export const _organizationAdapter = (record: IOrganizationFromDB) => ({
   updatedAt: record.updated_at,
   userOrganizationId: record.users_organizations_id,
   logo: record.logo ? `${record.logo}?${+new Date()} ` : null,
+  apiKey: record.api_key,
+  public: record.public,
 })
 
 export const _organizationRoleAdapter = (record: IOrganizationFromDB) => ({

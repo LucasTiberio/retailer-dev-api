@@ -1,5 +1,5 @@
 require('dotenv')
-import axios from 'axios';
+import axios from 'axios'
 import { IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IResponseInvitePayload, IFindUsersAttributes } from './types'
 import { IUserToken } from '../authentication/types'
 import { Transaction } from 'knex'
@@ -178,19 +178,18 @@ const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transact
   return organizationRole
 }
 
-const getOrganizationPaymentsDetails = async (context: {organizationId: string, client: IUserToken}, trx: Transaction) => {
+const getOrganizationPaymentsDetails = async (context: { organizationId: string; client: IUserToken }, trx: Transaction) => {
   if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
 
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/finantial-conciliation`
 
   try {
-    const { data } = await axios.get(url);
+    const { data } = await axios.get(url)
 
-    return data;
+    return data
   } catch (error) {
-    console.log(error);
+    console.log(error)
   }
-
 }
 
 const listTeammates = async (context: { organizationId: string }, trx: Transaction) => {
@@ -729,7 +728,7 @@ const listMyOrganizations = async (userToken: IUserToken, trx: Transaction) => {
 
     return organizations.map(_organizationAdapter)
   } catch (e) {
-    console.log(e);
+    console.log(e)
     throw new Error(e.message)
   }
 }
@@ -1049,6 +1048,39 @@ const fetchOrganizationDomain = async (
   }, [])
 }
 
+const getOrganizationApiKey = async (
+  context: {
+    organizationId: string
+  },
+  trx: Transaction
+) => {
+  const organization = await Repository.getOrganizationById(context.organizationId, trx)
+
+  let apiKey = organization?.apiKey
+  if (!apiKey) {
+    let newApiKey = common.encryptSHA256(`${organization?.id}${+new Date()}`)
+    const dbObject = await Repository.updateApiKeyByOrganizationId(newApiKey, context.organizationId, trx)
+    apiKey = dbObject.api_key
+  }
+  return apiKey
+}
+
+const handlePublicOrganization = async (
+  input: {
+    public: boolean
+  },
+  context: {
+    organizationId: string
+  },
+  trx: Transaction
+) => {
+  try {
+    return await Repository.updatePublicOrganization(input.public, context.organizationId, trx)
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
 export default {
   organizationHasBillingPendency,
   fetchOrganizationDomain,
@@ -1087,4 +1119,6 @@ export default {
   getOrganizationRoleByName,
   handleOrganizationDomain,
   getOrganizationPaymentsDetails,
+  getOrganizationApiKey,
+  handlePublicOrganization,
 }

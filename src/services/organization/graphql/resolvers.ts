@@ -72,6 +72,11 @@ const resolvers: IResolvers = {
         return service.handleUserPermissionInOrganization(input, { client, organizationId }, trx)
       })
     },
+    handlePublicOrganization: (_, { input }, { organizationId }) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
+        return service.handlePublicOrganization(input, { organizationId }, trx)
+      })
+    },
   },
   Query: {
     verifyOrganizationName: (_, { input }) => {
@@ -117,6 +122,11 @@ const resolvers: IResolvers = {
     organizationPaymentsDetails: (_, __, { client, organizationId }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
         return service.getOrganizationPaymentsDetails({ client, organizationId }, trx)
+      })
+    },
+    getOrganizationApiKey: (_, __, { organizationId }) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
+        return service.getOrganizationApiKey({ organizationId }, trx)
       })
     },
   },
