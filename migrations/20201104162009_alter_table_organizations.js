@@ -1,7 +1,7 @@
 exports.up = function (knex) {
   return knex.schema.alterTable('organizations', (table) => {
     table.text('api_key').unique()
-    table.boolean('public').defaultsTo(false)
+    table.boolean('public').defaultsTo(false).notNullable()
   })
 }
 
