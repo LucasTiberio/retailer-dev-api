@@ -232,18 +232,6 @@ type UserOrganizationRole {
   updatedAt: Datetime!
 }
 
-type UserOrganization {
-  id: String!
-  inviteStatus: OrganizationInviteStatus!
-  inviteHash: String
-  updatedAt: Datetime!
-  createdAt: Datetime!
-  organization: Organization!
-  user: User!
-  active: Boolean!
-  organizationRole: OrganizationRole!
-}
-
 type OrganizationRole {
   id: String!
   name: OrganizationRoleName!
