@@ -2,11 +2,13 @@
 
 ### Forms to invite members by rest API with public and private organizations
 
-###### Enterprise Organizations can send a bulk invite by external form in plugone rest API, public and private organizations accept ou pending invites.
+###### Enterprise Organizations can send a bulk invite by external form in plugone rest API, public and private organizations accept ou pending requests.
 
 ##### \* This feature only enteprise accounts
 
 ##### \* Create directive @entepriseFeature
+
+##### \* Create directive @validUser -> so deixa passar o 'invite_status approved'
 
 ```plantuml
 @startuml
@@ -34,11 +36,11 @@ package "Public and Private Organizations" #00E0FF {
     ' public : defaultsTo(false)
 
     class users_organizations {
-        + request: Enum
+        + is_requested: Boolean
     }
     users_organizations : handleMemberInvitation() @entepriseFeature
     users_organizations : getPendingMembersByOrganizationId() @entepriseFeature
-    ' request : enum(approved, reproved, pending).defaultsTo(approved)
+    ' is_requested : defaultsTo(false)
 
     organizations "1" *-- "many" users_organizations
 
