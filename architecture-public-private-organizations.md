@@ -32,7 +32,7 @@ package "Public and Private Organizations" #00E0FF {
     }
     organizations : getOrganizationApiKey() @entepriseFeature
     organizations : handlePublicOrganization() @entepriseFeature
-    ' api_key : (SHA256 (organization name + timestamp))
+    ' api_key : (SHA256 (organization id + timestamp))
     ' public : defaultsTo(false)
 
     class users_organizations {
