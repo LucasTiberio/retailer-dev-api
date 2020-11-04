@@ -1,0 +1,30 @@
+extend type Query {
+  getPendingMembersByOrganizationId: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+}
+
+extend type Mutation {
+  handleMemberInvitation(input: HandleMemberInvitationInput!): UserOrganization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+}
+
+input HandleMemberInvitationInput {
+  userOrganizationId: String!
+  inviteStatus: ResponseInviteStatus!
+}
+
+enum ResponseInviteStatus {
+  refused
+  accept
+}
+
+type UserOrganization {
+  id: String!
+  inviteStatus: OrganizationInviteStatus!
+  inviteHash: String
+  updatedAt: Datetime!
+  createdAt: Datetime!
+  organization: Organization!
+  user: User!
+  active: Boolean!
+  organizationRole: OrganizationRole!
+  isRequested: Boolean
+}
