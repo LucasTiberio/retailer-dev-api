@@ -101,7 +101,7 @@ describe('organizations graphql', () => {
 
         userToken = await jwt.sign(userClient, process.env.JWT_SECRET);
 
-        const [userFromDb] = await knexDatabase.knex('users').where('id', signUpCreated.id).select('verification_hash');
+        const [userFromDb] = await knexDatabase.knexConfig('users').where('id', signUpCreated.id).select('verification_hash');
 
         const userVerifyEmailPayload = {
             verificationHash: userFromDb.verification_hash

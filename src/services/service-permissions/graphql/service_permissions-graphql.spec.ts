@@ -105,7 +105,7 @@ describe('organizations graphql', () => {
 
         userToken = await jwt.sign(userClient, process.env.JWT_SECRET);
 
-        const [userFromDb] = await knexDatabase.knex('users').where('id', signUpCreated.id).select('verification_hash');
+        const [userFromDb] = await knexDatabase.knexConfig('users').where('id', signUpCreated.id).select('verification_hash');
 
         const userVerifyEmailPayload = {
             verificationHash: userFromDb.verification_hash
@@ -171,7 +171,7 @@ describe('organizations graphql', () => {
             }
         });
 
-        const [serviceByName] = await knexDatabase.knex('services').where('name', Services.AFFILIATE).select('id', 'name');
+        const [serviceByName] = await knexDatabase.knexConfig('services').where('name', Services.AFFILIATE).select('id', 'name');
 
         let permissions = [
             "commission",

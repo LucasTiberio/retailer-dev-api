@@ -20,7 +20,7 @@ const userOrganizationPermissions = async (input: { name?: string },context: { o
 
   if(!userOrganizationId) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION)
 
-  let query  = (trx || knexDatabase.knex)('organization_roles_permissions AS orp')
+  let query  = (trx || knexDatabase.knexConfig)('organization_roles_permissions AS orp')
     .innerJoin('permissions AS perm', 'orp.permission_id', 'perm.id')
     .innerJoin('organization_roles AS or', 'or.id', 'orp.organization_role_id')
     .innerJoin('users_organization_roles AS uor', 'uor.organization_role_id', 'orp.organization_role_id')

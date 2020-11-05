@@ -7,7 +7,7 @@ import ServicesService from '../../services/service';
 const resolvers : IResolvers = {
     Query: {
         userServicePermissions: (_, { input }, { client, organizationId, isOrganizationAdmin }) => {
-            return knexDatabase.knex.transaction((trx: Transaction) => {
+            return knexDatabase.knexConfig.transaction((trx: Transaction) => {
                 return service.userServicePermissions(input, {client, organizationId, isOrganizationAdmin}, trx);
             });
         }

@@ -1,6 +1,6 @@
+import { ApolloServer, makeExecutableSchema } from "apollo-server-express";
 import GraphQLAPI from "./graphql";
 import store from "./store";
-import { ApolloServer, makeExecutableSchema } from "apollo-server-express";
 import redisClient from "./lib/Redis";
 import errorAdapter from "./utils/errorAdapter";
 

@@ -34,7 +34,7 @@ describe("Organization Permissions", () => {
   let organizationCreated: IOrganizationAdapted;
 
   beforeAll(async () => {
-    trx = await knexDatabase.knex.transaction();
+    trx = await knexDatabase.knexConfig.transaction();
   });
 
   afterAll(async () => {
@@ -165,7 +165,7 @@ describe("Organization Permissions", () => {
     };
 
     let otherSignUpCreated = await UserService.signUp(otherSignUpPayload, trx);
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", otherSignUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);

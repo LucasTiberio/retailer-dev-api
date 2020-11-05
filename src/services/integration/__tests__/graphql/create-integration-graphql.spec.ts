@@ -116,7 +116,7 @@ describe("create integration graphql", () => {
     await redisClient.flushall("ASYNC");
 
     const [userFromDb] = await knexDatabase
-      .knex("users")
+      .knexConfig("users")
       .where("id", signUpCreated.id)
       .select("verification_hash");
 
@@ -134,7 +134,7 @@ describe("create integration graphql", () => {
         },
       });
 
-    await knexDatabase.knex("organization_vtex_secrets").del();
+    await knexDatabase.knexConfig("organization_vtex_secrets").del();
 
     let createOrganizationPayload = {
       organization: {

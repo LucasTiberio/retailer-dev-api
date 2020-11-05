@@ -1,8 +1,10 @@
+require('dotenv')
 import { Stream } from 'stream'
 import { Transaction } from 'knex'
 import knexDatabase from '../../knex-database'
 import { IImageFromDB } from './types'
-const AWS = require('aws-sdk')
+const AWS = require('aws-sdk');
+const logger = require('pino')();
 
 const imageAdapter = (record: IImageFromDB) => ({
   id: record.id,
@@ -48,7 +50,7 @@ const getImageByUrl = async (url: string, trx: Transaction) => {
 
 const getFileByName = (filename: string) => {
   var getParams = {
-    Bucket: process.env.BUCKET_NAME,
+    Bucket: process.env.DIGITAL_OCEAN_BUCKET_NAME,
     Key: filename,
   }
 
@@ -61,14 +63,18 @@ const getFileByName = (filename: string) => {
     })
 }
 
+logger.info({ DIGITAL_OCEAN_BUCKET_NAME: process.env.DIGITAL_OCEAN_BUCKET_NAME });
+
 const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: Transaction) => {
   var params = {
     Key: path,
-    Bucket: process.env.BUCKET_NAME,
+    Bucket: process.env.DIGITAL_OCEAN_BUCKET_NAME,
     Body: stream,
     ACL: 'public-read',
     ContentType: mimetype,
   }
+
+  logger.info({ params });
 
   try {
     const image = await s3
@@ -79,10 +85,14 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
         throw new Error(err.message)
       })
 
+      logger.info({ image });
+
     let imageFound = await getImageByUrl(image, trx)
 
+    logger.info({ imageFound });
+
     if (!imageFound) {
-      let query = (trx || knexDatabase.knex)('image')
+      let query = (trx || knexDatabase.knexConfig)('image')
       if (trx) {
         query = query.transacting(trx)
       }
@@ -92,14 +102,17 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
       imageFound = imageInserted
     }
 
+    logger.info('depois', { imageFound });
+
     return imageAdapter(imageFound)
   } catch (error) {
+    logger.error(error.message);
     throw new Error(error.message)
   }
 }
 
 const deleteImage = async (key: string) => {
-  const params = { Bucket: process.env.BUCKET_NAME, Key: key }
+  const params = { Bucket: process.env.DIGITAL_OCEAN_BUCKET_NAME, Key: key }
 
   try {
     await s3
@@ -107,11 +120,13 @@ const deleteImage = async (key: string) => {
       .promise()
       .then((res: any) => res.Location)
       .catch((err: Error) => {
+        logger.error(err.message);
         throw new Error(err.message)
       })
 
     return true
   } catch (error) {
+    logger.error(error.message);
     throw new Error(error.message)
   }
 }

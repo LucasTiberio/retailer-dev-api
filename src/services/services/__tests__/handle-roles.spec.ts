@@ -38,9 +38,9 @@ describe("Services", () => {
   let context: IContext;
 
   beforeAll(async () => {
-    trx = await database.knex.transaction();
+    trx = await database.knexConfig.transaction();
 
-    const [serviceFoundDB] = await (trx || knexDatabase.knex)("services")
+    const [serviceFoundDB] = await (trx || knexDatabase.knexConfig)("services")
       .where("name", Services.AFFILIATE)
       .select("id");
     serviceFound = serviceFoundDB;
@@ -86,7 +86,7 @@ describe("Services", () => {
       { client: userToken, redisClient },
       trx
     );
-    const [userFromDb] = await (trx || knexDatabase.knex)("users")
+    const [userFromDb] = await (trx || knexDatabase.knexConfig)("users")
       .where("id", signUpCreated.id)
       .select("verification_hash");
     await UserService.verifyEmail(userFromDb.verification_hash, trx);
@@ -127,13 +127,13 @@ describe("Services", () => {
       trx
     );
 
-    const userInOrganizationService = await (trx || knexDatabase.knex)(
+    const userInOrganizationService = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .first()
       .select();
 
-    const affiliateAnalystRole = await (trx || knexDatabase.knex)(
+    const affiliateAnalystRole = await (trx || knexDatabase.knexConfig)(
       "service_roles"
     )
       .where("name", ServiceRoles.ANALYST)
@@ -154,13 +154,13 @@ describe("Services", () => {
       trx
     );
 
-    const userInOrganizationServiceChanged = await (trx || knexDatabase.knex)(
+    const userInOrganizationServiceChanged = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .first()
       .select();
 
-    const affiliateSaleRole = await (trx || knexDatabase.knex)("service_roles")
+    const affiliateSaleRole = await (trx || knexDatabase.knexConfig)("service_roles")
       .where("name", ServiceRoles.SALE)
       .first()
       .select("id");
@@ -212,7 +212,7 @@ describe("Services", () => {
       trx
     );
 
-    const userInOrganizationService = await (trx || knexDatabase.knex)(
+    const userInOrganizationService = await (trx || knexDatabase.knexConfig)(
       "users_organization_service_roles"
     )
       .first()

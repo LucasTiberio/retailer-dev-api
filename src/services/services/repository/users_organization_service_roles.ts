@@ -3,7 +3,7 @@ import knexDatabase from '../../../knex-database'
 import { _usersOrganizationServiceAdapter } from '../adapters'
 
 const getAffiliatesEmailByOrganizationServiceId = async (organizationServiceId: string, trx: Transaction) => {
-  const affiliates = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+  const affiliates = await (trx || knexDatabase.knexConfig)('users_organization_service_roles AS uosr')
     .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .where('uosr.organization_services_id', organizationServiceId)
@@ -14,7 +14,7 @@ const getAffiliatesEmailByOrganizationServiceId = async (organizationServiceId: 
 }
 
 const getAffiliateEmailByIds = async (getAffiliateNamesByIds: string[], trx: Transaction) => {
-  const affiliates = await (trx || knexDatabase.knex)('users_organization_service_roles AS uosr')
+  const affiliates = await (trx || knexDatabase.knexConfig)('users_organization_service_roles AS uosr')
     .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .whereIn('uosr.id', getAffiliateNamesByIds)

@@ -5,19 +5,19 @@ import camelToSnakeCase from '../../../utils/camelToSnakeCase'
 import { affiliateStoreProductAdapter } from '../adapters'
 
 const getByProductIdAndAffiliateStoreId = async (productId: string, affiliateStoreId: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knex)('affiliate_store_product').where('product_id', productId).andWhere('affiliate_store_id', affiliateStoreId).andWhere('active', true).first().select()
+  return await (trx || knexDatabase.knexConfig)('affiliate_store_product').where('product_id', productId).andWhere('affiliate_store_id', affiliateStoreId).andWhere('active', true).first().select()
 }
 
 const getByProductIdAndAffiliateStoreIdWithoutActive = async (productId: string, affiliateStoreId: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knex)('affiliate_store_product').where('product_id', productId).andWhere('affiliate_store_id', affiliateStoreId).first().select()
+  return await (trx || knexDatabase.knexConfig)('affiliate_store_product').where('product_id', productId).andWhere('affiliate_store_id', affiliateStoreId).first().select()
 }
 
 const getByAffiliateStoreId = async (affiliateStoreId: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knex)('affiliate_store_product').where('affiliate_store_id', affiliateStoreId).andWhere('active', true).orderBy('order', 'asc').select()
+  return await (trx || knexDatabase.knexConfig)('affiliate_store_product').where('affiliate_store_id', affiliateStoreId).andWhere('active', true).orderBy('order', 'asc').select()
 }
 
 const getSearchablesByAffiliateStoreId = async (affiliateStoreId: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knex)('affiliate_store_product')
+  return await (trx || knexDatabase.knexConfig)('affiliate_store_product')
     .where('affiliate_store_id', affiliateStoreId)
     .andWhere('active', true)
     .andWhere('searchable', true)
@@ -26,11 +26,11 @@ const getSearchablesByAffiliateStoreId = async (affiliateStoreId: string, trx: T
 }
 
 const getAffiliateStoreProductLengthByAffiliateId = async (affiliateStoreId: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knex)('affiliate_store_product').where('affiliate_store_id', affiliateStoreId).andWhere('active', true).count()
+  return await (trx || knexDatabase.knexConfig)('affiliate_store_product').where('affiliate_store_id', affiliateStoreId).andWhere('active', true).count()
 }
 
 const getAffiliateStoreOrderByAffiliateStoreId = async (affiliateStoreId: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knex)('affiliate_store_product').andWhere('affiliate_store_id', affiliateStoreId).andWhere('active', true).select('order').orderBy('order', 'desc').first()
+  return await (trx || knexDatabase.knexConfig)('affiliate_store_product').andWhere('affiliate_store_id', affiliateStoreId).andWhere('active', true).select('order').orderBy('order', 'desc').first()
 }
 
 const findOrUpdate = async (affiliateStoreId: string, input: ICreateAffiliateStoreProduct, trx: Transaction) => {
@@ -38,7 +38,7 @@ const findOrUpdate = async (affiliateStoreId: string, input: ICreateAffiliateSto
 
   const affiliateStoreProductLastOrder = await getAffiliateStoreOrderByAffiliateStoreId(affiliateStoreId, trx)
 
-  let query = (trx || knexDatabase.knex)('affiliate_store_product')
+  let query = (trx || knexDatabase.knexConfig)('affiliate_store_product')
 
   const inputAddapted = camelToSnakeCase(input)
 
@@ -83,7 +83,7 @@ const handleProductActivity = async (
     updateInput.order = affiliateStoreProductLastOrder ? affiliateStoreProductLastOrder.order + 1 : 1
   }
 
-  const [handledProductActivity] = await (trx || knexDatabase.knex)('affiliate_store_product')
+  const [handledProductActivity] = await (trx || knexDatabase.knexConfig)('affiliate_store_product')
     .update({ ...updateInput })
     .where('affiliate_store_id', affiliateStoreId)
     .andWhere('id', affiliateStoreProductId)
@@ -102,7 +102,7 @@ const handleProductSearchable = async (
 ) => {
   const { affiliateStoreProductId, searchable } = input
 
-  const [handledProductActivity] = await (trx || knexDatabase.knex)('affiliate_store_product')
+  const [handledProductActivity] = await (trx || knexDatabase.knexConfig)('affiliate_store_product')
     .update({
       searchable,
     })
@@ -124,7 +124,7 @@ const handleProductsOrder = async (
   try {
     await Promise.all(
       input.map(async (item) => {
-        await (trx || knexDatabase.knex)('affiliate_store_product')
+        await (trx || knexDatabase.knexConfig)('affiliate_store_product')
           .update({
             order: item.order,
           })

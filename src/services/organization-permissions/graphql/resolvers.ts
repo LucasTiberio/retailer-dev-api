@@ -6,7 +6,7 @@ import { Transaction } from 'knex';
 const resolvers : IResolvers = {
     Query: {
         userOrganizationPermissions: (_, { input }, { client, organizationId }) => {
-            return knexDatabase.knex.transaction((trx: Transaction) => {
+            return knexDatabase.knexConfig.transaction((trx: Transaction) => {
                 return service.userOrganizationPermissions(input, {client, organizationId}, trx);
             });
         }

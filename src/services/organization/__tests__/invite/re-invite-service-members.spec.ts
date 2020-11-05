@@ -32,7 +32,7 @@ describe("teste", () => {
   let context: IContext;
 
   beforeAll(async () => {
-    trx = await knexDatabase.knex.transaction();
+    trx = await knexDatabase.knexConfig.transaction();
   });
 
   beforeEach(async () => {
@@ -126,7 +126,7 @@ describe("teste", () => {
 
     expect(reinvitedServiceMember).toBeTruthy();
 
-    const usersOrganization = await (trx || knexDatabase.knex)(
+    const usersOrganization = await (trx || knexDatabase.knexConfig)(
       "users_organizations"
     )
       .whereNotNull("invite_hash")

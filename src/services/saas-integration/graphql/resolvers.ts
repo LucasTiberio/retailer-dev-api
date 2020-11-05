@@ -8,7 +8,7 @@ import ServiceService from '../../services/service'
 const resolvers: IResolvers = {
   Mutation: {
     handleSassDefaultCommission: async (_, { input }, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.handleSassDefaultCommission(input, { organizationId }, trx)
       })
     },
@@ -18,7 +18,7 @@ const resolvers: IResolvers = {
   },
   Query: {
     getSaasDefaultCommission: (_, __, { organizationId }) => {
-      return knexDatabase.knex.transaction((trx: Transaction) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getSaasDefaultCommission({ organizationId }, trx)
       })
     },

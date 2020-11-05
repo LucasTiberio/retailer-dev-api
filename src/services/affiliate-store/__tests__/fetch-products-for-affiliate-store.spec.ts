@@ -43,7 +43,7 @@ describe('Affiliate', () => {
   })
 
   beforeEach(async () => {
-    trx = await database.knex.transaction()
+    trx = await database.knexConfig.transaction()
 
     const { organization, affiliate } = await createAffiliateMock(trx)
 

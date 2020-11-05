@@ -1,6 +1,10 @@
 import mongoose from 'mongoose'
 import { DBInput } from './types'
 
+const logger = require('pino')(); 
+const promClient = require('prom-client');
+const dbMongoUp = new promClient.Gauge({name: 'mongo_connect_up', help: 'Mongo Connected help'});
+
 export default ({ databaseUri }: DBInput) => {
   const connect = () => {
     mongoose
@@ -11,14 +15,17 @@ export default ({ databaseUri }: DBInput) => {
         useFindAndModify: false,
       })
       .then(() => {
-        return console.info(`Successfully connected to MongoDB`)
+        dbMongoUp.set(1);
+        return logger.info(`Successfully connected to MongoDB`);
       })
       .catch((err: Error) => {
-        console.error(`Error connecting to database :`, err.message)
+        dbMongoUp.set(0);
+        logger.error(`Error connecting to database : ${err.message}`)
+        logger.error(`Unsuccessfully connecting to MongoDB`);
 
-        return process.exit(1)
+        return process.exit(1);
       })
   }
 
-  connect()
+  connect();
 }

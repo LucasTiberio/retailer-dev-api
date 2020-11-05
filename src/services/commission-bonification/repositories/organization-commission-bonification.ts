@@ -4,7 +4,7 @@ import { CommissionBonification } from '../types'
 import { organizationCommissionBonificationAdapter } from '../adapters'
 
 const createOrganizationCommissionBonification = async (input: CommissionBonification, organizationId: string, trx: Transaction) => {
-  const [organizationCommissionBonificationCreated] = await (trx || knexDatabase.knex)('organization_commission_bonification')
+  const [organizationCommissionBonificationCreated] = await (trx || knexDatabase.knexConfig)('organization_commission_bonification')
     .insert({
       organization_id: organizationId,
       title: input.title,
@@ -20,7 +20,7 @@ const createOrganizationCommissionBonification = async (input: CommissionBonific
 }
 
 const deleteOrganizationCommissionBonification = async (organizationCommissionBonificationId: string, organizationId: string, trx: Transaction) => {
-  const [organizationCommissionBonificationCreated] = await (trx || knexDatabase.knex)('organization_commission_bonification')
+  const [organizationCommissionBonificationCreated] = await (trx || knexDatabase.knexConfig)('organization_commission_bonification')
     .update({
       active: false,
     })
@@ -31,13 +31,13 @@ const deleteOrganizationCommissionBonification = async (organizationCommissionBo
 }
 
 const getAllOrganizationCommissionBonification = async (organizationId: string, trx: Transaction) => {
-  const organizationCommissionsBonifications = await (trx || knexDatabase.knex)('organization_commission_bonification').where('organization_id', organizationId).select('*')
+  const organizationCommissionsBonifications = await (trx || knexDatabase.knexConfig)('organization_commission_bonification').where('organization_id', organizationId).select('*')
 
   return organizationCommissionsBonifications.map(organizationCommissionBonificationAdapter)
 }
 
 const getOrganizationCommissionBonificationById = async (organizationCommissionBonificationId: string, organizationId: string, trx: Transaction) => {
-  const organizationCommissionsBonifications = await (trx || knexDatabase.knex)('organization_commission_bonification')
+  const organizationCommissionsBonifications = await (trx || knexDatabase.knexConfig)('organization_commission_bonification')
     .where('id', organizationCommissionBonificationId)
     .andWhere('organization_id', organizationId)
     .first()

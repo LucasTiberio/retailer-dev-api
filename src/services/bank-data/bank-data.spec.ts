@@ -33,9 +33,9 @@ describe('Bank Data', () => {
     let context: IContext;
 
     beforeAll(async () => {
-        trx = await knexDatabase.knex.transaction(); 
+        trx = await knexDatabase.knexConfig.transaction(); 
 
-        const [serviceFoundDB] = await (trx || knexDatabase.knex)('services').where('name', Services.AFFILIATE).select('id');
+        const [serviceFoundDB] = await (trx || knexDatabase.knexConfig)('services').where('name', Services.AFFILIATE).select('id');
         serviceFound = serviceFoundDB
     });
 
@@ -59,7 +59,7 @@ describe('Bank Data', () => {
         signUpCreated = await UserService.signUp(signUpPayload, trx);
         userToken = { origin: 'user', id: signUpCreated.id };
         organizationCreated = await OrganizationService.createOrganization(createOrganizationPayload(), {client: userToken, redisClient}, trx);
-        const [userFromDb] = await (trx || knexDatabase.knex)('users').where('id', signUpCreated.id).select('verification_hash');
+        const [userFromDb] = await (trx || knexDatabase.knexConfig)('users').where('id', signUpCreated.id).select('verification_hash');
         await UserService.verifyEmail(userFromDb.verification_hash, trx);
         context = {client: userToken, organizationId: organizationCreated.id};
     })

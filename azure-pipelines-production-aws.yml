@@ -1,0 +1,92 @@
+name: $(SourceBranchName)_$(date:yyyyMMdd)$(rev:.r)
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  - group: production-common-variables
+  - name: YARN_CACHE_FOLDER
+    value: $(Pipeline.Workspace)/.yarn
+
+pool:
+  vmImage: 'ubuntu-20.04'
+
+stages:
+  - stage: Build
+    displayName: Build and Publish
+    jobs:
+      - job: Build
+        displayName: Build and Publish Docker Image
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "14.x"
+              checkLatest: true
+            displayName: Install Node
+
+          - task: Cache@2
+            inputs:
+              key: 'yarn | "$(Agent.OS)" | yarn.lock'
+              restoreKeys: |
+                yarn | "$(Agent.OS)"
+              path: $(YARN_CACHE_FOLDER)
+            displayName: Cache Yarn packages
+
+          - script: yarn install --frozen-lockfile
+          - script: yarn build
+
+          - task: Docker@2
+            displayName: Build Docker image
+            inputs:
+              command: build
+              containerRegistry: "plugoneproduction-dockerhub"
+              repository: $(DOCKER_REPOSITORY)/$(Build.Repository.Name)
+              Dockerfile: "**/Dockerfile"
+              tags: |
+                $(Build.BuildId)-aws
+                latest-aws
+
+          - task: Docker@2
+            displayName: Run Docker Push
+            inputs:
+              command: push
+              containerRegistry: "plugoneproduction-dockerhub"
+              repository: $(DOCKER_REPOSITORY)/$(Build.Repository.Name) 
+              tags: |
+                $(Build.BuildId)-aws
+                latest-aws
+
+  - stage: Deploy
+    displayName: Deploy in K8S Cluster
+    dependsOn: Build
+    jobs:
+    - job: Deploy
+      displayName: Deploy
+      steps:    
+      - task: KubectlInstaller@0
+        inputs: 
+          kubectlVersion: '1.17.9'
+      - task: AWSShellScript@1
+        displayName: Execute deploy script
+        inputs:
+          awsCredentials: 'plugone-aws'
+          regionName: 'us-east-1'
+          scriptType: 'inline'
+          inlineScript: |
+            sudo snap install kustomize
+            aws eks update-kubeconfig --name $(EKS_CLUSTER) --alias $(K8S_CLUSTER_ALIAS)
+            cd kubernetes && ./deploy.sh
+    - job: Notification
+      dependsOn: Deploy
+      condition: succeeded()
+      steps:
+      - task: SendMessage@1
+        displayName: Send Success Message      
+        inputs:
+          awsCredentials: 'plugone-aws'
+          regionName: 'us-east-1'
+          message: 'Deploy Succeeded!'
+          topicArn: 'arn:aws:sns:us-east-1:252371814120:plugone-notify'

@@ -61,7 +61,7 @@ describe('Saas default commission', () => {
   })
 
   beforeEach(async () => {
-    trx = await knexDatabase.knex.transaction()
+    trx = await knexDatabase.knexConfig.transaction()
     signUpCreated = await UserService.signUp(signUpPayload, trx)
     userToken = { origin: 'user', id: signUpCreated.id }
   })
