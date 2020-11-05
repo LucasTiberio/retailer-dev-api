@@ -141,14 +141,14 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
             products.map(async (item: { id: number; nome: string }) => {
               const productFound = currentProducts.find((product) => product.product_id === item.id.toString())
 
-              const x = await fetchLojaIntegradaProductById(token, item.id)
+              const product = await fetchLojaIntegradaProductById(token, item.id)
 
-              if (!x) return null
+              if (!product) return null
 
               return {
                 productId: item.id,
                 price: undefined,
-                image: x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+                image: (product.imagem_principal?.media || product.imagens[0].media) ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
                 name: item.nome,
                 added: !!productFound,
               }
