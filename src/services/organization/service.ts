@@ -146,7 +146,15 @@ const verifyOrganizationName = async (name: string, trx: Transaction) => {
   return !!organizationFound.length
 }
 
-const organizationRolesAttach = async (userId: string, organizationId: string, roleName: OrganizationRoles, inviteStatus: OrganizationInviteStatus, trx: Transaction, hashToVerify?: string) => {
+const organizationRolesAttach = async (
+  userId: string,
+  organizationId: string,
+  roleName: OrganizationRoles,
+  inviteStatus: OrganizationInviteStatus,
+  trx: Transaction,
+  hashToVerify?: string,
+  organizationPublic?: boolean
+) => {
   const organizationRole = await organizationRoleByName(roleName, trx)
 
   if (!organizationRole) throw new Error('Organization role not found.')
@@ -157,6 +165,7 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
       organization_id: organizationId,
       invite_status: inviteStatus,
       invite_hash: hashToVerify,
+      is_requested: organizationPublic ? !organizationPublic : false,
     })
     .returning('*')
 
@@ -460,94 +469,76 @@ const inviteAffiliateServiceMembers = async (
   }
 }
 
-const requestAffiliateServiceMembers = async (newMembers: any, organizationId: string): Promise<Boolean> => {
-  // const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId)
-  // const [organization] = await (trx || knexDatabase.knexConfig)('organizations').where('id', context.organizationId).select('name')
-  // if (!organization) throw new Error('Organization not found.')
-  // const integration = await IntegrationsService.getIntegrationByOrganizationId(context.organizationId, trx)
-  // if (!integration || !integration.active) throw new Error('Integration not implemented')
-  // const [serviceOrganizationFound] = await ServicesService.serviceOrganizationByName(context.organizationId, Services.AFFILIATE, trx)
-  // if (!serviceOrganizationFound) throw new Error('Organization doesnt have this service')
-  // const hasFounder = await isFounderBulk(
-  //   context.organizationId,
-  //   input.users.map((item) => item.email),
-  //   trx
-  // )
-  // if (hasFounder) {
-  //   throw new Error('Founder doesnt attached a member service')
-  // }
-  // try {
-  //   await ServicesService.verifyAffiliateMaxRules(input.users, affiliateTeammateRules, serviceOrganizationFound.id, trx)
-  //   return await Promise.all(
-  //     input.users.map(async (item) => {
-  //       let hashToVerify = await common.encryptSHA256(JSON.stringify({ ...item, timestamp: +new Date() }))
-  //       let userEmail = await UserService.getUserByEmail(item.email, trx)
-  //       if (userEmail) {
-  //         const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, context.organizationId, trx)
-  //         if (usersOrganizationFound) {
-  //           const [userOrganizationUpdated] = await (trx || knexDatabase.knexConfig)('users_organizations')
-  //             .update({
-  //               invite_status: usersOrganizationFound.invite_status === OrganizationInviteStatus.ACCEPT ? OrganizationInviteStatus.ACCEPT : OrganizationInviteStatus.PENDENT,
-  //               active: true,
-  //             })
-  //             .where('id', usersOrganizationFound.id)
-  //             .returning('id')
-  //             .returning('*')
-  //           if (usersOrganizationFound.invite_status !== OrganizationInviteStatus.ACCEPT) {
-  //             await MailService.sendInviteUserMail({
-  //               email: item.email,
-  //               hashToVerify,
-  //               organizationName: organization.name,
-  //             })
-  //           }
-  //           const organizationAdmin = await getUserOrganizationByUserOrganizationId(usersOrganizationFound.id, trx)
-  //           if (organizationAdmin.length) {
-  //             await changeOrganizationAdminToMember(
-  //               organizationAdmin.map((item) => item.id),
-  //               trx
-  //             )
-  //           }
-  //           const memberOrganizationRole = await getOrganizationRoleByName(OrganizationRoles.MEMBER, trx)
-  //           await ServicesService.attachUserInOrganizationAffiliateService(
-  //             {
-  //               userOrganizationId: usersOrganizationFound.id,
-  //               role: item.role,
-  //               organizationId: context.organizationId,
-  //               serviceOrganization: serviceOrganizationFound,
-  //             },
-  //             trx
-  //           )
-  //           return _usersOrganizationsAdapter({
-  //             ...userOrganizationUpdated,
-  //             organization_role_id: memberOrganizationRole.id,
-  //           })
-  //         }
-  //       } else {
-  //         userEmail = await UserService.signUpWithEmailOnly(item.email, trx)
-  //       }
-  //       const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.MEMBER, OrganizationInviteStatus.PENDENT, trx, hashToVerify)
-  //       await ServicesService.attachUserInOrganizationAffiliateService(
-  //         {
-  //           userOrganizationId: userOrganizationCreated.id,
-  //           role: item.role,
-  //           organizationId: context.organizationId,
-  //           serviceOrganization: serviceOrganizationFound,
-  //         },
-  //         trx
-  //       )
-  //       await MailService.sendInviteNewUserMail({
-  //         email: userEmail.email,
-  //         hashToVerify,
-  //         organizationName: organization.name,
-  //       })
-  //       return userOrganizationCreated
-  //     })
-  //   )
-  // } catch (error) {
-  //   let errorMessage = error.message
-  //   throw new Error(errorMessage)
-  // }
-  return true
+const requestAffiliateServiceMembers = async (
+  users: {
+    email: string
+  }[],
+  organizationId: string,
+  organizationName: string,
+  organizationPublic: boolean
+) => {
+  let trx = await knexDatabase.knexConfig.transaction()
+
+  const integration = await IntegrationsService.getIntegrationByOrganizationId(organizationId, trx)
+
+  if (!integration || !integration.active) throw new Error('Integration not implemented')
+
+  const [serviceOrganizationFound] = await ServicesService.serviceOrganizationByName(organizationId, Services.AFFILIATE, trx)
+
+  if (!serviceOrganizationFound) throw new Error('Organization doesnt have this service')
+
+  const hasFounder = await isFounderBulk(
+    organizationId,
+    users.map((item) => item.email),
+    trx
+  )
+
+  if (hasFounder) {
+    throw new Error('Founder doesnt attached a member service')
+  }
+
+  try {
+    return await Promise.all(
+      users.map(async (item) => {
+        let hashToVerify = await common.encryptSHA256(JSON.stringify({ ...item, timestamp: +new Date() }))
+
+        let userEmail = await UserService.getUserByEmail(item.email, trx)
+
+        if (userEmail) {
+          const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
+
+          if (usersOrganizationFound) {
+            return console.log('ja existe')
+          }
+        } else {
+          userEmail = await UserService.signUpWithEmailOnly(item.email, trx)
+        }
+
+        const userOrganizationCreated = await organizationRolesAttach(userEmail.id, organizationId, OrganizationRoles.MEMBER, OrganizationInviteStatus.ACCEPT, trx, hashToVerify, organizationPublic)
+
+        await ServicesService.attachUserInOrganizationAffiliateService(
+          {
+            userOrganizationId: userOrganizationCreated.id,
+            role: ServiceRoles.ANALYST,
+            organizationId: organizationId,
+            serviceOrganization: serviceOrganizationFound,
+          },
+          trx
+        )
+
+        await MailService.sendInviteNewUserMail({
+          email: userEmail.email,
+          hashToVerify,
+          organizationName: organizationName,
+        })
+
+        return userOrganizationCreated
+      })
+    )
+  } catch (error) {
+    let errorMessage = error.message
+    throw new Error(errorMessage)
+  }
 }
 
 const getOrganizationRoleByName = async (organizationRoleName: OrganizationRoles, trx: Transaction) => {
