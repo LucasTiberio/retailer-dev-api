@@ -496,8 +496,6 @@ const requestAffiliateServiceMembers = async (users: string[], organizationId: s
 
         let userEmail = await UserService.getUserByEmail(item, trx)
 
-        console.log({ userEmail })
-
         if (userEmail) {
           const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
 
@@ -811,6 +809,7 @@ const listMyOrganizations = async (userToken: IUserToken, trx: Transaction) => {
       .innerJoin('organizations AS orgn', 'orgn.id', 'uo.organization_id')
       .where('uo.user_id', userToken.id)
       .andWhere('uo.active', true)
+      .andWhere('uo.invite_status', InviteStatus.accept)
       .select('orgn.*', 'uo.id AS users_organizations_id')
 
     return organizations.map(_organizationAdapter)
