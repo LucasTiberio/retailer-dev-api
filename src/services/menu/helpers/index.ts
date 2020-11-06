@@ -209,6 +209,10 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
         name: 'payments',
         slug: '/affiliate/payments',
       },
+      {
+        name: 'linkGenerator',
+        slug: '/affiliate/link-generator',
+      },
     ],
   }
 

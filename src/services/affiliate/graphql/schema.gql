@@ -1,6 +1,6 @@
 extend type Mutation {
   affiliateGenerateShortenerUrl(input: AffiliateGenerateShortenerUrlInput!): UserOrganizationServiceRolesUrlShortener!
-    @hasServiceRole(role: ["ANALYST"])
+    @hasServiceRole(role: ["ANALYST", "SALE"])
     @organizationPaidVerify
     @acceptTermsAndConditions
     @isVerified
@@ -12,7 +12,7 @@ extend type Mutation {
     @isVerified
     @isAuthenticated
   generateSalesJwt(input: GenerateSalesJwtInput!): SalesSession!
-  createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST", "SALE"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl! @hasSalesToken
   paidAffiliateCommission(input: PaidAffiliateCommissionInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   handleTimeToPayCommission(input: HandleTimeToPayCommissionInput!): TimeToPayCommission!
