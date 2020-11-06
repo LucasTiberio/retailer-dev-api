@@ -5,9 +5,9 @@ import { Transaction } from 'knex'
 
 const resolvers: IResolvers = {
   Query: {
-    getPlanType: (_, { input }) => {
+    getPlanType: (_, __, { organizationId }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.getPlanType(input.organizationId, trx)
+        return service.getPlanType(organizationId, trx)
       })
     },
   },

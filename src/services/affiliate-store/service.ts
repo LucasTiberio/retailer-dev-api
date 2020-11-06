@@ -197,8 +197,6 @@ const getAffiliateStoreAddedProducts = async (context: { userServiceOrganization
         products.map(async (item) => {
           const x = await fetchLojaIntegradaProductById(token, item.product_id)
 
-          console.log(x)
-
           return affiliateStoreProductAdapter({
             ...item,
             name: x.nome,

@@ -1,7 +1,3 @@
 extend type Query {
-  getPlanType(input: GetPlanTypeInput!): String!
-}
-
-input GetPlanTypeInput {
-  organizationId: String!
+  getPlanType: String! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
 }
