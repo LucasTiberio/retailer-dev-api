@@ -17,7 +17,7 @@ export const handleMemberInviteStatus = async (
   organizationId: string,
   trx: Transaction
 ) => {
-  const memberUpdated = await (trx || knexDatabase.knexConfig)('users_organizations')
+  const [memberUpdated] = await (trx || knexDatabase.knexConfig)('users_organizations')
     .where('organization_id', organizationId)
     .andWhere('id', input.userOrganizationId)
     .update({

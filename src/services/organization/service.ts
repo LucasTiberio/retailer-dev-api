@@ -45,6 +45,7 @@ import fetchVtexDomains from './clients/fetch-domains'
 import IntegrationService from '../integration/service'
 import { Integrations } from '../integration/types'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
+import { InviteStatus } from '../users-organizations/types'
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL
 
@@ -153,7 +154,7 @@ const organizationRolesAttach = async (
   inviteStatus: OrganizationInviteStatus,
   trx: Transaction,
   hashToVerify?: string,
-  organizationPublic?: boolean
+  isRequested?: boolean
 ) => {
   const organizationRole = await organizationRoleByName(roleName, trx)
 
@@ -165,7 +166,7 @@ const organizationRolesAttach = async (
       organization_id: organizationId,
       invite_status: inviteStatus,
       invite_hash: hashToVerify,
-      is_requested: organizationPublic !== undefined ? !organizationPublic : false,
+      is_requested: !!isRequested,
     })
     .returning('*')
 
@@ -489,11 +490,13 @@ const requestAffiliateServiceMembers = async (users: string[], organizationId: s
   }
 
   try {
-    const x = await Promise.all(
+    await Promise.all(
       users.map(async (item: string) => {
         let hashToVerify = await common.encryptSHA256(JSON.stringify({ item, timestamp: +new Date() }))
 
         let userEmail = await UserService.getUserByEmail(item, trx)
+
+        console.log({ userEmail })
 
         if (userEmail) {
           const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
@@ -505,7 +508,15 @@ const requestAffiliateServiceMembers = async (users: string[], organizationId: s
           userEmail = await UserService.signUpWithEmailOnly(item, trx)
         }
 
-        const userOrganizationCreated = await organizationRolesAttach(userEmail.id, organizationId, OrganizationRoles.MEMBER, OrganizationInviteStatus.ACCEPT, trx, undefined, organizationPublic)
+        const userOrganizationCreated = await organizationRolesAttach(
+          userEmail.id,
+          organizationId,
+          OrganizationRoles.MEMBER,
+          organizationPublic ? OrganizationInviteStatus.ACCEPT : OrganizationInviteStatus.PENDENT,
+          trx,
+          hashToVerify,
+          true
+        )
 
         await ServicesService.attachUserInOrganizationAffiliateService(
           {
@@ -556,13 +567,13 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
   const [user] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .where('invite_hash', responseInvitePayload.inviteHash)
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
-    .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id')
+    .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
 
   try {
     await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
         invite_hash: null,
-        invite_status: responseInvitePayload.response,
+        invite_status: user.is_requested && user.invite_status === InviteStatus.pendent ? InviteStatus.pendent : responseInvitePayload.response,
       })
       .where('invite_hash', responseInvitePayload.inviteHash)
 
