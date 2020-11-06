@@ -23,7 +23,7 @@ extend type Query {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
-  getOrganizationApiKey: String! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationApiKey: String! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @enterpriseFeature @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 type TeammatesCapacities {
@@ -99,7 +99,13 @@ extend type Mutation {
     @isVerified
     @isAuthenticated
   handleOrganizationDomain(input: HandleOrganizationDomainInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
-  handlePublicOrganization(input: HandlePublicOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  handlePublicOrganization(input: HandlePublicOrganizationInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @enterpriseFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 input HandlePublicOrganizationInput {

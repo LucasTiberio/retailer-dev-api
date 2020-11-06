@@ -1,9 +1,15 @@
 extend type Query {
-  getPendingMembersByOrganizationId: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  getPendingMembersByOrganizationId: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @enterpriseFeature @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {
-  handleMemberInvitation(input: HandleMemberInvitationInput!): UserOrganization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  handleMemberInvitation(input: HandleMemberInvitationInput!): UserOrganization!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @enterpriseFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
 }
 
 input HandleMemberInvitationInput {

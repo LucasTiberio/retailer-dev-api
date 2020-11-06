@@ -316,6 +316,8 @@ const getSubscriptionByOrganizationId = async (organizationId: string) => {
   try {
     const res = await fetchPaymentsService(query, variables)
 
+    console.log(res.data)
+
     if (res.data?.errors) {
       return null
     }
