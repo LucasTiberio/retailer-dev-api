@@ -231,6 +231,7 @@ type Organization {
   domain: String
   createdAt: Datetime!
   logo: String
+  public: Boolean!
   hasMember: Boolean!
   organizationRole: [OrganizationRole]!
   services: [Service]!
