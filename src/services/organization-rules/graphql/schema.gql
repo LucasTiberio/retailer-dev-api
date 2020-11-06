@@ -1,0 +1,7 @@
+extend type Query {
+  getPlanType(input: GetPlanTypeInput!): String!
+}
+
+input GetPlanTypeInput {
+  organizationId: String!
+}

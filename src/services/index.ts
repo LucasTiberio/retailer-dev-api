@@ -21,6 +21,7 @@ import CommissionBonificationService from './commission-bonification'
 import SaasIntegrationService from './saas-integration'
 import FinantialConciliation from './finantial-conciliation'
 import UserOrganizationService from './users-organizations'
+import OrganizationRulesService from './organization-rules'
 
 let services = [
   SaasIntegrationService,
@@ -44,6 +45,7 @@ let services = [
   InsideSalesService,
   PersonalizedComissions,
   FinantialConciliation,
+  OrganizationRulesService,
 ]
 
 export default {
