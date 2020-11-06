@@ -99,7 +99,11 @@ app.post('/invite-member/:organizationId', async (req, res) => {
     res.status(400).send({ error: 'Bad request: Token must be provided' })
     return
   }
-  const organization = await knexDatabase.knexConfig('organizations').where('id', orgId).andWhere('api_key', token).first().select('name', 'id')
+
+  let trx = await knexDatabase.knexConfig.transaction()
+
+  const organization = await (trx || knexDatabase.knexConfig)('organizations').where('id', orgId).andWhere('api_key', token).first().select('name', 'id', 'public')
+
   if (!organization) {
     res.status(400).send({ error: 'Bad request: Invalid API Key or Organization' })
     return
@@ -117,7 +121,7 @@ app.post('/invite-member/:organizationId', async (req, res) => {
   }
 
   orgLimiter.consume(orgId)
-  const requestStatus = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public)
+  const requestStatus = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
   if (requestStatus) {
     res.status(200).send({ status: 'success' })
   } else {

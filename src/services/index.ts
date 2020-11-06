@@ -20,9 +20,11 @@ import TermsAndConditionService from './terms-and-conditions'
 import CommissionBonificationService from './commission-bonification'
 import SaasIntegrationService from './saas-integration'
 import FinantialConciliation from './finantial-conciliation'
+import UserOrganizationService from './users-organizations'
 
 let services = [
   SaasIntegrationService,
+  UserOrganizationService,
   CommissionBonificationService,
   TermsAndConditionService,
   IntegrationsService,

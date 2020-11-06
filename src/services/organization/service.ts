@@ -165,7 +165,7 @@ const organizationRolesAttach = async (
       organization_id: organizationId,
       invite_status: inviteStatus,
       invite_hash: hashToVerify,
-      is_requested: organizationPublic ? !organizationPublic : false,
+      is_requested: organizationPublic !== undefined ? !organizationPublic : false,
     })
     .returning('*')
 
@@ -469,16 +469,7 @@ const inviteAffiliateServiceMembers = async (
   }
 }
 
-const requestAffiliateServiceMembers = async (
-  users: {
-    email: string
-  }[],
-  organizationId: string,
-  organizationName: string,
-  organizationPublic: boolean
-) => {
-  let trx = await knexDatabase.knexConfig.transaction()
-
+const requestAffiliateServiceMembers = async (users: string[], organizationId: string, organizationName: string, organizationPublic: boolean, trx: Transaction) => {
   const integration = await IntegrationsService.getIntegrationByOrganizationId(organizationId, trx)
 
   if (!integration || !integration.active) throw new Error('Integration not implemented')
@@ -489,7 +480,7 @@ const requestAffiliateServiceMembers = async (
 
   const hasFounder = await isFounderBulk(
     organizationId,
-    users.map((item) => item.email),
+    users.map((item) => item),
     trx
   )
 
@@ -498,11 +489,11 @@ const requestAffiliateServiceMembers = async (
   }
 
   try {
-    return await Promise.all(
-      users.map(async (item) => {
-        let hashToVerify = await common.encryptSHA256(JSON.stringify({ ...item, timestamp: +new Date() }))
+    const x = await Promise.all(
+      users.map(async (item: string) => {
+        let hashToVerify = await common.encryptSHA256(JSON.stringify({ item, timestamp: +new Date() }))
 
-        let userEmail = await UserService.getUserByEmail(item.email, trx)
+        let userEmail = await UserService.getUserByEmail(item, trx)
 
         if (userEmail) {
           const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
@@ -511,10 +502,10 @@ const requestAffiliateServiceMembers = async (
             return console.log('ja existe')
           }
         } else {
-          userEmail = await UserService.signUpWithEmailOnly(item.email, trx)
+          userEmail = await UserService.signUpWithEmailOnly(item, trx)
         }
 
-        const userOrganizationCreated = await organizationRolesAttach(userEmail.id, organizationId, OrganizationRoles.MEMBER, OrganizationInviteStatus.ACCEPT, trx, hashToVerify, organizationPublic)
+        const userOrganizationCreated = await organizationRolesAttach(userEmail.id, organizationId, OrganizationRoles.MEMBER, OrganizationInviteStatus.ACCEPT, trx, undefined, organizationPublic)
 
         await ServicesService.attachUserInOrganizationAffiliateService(
           {
@@ -535,6 +526,10 @@ const requestAffiliateServiceMembers = async (
         return userOrganizationCreated
       })
     )
+
+    trx.commit()
+
+    return true
   } catch (error) {
     let errorMessage = error.message
     throw new Error(errorMessage)
