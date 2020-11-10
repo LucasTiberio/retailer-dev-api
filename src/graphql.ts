@@ -20,6 +20,7 @@ import { Integrations } from './services/integration/types'
 import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions } from './common/errors'
 import TermsAndConditionsService from './services/terms-and-conditions/service'
 import OrganizationRulesService from './services/organization-rules/service'
+import { InviteStatus } from './services/users-organizations/types'
 
 declare var process: {
   env: {
@@ -54,6 +55,8 @@ const typeDefsBase = gql`
   directive @isVerified on FIELD | FIELD_DEFINITION
   directive @hasServiceRole(role: [String]!, serviceName: String) on FIELD | FIELD_DEFINITION
   directive @hasAffiliateStore on FIELD | FIELD_DEFINITION
+  directive @validUser on FIELD | FIELD_DEFINITION
+  directive @enterpriseFeature on FIELD | FIELD_DEFINITION
 `
 
 const resolversBase: IResolvers = {
@@ -295,7 +298,7 @@ const directiveResolvers: IDirectiveResolvers = {
 
     if (!organization) throw new Error('Organization not found.')
 
-    if (organization.free_plan) return next();
+    if (organization.free_plan) return next()
 
     if (moment(organization.free_trial_expires).isAfter(moment())) {
       return next()
@@ -386,6 +389,26 @@ const directiveResolvers: IDirectiveResolvers = {
     }
 
     throw new Error(organizationsPlanDoesNotHaveAffiliateStore)
+  },
+  async validUser(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+    const userId = context.client.id
+    if (!organizationId) throw new Error('Organization identifier invalid!')
+    const user = await knexDatabase.knexConfig('users_organizations').where('user_id', userId).andWhere('organization_id', organizationId).first().select('invite_status')
+    if (user.invite_status === InviteStatus.accept) {
+      return next()
+    }
+
+    throw new Error('User has pending or rejected affiliation')
+  },
+  async enterpriseFeature(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+    const planType = await OrganizationRulesService.getPlanType(organizationId)
+    if (planType === 'Enterprise') {
+      return next()
+    }
+
+    throw new Error('This feature is available only on enterprise plans')
   },
 }
 

@@ -54,6 +54,41 @@ const getAffiliateTeammateRules = async (organizationId: string, trx?: Transacti
   }
 }
 
+const getPlanType = async (organizationId: string, trx?: Transaction) => {
+  const query = `
+    query getPlanType($input: GetPlanTypeInput!) {
+      getPlanType(input: $input){
+        name
+      }
+    }`
+
+  const [organizationFound] = await (trx || knexDatabase.knexConfig)('organizations').where('id', organizationId).select('free_plan')
+
+  if (organizationFound.free_plan) {
+    return organizationFound.free_plan
+  }
+
+  const variables = {
+    input: {
+      organizationId,
+    },
+  }
+
+  try {
+    const res = await fetchPaymentsService(query, variables)
+
+    if (res.data?.errors) {
+      throw new Error(res.data.errors[0].message)
+    }
+
+    return res.data.data.getPlanType.name
+  } catch (error) {
+    let message = error.response?.data?.errors[0]?.message
+    throw new Error(message ?? error.message)
+  }
+}
+
 export default {
   getAffiliateTeammateRules,
+  getPlanType,
 }

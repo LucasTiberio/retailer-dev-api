@@ -17,10 +17,43 @@ extend type Query {
     @isAuthenticated
   teammatesCapacities: TeammatesCapacities! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
   fetchOrganizationDomain: [String]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  organizationPaymentsDetails: FinantialConciliation
+    @hasOrganizationRole(role: ["ADMIN"])
+    # @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getOrganizationApiKey: String! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @enterpriseFeature @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 type TeammatesCapacities {
   teammates: CapacitiesValues!
+}
+
+type FinantialConciliation {
+  orders: Int!
+  revenue: Float!
+  commissionsToPay: Float!
+  finantialConciliations: [FinantialConciliationsI]
+  lastYearFinantialConciliations: [FinantialConciliationsI]
+}
+
+type FinantialConciliationMonthlyList {
+  revenue: String!
+  affiliateCommission: String!
+  status: String!
+}
+
+type FinantialConciliationsI {
+  status: String!
+  organizationId: String
+  orders: Int
+  payment_day: String
+  close_day: String
+  revenue: Float!
+  commissionsToPay: Float!
+  createdAt: String
+  referenceMonth: String
 }
 
 type ListUsersInOrganizationPayload {
@@ -66,6 +99,17 @@ extend type Mutation {
     @isVerified
     @isAuthenticated
   handleOrganizationDomain(input: HandleOrganizationDomainInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  handlePublicOrganization(input: HandlePublicOrganizationInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @enterpriseFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+input HandlePublicOrganizationInput {
+  public: Boolean!
 }
 
 input HandleOrganizationDomainInput {
@@ -187,6 +231,7 @@ type Organization {
   domain: String
   createdAt: Datetime!
   logo: String
+  public: Boolean!
   hasMember: Boolean!
   organizationRole: [OrganizationRole]!
   services: [Service]!
@@ -198,18 +243,6 @@ type UserOrganizationRole {
   organizationRole: OrganizationRole!
   createdAt: Datetime!
   updatedAt: Datetime!
-}
-
-type UserOrganization {
-  id: String!
-  inviteStatus: OrganizationInviteStatus!
-  inviteHash: String
-  updatedAt: Datetime!
-  createdAt: Datetime!
-  organization: Organization!
-  user: User!
-  active: Boolean!
-  organizationRole: OrganizationRole!
 }
 
 type OrganizationRole {

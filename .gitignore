@@ -119,3 +119,5 @@ dist
 .pnp.*
 
 docker-compose.yml
+
+.vscode

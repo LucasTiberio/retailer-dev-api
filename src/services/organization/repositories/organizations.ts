@@ -12,7 +12,19 @@ const handleOrganizationDomainById = async (domain: string, organizationId: stri
   return organizationHandled
 }
 
+const updateApiKeyByOrganizationId = async (apiKey: string, organizationId: string, trx: Transaction) => {
+  const [organizationApiKey] = await (trx || knexDatabase.knexConfig)('organizations').update({ api_key: apiKey }).where('id', organizationId).returning('api_key')
+  return organizationApiKey
+}
+
+const updatePublicOrganization = async (isPublic: boolean, organizationId: string, trx: Transaction) => {
+  const [organizationPublic] = await (trx || knexDatabase.knexConfig)('organizations').update({ public: isPublic }).where('id', organizationId).returning('public')
+  return organizationPublic
+}
+
 export default {
   getOrganizationById,
   handleOrganizationDomainById,
+  updateApiKeyByOrganizationId,
+  updatePublicOrganization,
 }

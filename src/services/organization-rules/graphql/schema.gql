@@ -1,0 +1,3 @@
+extend type Query {
+  getPlanType: String! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+}

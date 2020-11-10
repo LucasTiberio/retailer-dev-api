@@ -19,9 +19,13 @@ import PersonalizedComissions from './personalized-commissions'
 import TermsAndConditionService from './terms-and-conditions'
 import CommissionBonificationService from './commission-bonification'
 import SaasIntegrationService from './saas-integration'
+import FinantialConciliation from './finantial-conciliation'
+import UserOrganizationService from './users-organizations'
+import OrganizationRulesService from './organization-rules'
 
 let services = [
   SaasIntegrationService,
+  UserOrganizationService,
   CommissionBonificationService,
   TermsAndConditionService,
   IntegrationsService,
@@ -40,6 +44,8 @@ let services = [
   AffiliateStoreService,
   InsideSalesService,
   PersonalizedComissions,
+  FinantialConciliation,
+  OrganizationRulesService,
 ]
 
 export default {

@@ -1,4 +1,5 @@
 require('dotenv')
+import axios from 'axios'
 import { IOrganizationPayload, OrganizationRoles, OrganizationInviteStatus, IResponseInvitePayload, IFindUsersAttributes } from './types'
 import { IUserToken } from '../authentication/types'
 import { Transaction } from 'knex'
@@ -32,7 +33,7 @@ import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
 import { organizationByIdLoader, organizationByUserIdLoader, organizationRoleByUserIdLoader, organizationHasMemberLoader, organizationHasAnyMemberLoader } from './loaders'
 import moment from 'moment'
-import { createVtexCampaignFail, onlyCreateOrganizationWithouIntegrationWithSecret, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
+import { onlyCreateOrganizationWithouIntegrationWithSecret, organizationDoestNotHaveActiveIntegration, userAlreadyRegistered } from '../../common/errors'
 
 /** Repositories */
 import Repository from './repositories/organizations'
@@ -44,6 +45,9 @@ import fetchVtexDomains from './clients/fetch-domains'
 import IntegrationService from '../integration/service'
 import { Integrations } from '../integration/types'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
+import { InviteStatus } from '../users-organizations/types'
+
+const ordersServiceUrl = process.env.ORDER_SERVICE_URL
 
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
   const { segment, resellersEstimate, reason, plataform } = input
@@ -143,7 +147,15 @@ const verifyOrganizationName = async (name: string, trx: Transaction) => {
   return !!organizationFound.length
 }
 
-const organizationRolesAttach = async (userId: string, organizationId: string, roleName: OrganizationRoles, inviteStatus: OrganizationInviteStatus, trx: Transaction, hashToVerify?: string) => {
+const organizationRolesAttach = async (
+  userId: string,
+  organizationId: string,
+  roleName: OrganizationRoles,
+  inviteStatus: OrganizationInviteStatus,
+  trx: Transaction,
+  hashToVerify?: string,
+  isRequested?: boolean
+) => {
   const organizationRole = await organizationRoleByName(roleName, trx)
 
   if (!organizationRole) throw new Error('Organization role not found.')
@@ -154,6 +166,7 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
       organization_id: organizationId,
       invite_status: inviteStatus,
       invite_hash: hashToVerify,
+      is_requested: !!isRequested,
     })
     .returning('*')
 
@@ -173,6 +186,20 @@ const organizationRolesAttach = async (userId: string, organizationId: string, r
 const organizationRoleByName = async (roleName: OrganizationRoles, trx: Transaction) => {
   const [organizationRole] = await (trx || knexDatabase.knexConfig)('organization_roles').where('name', roleName).select('id')
   return organizationRole
+}
+
+const getOrganizationPaymentsDetails = async (context: { organizationId: string; client: IUserToken }, trx: Transaction) => {
+  if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
+
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/finantial-conciliation`
+
+  try {
+    const { data } = await axios.get(url)
+
+    return data
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const listTeammates = async (context: { organizationId: string }, trx: Transaction) => {
@@ -443,6 +470,81 @@ const inviteAffiliateServiceMembers = async (
   }
 }
 
+const requestAffiliateServiceMembers = async (users: string[], organizationId: string, organizationName: string, organizationPublic: boolean, trx: Transaction) => {
+  const integration = await IntegrationsService.getIntegrationByOrganizationId(organizationId, trx)
+
+  if (!integration || !integration.active) throw new Error('Integration not implemented')
+
+  const [serviceOrganizationFound] = await ServicesService.serviceOrganizationByName(organizationId, Services.AFFILIATE, trx)
+
+  if (!serviceOrganizationFound) throw new Error('Organization doesnt have this service')
+
+  const hasFounder = await isFounderBulk(
+    organizationId,
+    users.map((item) => item),
+    trx
+  )
+
+  if (hasFounder) {
+    throw new Error('Founder doesnt attached a member service')
+  }
+
+  try {
+    await Promise.all(
+      users.map(async (item: string) => {
+        let hashToVerify = await common.encryptSHA256(JSON.stringify({ item, timestamp: +new Date() }))
+
+        let userEmail = await UserService.getUserByEmail(item, trx)
+
+        if (userEmail) {
+          const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
+
+          if (usersOrganizationFound) {
+            return console.log('ja existe')
+          }
+        } else {
+          userEmail = await UserService.signUpWithEmailOnly(item, trx)
+        }
+
+        const userOrganizationCreated = await organizationRolesAttach(
+          userEmail.id,
+          organizationId,
+          OrganizationRoles.MEMBER,
+          organizationPublic ? OrganizationInviteStatus.ACCEPT : OrganizationInviteStatus.PENDENT,
+          trx,
+          hashToVerify,
+          true
+        )
+
+        await ServicesService.attachUserInOrganizationAffiliateService(
+          {
+            userOrganizationId: userOrganizationCreated.id,
+            role: ServiceRoles.ANALYST,
+            organizationId: organizationId,
+            serviceOrganization: serviceOrganizationFound,
+          },
+          trx
+        )
+
+        await MailService.sendInviteNewUserMail({
+          email: userEmail.email,
+          hashToVerify,
+          organizationName: organizationName,
+        })
+
+        return userOrganizationCreated
+      })
+    )
+
+    trx.commit()
+
+    return true
+  } catch (error) {
+    let errorMessage = error.message
+    throw new Error(errorMessage)
+  }
+}
+
 const getOrganizationRoleByName = async (organizationRoleName: OrganizationRoles, trx: Transaction) => {
   const [organizationRole] = await (trx || knexDatabase.knexConfig)('organization_roles').where('name', organizationRoleName).select()
 
@@ -463,13 +565,13 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
   const [user] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .where('invite_hash', responseInvitePayload.inviteHash)
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
-    .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id')
+    .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
 
   try {
     await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
         invite_hash: null,
-        invite_status: responseInvitePayload.response,
+        invite_status: user.is_requested && user.invite_status === InviteStatus.pendent ? InviteStatus.pendent : responseInvitePayload.response,
       })
       .where('invite_hash', responseInvitePayload.inviteHash)
 
@@ -707,10 +809,12 @@ const listMyOrganizations = async (userToken: IUserToken, trx: Transaction) => {
       .innerJoin('organizations AS orgn', 'orgn.id', 'uo.organization_id')
       .where('uo.user_id', userToken.id)
       .andWhere('uo.active', true)
+      .andWhere('uo.invite_status', InviteStatus.accept)
       .select('orgn.*', 'uo.id AS users_organizations_id')
 
     return organizations.map(_organizationAdapter)
   } catch (e) {
+    console.log(e)
     throw new Error(e.message)
   }
 }
@@ -1030,6 +1134,39 @@ const fetchOrganizationDomain = async (
   }, [])
 }
 
+const getOrganizationApiKey = async (
+  context: {
+    organizationId: string
+  },
+  trx: Transaction
+) => {
+  const organization = await Repository.getOrganizationById(context.organizationId, trx)
+
+  let apiKey = organization?.apiKey
+  if (!apiKey) {
+    let newApiKey = common.encryptSHA256(`${organization?.id}${+new Date()}`)
+    const dbObject = await Repository.updateApiKeyByOrganizationId(newApiKey, context.organizationId, trx)
+    apiKey = dbObject.api_key
+  }
+  return apiKey
+}
+
+const handlePublicOrganization = async (
+  input: {
+    public: boolean
+  },
+  context: {
+    organizationId: string
+  },
+  trx: Transaction
+) => {
+  try {
+    return await Repository.updatePublicOrganization(input.public, context.organizationId, trx)
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
 export default {
   organizationHasBillingPendency,
   fetchOrganizationDomain,
@@ -1067,4 +1204,8 @@ export default {
   teammatesCapacities,
   getOrganizationRoleByName,
   handleOrganizationDomain,
+  getOrganizationPaymentsDetails,
+  getOrganizationApiKey,
+  handlePublicOrganization,
+  requestAffiliateServiceMembers,
 }

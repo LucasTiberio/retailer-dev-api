@@ -46,6 +46,8 @@ export interface IOrganizationFromDB {
   created_at: Date
   users_organizations_id: string
   logo?: string
+  api_key?: string
+  public: boolean
 }
 
 export interface IOrganizationRoleFromDb {

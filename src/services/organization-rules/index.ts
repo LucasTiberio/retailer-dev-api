@@ -1,5 +1,9 @@
-import service from './service';
+import service from './service'
+import graphql from './graphql'
 
 export default {
-  service
-};
+  apis: {
+    graphql,
+  },
+  service,
+}

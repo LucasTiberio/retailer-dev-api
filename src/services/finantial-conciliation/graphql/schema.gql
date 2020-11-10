@@ -1,0 +1,113 @@
+extend type Mutation {
+  handleOrganizationFinantialConciliationConfiguration(input: handleOrganizationFinantialConciliationConfigurationInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
+  handleOrganizationFinantialConciliationStatusAdvance(input: handleOrganizationFinantialConciliationStatusAdvanceInput!): String!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @organizationPaidVerify
+    @isVerified
+    @isAuthenticated
+}
+
+extend type Query {
+  getOrganizationFinantialConciliation: getOrganizationFinantialConciliationQuery! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAffiliatesValuesByMonth(input: getAffiliatesValuesByMonthInput!): getAffiliatesValuesByMonthQuery! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getDailyRevenueAndCommissions(input: getDailyRevenueAndCommissionsInput!): getDailyRevenueAndCommissionsQuery!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  getOrderListByAffiliateIdAndReferenceMonth(input: getOrderListByAffiliateIdAndReferenceMonthInput!): getOrderListByAffiliateIdAndReferenceMonthQuery!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  downloadFinantialConciliationCSVByReferenceMonth(input: downloadFinantialConciliationCSVByReferenceMonthInput!): String!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+type getOrganizationFinantialConciliationQuery {
+  close_day: Int
+  payment_day: Int
+  automatic_closure: Boolean
+  createdAt: Datetime
+  updatedAt: Datetime
+}
+
+input handleOrganizationFinantialConciliationConfigurationInput {
+  close_day: Int
+  payment_day: Int
+  automatic_closure: Boolean
+}
+
+input handleOrganizationFinantialConciliationStatusAdvanceInput {
+  referenceMonth: String!
+}
+
+type getAffiliatesValuesByMonthQuery {
+  affiliates: [AffiliateValues]!
+}
+
+type AffiliateValues {
+  affiliateId: String!
+  revenue: Float!
+  commission: Float!
+  name: String
+  document: String
+  agency: String
+  account: String
+  bank: String
+  orders: Int
+}
+
+input getAffiliatesValuesByMonthInput {
+  year_month: String!
+}
+
+type getDailyRevenueAndCommissionsQuery {
+  days: [DailyRevenueAndCommission]
+}
+
+type DailyRevenueAndCommission {
+  day: String!
+  revenue: Float!
+  commission: Float!
+}
+
+input getDailyRevenueAndCommissionsInput {
+  year_month: String!
+}
+
+input getOrderListByAffiliateIdAndReferenceMonthInput {
+  affiliateId: String!
+  referenceMonth: String!
+}
+
+type getOrderListByAffiliateIdAndReferenceMonthQuery {
+  id: String! #affiliateId
+  name: String!
+  document: String!
+  orders: Int!
+  revenue: Float!
+  commission: Float!
+  orderList: [OrderList]!
+}
+
+type OrderList {
+  id: String!
+  client: String!
+  date: String!
+  value: Float!
+  commission: Float!
+}
+
+input downloadFinantialConciliationCSVByReferenceMonthInput {
+  referenceMonth: String!
+}
