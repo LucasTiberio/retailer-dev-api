@@ -1,3 +1,5 @@
 declare module 'knex-cleaner'
 declare module 'stream-length'
 declare module 'js-image-generator'
+declare module 'swagger-jsdoc'
+declare module 'swagger-ui-express'
