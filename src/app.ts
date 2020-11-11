@@ -10,7 +10,6 @@ import swaggerOptions from './swagger-options'
 import swaggerJsdoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
 import inviteMember from './routes/invite-member'
-import abandonedCart from './routes/abandoned-cart'
 
 const logger = require('pino')()
 const app = express()
