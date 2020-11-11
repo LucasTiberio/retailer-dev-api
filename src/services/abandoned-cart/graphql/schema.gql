@@ -2,14 +2,14 @@ extend type Mutation {
   handleCart(input: HandleCartInput): Boolean!
 }
 
-type AbandonedCartItem {
+input AbandonedCartItem {
   productId: String!
   imageUrl: String!
   name: String!
   quantity: String!
 }
 
-type AbandonedCartClientProfileData {
+input AbandonedCartClientProfileData {
   email: String!
   phone: String
 }
