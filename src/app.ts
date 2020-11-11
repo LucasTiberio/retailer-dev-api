@@ -10,6 +10,7 @@ import swaggerOptions from './swagger-options'
 import swaggerJsdoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
 import inviteMember from './routes/invite-member'
+import abandonedCart from './routes/abandoned-cart'
 
 const logger = require('pino')()
 const app = express()
@@ -54,8 +55,6 @@ app.get('/', (req, res) => {
   res.send('Hello B8ONE!')
 })
 
-app.post('/invite-member/:organizationId', inviteMember)
-
 // Health Check
 app.get('/health', async (req, res) => {
   logger.info('Checking health Status')
@@ -66,6 +65,7 @@ app.get('/health', async (req, res) => {
   })
 })
 
+app.post('/invite-member/:organizationId', inviteMember)
 const specs = swaggerJsdoc(swaggerOptions)
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: false }))
 

@@ -22,6 +22,7 @@ import SaasIntegrationService from './saas-integration'
 import FinantialConciliation from './finantial-conciliation'
 import UserOrganizationService from './users-organizations'
 import OrganizationRulesService from './organization-rules'
+import AbandonedCartService from './abandoned-cart'
 
 let services = [
   SaasIntegrationService,
@@ -46,6 +47,7 @@ let services = [
   PersonalizedComissions,
   FinantialConciliation,
   OrganizationRulesService,
+  AbandonedCartService,
 ]
 
 export default {

@@ -1,0 +1,23 @@
+extend type Mutation {
+  handleCart(input: HandleCartInput): Boolean!
+}
+
+type AbandonedCartItem {
+  productId: String!
+  imageUrl: String!
+  name: String!
+  quantity: String!
+}
+
+type AbandonedCartClientProfileData {
+  email: String!
+  phone: String
+}
+
+input HandleCartInput {
+  organizationId: String!
+  orderFormId: String!
+  provider: String!
+  clientProfileData: AbandonedCartClientProfileData!
+  items: [AbandonedCartItem]!
+}
