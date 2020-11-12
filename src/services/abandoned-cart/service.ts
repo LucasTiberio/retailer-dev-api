@@ -1,5 +1,16 @@
-import { IAbandonedCart, OrderFormDetails } from './types'
+import { AbandonedCartStatus, IAbandonedCart, OrderFormDetails } from './types'
 import AbandonedCart from './model/AbandonedCart'
+import { abandonedCartAdapter } from './adapters'
+
+const getAbandonedCarts = async (organizationId: string) => {
+  try {
+    let carts = await AbandonedCart.find({ organizationId, status: AbandonedCartStatus.UNPAID })
+    let adaptedCarts = carts.map(abandonedCartAdapter)
+    return adaptedCarts
+  } catch (e) {
+    throw new Error(e.message)
+  }
+}
 
 const handleCart = async (cartInfo: OrderFormDetails) => {
   try {
@@ -32,5 +43,6 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
 }
 
 export default {
+  getAbandonedCarts,
   handleCart,
 }

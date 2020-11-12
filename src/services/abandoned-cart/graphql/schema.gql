@@ -1,15 +1,50 @@
+extend type Query {
+  getAbandonedCarts: [AbandonedCart]! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+}
+
 extend type Mutation {
   handleCart(input: HandleCartInput): Boolean!
 }
 
-input AbandonedCartItem {
+type AbandonedCart {
+  id: String!
+  organizationId: String!
+  orderFormId: String!
+  orderId: String
+  email: String!
+  phone: String
+  provider: String!
+  items: [AbandonedCartItem]!
+  status: String!
+  lastAssistantAffiliateId: String
+  lastAssistanceDate: String
+  observations: [AbandonedCartObservationItem]!
+  createdAt: String!
+  updatedAt: String
+}
+
+type AbandonedCartItem {
   productId: String!
   imageUrl: String!
   name: String!
   quantity: Int!
 }
 
-input AbandonedCartClientProfileData {
+type AbandonedCartObservationItem {
+  assistantId: String!
+  content: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+input AbandonedCartItemInput {
+  productId: String!
+  imageUrl: String!
+  name: String!
+  quantity: Int!
+}
+
+input AbandonedCartClientProfileDataInput {
   email: String!
   phone: String
 }
@@ -18,6 +53,6 @@ input HandleCartInput {
   organizationId: String!
   orderFormId: String!
   provider: String!
-  clientProfileData: AbandonedCartClientProfileData!
-  items: [AbandonedCartItem]!
+  clientProfileData: AbandonedCartClientProfileDataInput!
+  items: [AbandonedCartItemInput]!
 }

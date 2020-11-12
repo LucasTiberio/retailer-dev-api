@@ -29,8 +29,39 @@ export interface AbandonedCartItem {
 export interface IAbandonedCart {
   organizationId: string
   orderFormId: string
+  orderId?: string
   email: string
   phone?: string
   provider: AbandonedCartProvider
   items: AbandonedCartItem[]
+  status?: string
+  lastAssistantAffiliateId?: string
+  lastAssistanceDate?: string
+  observations?: AbandonedCartObservationItem[]
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface AbandonedCartFromDB {
+  _id: string
+  organizationId: string
+  orderFormId: string
+  orderId?: string
+  email: string
+  phone?: string
+  provider: string
+  items: AbandonedCartItem[]
+  status?: string
+  lastAssistantAffiliateId?: string
+  lastAssistanceDate?: string
+  observations?: AbandonedCartObservationItem[]
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface AbandonedCartObservationItem {
+  assistantId: string
+  content: string
+  createdAt: string
+  updatedAt: string
 }

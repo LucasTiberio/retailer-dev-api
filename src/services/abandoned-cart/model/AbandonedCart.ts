@@ -7,6 +7,7 @@ const AbandonedCartSchema = new Schema<IAbandonedCartSchema>(
   {
     organizationId: { type: String, required: true },
     orderFormId: { type: String, required: true },
+    orderId: { type: String, required: false },
     email: { type: String, required: true },
     phone: { type: String, required: false },
     provider: { type: String, required: true },
