@@ -6,7 +6,7 @@ input AbandonedCartItem {
   productId: String!
   imageUrl: String!
   name: String!
-  quantity: String!
+  quantity: Int!
 }
 
 input AbandonedCartClientProfileData {
