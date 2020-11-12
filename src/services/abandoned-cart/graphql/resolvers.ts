@@ -6,6 +6,9 @@ const resolvers: IResolvers = {
     getAbandonedCarts: (_, __, { organizationId }) => {
       return service.getAbandonedCarts(organizationId)
     },
+    getAvailableAbandonedCartsAndMyAbandonedCarts: (_, __, { organizationId, userServiceOrganizationRolesId }) => {
+      return service.getAvailableAbandonedCartsAndMyAbandonedCarts(organizationId, userServiceOrganizationRolesId);
+    }
   },
   Mutation: {
     handleCart: (_, { input }) => {

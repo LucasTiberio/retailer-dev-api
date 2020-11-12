@@ -15,15 +15,20 @@ export enum AbandonedCartProvider {
 
 export enum AbandonedCartStatus {
   UNPAID = 'unpaid',
-  PAID = 'paid',
-  REJECTED = 'rejected',
   ENGAGED = 'engaged',
+  REJECTED = 'rejected',
+  PAID = 'paid',
 }
 export interface AbandonedCartItem {
   productId: string
   imageUrl: string
   name: string
   quantity: number
+}
+
+interface BlockedAffiliate {
+  id: string;
+  date: string;
 }
 
 export interface IAbandonedCart {
@@ -35,7 +40,8 @@ export interface IAbandonedCart {
   provider: AbandonedCartProvider
   items: AbandonedCartItem[]
   status?: string
-  lastAssistantAffiliateId?: string
+  blockedAffiliates: BlockedAffiliate[]
+  currentAssistantAffiliateId?: string
   lastAssistanceDate?: string
   observations?: AbandonedCartObservationItem[]
   createdAt?: string
