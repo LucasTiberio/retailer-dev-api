@@ -4,6 +4,12 @@ extend type Query {
 
 extend type Mutation {
   handleCart(input: HandleCartInput): Boolean!
+  handleCartOrderId(input: HandleCartOrderIdInput): Boolean!
+}
+
+input HandleCartOrderIdInput {
+  orderId: String!
+  organizationId: String!
 }
 
 type AbandonedCart {

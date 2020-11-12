@@ -1,6 +1,10 @@
 import { AbandonedCartStatus, IAbandonedCart, OrderFormDetails } from './types'
 import AbandonedCart from './model/AbandonedCart'
 import { abandonedCartAdapter } from './adapters'
+import IntegrationService from '../integration/service'
+import { Integrations } from '../integration/types'
+import common from '../../common'
+import { getVtexOrderById } from './client'
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
@@ -42,7 +46,24 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
   }
 }
 
+const handleCartOrderId = async (cartInfo: { orderId: string; organizationId: string }) => {
+  const { orderId, organizationId } = cartInfo
+
+  const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
+
+  if (integration.type !== Integrations.VTEX) throw new Error('Organization does not have vtex integration')
+
+  const decode = await common.jwtDecode(integration.secret)
+
+  const order = await getVtexOrderById(decode, orderId)
+
+  await AbandonedCart.findOneAndUpdate({ organizationId, orderFormId: order.orderFormId }, { orderId })
+
+  return true
+}
+
 export default {
   getAbandonedCarts,
   handleCart,
+  handleCartOrderId,
 }

@@ -11,6 +11,9 @@ const resolvers: IResolvers = {
     handleCart: (_, { input }) => {
       return service.handleCart(input)
     },
+    handleCartOrderId: (_, { input }) => {
+      return service.handleCartOrderId(input)
+    },
   },
 }
 
