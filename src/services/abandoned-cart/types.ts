@@ -24,6 +24,12 @@ export interface AbandonedCartItem {
   imageUrl: string
   name: string
   quantity: number
+  valueWhenAbandoned: number
+}
+
+interface BlockedAffiliate {
+  id: string
+  date: string
 }
 
 export interface IAbandonedCart {
@@ -35,7 +41,8 @@ export interface IAbandonedCart {
   provider: AbandonedCartProvider
   items: AbandonedCartItem[]
   status?: string
-  lastAssistantAffiliateId?: string
+  blockedAffiliates: BlockedAffiliate[]
+  currentAssistantAffiliateId?: string
   lastAssistanceDate?: string
   observations?: AbandonedCartObservationItem[]
   createdAt?: string

@@ -1,10 +1,68 @@
 extend type Query {
   getAbandonedCarts: [AbandonedCart]! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAbandonedCartsRecoveredAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAbandonedCartsLostAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {
-  handleCart(input: HandleCartInput): Boolean!
-  handleCartOrderId(input: HandleCartOrderIdInput): Boolean!
+  handleCart(input: HandleCartInput!): Boolean!
+  handleCartOrderId(input: HandleCartOrderIdInput!): Boolean!
+  assumeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"])
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  leaveCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"])
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  rejectCartAssistance(input: RejectCartAssistanceInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"])
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  createObservation(input: CreateObservationInput!): Boolean! @hasServiceRole(role: ["ANALYST", "SALE"]) @organizationPaidVerify @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  editObservation(input: EditObservationInput!): Boolean! @hasServiceRole(role: ["ANALYST", "SALE"]) @organizationPaidVerify @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  removeObservation(input: RemoveObservationInput!): Boolean! @hasServiceRole(role: ["ANALYST", "SALE"]) @organizationPaidVerify @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  removeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+input CreateObservationInput {
+  abandonedCartId: String!
+  observation: String!
+}
+
+input EditObservationInput {
+  abandonedCartId: String!
+  observationIndex: Int!
+  observation: String!
+}
+
+input RemoveObservationInput {
+  abandonedCartId: String!
+  observationIndex: Int!
+}
+
+input AssumeOrLeaveCartAssistanceInput {
+  abandonedCartId: String!
+}
+
+input RejectCartAssistanceInput {
+  abandonedCartId: String!
+  observation: String!
 }
 
 input HandleCartOrderIdInput {
@@ -48,6 +106,7 @@ input AbandonedCartItemInput {
   imageUrl: String!
   name: String!
   quantity: Int!
+  valueWhenAbandoned: Float!
 }
 
 input AbandonedCartClientProfileDataInput {
