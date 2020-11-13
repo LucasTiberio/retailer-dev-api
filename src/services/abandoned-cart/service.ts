@@ -39,6 +39,24 @@ const getAbandonedCartsLostAmount = async (organizationId: string) => {
   }, 0.0)
 }
 
+const getAvailableAbandonedCartsAndMyAbandonedCarts = async (organizationId: string, affiliateId: string) => {
+  const allAbandonedCarts = await AbandonedCart.find({ organizationId })
+
+  // abandoned carts that affiliateId is not in blockedList & status = UNPAID | ENGAGED
+  const availableAbandonedCarts = allAbandonedCarts.filter((abandonedCart) => {
+    const isUnpaidOrEngaged = abandonedCart.status === AbandonedCartStatus.ENGAGED || abandonedCart.status === AbandonedCartStatus.UNPAID
+    const affiliateIdIsNotBlocked = !!abandonedCart.blockedAffiliates.find((blockedItem) => blockedItem.id !== affiliateId)
+
+    return isUnpaidOrEngaged && affiliateIdIsNotBlocked
+  })
+  const affiliateAbandonedCarts = allAbandonedCarts.filter((abandonedCart) => abandonedCart.currentAssistantAffiliateId === affiliateId)
+
+  return {
+    availableAbandonedCarts,
+    affiliateAbandonedCarts,
+  }
+}
+
 const handleCart = async (cartInfo: OrderFormDetails) => {
   try {
     let cartObj = await AbandonedCart.findOne({ organizationId: cartInfo.organizationId, orderFormId: cartInfo.orderFormId })
@@ -262,4 +280,5 @@ export default {
   editObservation,
   removeObservation,
   removeCartAssistance,
+  getAvailableAbandonedCartsAndMyAbandonedCarts,
 }

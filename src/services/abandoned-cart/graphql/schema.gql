@@ -2,6 +2,7 @@ extend type Query {
   getAbandonedCarts: [AbandonedCart]! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsRecoveredAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsLostAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAvailableAbandonedCartsAndMyAbandonedCarts: []
 }
 
 extend type Mutation {
@@ -70,6 +71,16 @@ input HandleCartOrderIdInput {
   organizationId: String!
 }
 
+type GetAvailableAbandonedCartsAndMyAbandonedCarts {
+  availableAbandonedCarts: [AbandonedCart],
+  affiliateAbandonedCarts: [AbandonedCart]
+}
+
+type BlockedAffiliate {
+  id: String
+  date: String
+}
+
 type AbandonedCart {
   id: String!
   organizationId: String!
@@ -80,7 +91,8 @@ type AbandonedCart {
   provider: String!
   items: [AbandonedCartItem]!
   status: String!
-  lastAssistantAffiliateId: String
+  currentAssistantAffiliateId: String
+  blockedAffiliates: [BlockedAffiliate]!
   lastAssistanceDate: String
   observations: [AbandonedCartObservationItem]!
   createdAt: String!
