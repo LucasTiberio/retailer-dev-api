@@ -2,7 +2,7 @@ extend type Query {
   getAbandonedCarts: [AbandonedCart]! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsRecoveredAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsLostAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
-  getAvailableAbandonedCartsAndMyAbandonedCarts: []
+  getFilteredAbandonedCarts: [AbandonedCart]! @hasServiceRole(role: ["ANALYST", "SALE"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {
@@ -72,7 +72,7 @@ input HandleCartOrderIdInput {
 }
 
 type GetAvailableAbandonedCartsAndMyAbandonedCarts {
-  availableAbandonedCarts: [AbandonedCart],
+  availableAbandonedCarts: [AbandonedCart]
   affiliateAbandonedCarts: [AbandonedCart]
 }
 
@@ -86,7 +86,7 @@ type AbandonedCart {
   organizationId: String!
   orderFormId: String!
   orderId: String
-  email: String!
+  email: String
   phone: String
   provider: String!
   items: [AbandonedCartItem]!

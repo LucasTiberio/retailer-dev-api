@@ -22,7 +22,7 @@ const getAbandonedCartsRecoveredAmount = async (organizationId: string) => {
   return carts.reduce((acc, cart) => {
     let itemsValue = 0.0
     cart.items.forEach((item) => {
-      itemsValue += item.valueWhenAbandoned
+      itemsValue += item.valueWhenAbandoned * item.quantity
     })
     return acc + itemsValue
   }, 0.0)
@@ -33,28 +33,27 @@ const getAbandonedCartsLostAmount = async (organizationId: string) => {
   return carts.reduce((acc, cart) => {
     let itemsValue = 0.0
     cart.items.forEach((item) => {
-      itemsValue += item.valueWhenAbandoned
+      itemsValue += item.valueWhenAbandoned * item.quantity
     })
     return acc + itemsValue
   }, 0.0)
 }
 
-const getAvailableAbandonedCartsAndMyAbandonedCarts = async (organizationId: string, affiliateId: string) => {
+const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: string) => {
   const allAbandonedCarts = await AbandonedCart.find({ organizationId })
-
-  // abandoned carts that affiliateId is not in blockedList & status = UNPAID | ENGAGED
-  const availableAbandonedCarts = allAbandonedCarts.filter((abandonedCart) => {
-    const isUnpaidOrEngaged = abandonedCart.status === AbandonedCartStatus.ENGAGED || abandonedCart.status === AbandonedCartStatus.UNPAID
-    const affiliateIdIsNotBlocked = !!abandonedCart.blockedAffiliates.find((blockedItem) => blockedItem.id !== affiliateId)
-
-    return isUnpaidOrEngaged && affiliateIdIsNotBlocked
+  return allAbandonedCarts.map((cart) => {
+    let email: any = cart.email
+    let phone: any = cart.phone
+    if (!cart.currentAssistantAffiliateId || cart.currentAssistantAffiliateId !== affiliateId) {
+      email = null
+      phone = null
+    }
+    return {
+      ...cart,
+      email,
+      phone,
+    }
   })
-  const affiliateAbandonedCarts = allAbandonedCarts.filter((abandonedCart) => abandonedCart.currentAssistantAffiliateId === affiliateId)
-
-  return {
-    availableAbandonedCarts,
-    affiliateAbandonedCarts,
-  }
 }
 
 const handleCart = async (cartInfo: OrderFormDetails) => {
@@ -280,5 +279,5 @@ export default {
   editObservation,
   removeObservation,
   removeCartAssistance,
-  getAvailableAbandonedCartsAndMyAbandonedCarts,
+  getFilteredAbandonedCarts,
 }
