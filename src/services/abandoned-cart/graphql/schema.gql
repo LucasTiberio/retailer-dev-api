@@ -68,7 +68,7 @@ input AbandonedCartClientProfileDataInput {
   corporateDocument: String
   stateInscription: String
   corporatePhone: String
-  isCorporate: boolean
+  isCorporate: Boolean
   userProfileId: String
   customerClass: String
   email: String!
