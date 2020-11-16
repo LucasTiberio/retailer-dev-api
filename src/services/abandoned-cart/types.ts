@@ -23,8 +23,14 @@ export interface AbandonedCartItem {
   productId: string
   imageUrl: string
   name: string
+  seller: string
   quantity: number
   price: number
+  additionalInfo: AdditionalInfo
+}
+
+export interface AdditionalInfo {
+  categoriesIds: string
 }
 
 export interface IAbandonedCart {

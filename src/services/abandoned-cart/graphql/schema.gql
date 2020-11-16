@@ -48,7 +48,13 @@ input AbandonedCartItemInput {
   imageUrl: String!
   name: String!
   quantity: Int!
+  seller: String!
   price: Int!
+  additionalInfo: AdditionalInfoInput!
+}
+
+input AdditionalInfoInput {
+  categoriesIds: String!
 }
 
 input AbandonedCartClientProfileDataInput {
