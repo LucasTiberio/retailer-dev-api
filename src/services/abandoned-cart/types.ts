@@ -24,6 +24,7 @@ export interface AbandonedCartItem {
   imageUrl: string
   name: string
   quantity: number
+  price: number
 }
 
 export interface IAbandonedCart {
