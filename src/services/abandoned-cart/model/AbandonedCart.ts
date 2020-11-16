@@ -15,6 +15,7 @@ const AbandonedCartSchema = new Schema<IAbandonedCartSchema>(
     status: { type: String, required: false, default: AbandonedCartStatus.UNPAID },
     lastAssistantAffiliateId: { type: String, required: false },
     lastAssistanceDate: { type: Date, required: false },
+    clientProfileData: { type: Object, required: true },
     observations: { type: Array, required: false, default: [] },
   },
   { timestamps: true }
