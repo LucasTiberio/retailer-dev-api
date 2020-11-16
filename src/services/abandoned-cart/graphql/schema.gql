@@ -133,6 +133,7 @@ type AbandonedCartObservationItem {
 }
 
 input AbandonedCartItemInput {
+  id: String!
   productId: String!
   imageUrl: String!
   name: String!
