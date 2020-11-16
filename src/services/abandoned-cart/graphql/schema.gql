@@ -58,6 +58,19 @@ input AdditionalInfoInput {
 }
 
 input AbandonedCartClientProfileDataInput {
+  id: String
+  firstName: String
+  lastName: String
+  documentType: String
+  document: String
+  corporateName: String
+  tradeName: String
+  corporateDocument: String
+  stateInscription: String
+  corporatePhone: String
+  isCorporate: boolean
+  userProfileId: String
+  customerClass: String
   email: String!
   phone: String
 }
