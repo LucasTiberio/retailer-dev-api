@@ -40,7 +40,7 @@ const getAbandonedCartsLostAmount = async (organizationId: string) => {
 }
 
 const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: string) => {
-  const allAbandonedCarts = await AbandonedCart.find({ organizationId })
+  const allAbandonedCarts = await AbandonedCart.find({ organizationId }).lean()
   return allAbandonedCarts.map((cart) => {
     let email: any = cart.email
     let phone: any = cart.phone
@@ -48,8 +48,10 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
       email = null
       phone = null
     }
+
     return {
       ...cart,
+      id: cart._id,
       email,
       phone,
     }

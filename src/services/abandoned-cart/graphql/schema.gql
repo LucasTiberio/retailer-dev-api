@@ -2,36 +2,54 @@ extend type Query {
   getAbandonedCarts: [AbandonedCart]! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsRecoveredAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsLostAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
-  getFilteredAbandonedCarts: [AbandonedCart]! @hasServiceRole(role: ["ANALYST", "SALE"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getFilteredAbandonedCarts: [AbandonedCart]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {
   handleCart(input: HandleCartInput!): Boolean!
   handleCartOrderId(input: HandleCartOrderIdInput!): Boolean!
   assumeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
-    @hasServiceRole(role: ["ANALYST", "SALE"])
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   leaveCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
-    @hasServiceRole(role: ["ANALYST", "SALE"])
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
   rejectCartAssistance(input: RejectCartAssistanceInput!): Boolean!
-    @hasServiceRole(role: ["ANALYST", "SALE"])
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
-  createObservation(input: CreateObservationInput!): Boolean! @hasServiceRole(role: ["ANALYST", "SALE"]) @organizationPaidVerify @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
-  editObservation(input: EditObservationInput!): Boolean! @hasServiceRole(role: ["ANALYST", "SALE"]) @organizationPaidVerify @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
-  removeObservation(input: RemoveObservationInput!): Boolean! @hasServiceRole(role: ["ANALYST", "SALE"]) @organizationPaidVerify @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  createObservation(input: CreateObservationInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  editObservation(input: EditObservationInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  removeObservation(input: RemoveObservationInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
   removeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
@@ -92,7 +110,7 @@ type AbandonedCart {
   items: [AbandonedCartItem]!
   status: String!
   currentAssistantAffiliateId: String
-  blockedAffiliates: [BlockedAffiliate]!
+  blockedAffiliates: [BlockedAffiliate]
   lastAssistanceDate: String
   observations: [AbandonedCartObservationItem]!
   createdAt: String!
@@ -100,6 +118,7 @@ type AbandonedCart {
 }
 
 type AbandonedCartItem {
+  id: String!
   productId: String!
   imageUrl: String!
   name: String!
