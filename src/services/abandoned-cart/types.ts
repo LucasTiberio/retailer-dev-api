@@ -36,6 +36,7 @@ export interface AdditionalInfo {
 export interface IAbandonedCart {
   organizationId: string
   orderFormId: string
+  clientProfileData: any
   orderId?: string
   email: string
   phone?: string

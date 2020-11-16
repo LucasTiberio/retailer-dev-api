@@ -25,6 +25,7 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
         cartObj.phone = cartInfo.clientProfileData.phone
         cartObj.provider = cartInfo.provider
         cartObj.items = cartInfo.items
+        cartObj.clientProfileData = cartInfo.clientProfileData
         await cartObj.save()
       } else {
         await cartObj.remove()
@@ -37,6 +38,7 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
         phone: cartInfo.clientProfileData.phone,
         provider: cartInfo.provider,
         items: cartInfo.items,
+        clientProfileData: cartInfo.clientProfileData,
       }
       await AbandonedCart.create(newCartObj)
     }
