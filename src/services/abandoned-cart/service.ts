@@ -22,7 +22,7 @@ const getAbandonedCartsRecoveredAmount = async (organizationId: string) => {
   return carts.reduce((acc, cart) => {
     let itemsValue = 0.0
     cart.items.forEach((item) => {
-      itemsValue += item.price * item.quantity
+      itemsValue += item.listPrice * item.quantity
     })
     return acc + itemsValue
   }, 0.0)
@@ -33,7 +33,7 @@ const getAbandonedCartsLostAmount = async (organizationId: string) => {
   return carts.reduce((acc, cart) => {
     let itemsValue = 0.0
     cart.items.forEach((item) => {
-      itemsValue += item.price * item.quantity
+      itemsValue += item.listPrice * item.quantity
     })
     return acc + itemsValue
   }, 0.0)

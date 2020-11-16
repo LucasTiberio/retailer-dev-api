@@ -26,6 +26,7 @@ export interface AbandonedCartItem {
   seller: string
   quantity: number
   price: number
+  listPrice: number
   additionalInfo: AdditionalInfo
 }
 

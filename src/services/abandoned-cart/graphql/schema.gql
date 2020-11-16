@@ -140,6 +140,7 @@ input AbandonedCartItemInput {
   quantity: Int!
   seller: String!
   price: Int!
+  listPrice: Int!
   additionalInfo: AdditionalInfoInput!
 }
 
