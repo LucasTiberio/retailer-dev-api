@@ -84,4 +84,5 @@ export interface AbandonedCartObservationItem {
   content: string
   createdAt: string
   updatedAt: string
+  systemMessage?: boolean
 }

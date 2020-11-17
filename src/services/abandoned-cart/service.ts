@@ -232,9 +232,13 @@ const removeObservation = async (abandonedCartId: string, organizationId: string
           throw new Error('Abandoned cart has no observations')
         }
         if (cartObj.observations[observationIndex]) {
-          cartObj.observations = cartObj.observations.filter((_, index) => index !== observationIndex)
-          await cartObj.save()
-          return true
+          if (!cartObj.observations[observationIndex].systemMessage) {
+            cartObj.observations = cartObj.observations.filter((_, index) => index !== observationIndex)
+            await cartObj.save()
+            return true
+          } else {
+            throw new Error('System messages are not removable')
+          }
         } else {
           throw new Error('Observation not found')
         }
