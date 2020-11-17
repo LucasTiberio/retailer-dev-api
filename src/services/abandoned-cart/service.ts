@@ -109,6 +109,8 @@ const generateNewCart = async (abandonedCartId: string, organizationId: string) 
     newCartString += `sku=${item.id}&qty=${item.quantity}&seller=${item.seller}&`
   })
 
+  if (!abandonedCart.orderId) return newCartString
+
   newCartString += `utm_source=plugone_abandoned_cart&utm_campaign=${abandonedCart._id}`
 
   return newCartString
