@@ -19,6 +19,7 @@ export enum AbandonedCartStatus {
   ENGAGED = 'engaged',
   REJECTED = 'rejected',
   PAID = 'paid',
+  INVALID = 'invalid',
 }
 export interface AbandonedCartItem {
   id: string
