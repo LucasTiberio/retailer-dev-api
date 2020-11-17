@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from 'mongoose'
+import mongoose, { Schema, Document } from 'mongoose'
 import { IAbandonedCart, AbandonedCartStatus } from '../types'
 
 interface IAbandonedCartSchema extends IAbandonedCart, Document {}
@@ -13,7 +13,7 @@ const AbandonedCartSchema = new Schema<IAbandonedCartSchema>(
     provider: { type: String, required: true },
     items: { type: Array, required: false, default: [] },
     status: { type: String, required: false, default: AbandonedCartStatus.UNPAID },
-    parent: { type: Types.ObjectId, required: false, ref: 'AbandonedCarts' },
+    parent: { type: Schema.Types.ObjectId, required: false, ref: 'AbandonedCarts' },
     blockedAffiliates: { type: Array, required: false, default: [] },
     currentAssistantAffiliateId: { type: String, required: false },
     lastAssistanceDate: { type: Date, required: false },
