@@ -103,13 +103,13 @@ const generateNewCart = async (abandonedCartId: string, organizationId: string) 
 
   const organizationDomain = await OrganizationRepository.getOrganizationDomainById(organizationId)
 
+  if (!abandonedCart.orderId) return `${organizationDomain.domain}/checkout/?orderFormId=${abandonedCart.orderFormId}#/cart#`
+
   let newCartString = `${organizationDomain.domain}/checkout/cart/add?`
 
   abandonedCart.items.forEach((item) => {
     newCartString += `sku=${item.id}&qty=${item.quantity}&seller=${item.seller}&`
   })
-
-  if (!abandonedCart.orderId) return `${organizationDomain.domain}/checkout/?orderFormId=${abandonedCart.orderFormId}#/cart#`
 
   newCartString += `utm_source=plugone_abandoned_cart&utm_campaign=${abandonedCart._id}`
 
