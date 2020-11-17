@@ -75,6 +75,8 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
         await cartObj.remove()
       }
     } else {
+      let cartObjParent = await AbandonedCart.findOne({ organizationId: cartInfo.organizationId, _id: cartInfo.parent }).lean()
+
       const newCartObj: IAbandonedCart = {
         organizationId: cartInfo.organizationId,
         orderFormId: cartInfo.orderFormId,
@@ -83,8 +85,10 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
         provider: cartInfo.provider,
         items: cartInfo.items,
         clientProfileData: cartInfo.clientProfileData,
-        blockedAffiliates: [],
+        blockedAffiliates: cartObjParent?.blockedAffiliates.length ? cartObjParent.blockedAffiliates : [],
         parent: cartInfo.parent,
+        currentAssistantAffiliateId: cartObjParent?.currentAssistantAffiliateId,
+        lastAssistanceDate: cartObjParent?.lastAssistanceDate,
       }
       await AbandonedCart.create(newCartObj)
     }
