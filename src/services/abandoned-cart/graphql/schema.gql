@@ -181,6 +181,7 @@ input HandleCartInput {
   organizationId: String!
   orderFormId: String!
   provider: String!
+  parent: String
   clientProfileData: AbandonedCartClientProfileDataInput!
   items: [AbandonedCartItemInput]!
 }
