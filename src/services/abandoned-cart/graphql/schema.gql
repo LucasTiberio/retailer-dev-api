@@ -132,6 +132,7 @@ type AbandonedCartItem {
   id: String!
   productId: String!
   imageUrl: String!
+  price: String!
   name: String!
   quantity: Int!
 }
