@@ -15,6 +15,13 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  generateNewCart(input: generateNewCartInput!): String!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
   leaveCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
@@ -57,6 +64,10 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+}
+
+input generateNewCartInput {
+  abandonedCartId: String!
 }
 
 input CreateObservationInput {

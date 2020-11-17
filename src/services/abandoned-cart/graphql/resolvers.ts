@@ -20,6 +20,9 @@ const resolvers: IResolvers = {
     handleCart: (_, { input }) => {
       return service.handleCart(input)
     },
+    generateNewCart: (_, { input }, { organizationId }) => {
+      return service.generateNewCart(input.abandonedCartId, organizationId)
+    },
     handleCartOrderId: (_, { input }) => {
       return service.handleCartOrderId(input)
     },

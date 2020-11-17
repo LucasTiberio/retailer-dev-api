@@ -6,6 +6,7 @@ import { Integrations } from '../integration/types'
 import common from '../../common'
 import { getVtexOrderById } from './client'
 import moment from 'moment'
+import OrganizationRepository from './repositories/organization'
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
@@ -68,6 +69,7 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
         cartObj.provider = cartInfo.provider
         cartObj.items = cartInfo.items
         cartObj.clientProfileData = cartInfo.clientProfileData
+        cartObj.parent = cartInfo.parent
         await cartObj.save()
       } else {
         await cartObj.remove()
@@ -82,6 +84,7 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
         items: cartInfo.items,
         clientProfileData: cartInfo.clientProfileData,
         blockedAffiliates: [],
+        parent: cartInfo.parent,
       }
       await AbandonedCart.create(newCartObj)
     }
@@ -89,6 +92,26 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
   } catch (e) {
     throw new Error(e.message)
   }
+}
+
+const generateNewCart = async (abandonedCartId: string, organizationId: string) => {
+  const abandonedCart = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId }).lean()
+
+  if (!abandonedCart) throw new Error('Abandoned cart not found')
+
+  if (!abandonedCart.items.length) throw new Error('Abandoned cart does not have items')
+
+  const organizationDomain = await OrganizationRepository.getOrganizationDomainById(organizationId)
+
+  let newCartString = `${organizationDomain.domain}/checkout/cart/add?`
+
+  abandonedCart.items.forEach((item) => {
+    newCartString += `sku=${item.id}&qty=${item.quantity}&seller=${item.seller}&`
+  })
+
+  newCartString += `utm_source=plugone_abandoned_cart&utm_campaign=${abandonedCart._id}`
+
+  return newCartString
 }
 
 const handleCartOrderId = async (cartInfo: { orderId: string; organizationId: string }) => {
@@ -288,4 +311,5 @@ export default {
   removeObservation,
   removeCartAssistance,
   getFilteredAbandonedCarts,
+  generateNewCart,
 }

@@ -7,6 +7,7 @@ export interface OrderFormDetails {
     phone: string
   }
   items: AbandonedCartItem[]
+  parent?: string
 }
 
 export enum AbandonedCartProvider {
@@ -20,6 +21,7 @@ export enum AbandonedCartStatus {
   PAID = 'paid',
 }
 export interface AbandonedCartItem {
+  id: string
   productId: string
   imageUrl: string
   name: string
@@ -53,6 +55,7 @@ export interface IAbandonedCart {
   phone?: string
   provider: AbandonedCartProvider
   items: AbandonedCartItem[]
+  parent?: string
   status?: string
   blockedAffiliates: BlockedAffiliate[]
   currentAssistantAffiliateId?: string
@@ -69,6 +72,7 @@ export interface AbandonedCartFromDB {
   orderId?: string
   email: string
   phone?: string
+  parent?: string
   provider: string
   items: AbandonedCartItem[]
   status?: string
