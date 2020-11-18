@@ -139,7 +139,7 @@ const generateNewCart = async (abandonedCartId: string, organizationId: string) 
       return { quantity: item.quantity, seller: item.seller, id: item.id }
     })
 
-    await Axios.patch(
+    const { data } = await Axios.patch(
       `${baseUrl}/api/checkout/pub/orderForm/${orderFormData.orderFormId}/items`,
       { orderItems },
       {
