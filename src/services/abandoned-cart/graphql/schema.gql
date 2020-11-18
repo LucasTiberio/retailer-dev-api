@@ -126,6 +126,7 @@ type AbandonedCart {
   observations: [AbandonedCartObservationItem]!
   createdAt: String!
   updatedAt: String
+  readOnly: Boolean!
 }
 
 type AbandonedCartItem {

@@ -8,7 +8,18 @@ import { getVtexOrderById } from './client'
 import moment from 'moment'
 import OrganizationRepository from './repositories/organization'
 import Axios from 'axios'
-import { affiliateIsNotTheCurrentAssistant } from '../../common/errors'
+import {
+  affiliateIsNotTheCurrentAssistant,
+  cartDoesNotHaveItems,
+  cartHasNoAssistant,
+  cartHasNoObservations,
+  cartIsReadOnly,
+  cartNotFound,
+  observationNotFound,
+  organizationDoesNotHaveVtexIntegration,
+  systemMessagesAreNotRemovable,
+} from '../../common/errors'
+import { checkCartReadOnly } from './helpers'
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
@@ -44,9 +55,10 @@ const getAbandonedCartsLostAmount = async (organizationId: string) => {
 
 const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: string) => {
   const allAbandonedCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID } }).lean()
-  return allAbandonedCarts.map((cart) => {
+  return allAbandonedCarts.map(async (cart) => {
     let email: any = cart.email
     let phone: any = cart.phone
+    let readOnly = await checkCartReadOnly(cart._id)
     if (!cart.currentAssistantAffiliateId || cart.currentAssistantAffiliateId !== affiliateId) {
       email = null
       phone = null
@@ -57,6 +69,7 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
       id: cart._id,
       email,
       phone,
+      readOnly,
     }
   })
 }
@@ -104,9 +117,9 @@ const generateNewCart = async (abandonedCartId: string, organizationId: string) 
   try {
     const abandonedCart = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId }).lean()
 
-    if (!abandonedCart) throw new Error('Abandoned cart not found')
+    if (!abandonedCart) throw new Error(cartNotFound)
 
-    if (!abandonedCart.items.length) throw new Error('Abandoned cart does not have items')
+    if (!abandonedCart.items.length) throw new Error(cartDoesNotHaveItems)
 
     const organizationDomain = await OrganizationRepository.getOrganizationDomainById(organizationId)
 
@@ -114,7 +127,7 @@ const generateNewCart = async (abandonedCartId: string, organizationId: string) 
 
     const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
-    if (integration.type !== Integrations.VTEX) throw new Error('Organization does not have vtex integration')
+    if (integration.type !== Integrations.VTEX) throw new Error(organizationDoesNotHaveVtexIntegration)
 
     const decode: any = await common.jwtDecode(integration.secret)
 
@@ -162,7 +175,7 @@ const handleCartOrderId = async (cartInfo: { orderId: string; organizationId: st
 
   const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
-  if (integration.type !== Integrations.VTEX) throw new Error('Organization does not have vtex integration')
+  if (integration.type !== Integrations.VTEX) throw new Error(organizationDoesNotHaveVtexIntegration)
 
   const decode = await common.jwtDecode(integration.secret)
 
@@ -176,13 +189,25 @@ const handleCartOrderId = async (cartInfo: { orderId: string; organizationId: st
 const assumeCartAssistance = async (abandonedCartId: string, organizationId: string, affiliateId: string) => {
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
+    const now = moment().utc().toISOString()
     if (cartObj) {
+      if (await checkCartReadOnly(cartObj._id)) {
+        throw new Error(cartIsReadOnly)
+      }
       cartObj.currentAssistantAffiliateId = affiliateId
-      cartObj.lastAssistanceDate = moment().utc().toISOString()
+      cartObj.lastAssistanceDate = now
       await cartObj.save()
+      while (!!cartObj?.parent) {
+        cartObj = await AbandonedCart.findById(cartObj?.parent)
+        if (cartObj) {
+          cartObj.currentAssistantAffiliateId = affiliateId
+          cartObj.lastAssistanceDate = now
+          await cartObj.save()
+        }
+      }
       return true
     }
-    throw new Error('Abandoned cart not found')
+    throw new Error(cartNotFound)
   } catch (e) {
     throw new Error(e.message)
   }
@@ -191,20 +216,37 @@ const assumeCartAssistance = async (abandonedCartId: string, organizationId: str
 const leaveCartAssistance = async (abandonedCartId: string, organizationId: string, affiliateId: string) => {
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
+    const now = moment().utc().toISOString()
     if (cartObj) {
+      if (await checkCartReadOnly(cartObj._id)) {
+        throw new Error(cartIsReadOnly)
+      }
       if (cartObj.currentAssistantAffiliateId === affiliateId && cartObj.status === AbandonedCartStatus.ENGAGED) {
         delete cartObj.currentAssistantAffiliateId
         cartObj.status = AbandonedCartStatus.UNPAID
         cartObj.blockedAffiliates.push({
           id: affiliateId,
-          date: moment().utc().toISOString(),
+          date: now,
         })
         await cartObj.save()
+        while (!!cartObj?.parent) {
+          cartObj = await AbandonedCart.findById(cartObj?.parent)
+          if (cartObj) {
+            if (cartObj.currentAssistantAffiliateId) {
+              delete cartObj.currentAssistantAffiliateId
+            }
+            cartObj.blockedAffiliates.push({
+              id: affiliateId,
+              date: now,
+            })
+            await cartObj.save()
+          }
+        }
         return true
       }
       throw new Error(affiliateIsNotTheCurrentAssistant)
     }
-    throw new Error('Abandoned cart not found')
+    throw new Error(cartNotFound)
   } catch (e) {
     throw new Error(e.message)
   }
@@ -213,13 +255,16 @@ const leaveCartAssistance = async (abandonedCartId: string, organizationId: stri
 const rejectCartAssistance = async (abandonedCartId: string, organizationId: string, affiliateId: string, observation: string) => {
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
+    const now = moment().utc().toISOString()
     if (cartObj) {
+      if (await checkCartReadOnly(cartObj._id)) {
+        throw new Error(cartIsReadOnly)
+      }
       if (cartObj.currentAssistantAffiliateId === affiliateId && cartObj.status === AbandonedCartStatus.ENGAGED) {
         cartObj.status = AbandonedCartStatus.REJECTED
         if (!cartObj.observations) {
           cartObj.observations = []
         }
-        const now = moment().utc().toISOString()
         cartObj.observations.push({
           assistantId: affiliateId,
           content: observation,
@@ -227,11 +272,18 @@ const rejectCartAssistance = async (abandonedCartId: string, organizationId: str
           updatedAt: now,
         })
         await cartObj.save()
+        while (!!cartObj?.parent) {
+          cartObj = await AbandonedCart.findById(cartObj?.parent)
+          if (cartObj) {
+            cartObj.status = AbandonedCartStatus.REJECTED
+            await cartObj.save()
+          }
+        }
         return true
       }
       throw new Error(affiliateIsNotTheCurrentAssistant)
     }
-    throw new Error('Abandoned cart not found')
+    throw new Error(cartNotFound)
   } catch (e) {
     throw new Error(e.message)
   }
@@ -241,6 +293,9 @@ const createObservation = async (abandonedCartId: string, organizationId: string
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     if (cartObj) {
+      if (await checkCartReadOnly(cartObj._id)) {
+        throw new Error(cartIsReadOnly)
+      }
       if (cartObj.currentAssistantAffiliateId === affiliateId) {
         if (!cartObj.observations) {
           cartObj.observations = []
@@ -257,7 +312,7 @@ const createObservation = async (abandonedCartId: string, organizationId: string
       }
       throw new Error(affiliateIsNotTheCurrentAssistant)
     }
-    throw new Error('Abandoned cart not found')
+    throw new Error(cartNotFound)
   } catch (e) {
     throw new Error(e.message)
   }
@@ -267,9 +322,12 @@ const editObservation = async (abandonedCartId: string, organizationId: string, 
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     if (cartObj) {
+      if (await checkCartReadOnly(cartObj._id)) {
+        throw new Error(cartIsReadOnly)
+      }
       if (cartObj.currentAssistantAffiliateId === affiliateId) {
         if (!cartObj.observations) {
-          throw new Error('Abandoned cart has no observations')
+          throw new Error(cartHasNoObservations)
         }
         if (cartObj.observations[observationIndex]) {
           const now = moment().utc().toISOString()
@@ -278,12 +336,12 @@ const editObservation = async (abandonedCartId: string, organizationId: string, 
           await cartObj.save()
           return true
         } else {
-          throw new Error('Observation not found')
+          throw new Error(observationNotFound)
         }
       }
       throw new Error(affiliateIsNotTheCurrentAssistant)
     }
-    throw new Error('Abandoned cart not found')
+    throw new Error(cartNotFound)
   } catch (e) {
     throw new Error(e.message)
   }
@@ -293,9 +351,12 @@ const removeObservation = async (abandonedCartId: string, organizationId: string
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     if (cartObj) {
+      if (await checkCartReadOnly(cartObj._id)) {
+        throw new Error(cartIsReadOnly)
+      }
       if (cartObj.currentAssistantAffiliateId === affiliateId) {
         if (!cartObj.observations) {
-          throw new Error('Abandoned cart has no observations')
+          throw new Error(cartHasNoObservations)
         }
         if (cartObj.observations[observationIndex]) {
           if (!cartObj.observations[observationIndex].systemMessage) {
@@ -303,15 +364,15 @@ const removeObservation = async (abandonedCartId: string, organizationId: string
             await cartObj.save()
             return true
           } else {
-            throw new Error('System messages are not removable')
+            throw new Error(systemMessagesAreNotRemovable)
           }
         } else {
-          throw new Error('Observation not found')
+          throw new Error(observationNotFound)
         }
       }
       throw new Error(affiliateIsNotTheCurrentAssistant)
     }
-    throw new Error('Abandoned cart not found')
+    throw new Error(cartNotFound)
   } catch (e) {
     throw new Error(e.message)
   }
@@ -321,6 +382,9 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     if (cartObj) {
+      if (await checkCartReadOnly(cartObj._id)) {
+        throw new Error(cartIsReadOnly)
+      }
       if (cartObj.status === AbandonedCartStatus.ENGAGED && cartObj.currentAssistantAffiliateId) {
         const oldAffiliateId = cartObj.currentAssistantAffiliateId
         delete cartObj.currentAssistantAffiliateId
@@ -330,11 +394,27 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
           date: moment().utc().toISOString(),
         })
         await cartObj.save()
+        while (!!cartObj?.parent) {
+          cartObj = await AbandonedCart.findById(cartObj?.parent)
+          if (cartObj) {
+            if (cartObj.currentAssistantAffiliateId) {
+              delete cartObj.currentAssistantAffiliateId
+            }
+            if (!cartObj.blockedAffiliates) {
+              cartObj.blockedAffiliates = []
+            }
+            cartObj.blockedAffiliates.push({
+              id: oldAffiliateId,
+              date: moment().utc().toISOString(),
+            })
+            await cartObj.save()
+          }
+        }
         return true
       }
-      throw new Error('Cart has no assistant')
+      throw new Error(cartHasNoAssistant)
     }
-    throw new Error('Abandoned cart not found')
+    throw new Error(cartNotFound)
   } catch (e) {
     throw new Error(e.message)
   }

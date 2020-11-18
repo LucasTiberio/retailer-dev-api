@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose'
 import { IAbandonedCart, AbandonedCartStatus } from '../types'
 
-interface IAbandonedCartSchema extends IAbandonedCart, Document {}
+export interface IAbandonedCartSchema extends IAbandonedCart, Document {}
 
 const AbandonedCartSchema = new Schema<IAbandonedCartSchema>(
   {

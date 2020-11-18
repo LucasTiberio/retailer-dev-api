@@ -29,6 +29,14 @@ import {
   onlyCreateOrganizationWithouIntegrationWithSecret,
   onlyIuguIntegrationFeature,
   affiliateIsNotTheCurrentAssistant,
+  cartIsReadOnly,
+  cartNotFound,
+  cartDoesNotHaveItems,
+  cartHasNoAssistant,
+  organizationDoesNotHaveVtexIntegration,
+  cartHasNoObservations,
+  observationNotFound,
+  systemMessagesAreNotRemovable,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -187,6 +195,46 @@ export default (message: string) => {
       return {
         code: 70,
         explication: 'Affiliate Is Not The Current Assistant',
+      }
+    case cartIsReadOnly:
+      return {
+        code: 71,
+        explication: 'Cart is read-only',
+      }
+    case cartNotFound:
+      return {
+        code: 72,
+        explication: 'Cart not found',
+      }
+    case cartDoesNotHaveItems:
+      return {
+        code: 73,
+        explication: 'Cart does not have items',
+      }
+    case cartHasNoAssistant:
+      return {
+        code: 74,
+        explication: 'Cart has no assistant',
+      }
+    case organizationDoesNotHaveVtexIntegration:
+      return {
+        code: 75,
+        explication: 'Organization does not have Vtex integration',
+      }
+    case cartHasNoObservations:
+      return {
+        code: 76,
+        explication: 'Cart has no observations',
+      }
+    case observationNotFound:
+      return {
+        code: 77,
+        explication: 'Observation not found',
+      }
+    case systemMessagesAreNotRemovable:
+      return {
+        code: 78,
+        explication: 'System messages are not removable',
       }
     default:
       return {

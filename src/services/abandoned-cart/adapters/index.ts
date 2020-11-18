@@ -1,6 +1,7 @@
+import { checkCartReadOnly } from '../helpers'
 import { AbandonedCartFromDB } from '../types'
 
-export const abandonedCartAdapter = (record: AbandonedCartFromDB) => ({
+export const abandonedCartAdapter = async (record: AbandonedCartFromDB) => ({
   id: record._id,
   organizationId: record.organizationId,
   orderFormId: record.orderFormId,
@@ -15,4 +16,5 @@ export const abandonedCartAdapter = (record: AbandonedCartFromDB) => ({
   observations: record.observations,
   createdAt: record.createdAt,
   updatedAt: record.updatedAt,
+  readOnly: await checkCartReadOnly(record._id),
 })
