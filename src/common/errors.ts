@@ -28,4 +28,5 @@ export const commissionBonificationOnlyWithTwoDates = 'commission_bonification_o
 export const commissionBonificationRulesWithWrongTargets = 'commission_bonification_rules_with_wrong_targets'
 export const userOnlyChangeToSameIntegrationType = 'user_only_change_to_same_integration_type'
 export const onlyCreateOrganizationWithouIntegrationWithSecret = 'only_create_organization_withou_integration_with_secret'
-export const organizationsPlanDoesNotHaveAffiliateStore = "organization's_plan_does_not_have_affiliate_store "
+export const organizationsPlanDoesNotHaveAffiliateStore = "organization's_plan_does_not_have_affiliate_store"
+export const affiliateIsNotTheCurrentAssistant = 'affiliate_is_not_the_current_assistant'
