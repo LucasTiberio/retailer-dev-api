@@ -28,6 +28,7 @@ import {
   userOnlyChangeToSameIntegrationType,
   onlyCreateOrganizationWithouIntegrationWithSecret,
   onlyIuguIntegrationFeature,
+  affiliateIsNotTheCurrentAssistant,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -181,6 +182,11 @@ export default (message: string) => {
       return {
         code: 11,
         explication: 'Maximum three banners in affiliate store',
+      }
+    case affiliateIsNotTheCurrentAssistant:
+      return {
+        code: 70,
+        explication: 'Affiliate Is Not The Current Assistant',
       }
     default:
       return {

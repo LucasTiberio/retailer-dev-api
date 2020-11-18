@@ -7,6 +7,8 @@ import common from '../../common'
 import { getVtexOrderById } from './client'
 import moment from 'moment'
 import OrganizationRepository from './repositories/organization'
+import Axios from 'axios'
+import { affiliateIsNotTheCurrentAssistant } from '../../common/errors'
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
@@ -99,25 +101,60 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
 }
 
 const generateNewCart = async (abandonedCartId: string, organizationId: string) => {
-  const abandonedCart = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId }).lean()
+  try {
+    const abandonedCart = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId }).lean()
 
-  if (!abandonedCart) throw new Error('Abandoned cart not found')
+    if (!abandonedCart) throw new Error('Abandoned cart not found')
 
-  if (!abandonedCart.items.length) throw new Error('Abandoned cart does not have items')
+    if (!abandonedCart.items.length) throw new Error('Abandoned cart does not have items')
 
-  const organizationDomain = await OrganizationRepository.getOrganizationDomainById(organizationId)
+    const organizationDomain = await OrganizationRepository.getOrganizationDomainById(organizationId)
 
-  if (!abandonedCart.orderId) return `${organizationDomain.domain}/checkout/?orderFormId=${abandonedCart.orderFormId}#/cart#`
+    if (!abandonedCart.orderId) return `${organizationDomain.domain}/checkout/?orderFormId=${abandonedCart.orderFormId}#/cart#`
 
-  let newCartString = `${organizationDomain.domain}/checkout/cart/add?`
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
-  abandonedCart.items.forEach((item) => {
-    newCartString += `sku=${item.id}&qty=${item.quantity}&seller=${item.seller}&`
-  })
+    if (integration.type !== Integrations.VTEX) throw new Error('Organization does not have vtex integration')
 
-  newCartString += `utm_source=plugone_abandoned_cart&utm_campaign=${abandonedCart._id}`
+    const decode: any = await common.jwtDecode(integration.secret)
 
-  return newCartString
+    let baseUrl = `https://${decode.accountName}.vtexcommercestable.com.br`
+
+    const { data: orderFormData } = await Axios.post(`${baseUrl}/api/checkout/pub/orderForm`)
+
+    const marketingData = {
+      utmSource: 'plugone_abandoned_cart',
+      utmMedium: null,
+      utmCampaign: abandonedCart._id,
+      utmipage: '',
+      utmiPart: '',
+      utmiCampaign: '',
+      coupon: null,
+      marketingTags: [],
+    }
+
+    await Axios.post(`${baseUrl}/api/checkout/pub/orderForm/${orderFormData.orderFormId}/attachments/marketingData`, marketingData)
+
+    const orderItems = abandonedCart.items.map((item, index) => {
+      return { quantity: item.quantity, seller: item.seller, id: item.id }
+    })
+
+    await Axios.patch(
+      `${baseUrl}/api/checkout/pub/orderForm/${orderFormData.orderFormId}/items`,
+      { orderItems },
+      {
+        headers: {
+          'x-vtex-api-appkey': decode.xVtexApiAppKey,
+          'x-vtex-api-apptoken': decode.xVtexApiAppToken,
+        },
+      }
+    )
+
+    return `${organizationDomain.domain}/checkout/?orderFormId=${orderFormData.orderFormId}#/cart#?`
+  } catch (error) {
+    console.log(error.response)
+    throw new Error(error.message)
+  }
 }
 
 const handleCartOrderId = async (cartInfo: { orderId: string; organizationId: string }) => {
@@ -165,7 +202,7 @@ const leaveCartAssistance = async (abandonedCartId: string, organizationId: stri
         await cartObj.save()
         return true
       }
-      throw new Error('Affiliate is not the current assistant')
+      throw new Error(affiliateIsNotTheCurrentAssistant)
     }
     throw new Error('Abandoned cart not found')
   } catch (e) {
@@ -192,7 +229,7 @@ const rejectCartAssistance = async (abandonedCartId: string, organizationId: str
         await cartObj.save()
         return true
       }
-      throw new Error('Affiliate is not the current assistant')
+      throw new Error(affiliateIsNotTheCurrentAssistant)
     }
     throw new Error('Abandoned cart not found')
   } catch (e) {
@@ -218,7 +255,7 @@ const createObservation = async (abandonedCartId: string, organizationId: string
         await cartObj.save()
         return true
       }
-      throw new Error('Affiliate is not the current assistant')
+      throw new Error(affiliateIsNotTheCurrentAssistant)
     }
     throw new Error('Abandoned cart not found')
   } catch (e) {
@@ -244,7 +281,7 @@ const editObservation = async (abandonedCartId: string, organizationId: string, 
           throw new Error('Observation not found')
         }
       }
-      throw new Error('Affiliate is not the current assistant')
+      throw new Error(affiliateIsNotTheCurrentAssistant)
     }
     throw new Error('Abandoned cart not found')
   } catch (e) {
@@ -272,7 +309,7 @@ const removeObservation = async (abandonedCartId: string, organizationId: string
           throw new Error('Observation not found')
         }
       }
-      throw new Error('Affiliate is not the current assistant')
+      throw new Error(affiliateIsNotTheCurrentAssistant)
     }
     throw new Error('Abandoned cart not found')
   } catch (e) {
