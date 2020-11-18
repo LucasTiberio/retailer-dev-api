@@ -38,3 +38,4 @@ export const organizationDoesNotHaveVtexIntegration = 'organization_does_not_hav
 export const cartHasNoObservations = 'cart_has_no_observations'
 export const observationNotFound = 'observation_not_found'
 export const systemMessagesAreNotRemovable = 'system_messages_are_not_removable'
+export const cannotGenerateNewCartAtTheMoment = 'cannot_generate_new_cart_at_the_moment'

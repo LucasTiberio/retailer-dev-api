@@ -37,6 +37,7 @@ import {
   cartHasNoObservations,
   observationNotFound,
   systemMessagesAreNotRemovable,
+  cannotGenerateNewCartAtTheMoment,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -235,6 +236,11 @@ export default (message: string) => {
       return {
         code: 78,
         explication: 'System messages are not removable',
+      }
+    case cannotGenerateNewCartAtTheMoment:
+      return {
+        code: 79,
+        explication: 'Cannot gennerate new cart at the moment',
       }
     default:
       return {

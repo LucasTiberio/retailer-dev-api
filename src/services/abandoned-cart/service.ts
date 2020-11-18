@@ -10,6 +10,7 @@ import OrganizationRepository from './repositories/organization'
 import Axios from 'axios'
 import {
   affiliateIsNotTheCurrentAssistant,
+  cannotGenerateNewCartAtTheMoment,
   cartDoesNotHaveItems,
   cartHasNoAssistant,
   cartHasNoObservations,
@@ -117,7 +118,17 @@ const generateNewCart = async (abandonedCartId: string, organizationId: string) 
   try {
     const abandonedCart = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId }).lean()
 
-    if (!abandonedCart) throw new Error(cartNotFound)
+    if (!abandonedCart) {
+      throw new Error(cartNotFound)
+    }
+
+    if (abandonedCart.parent) {
+      const now = moment().utc()
+      const thirtyDaysAfterCartCreation = moment(abandonedCart.createdAt).utc().add(30, 'days')
+      if (now.isBefore(thirtyDaysAfterCartCreation)) {
+        throw new Error(cannotGenerateNewCartAtTheMoment)
+      }
+    }
 
     if (!abandonedCart.items.length) throw new Error(cartDoesNotHaveItems)
 
