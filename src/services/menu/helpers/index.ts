@@ -107,10 +107,16 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
 
   if (integrationType === Integrations.VTEX) {
     if (paymentServiceStatus.maxSales > 0) {
-      baseAdminMenu[1].items[0].children.push({
-        name: 'insideSales',
-        slug: '/affiliate/inside-sales',
-      })
+      baseAdminMenu[1].items[0].children.push(
+        {
+          name: 'insideSales',
+          slug: '/affiliate/inside-sales',
+        },
+        {
+          name: 'abandonedCarts',
+          slug: '/affiliate/abandoned-carts',
+        }
+      )
     }
 
     return baseAdminMenu
@@ -228,6 +234,20 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
           ],
         }
       }
+
+      if (integrationType === Integrations.VTEX) {
+        affiliateAnalyst = {
+          ...affiliateAnalyst,
+          children: [
+            ...affiliateAnalyst.children,
+            {
+              name: 'abandonedCart',
+              slug: '/affiliate/abandoned-carts',
+            },
+          ],
+        }
+      }
+
       return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
       if (paymentServiceStatus.affiliateStore) {
@@ -238,6 +258,19 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
             {
               name: 'showCase',
               slug: '/affiliate/showcase',
+            },
+          ],
+        }
+      }
+
+      if (integrationType === Integrations.VTEX) {
+        affiliateSale = {
+          ...affiliateSale,
+          children: [
+            ...affiliateSale.children,
+            {
+              name: 'abandonedCart',
+              slug: '/affiliate/abandoned-carts',
             },
           ],
         }
