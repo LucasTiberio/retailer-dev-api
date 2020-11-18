@@ -1,5 +1,6 @@
 import service from '../service'
 import { IResolvers } from 'apollo-server'
+import ServiceService from '../../services/service'
 
 const resolvers: IResolvers = {
   Query: {
@@ -46,6 +47,12 @@ const resolvers: IResolvers = {
     },
     removeCartAssistance: (_, { input }, { organizationId }) => {
       return service.removeCartAssistance(input.abandonedCartId, organizationId)
+    },
+  },
+  AbandonedCart: {
+    currentAssistantAffiliate: (obj) => {
+      if (!obj.currentAssistantAffiliateId) return null
+      return ServiceService.getOrganizationServicesById(obj.currentAssistantAffiliateId)
     },
   },
 }

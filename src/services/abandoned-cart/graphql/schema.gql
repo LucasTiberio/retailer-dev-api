@@ -120,7 +120,7 @@ type AbandonedCart {
   provider: String!
   items: [AbandonedCartItem]!
   status: String!
-  currentAssistantAffiliateId: String
+  currentAssistantAffiliate: UserOrganizationService
   blockedAffiliates: [BlockedAffiliate]
   lastAssistanceDate: String
   observations: [AbandonedCartObservationItem]!
