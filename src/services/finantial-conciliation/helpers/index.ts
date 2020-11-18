@@ -248,7 +248,10 @@ const getDailyRevenueAndCommissions = async (organizationId: string, yearMonth: 
   dict = mergeToDailyDict(await getBonificationDailyDict(organizationId, yearMonth), dict)
   dict = mergeToDailyDict(await getSaasCommissionsDailyDict(organizationId, yearMonth), dict)
 
+  const FinancialReconciliationFound = await FinancialReconciliation.findOne({ referenceMonth: yearMonth }).select('status')
+
   return {
+    status: FinancialReconciliationFound?.status,
     days: Object.values(dict),
   }
 }
