@@ -174,7 +174,7 @@ const getAllOrganizationOrders = async (
       if (affiliate) {
         return {
           ...payment,
-          affiliateName: affiliate?.username ?? affiliate.email,
+          affiliateName: affiliate.email,
         }
       }
     })
@@ -298,7 +298,9 @@ const getShorterUrlByUserOrganizationServiceId = async (input: { userOrganizatio
 
   const { userOrganizationServiceId } = input
 
-  const affiliateShortenerUrls = await (trx || knexDatabase.knexConfig)('users_organization_service_roles_url_shortener').where('users_organization_service_roles_id', userOrganizationServiceId).select()
+  const affiliateShortenerUrls = await (trx || knexDatabase.knexConfig)('users_organization_service_roles_url_shortener')
+    .where('users_organization_service_roles_id', userOrganizationServiceId)
+    .select()
 
   return affiliateShortenerUrls.map(affiliateShorterUrlAdapter)
 }
