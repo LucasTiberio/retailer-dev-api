@@ -1,5 +1,5 @@
 extend type Query {
-  getAbandonedCarts: [AbandonedCart]! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAbandonedCarts: AbandonedCartAdminInfo! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsRecoveredAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsLostAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getFilteredAbandonedCarts: [AbandonedCart]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
@@ -110,6 +110,18 @@ type BlockedAffiliate {
   date: String
 }
 
+type AbandonedCartTotals {
+  unpaid: Int!
+  engaged: Int!
+  rejected: Int!
+  paid: Int!
+}
+
+type AbandonedCartAdminInfo {
+  totals: AbandonedCartTotals!
+  abandonedCarts: [AbandonedCart]!
+}
+
 type AbandonedCart {
   id: String!
   organizationId: String!
@@ -127,6 +139,8 @@ type AbandonedCart {
   createdAt: String!
   updatedAt: String
   readOnly: Boolean!
+  hasChildren: Boolean!
+  children: [AbandonedCart]
 }
 
 type AbandonedCartItem {

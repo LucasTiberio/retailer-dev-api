@@ -64,6 +64,8 @@ export interface IAbandonedCart {
   observations?: AbandonedCartObservationItem[]
   createdAt?: string
   updatedAt?: string
+  children?: IAbandonedCart[]
+  hasChildren?: boolean
 }
 
 export interface AbandonedCartFromDB {

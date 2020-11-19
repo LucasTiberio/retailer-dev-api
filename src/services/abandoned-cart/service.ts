@@ -1,6 +1,6 @@
 import { AbandonedCartStatus, IAbandonedCart, OrderFormDetails } from './types'
 import AbandonedCart from './model/AbandonedCart'
-import { abandonedCartAdapter } from './adapters'
+import { abandonedCartAdapter, responseAbandonedCartAdapter } from './adapters'
 import IntegrationService from '../integration/service'
 import { Integrations } from '../integration/types'
 import common from '../../common'
@@ -20,13 +20,17 @@ import {
   organizationDoesNotHaveVtexIntegration,
   systemMessagesAreNotRemovable,
 } from '../../common/errors'
-import { checkCartReadOnly } from './helpers'
+import { checkCartReadOnly, getPreviousCarts, getTotalsByOrganizationId } from './helpers'
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
-    let carts = await AbandonedCart.find({ organizationId, status: AbandonedCartStatus.UNPAID })
-    let adaptedCarts = carts.map(abandonedCartAdapter)
-    return adaptedCarts
+    let dbCarts = await AbandonedCart.find({ organizationId, status: AbandonedCartStatus.UNPAID })
+    let abandonedCarts = dbCarts.map(responseAbandonedCartAdapter)
+    let totals = await getTotalsByOrganizationId(organizationId)
+    return {
+      totals,
+      abandonedCarts,
+    }
   } catch (e) {
     throw new Error(e.message)
   }
@@ -60,6 +64,7 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
     let email: any = cart.email
     let phone: any = cart.phone
     let readOnly = await checkCartReadOnly(cart._id)
+    let children = await getPreviousCarts(cart._id)
     if (!cart.currentAssistantAffiliateId || cart.currentAssistantAffiliateId !== affiliateId) {
       email = null
       phone = null
@@ -71,6 +76,8 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
       email,
       phone,
       readOnly,
+      children,
+      hasChildren: !!children.length,
     }
   })
 }
