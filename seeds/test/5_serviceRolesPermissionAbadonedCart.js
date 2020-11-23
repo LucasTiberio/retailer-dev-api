@@ -1,4 +1,4 @@
-let permissions = [{ name: 'abandoned-carts' }]
+let permissions = [{ name: 'abandonedCarts' }]
 
 const SERVICE_ADMIN = 'ADMIN'
 const SERVICE_SALE = 'SALE'
