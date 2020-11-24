@@ -139,7 +139,7 @@ type AbandonedCart {
   observations: [AbandonedCartObservationItem]!
   createdAt: String!
   updatedAt: String
-  readOnly: Boolean!
+  readOnly: Boolean
   hasChildren: Boolean!
   isChildren: Boolean!
   children: [AbandonedCart]
