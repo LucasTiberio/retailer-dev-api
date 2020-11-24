@@ -24,7 +24,7 @@ import { checkCartReadOnly, getPreviousCarts, getTotalsByOrganizationId } from '
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
-    let dbCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID } })
+    let dbCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID }, parent: { $ne: undefined } })
     let abandonedCarts = dbCarts.map(responseAbandonedCartAdapter)
     let totals = await getTotalsByOrganizationId(organizationId)
     return {
