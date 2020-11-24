@@ -242,7 +242,7 @@ const leaveCartAssistance = async (abandonedCartId: string, organizationId: stri
         throw new Error(cartIsReadOnly)
       }
       if (cartObj.currentAssistantAffiliateId === affiliateId && cartObj.status === AbandonedCartStatus.ENGAGED) {
-        delete cartObj.currentAssistantAffiliateId
+        cartObj.currentAssistantAffiliateId = undefined
         cartObj.status = AbandonedCartStatus.UNPAID
         cartObj.blockedAffiliates.push({
           id: affiliateId,
@@ -253,7 +253,7 @@ const leaveCartAssistance = async (abandonedCartId: string, organizationId: stri
           cartObj = await AbandonedCart.findById(cartObj?.parent)
           if (cartObj) {
             if (cartObj.currentAssistantAffiliateId) {
-              delete cartObj.currentAssistantAffiliateId
+              cartObj.currentAssistantAffiliateId = undefined
             }
             cartObj.blockedAffiliates.push({
               id: affiliateId,
@@ -407,7 +407,7 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
       }
       if (cartObj.status === AbandonedCartStatus.ENGAGED && cartObj.currentAssistantAffiliateId) {
         const oldAffiliateId = cartObj.currentAssistantAffiliateId
-        delete cartObj.currentAssistantAffiliateId
+        cartObj.currentAssistantAffiliateId = undefined
         cartObj.status = AbandonedCartStatus.UNPAID
         cartObj.blockedAffiliates.push({
           id: oldAffiliateId,
@@ -418,7 +418,7 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
           cartObj = await AbandonedCart.findById(cartObj?.parent)
           if (cartObj) {
             if (cartObj.currentAssistantAffiliateId) {
-              delete cartObj.currentAssistantAffiliateId
+              cartObj.currentAssistantAffiliateId = undefined
             }
             if (!cartObj.blockedAffiliates) {
               cartObj.blockedAffiliates = []
