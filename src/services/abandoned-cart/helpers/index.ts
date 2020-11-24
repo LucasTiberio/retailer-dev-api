@@ -14,14 +14,14 @@ export const checkCartReadOnly = async (cartId: string) => {
   return false
 }
 
-export const getPreviousCarts = async (cartId: string) => {
+export const getPreviousCarts = async (cartId: string, isOwner: boolean) => {
   let carts = []
   let cart = await AbandonedCart.findById(cartId)
   if (cart) {
     while (!!cart?.parent) {
       cart = await AbandonedCart.findById(cart?.parent)
       if (cart) {
-        carts.push(abandonedCartAdapter(cart))
+        carts.push(abandonedCartAdapter(cart, isOwner))
       }
     }
   }

@@ -129,6 +129,7 @@ type AbandonedCart {
   orderId: String
   email: String
   phone: String
+  isOwner: Boolean
   provider: String!
   items: [AbandonedCartItem]!
   status: String!

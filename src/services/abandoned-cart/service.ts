@@ -64,7 +64,7 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
     let email: any = cart.email
     let phone: any = cart.phone
     let readOnly = await checkCartReadOnly(cart._id)
-    let children = await getPreviousCarts(cart._id)
+    let children = await getPreviousCarts(cart._id, cart.currentAssistantAffiliateId === affiliateId)
     if (!cart.currentAssistantAffiliateId || cart.currentAssistantAffiliateId !== affiliateId) {
       email = null
       phone = null
@@ -79,6 +79,7 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
       children,
       hasChildren: !!children.length,
       isChildren: false,
+      isOwner: cart.currentAssistantAffiliateId === affiliateId,
     }
   })
 }
