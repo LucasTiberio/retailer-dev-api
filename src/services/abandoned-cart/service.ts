@@ -430,7 +430,7 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
             await cartObj.save()
           }
         }
-        return true
+        return cartObj
       }
       throw new Error(cartHasNoAssistant)
     }

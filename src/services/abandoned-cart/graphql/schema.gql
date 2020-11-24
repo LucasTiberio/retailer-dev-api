@@ -57,7 +57,7 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
-  removeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
+  removeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): AbandonedCart!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
     @vtexFeature
