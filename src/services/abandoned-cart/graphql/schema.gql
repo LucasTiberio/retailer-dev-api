@@ -29,7 +29,7 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
-  rejectCartAssistance(input: RejectCartAssistanceInput!): Boolean!
+  rejectCartAssistance(input: RejectCartAssistanceInput!): AbandonedCart!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
@@ -140,7 +140,7 @@ type AbandonedCart {
   updatedAt: String
   readOnly: Boolean!
   hasChildren: Boolean!
-  isChildren: Boolean
+  isChildren: Boolean!
   children: [AbandonedCart]
 }
 

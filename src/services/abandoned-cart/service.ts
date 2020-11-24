@@ -78,6 +78,7 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
       readOnly,
       children,
       hasChildren: !!children.length,
+      isChildren: false,
     }
   })
 }
@@ -299,7 +300,7 @@ const rejectCartAssistance = async (abandonedCartId: string, organizationId: str
             await cartObj.save()
           }
         }
-        return true
+        return cartObj
       }
       throw new Error(affiliateIsNotTheCurrentAssistant)
     }
