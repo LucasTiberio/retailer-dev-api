@@ -356,7 +356,7 @@ const editObservation = async (abandonedCartId: string, organizationId: string, 
           cartObj.observations[observationIndex].content = observation
           cartObj.observations[observationIndex].updatedAt = now
           await cartObj.save()
-          return true
+          return cartObj
         } else {
           throw new Error(observationNotFound)
         }

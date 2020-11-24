@@ -43,7 +43,7 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
-  editObservation(input: EditObservationInput!): Boolean!
+  editObservation(input: EditObservationInput!): AbandonedCart!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
