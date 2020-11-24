@@ -24,7 +24,7 @@ import { checkCartReadOnly, getPreviousCarts, getTotalsByOrganizationId } from '
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
-    let dbCarts = await AbandonedCart.find({ organizationId, status: AbandonedCartStatus.UNPAID })
+    let dbCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID } })
     let abandonedCarts = dbCarts.map(responseAbandonedCartAdapter)
     let totals = await getTotalsByOrganizationId(organizationId)
     return {
@@ -214,16 +214,18 @@ const assumeCartAssistance = async (abandonedCartId: string, organizationId: str
       }
       cartObj.currentAssistantAffiliateId = affiliateId
       cartObj.lastAssistanceDate = now
+      cartObj.status = AbandonedCartStatus.ENGAGED
       await cartObj.save()
       while (!!cartObj?.parent) {
         cartObj = await AbandonedCart.findById(cartObj?.parent)
         if (cartObj) {
           cartObj.currentAssistantAffiliateId = affiliateId
           cartObj.lastAssistanceDate = now
+          cartObj.status = AbandonedCartStatus.ENGAGED
           await cartObj.save()
         }
       }
-      return true
+      return cartObj
     }
     throw new Error(cartNotFound)
   } catch (e) {

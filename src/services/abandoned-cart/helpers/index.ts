@@ -3,12 +3,15 @@ import AbandonedCart, { IAbandonedCartSchema } from '../model/AbandonedCart'
 import { AbandonedCartStatus } from '../types'
 
 export const checkCartReadOnly = async (cartId: string) => {
-  let readOnly = false
+  let cart = await AbandonedCart.findById(cartId).lean()
+  if (cart?.status === 'paid') {
+    return true
+  }
   let childCarts = await AbandonedCart.find({ parent: cartId })
   if (childCarts?.length) {
-    readOnly = true
+    return true
   }
-  return readOnly
+  return false
 }
 
 export const getPreviousCarts = async (cartId: string) => {

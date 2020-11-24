@@ -17,6 +17,7 @@ export const responseAbandonedCartAdapter = async (record: AbandonedCartFromDB):
     status: record.status,
     lastAssistantAffiliateId: record.lastAssistantAffiliateId,
     lastAssistanceDate: record.lastAssistanceDate,
+    currentAssistantAffiliateId: record.currentAssistantAffiliateId,
     observations: record.observations,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,

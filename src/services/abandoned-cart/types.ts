@@ -76,6 +76,7 @@ export interface AbandonedCartFromDB {
   email: string
   phone?: string
   parent?: string
+  currentAssistantAffiliateId?: string
   provider: string
   items: AbandonedCartItem[]
   status?: string
