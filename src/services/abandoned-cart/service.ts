@@ -59,7 +59,7 @@ const getAbandonedCartsLostAmount = async (organizationId: string) => {
 }
 
 const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: string) => {
-  const allAbandonedCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID } }).lean()
+  const allAbandonedCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID }, parent: { $ne: undefined } }).lean()
   return allAbandonedCarts.map(async (cart) => {
     let email: any = cart.email
     let phone: any = cart.phone
@@ -114,6 +114,7 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
         parent: cartInfo.parent,
         currentAssistantAffiliateId: cartObjParent?.currentAssistantAffiliateId,
         lastAssistanceDate: cartObjParent?.lastAssistanceDate,
+        status: cartObjParent?.status || AbandonedCartStatus.UNPAID,
       }
       await AbandonedCart.create(newCartObj)
     }
@@ -213,6 +214,9 @@ const assumeCartAssistance = async (abandonedCartId: string, organizationId: str
     if (cartObj) {
       if (await checkCartReadOnly(cartObj._id)) {
         throw new Error(cartIsReadOnly)
+      }
+      if (cartObj.blockedAffiliates.find((item) => item.id === affiliateId)) {
+        throw new Error('affiliate_is_on_blocked_list')
       }
       cartObj.currentAssistantAffiliateId = affiliateId
       cartObj.lastAssistanceDate = now

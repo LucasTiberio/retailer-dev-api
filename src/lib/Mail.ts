@@ -15,19 +15,19 @@ declare var process: {
 }
 
 const mailConfig: any = {
-  host: true ? process.env.MAIL_TEST_HOST : process.env.MAIL_HOST,
-  port: true ? Number(process.env.MAIL_TEST_PORT) || 0 : Number(process.env.MAIL_PORT) || 0,
+  host: process.env.NODE_ENV !== 'test' ? process.env.MAIL_TEST_HOST : process.env.MAIL_HOST,
+  port: process.env.NODE_ENV !== 'test' ? Number(process.env.MAIL_TEST_PORT) || 0 : Number(process.env.MAIL_PORT) || 0,
   pool: true,
   rateLimit: true,
   maxConnections: 1,
   maxMessages: 3,
 }
 
-// if (process.env.NODE_ENV !== 'test') {
-//   mailConfig.auth = {
-//     user: process.env.MAIL_USER,
-//     pass: process.env.MAIL_PASS,
-//   }
-// }
+if (process.env.NODE_ENV !== 'test') {
+  mailConfig.auth = {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  }
+}
 
 export default nodemailer.createTransport(mailConfig)
