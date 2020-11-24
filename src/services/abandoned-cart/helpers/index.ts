@@ -14,7 +14,7 @@ export const checkCartReadOnly = async (cartId: string) => {
   return false
 }
 
-export const getPreviousCarts = async (cartId: string, isOwner: boolean) => {
+export const getPreviousCarts = async (cartId: string, isOwner?: boolean) => {
   let carts = []
   let cart = await AbandonedCart.findById(cartId)
   if (cart) {

@@ -28,7 +28,7 @@ export const responseAbandonedCartAdapter = async (record: AbandonedCartFromDB):
   }
 }
 
-export const abandonedCartAdapter = async (record: AbandonedCartFromDB, isOwner: boolean): Promise<any> => {
+export const abandonedCartAdapter = async (record: AbandonedCartFromDB, isOwner?: boolean): Promise<any> => {
   return {
     id: record._id,
     organizationId: record.organizationId,
