@@ -4,6 +4,7 @@ import { AbandonedCartFromDB } from '../types'
 export const responseAbandonedCartAdapter = async (record: AbandonedCartFromDB): Promise<any> => {
   let children = await getPreviousCarts(record._id)
   let readOnly = await checkCartReadOnly(record._id)
+  let isChildren = false
   return {
     id: record._id,
     organizationId: record.organizationId,
@@ -21,6 +22,7 @@ export const responseAbandonedCartAdapter = async (record: AbandonedCartFromDB):
     updatedAt: record.updatedAt,
     readOnly,
     children,
+    isChildren,
     hasChildren: !!children.length,
   }
 }
@@ -43,6 +45,7 @@ export const abandonedCartAdapter = async (record: AbandonedCartFromDB): Promise
     updatedAt: record.updatedAt,
     readOnly: await checkCartReadOnly(record._id),
     children: [],
+    isChildren: true,
     hasChildren: false,
   }
 }

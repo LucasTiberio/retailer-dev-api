@@ -140,6 +140,7 @@ type AbandonedCart {
   updatedAt: String
   readOnly: Boolean!
   hasChildren: Boolean!
+  isChildren: Boolean!
   children: [AbandonedCart]
 }
 
