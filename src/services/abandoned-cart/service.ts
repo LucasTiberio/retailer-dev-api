@@ -24,7 +24,7 @@ import { checkCartReadOnly, getPreviousCarts, getTotalsByOrganizationId } from '
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
-    let dbCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID }, parent: { $ne: undefined } })
+    let dbCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID }, parent: undefined })
     let abandonedCarts = dbCarts.map(responseAbandonedCartAdapter)
     let totals = await getTotalsByOrganizationId(organizationId)
     return {
@@ -59,29 +59,40 @@ const getAbandonedCartsLostAmount = async (organizationId: string) => {
 }
 
 const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: string) => {
-  const allAbandonedCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID }, parent: { $ne: undefined } }).lean()
-  return allAbandonedCarts.map(async (cart) => {
-    let email: any = cart.email
-    let phone: any = cart.phone
-    let readOnly = await checkCartReadOnly(cart._id)
-    let children = await getPreviousCarts(cart._id, cart.currentAssistantAffiliateId === affiliateId)
-    if (!cart.currentAssistantAffiliateId || cart.currentAssistantAffiliateId !== affiliateId) {
-      email = null
-      phone = null
-    }
+  const allAbandonedCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID } }).lean()
 
-    return {
-      ...cart,
-      id: cart._id,
-      email,
-      phone,
-      readOnly,
-      children,
-      hasChildren: !!children.length,
-      isChildren: false,
-      isOwner: cart.currentAssistantAffiliateId === affiliateId,
-    }
-  })
+  return (
+    await Promise.all(
+      allAbandonedCarts.map(async (cart) => {
+        const asParent = await AbandonedCart.findOne({ parent: cart._id })
+
+        if (asParent) {
+          return null
+        }
+
+        let email: any = cart.email
+        let phone: any = cart.phone
+        let readOnly = await checkCartReadOnly(cart._id)
+        let children = await getPreviousCarts(cart._id, cart.currentAssistantAffiliateId === affiliateId)
+        if (!cart.currentAssistantAffiliateId || cart.currentAssistantAffiliateId !== affiliateId) {
+          email = null
+          phone = null
+        }
+
+        return {
+          ...cart,
+          id: cart._id,
+          email,
+          phone,
+          readOnly,
+          children,
+          hasChildren: !!children.length,
+          isChildren: false,
+          isOwner: cart.currentAssistantAffiliateId === affiliateId,
+        }
+      })
+    )
+  ).filter((item) => item)
 }
 
 const handleCart = async (cartInfo: OrderFormDetails) => {
