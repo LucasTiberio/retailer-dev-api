@@ -28,7 +28,7 @@ const getAbandonedCarts = async (organizationId: string) => {
 
     let noHasParentCarts = await Promise.all(
       dbCarts.map(async (cart) => {
-        const asParent = await AbandonedCart.findOne({ parent: cart._id })
+        const asParent = await AbandonedCart.findOne({ parent: cart._id, status: { $ne: AbandonedCartStatus.INVALID } })
 
         if (asParent) {
           return null
@@ -75,10 +75,14 @@ const getAbandonedCartsLostAmount = async (organizationId: string) => {
 const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: string) => {
   const allAbandonedCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID } }).lean()
 
+  console.log({ allAbandonedCarts })
+
   return (
     await Promise.all(
       allAbandonedCarts.map(async (cart) => {
-        const asParent = await AbandonedCart.findOne({ parent: cart._id })
+        const asParent = await AbandonedCart.findOne({ parent: cart._id, status: { $ne: AbandonedCartStatus.INVALID } })
+
+        console.log({ asParent })
 
         if (asParent) {
           return null
