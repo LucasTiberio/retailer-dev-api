@@ -24,12 +24,26 @@ import { checkCartReadOnly, getPreviousCarts, getTotalsByOrganizationId } from '
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
-    let dbCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID }, parent: undefined })
-    let abandonedCarts = dbCarts.map(responseAbandonedCartAdapter)
+    let dbCarts = await AbandonedCart.find({ organizationId, status: { $ne: AbandonedCartStatus.INVALID } })
+
+    let noHasParentCarts = await Promise.all(
+      dbCarts.map(async (cart) => {
+        const asParent = await AbandonedCart.findOne({ parent: cart._id })
+
+        if (asParent) {
+          return null
+        }
+
+        return responseAbandonedCartAdapter(cart)
+      })
+    )
+
+    let validCarts = noHasParentCarts.filter((item) => item)
+
     let totals = await getTotalsByOrganizationId(organizationId)
     return {
       totals,
-      abandonedCarts,
+      abandonedCarts: validCarts,
     }
   } catch (e) {
     throw new Error(e.message)
@@ -105,7 +119,7 @@ const handleCart = async (cartInfo: OrderFormDetails) => {
         cartObj.provider = cartInfo.provider
         cartObj.items = cartInfo.items
         cartObj.clientProfileData = cartInfo.clientProfileData
-        cartObj.parent = cartInfo.parent
+        cartObj.parent = cartObj.parent ?? cartInfo.parent
         await cartObj.save()
       } else {
         await cartObj.remove()
@@ -143,6 +157,10 @@ const generateNewCart = async (abandonedCartId: string, organizationId: string) 
       throw new Error(cartNotFound)
     }
 
+    const organizationDomain = await OrganizationRepository.getOrganizationDomainById(organizationId)
+
+    if (!abandonedCart.orderId) return `${organizationDomain.domain}/checkout/?orderFormId=${abandonedCart.orderFormId}#/cart#`
+
     if (abandonedCart.parent) {
       const now = moment().utc()
       const thirtyDaysAfterCartCreation = moment(abandonedCart.createdAt).utc().add(30, 'days')
@@ -152,10 +170,6 @@ const generateNewCart = async (abandonedCartId: string, organizationId: string) 
     }
 
     if (!abandonedCart.items.length) throw new Error(cartDoesNotHaveItems)
-
-    const organizationDomain = await OrganizationRepository.getOrganizationDomainById(organizationId)
-
-    if (!abandonedCart.orderId) return `${organizationDomain.domain}/checkout/?orderFormId=${abandonedCart.orderFormId}#/cart#`
 
     const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
@@ -434,6 +448,9 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
         while (!!cartObj?.parent) {
           cartObj = await AbandonedCart.findById(cartObj?.parent)
           if (cartObj) {
+            if (cartObj.status !== AbandonedCartStatus.INVALID) {
+              cartObj.status = AbandonedCartStatus.UNPAID
+            }
             if (cartObj.currentAssistantAffiliateId) {
               cartObj.currentAssistantAffiliateId = undefined
             }
