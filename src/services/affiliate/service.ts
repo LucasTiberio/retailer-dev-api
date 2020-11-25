@@ -162,22 +162,34 @@ const getAllOrganizationOrders = async (
   try {
     const { data } = await Axios.get(url)
 
-    let affiliateIds = data.data.map((payment: any, i: number) => payment.affiliateInfo.affiliateId)
+    let affiliateIds = data.data
+      .filter((item: any) => {
+        // console.log(item.affiliateInfo)
+        return !!item.affiliateInfo
+      })
+      .map((payment: any, i: number) => {
+        console.log(payment.affiliateInfo)
+        return payment.affiliateInfo.affiliateId
+      })
 
     affiliateIds = [...new Set(affiliateIds)]
 
     const affiliates = await RepositoryUsersOrganizationServiceRoles.getAffiliateInfos(affiliateIds)
 
-    const response = data.data.map((payment: any) => {
-      const affiliate = affiliates.find((affiliate) => affiliate.id === payment.affiliateInfo.affiliateId)
+    const response = data.data
+      .filter((item: any) => {
+        return !!item.affiliateInfo
+      })
+      .map((payment: any) => {
+        const affiliate = affiliates.find((affiliate) => affiliate.id === payment.affiliateInfo.affiliateId)
 
-      if (affiliate) {
-        return {
-          ...payment,
-          affiliateName: affiliate.email,
+        if (affiliate) {
+          return {
+            ...payment,
+            affiliateName: affiliate?.email,
+          }
         }
-      }
-    })
+      })
 
     return {
       ...data,
