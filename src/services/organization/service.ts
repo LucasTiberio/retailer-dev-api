@@ -810,6 +810,7 @@ const listMyOrganizations = async (userToken: IUserToken, trx: Transaction) => {
       .where('uo.user_id', userToken.id)
       .andWhere('uo.active', true)
       .andWhere('uo.invite_status', InviteStatus.accept)
+      .andWhere('orgn.active', true)
       .select('orgn.*', 'uo.id AS users_organizations_id')
 
     return organizations.map(_organizationAdapter)
