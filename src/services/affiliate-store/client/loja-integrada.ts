@@ -140,3 +140,14 @@ export const fetchLojaIntegradaProductById = async (lojaIntegradaToken: string, 
     console.log(error.data)
   }
 }
+
+export const fetchLojaIntegradaProductPriceByProductId = async (lojaIntegradaToken: string, id: number) => {
+  params.chave_api = lojaIntegradaToken
+  try {
+    let { data } = await instance.get(`/produto_preco/${id}`, { params })
+
+    return data
+  } catch (error) {
+    console.log(error.data)
+  }
+}
