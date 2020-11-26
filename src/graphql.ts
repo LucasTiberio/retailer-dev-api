@@ -272,7 +272,7 @@ const directiveResolvers: IDirectiveResolvers = {
 
     const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
-    if (integration.type !== Integrations.IUGU) {
+    if (!integration.asSaas) {
       throw new Error(onlyIuguIntegrationFeature)
     }
 
@@ -376,7 +376,7 @@ const directiveResolvers: IDirectiveResolvers = {
 
     const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
-    if (integration.type === Integrations.IUGU) throw new Error('Iugu does not have access to affiliate store')
+    if (integration.asSaas) throw new Error('Saas does not have access to affiliate store')
 
     const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
     const organizationPlanHasAffiliateStore = paymentServiceStatus.affiliateStore

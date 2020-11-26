@@ -116,6 +116,10 @@ const generateShortenerUrl = async (
   } else if (integration.type === Integrations.IUGU) {
     const iuguUrlWithMemberAttached = `${originalUrl}?utm_source=plugone_affiliate&utm_campaign=${context.organizationId}_${affiliate.id}`
     memberUrlToAttach = iuguUrlWithMemberAttached
+  } else if (integration.type === Integrations.KLIPFOLIO) {
+    //TODO PERGUNTAR
+    const iuguUrlWithMemberAttached = `${originalUrl}?utm_source=plugone_affiliate&utm_campaign=${context.organizationId}_${affiliate.id}`
+    memberUrlToAttach = iuguUrlWithMemberAttached
   } else {
     throw new Error(integrationTypeShortenerGeneratorNotFound)
   }
@@ -298,7 +302,9 @@ const getShorterUrlByUserOrganizationServiceId = async (input: { userOrganizatio
 
   const { userOrganizationServiceId } = input
 
-  const affiliateShortenerUrls = await (trx || knexDatabase.knexConfig)('users_organization_service_roles_url_shortener').where('users_organization_service_roles_id', userOrganizationServiceId).select()
+  const affiliateShortenerUrls = await (trx || knexDatabase.knexConfig)('users_organization_service_roles_url_shortener')
+    .where('users_organization_service_roles_id', userOrganizationServiceId)
+    .select()
 
   return affiliateShortenerUrls.map(affiliateShorterUrlAdapter)
 }
