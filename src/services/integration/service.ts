@@ -13,6 +13,32 @@ const _secretToJwt = (obj: object) => {
   return common.jwtEncode(obj)
 }
 
+const createKlipfolioIntegration = async (appKey: string, organizationId: string, trx: Transaction) => {  
+  const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(organizationId, trx)
+
+  if (!affiliateRules.providers.some((item: { name: Integrations; status: boolean }) => item.name === Integrations.KLIPFOLIO && item.status)) {
+    throw new Error(upgradeYourPlan)
+  }
+
+  const integrationFound = await getIntegrationByOrganizationId(organizationId, trx)
+
+  if (integrationFound && integrationFound.type !== Integrations.KLIPFOLIO) {
+    throw new Error(userOnlyChangeToSameIntegrationType)
+  }
+  
+  try {
+    
+    await verifyKlipfolioSecrets(appKey);
+    const jwtSecret = await _secretToJwt({
+      appKey,
+    });
+    await attachIntegration(organizationId, jwtSecret, Integrations.KLIPFOLIO, appKey, trx);
+    return true;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
 const createIuguIntegration = async (
   input: {
     secrets: {
@@ -106,6 +132,20 @@ const verifyIuguSecrets = async (appKey: string) => {
   }
 
   throw new Error('fail in Iugu app key verification.')
+}
+
+const verifyKlipfolioSecrets = async (appKey: string) => {
+  const getKlipfolioClient = await Axios.get('https://app.klipfolio.com/api/1/clients', {
+    headers: {
+      'kf-api-key': appKey
+    }
+  })
+
+  if(getKlipfolioClient.meta.success === true && getKlipfolioClient.meta.status === 200) {
+    return true;
+  }
+
+  throw new Error('fail in Klipfolio app key verification.');
 }
 
 const verifyLojaIntegradaSecrets = async (secrets: ILojaIntegradaSecrets) => {
@@ -225,4 +265,5 @@ export default {
   getIntegrationByOrganizationId,
   verifyLojaIntegradaSecrets,
   createIuguIntegration,
+  createKlipfolioIntegration,
 }
