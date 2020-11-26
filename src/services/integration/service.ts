@@ -14,7 +14,7 @@ const _secretToJwt = (obj: object) => {
   return common.jwtEncode(obj)
 }
 
-const createKlipfolioIntegration = async (appKey: string, organizationId: string, trx: Transaction) => {  
+const createKlipfolioIntegration = async (appKey: string, organizationId: string, trx: Transaction) => {
   const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(organizationId, trx)
 
   if (!affiliateRules.providers.some((item: { name: Integrations; status: boolean }) => item.name === Integrations.KLIPFOLIO && item.status)) {
@@ -26,17 +26,16 @@ const createKlipfolioIntegration = async (appKey: string, organizationId: string
   if (integrationFound && integrationFound.type !== Integrations.KLIPFOLIO) {
     throw new Error(userOnlyChangeToSameIntegrationType)
   }
-  
+
   try {
-    
-    await verifyKlipfolioSecrets(appKey);
+    await verifyKlipfolioSecrets(appKey)
     const jwtSecret = await _secretToJwt({
       appKey,
-    });
-    await attachIntegration(organizationId, jwtSecret, Integrations.KLIPFOLIO, appKey, trx);
-    return true;
+    })
+    await attachIntegration(organizationId, jwtSecret, Integrations.KLIPFOLIO, appKey, trx)
+    return true
   } catch (error) {
-    throw new Error(error.message);
+    throw new Error(error.message)
   }
 }
 
@@ -136,17 +135,17 @@ const verifyIuguSecrets = async (appKey: string) => {
 }
 
 const verifyKlipfolioSecrets = async (appKey: string) => {
-  const getKlipfolioClient = await Axios.get('https://app.klipfolio.com/api/1/clients', {
+  const { data: getKlipfolioClient } = await Axios.get('https://app.klipfolio.com/api/1/clients', {
     headers: {
-      'kf-api-key': appKey
-    }
+      'kf-api-key': appKey,
+    },
   })
 
-  if(getKlipfolioClient.meta.success === true && getKlipfolioClient.meta.status === 200) {
-    return true;
+  if (getKlipfolioClient.meta.success === true && getKlipfolioClient.meta.status === 200) {
+    return true
   }
 
-  throw new Error('fail in Klipfolio app key verification.');
+  throw new Error('fail in Klipfolio app key verification.')
 }
 
 const verifyLojaIntegradaSecrets = async (secrets: ILojaIntegradaSecrets) => {
