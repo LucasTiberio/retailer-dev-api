@@ -8,6 +8,7 @@ import knexDatabase from '../../knex-database'
 import { organizationServicesByOrganizationIdLoader } from './loaders'
 import Axios from 'axios'
 import { upgradeYourPlan, userOnlyChangeToSameIntegrationType } from '../../common/errors'
+import { createOrganizationWithIntegrationLojaIntegradaPayload } from '../../__mocks__'
 
 const _secretToJwt = (obj: object) => {
   return common.jwtEncode(obj)
@@ -202,6 +203,7 @@ const verifyIntegration = async (organizationId: string) => {
     ? {
         type: integration.type,
         status: integration.active,
+        asSaas: integration.type === Integrations.KLIPFOLIO || integration.type === Integrations.IUGU,
         createdAt: integration.createdAt,
         updatedAt: integration.updatedAt,
       }

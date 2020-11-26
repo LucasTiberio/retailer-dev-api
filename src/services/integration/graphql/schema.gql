@@ -20,6 +20,7 @@ enum Integrations {
   vtex
   loja_integrada
   iugu
+  klipfolio
 }
 
 input IntegrationSecrets {
@@ -36,6 +37,7 @@ extend type Organization {
 type Integration {
   type: Integrations!
   status: Boolean!
+  asSaas: Boolean!
   createdAt: Datetime!
   updatedAt: Datetime!
 }
