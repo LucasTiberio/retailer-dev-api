@@ -17,7 +17,7 @@ const resolvers: IResolvers = {
     },
     createKlipfolioIntegration: (_, { input }, { organizationId }) => {
       return knexDatabase.knexConfig.transaction((trx: Transaction) => {
-        return service.createKlipfolioIntegration(input.appKey, organizationId, trx);
+        return service.createKlipfolioIntegration(input.secrets.appKey, organizationId, trx)
       })
     },
   },
