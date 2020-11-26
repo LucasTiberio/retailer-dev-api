@@ -2,7 +2,7 @@ export enum Integrations {
   VTEX = 'vtex',
   LOJA_INTEGRADA = 'loja_integrada',
   IUGU = 'iugu',
-  KLIPFOLIO = 'klipfolio',
+  KLIPFOLIO = 'klipfolio'
 }
 
 export interface IIntegration {

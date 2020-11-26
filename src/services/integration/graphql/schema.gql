@@ -1,11 +1,20 @@
 extend type Mutation {
   createIntegration(input: CreateIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
   createIuguIntegration(input: CreateIuguIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  createKlipfolioIntegration(input: CreateKlipfolioIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 input CreateIntegrationInput {
   secrets: IntegrationSecrets!
   type: Integrations!
+}
+
+input CreateKlipfolioIntegrationInput {
+  secrets: KlipfolioSecrets!
+}
+
+input KlipfolioSecrets {
+  appKey: String!
 }
 
 input CreateIuguIntegrationInput {
