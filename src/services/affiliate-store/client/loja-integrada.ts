@@ -151,3 +151,14 @@ export const fetchLojaIntegradaProductPriceByProductId = async (lojaIntegradaTok
     console.log(error.data)
   }
 }
+
+export const fetchLojaIntegradaProductStockByProductId = async (lojaIntegradaToken: string, id: number) => {
+  params.chave_api = lojaIntegradaToken
+  try {
+    let { data } = await instance.get(`/produto_estoque/${id}`, { params })
+
+    return data
+  } catch (error) {
+    console.log(error.data)
+  }
+}

@@ -37,7 +37,13 @@ import { affiliateStoreAdapter, affiliateStoreProductAdapter, organizationAffili
 
 /** Clients */
 import { fetchVtexProducts, fetchVtexProductsHtml, fetchVtexProductsByIds } from './client/vtex'
-import { fetchLojaIntegradaProductsByTerm, fetchLojaIntegradaProductsByIds, fetchLojaIntegradaProductById, fetchLojaIntegradaProductPriceByProductId } from './client/loja-integrada'
+import {
+  fetchLojaIntegradaProductsByTerm,
+  fetchLojaIntegradaProductsByIds,
+  fetchLojaIntegradaProductById,
+  fetchLojaIntegradaProductPriceByProductId,
+  fetchLojaIntegradaProductStockByProductId,
+} from './client/loja-integrada'
 
 import common from '../../common'
 import sharp from 'sharp'
@@ -144,8 +150,11 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
               const productFound = currentProducts.find((product) => product.product_id === item.id.toString())
 
               const product = await fetchLojaIntegradaProductById(token, item.id)
+              const productStock = await fetchLojaIntegradaProductStockByProductId(token, item.id)
 
               if (!product) return null
+
+              if (!productStock.quantidade_disponivel) return null
 
               return {
                 productId: item.id,
@@ -497,8 +506,11 @@ const getAffiliateStoreWithProducts = async (
         products.map(async (item) => {
           const x = await fetchLojaIntegradaProductById(token, item.id)
           const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
+          const productStock = await fetchLojaIntegradaProductStockByProductId(token, item.id)
 
           if (!x) return null
+
+          if (!productStock.quantidade_disponivel) return null
 
           return `
         <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem">
@@ -506,7 +518,7 @@ const getAffiliateStoreWithProducts = async (
           <img style="width: 183px; height: 308px; object-fit: contain; margin-bottom: 0.5rem" src="${
             x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'
           }"/>
-          ${productPrice.cheio && `<div style="min-height: 80px; font-size: 0.875rem; margin-bottom: 0.5rem" >R$ ${Number(productPrice.cheio).toFixed(2)}</div>`}  
+          ${productPrice.cheio ? `<div style="min-height: 80px; font-size: 0.875rem; margin-bottom: 0.5rem" >R$ ${Number(productPrice.cheio).toFixed(2)}</div>` : ''}  
           <a style="border: 1px solid gray ; padding: 0.5rem ;font-size: 0.875rem; border-radius: 8px" href="${item.url}?utm_campaign=plugone-affiliate_${
             affiliateStore.users_organization_service_roles_id
           }_${input.organizationId}"> Comprar </a>
