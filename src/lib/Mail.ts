@@ -15,8 +15,8 @@ declare var process: {
 }
 
 const mailConfig: any = {
-  host: process.env.NODE_ENV === 'test' ? process.env.MAIL_TEST_HOST : process.env.MAIL_HOST,
-  port: process.env.NODE_ENV === 'test' ? Number(process.env.MAIL_TEST_PORT) || 0 : Number(process.env.MAIL_PORT) || 0,
+  host: process.env.NODE_ENV !== 'test' ? process.env.MAIL_TEST_HOST : process.env.MAIL_HOST,
+  port: process.env.NODE_ENV !== 'test' ? Number(process.env.MAIL_TEST_PORT) || 0 : Number(process.env.MAIL_PORT) || 0,
   pool: true,
   rateLimit: true,
   maxConnections: 1,

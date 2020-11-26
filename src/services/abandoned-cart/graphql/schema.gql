@@ -1,0 +1,206 @@
+extend type Query {
+  getAbandonedCarts: AbandonedCartAdminInfo! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAbandonedCartsRecoveredAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAbandonedCartsLostAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getFilteredAbandonedCarts: [AbandonedCart]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+}
+
+extend type Mutation {
+  handleCart(input: HandleCartInput!): Boolean!
+  handleCartOrderId(input: HandleCartOrderIdInput!): Boolean!
+  assumeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): AbandonedCart!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  generateNewCart(input: generateNewCartInput!): String!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  leaveCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  rejectCartAssistance(input: RejectCartAssistanceInput!): AbandonedCart!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  createObservation(input: CreateObservationInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  editObservation(input: EditObservationInput!): AbandonedCart!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  removeObservation(input: RemoveObservationInput!): Boolean!
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+  removeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): AbandonedCart!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+input generateNewCartInput {
+  abandonedCartId: String!
+}
+
+input CreateObservationInput {
+  abandonedCartId: String!
+  observation: String!
+}
+
+input EditObservationInput {
+  abandonedCartId: String!
+  observationIndex: Int!
+  observation: String!
+}
+
+input RemoveObservationInput {
+  abandonedCartId: String!
+  observationIndex: Int!
+}
+
+input AssumeOrLeaveCartAssistanceInput {
+  abandonedCartId: String!
+}
+
+input RejectCartAssistanceInput {
+  abandonedCartId: String!
+  observation: String!
+}
+
+input HandleCartOrderIdInput {
+  orderId: String!
+  organizationId: String!
+}
+
+type GetAvailableAbandonedCartsAndMyAbandonedCarts {
+  availableAbandonedCarts: [AbandonedCart]
+  affiliateAbandonedCarts: [AbandonedCart]
+}
+
+type BlockedAffiliate {
+  id: String
+  date: String
+}
+
+type AbandonedCartTotals {
+  unpaid: Int!
+  engaged: Int!
+  rejected: Int!
+  paid: Int!
+}
+
+type AbandonedCartAdminInfo {
+  totals: AbandonedCartTotals!
+  abandonedCarts: [AbandonedCart]!
+}
+
+type AbandonedCart {
+  id: String!
+  organizationId: String!
+  orderFormId: String!
+  orderId: String
+  email: String
+  phone: String
+  isOwner: Boolean
+  provider: String!
+  items: [AbandonedCartItem]!
+  status: String!
+  currentAssistantAffiliate: UserOrganizationService
+  blockedAffiliates: [BlockedAffiliate]
+  lastAssistanceDate: String
+  observations: [AbandonedCartObservationItem]!
+  createdAt: String!
+  updatedAt: String
+  readOnly: Boolean
+  hasChildren: Boolean!
+  isChildren: Boolean!
+  children: [AbandonedCart]
+}
+
+type AbandonedCartItem {
+  id: String!
+  productId: String!
+  imageUrl: String!
+  price: Int!
+  name: String!
+  quantity: Int!
+}
+
+type AbandonedCartObservationItem {
+  assistantId: String!
+  content: String!
+  createdAt: String!
+  updatedAt: String!
+  systemMessage: Boolean
+}
+
+input AbandonedCartItemInput {
+  id: String!
+  productId: String!
+  imageUrl: String!
+  name: String!
+  quantity: Int!
+  seller: String!
+  price: Int!
+  listPrice: Int!
+  additionalInfo: AdditionalInfoInput!
+}
+
+input AdditionalInfoInput {
+  categoriesIds: String!
+}
+
+input AbandonedCartClientProfileDataInput {
+  id: String
+  firstName: String
+  lastName: String
+  documentType: String
+  document: String
+  corporateName: String
+  tradeName: String
+  corporateDocument: String
+  stateInscription: String
+  corporatePhone: String
+  isCorporate: Boolean
+  userProfileId: String
+  customerClass: String
+  email: String!
+  phone: String
+}
+
+input HandleCartInput {
+  organizationId: String!
+  orderFormId: String!
+  provider: String!
+  parent: String
+  clientProfileData: AbandonedCartClientProfileDataInput!
+  items: [AbandonedCartItemInput]!
+}

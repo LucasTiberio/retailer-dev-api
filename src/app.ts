@@ -54,8 +54,6 @@ app.get('/', (req, res) => {
   res.send('Hello B8ONE!')
 })
 
-app.post('/invite-member/:organizationId', inviteMember)
-
 // Health Check
 app.get('/health', async (req, res) => {
   logger.info('Checking health Status')
@@ -66,6 +64,7 @@ app.get('/health', async (req, res) => {
   })
 })
 
+app.post('/invite-member/:organizationId', inviteMember)
 const specs = swaggerJsdoc(swaggerOptions)
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: false }))
 
