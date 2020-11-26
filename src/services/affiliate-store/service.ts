@@ -154,12 +154,23 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
 
               if (!product) return null
 
+              let image = product.imagem_principal?.media || product.imagens[0]?.media
+
+              if (!image && product.pai) {
+                const paiMatch = product.pai.match('/api/v1/produto/77894091'.match(/[0-9]{3,}/gi))
+                if (paiMatch) {
+                  const paiId = paiMatch[0]
+                  const paiProduct = await fetchLojaIntegradaProductById(token, paiId)
+                  image = paiProduct.imagem_principal?.media
+                }
+              }
+
               if (!productStock.quantidade_disponivel) return null
 
               return {
                 productId: item.id,
                 price: undefined,
-                image: (product.imagem_principal?.media || product.imagens[0]?.media) ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+                image: image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
                 name: item.nome,
                 added: !!productFound,
               }
@@ -510,14 +521,25 @@ const getAffiliateStoreWithProducts = async (
 
           if (!x) return null
 
+          let image = x.imagem_principal?.media
+
+          if (!image && x.pai) {
+            const paiMatch = x.pai.match('/api/v1/produto/77894091'.match(/[0-9]{3,}/gi))
+            if (paiMatch) {
+              const paiId = paiMatch[0]
+              console.log({ paiId })
+              const paiProduct = await fetchLojaIntegradaProductById(token, paiId)
+              console.log({ paiProduct })
+              image = paiProduct.imagem_principal?.media
+            }
+          }
+
           if (!productStock.quantidade_disponivel) return null
 
           return `
         <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem">
           <div style="min-height: 80px; font-size: 1.25rem; margin-bottom: 0.5rem"> ${item.nome} </div>
-          <img style="width: 183px; height: 308px; object-fit: contain; margin-bottom: 0.5rem" src="${
-            x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'
-          }"/>
+          <img style="width: 183px; height: 308px; object-fit: contain; margin-bottom: 0.5rem" src="${image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}"/>
           ${productPrice.cheio ? `<div style="min-height: 80px; font-size: 0.875rem; margin-bottom: 0.5rem" >R$ ${Number(productPrice.cheio).toFixed(2)}</div>` : ''}  
           <a style="border: 1px solid gray ; padding: 0.5rem ;font-size: 0.875rem; border-radius: 8px" href="${item.url}?utm_campaign=plugone-affiliate_${
             affiliateStore.users_organization_service_roles_id
