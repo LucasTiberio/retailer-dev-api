@@ -272,12 +272,12 @@ const directiveResolvers: IDirectiveResolvers = {
 
     const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
-    if (integration.type !== Integrations.IUGU && integration.type === Integrations.KLIPFOLIO) {
-      throw new Error(onlyIuguIntegrationFeature)
+    if (integration.type === Integrations.IUGU || integration.type === Integrations.KLIPFOLIO) {
+      context.secret = integration.secret
+      return next()
     }
 
-    context.secret = integration.secret
-    return next()
+    throw new Error(onlyIuguIntegrationFeature)
   },
   async hasEnterpriseToken(next, _, __, context): Promise<NextFunction> {
     const token = context.headers['token']
