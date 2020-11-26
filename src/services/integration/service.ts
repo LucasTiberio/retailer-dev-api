@@ -15,11 +15,11 @@ const _secretToJwt = (obj: object) => {
 }
 
 const createKlipfolioIntegration = async (appKey: string, organizationId: string, trx: Transaction) => {
-  const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(organizationId, trx)
+  // const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(organizationId, trx)
 
-  if (!affiliateRules.providers.some((item: { name: Integrations; status: boolean }) => item.name === Integrations.KLIPFOLIO && item.status)) {
-    throw new Error(upgradeYourPlan)
-  }
+  // if (!affiliateRules.providers.some((item: { name: Integrations; status: boolean }) => item.name === Integrations.KLIPFOLIO && item.status)) {
+  //   throw new Error(upgradeYourPlan)
+  // }
 
   const integrationFound = await getIntegrationByOrganizationId(organizationId, trx)
 

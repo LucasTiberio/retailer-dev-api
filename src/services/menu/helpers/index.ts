@@ -6,7 +6,7 @@ import OrganizationRulesService from '../../organization-rules/service'
 import { Integrations } from '../../integration/types'
 
 export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string) => {
-  if (integrationType === Integrations.IUGU) {
+  if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
         group: 'menu-items',
@@ -138,7 +138,7 @@ export const organizationMemberMenu = [
 ]
 
 export const affiliateMemberMountMenu = async (serviceRole: string, integrationType: Integrations, organizationId: string) => {
-  if (integrationType === Integrations.IUGU) {
+  if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
         group: 'menu-items',
