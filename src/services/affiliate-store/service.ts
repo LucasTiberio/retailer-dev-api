@@ -150,7 +150,7 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
               return {
                 productId: item.id,
                 price: undefined,
-                image: (product.imagem_principal?.media || product.imagens[0].media) ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+                image: (product.imagem_principal?.media || product.imagens[0]?.media) ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
                 name: item.nome,
                 added: !!productFound,
               }
