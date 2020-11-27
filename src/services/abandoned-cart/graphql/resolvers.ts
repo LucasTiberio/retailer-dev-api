@@ -1,6 +1,8 @@
 import service from '../service'
 import { IResolvers } from 'apollo-server'
 import ServiceService from '../../services/service'
+import knexDatabase from '../../../knex-database'
+import { Transaction } from 'knex'
 
 const resolvers: IResolvers = {
   Query: {
@@ -23,6 +25,11 @@ const resolvers: IResolvers = {
     },
     generateNewCart: (_, { input }, { organizationId }) => {
       return service.generateNewCart(input.abandonedCartId, organizationId)
+    },
+    handleAbandonedCartActivity: (_, { input }, { organizationId }) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
+        return service.handleAbandonedCartActivity(input, organizationId, trx)
+      })
     },
     handleCartOrderId: (_, { input }) => {
       return service.handleCartOrderId(input)
@@ -53,6 +60,11 @@ const resolvers: IResolvers = {
     currentAssistantAffiliate: (obj) => {
       if (!obj.currentAssistantAffiliateId) return null
       return ServiceService.getOrganizationServicesById(obj.currentAssistantAffiliateId)
+    },
+  },
+  Organization: {
+    hasAbandonedCart: async (obj) => {
+      return service.hasAbandonedCart(obj.id)
     },
   },
 }

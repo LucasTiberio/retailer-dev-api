@@ -15,6 +15,11 @@ const resolvers: IResolvers = {
         return service.createIuguIntegration(input, { organizationId }, trx)
       })
     },
+    createKlipfolioIntegration: (_, { input }, { organizationId }) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
+        return service.createKlipfolioIntegration(input.secrets.appKey, organizationId, trx)
+      })
+    },
   },
   Organization: {
     integration: async (obj) => {

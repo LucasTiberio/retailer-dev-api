@@ -1,3 +1,4 @@
+import { Transaction } from 'knex'
 import knexDatabase from '../../../knex-database'
 
 const getOrganizationDomainById = async (organizationId: string) => {
@@ -5,6 +6,13 @@ const getOrganizationDomainById = async (organizationId: string) => {
   return organizationDomain
 }
 
+const handleAbandonedCartActivityByOrganizationId = async (active: boolean, organizationId: string, trx: Transaction) => {
+  await knexDatabase.knexConfig('organizations').where('id', organizationId).update({
+    abandoned_cart: active,
+  })
+}
+
 export default {
   getOrganizationDomainById,
+  handleAbandonedCartActivityByOrganizationId,
 }

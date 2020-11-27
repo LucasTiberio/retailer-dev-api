@@ -116,6 +116,10 @@ const generateShortenerUrl = async (
   } else if (integration.type === Integrations.IUGU) {
     const iuguUrlWithMemberAttached = `${originalUrl}?utm_source=plugone_affiliate&utm_campaign=${context.organizationId}_${affiliate.id}`
     memberUrlToAttach = iuguUrlWithMemberAttached
+  } else if (integration.type === Integrations.KLIPFOLIO) {
+    //TODO PERGUNTAR
+    const iuguUrlWithMemberAttached = `${originalUrl}?utm_source=plugone_affiliate&utm_campaign=${context.organizationId}_${affiliate.id}`
+    memberUrlToAttach = iuguUrlWithMemberAttached
   } else {
     throw new Error(integrationTypeShortenerGeneratorNotFound)
   }

@@ -4,9 +4,10 @@ import { ServiceRoles } from '../../services/types'
 
 import OrganizationRulesService from '../../organization-rules/service'
 import { Integrations } from '../../integration/types'
+import knexDatabase from '../../../knex-database'
 
 export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string) => {
-  if (integrationType === Integrations.IUGU) {
+  if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
         group: 'menu-items',
@@ -138,7 +139,7 @@ export const organizationMemberMenu = [
 ]
 
 export const affiliateMemberMountMenu = async (serviceRole: string, integrationType: Integrations, organizationId: string) => {
-  if (integrationType === Integrations.IUGU) {
+  if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
         group: 'menu-items',
@@ -224,6 +225,8 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
 
   const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
 
+  const organization = await knexDatabase.knexConfig('organizations').where('id', organizationId).first().select('abandoned_cart')
+
   switch (serviceRole) {
     case ServiceRoles.ANALYST:
       if (paymentServiceStatus.affiliateStore) {
@@ -239,7 +242,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
         }
       }
 
-      if (integrationType === Integrations.VTEX) {
+      if (integrationType === Integrations.VTEX && organization.abandoned_cart) {
         affiliateAnalyst = {
           ...affiliateAnalyst,
           children: [
@@ -267,7 +270,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
         }
       }
 
-      if (integrationType === Integrations.VTEX) {
+      if (integrationType === Integrations.VTEX && organization.abandoned_cart) {
         affiliateSale = {
           ...affiliateSale,
           children: [

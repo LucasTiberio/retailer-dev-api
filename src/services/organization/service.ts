@@ -77,11 +77,11 @@ const createOrganization = async (
   try {
     const [organizationFound] = await (trx || knexDatabase.knexConfig)('organizations').where('user_id', context.client.id).select()
 
-    if (process.env.NODE_ENV === 'production') {
-      if (organizationFound) {
-        throw new Error('Only 1 organization per account an available')
-      }
-    }
+    // if (process.env.NODE_ENV === 'production') {
+    //   if (organizationFound) {
+    //     throw new Error('Only 1 organization per account an available')
+    //   }
+    // }
 
     if (
       (!context.createOrganizationWithoutIntegrationSecret && !integration) ||

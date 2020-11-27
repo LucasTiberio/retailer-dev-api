@@ -8,9 +8,35 @@ import knexDatabase from '../../knex-database'
 import { organizationServicesByOrganizationIdLoader } from './loaders'
 import Axios from 'axios'
 import { upgradeYourPlan, userOnlyChangeToSameIntegrationType } from '../../common/errors'
+import { createOrganizationWithIntegrationLojaIntegradaPayload } from '../../__mocks__'
 
 const _secretToJwt = (obj: object) => {
   return common.jwtEncode(obj)
+}
+
+const createKlipfolioIntegration = async (appKey: string, organizationId: string, trx: Transaction) => {
+  // const affiliateRules = await OrganizationRulesService.getAffiliateTeammateRules(organizationId, trx)
+
+  // if (!affiliateRules.providers.some((item: { name: Integrations; status: boolean }) => item.name === Integrations.KLIPFOLIO && item.status)) {
+  //   throw new Error(upgradeYourPlan)
+  // }
+
+  const integrationFound = await getIntegrationByOrganizationId(organizationId, trx)
+
+  if (integrationFound && integrationFound.type !== Integrations.KLIPFOLIO) {
+    throw new Error(userOnlyChangeToSameIntegrationType)
+  }
+
+  try {
+    await verifyKlipfolioSecrets(appKey)
+    const jwtSecret = await _secretToJwt({
+      appKey,
+    })
+    await attachIntegration(organizationId, jwtSecret, Integrations.KLIPFOLIO, appKey, trx)
+    return true
+  } catch (error) {
+    throw new Error(error.message)
+  }
 }
 
 const createIuguIntegration = async (
@@ -108,6 +134,20 @@ const verifyIuguSecrets = async (appKey: string) => {
   throw new Error('fail in Iugu app key verification.')
 }
 
+const verifyKlipfolioSecrets = async (appKey: string) => {
+  const { data: getKlipfolioClient } = await Axios.get('https://app.klipfolio.com/api/1/clients', {
+    headers: {
+      'kf-api-key': appKey,
+    },
+  })
+
+  if (getKlipfolioClient.meta.success === true && getKlipfolioClient.meta.status === 200) {
+    return true
+  }
+
+  throw new Error('fail in Klipfolio app key verification.')
+}
+
 const verifyLojaIntegradaSecrets = async (secrets: ILojaIntegradaSecrets) => {
   const lojaIntegradaOrders = await Axios.get('https://api.awsli.com.br/v1/pedido/search', {
     params: {
@@ -202,6 +242,7 @@ const verifyIntegration = async (organizationId: string) => {
     ? {
         type: integration.type,
         status: integration.active,
+        asSaas: integration.type === Integrations.KLIPFOLIO || integration.type === Integrations.IUGU,
         createdAt: integration.createdAt,
         updatedAt: integration.updatedAt,
       }
@@ -225,4 +266,5 @@ export default {
   getIntegrationByOrganizationId,
   verifyLojaIntegradaSecrets,
   createIuguIntegration,
+  createKlipfolioIntegration,
 }

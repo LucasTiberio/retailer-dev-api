@@ -57,6 +57,7 @@ const typeDefsBase = gql`
   directive @hasAffiliateStore on FIELD | FIELD_DEFINITION
   directive @validUser on FIELD | FIELD_DEFINITION
   directive @enterpriseFeature on FIELD | FIELD_DEFINITION
+  directive @hasAbandonedCart on FIELD | FIELD_DEFINITION
 `
 
 const resolversBase: IResolvers = {
@@ -272,12 +273,12 @@ const directiveResolvers: IDirectiveResolvers = {
 
     const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
-    if (integration.type !== Integrations.IUGU) {
-      throw new Error(onlyIuguIntegrationFeature)
+    if (integration.type === Integrations.IUGU || integration.type === Integrations.KLIPFOLIO) {
+      context.secret = integration.secret
+      return next()
     }
 
-    context.secret = integration.secret
-    return next()
+    throw new Error(onlyIuguIntegrationFeature)
   },
   async hasEnterpriseToken(next, _, __, context): Promise<NextFunction> {
     const token = context.headers['token']
@@ -342,6 +343,17 @@ const directiveResolvers: IDirectiveResolvers = {
     context.organizationId = organizationId
     return next()
   },
+  async hasAbandonedCart(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+
+    if (!organizationId) throw new Error('Invalid session!')
+
+    const organization = await knexDatabase.knexConfig('organizations').where('id', organizationId).first().select('abandoned_cart')
+
+    if (!organization.abandoned_cart) throw new Error('organization_does_not_have_abandoned_cart_active')
+
+    return next()
+  },
   async ordersService(next, _, __, context): Promise<NextFunction> {
     const token = context.headers['token']
     if (!token) throw new Error('token must be provided!')
@@ -376,7 +388,7 @@ const directiveResolvers: IDirectiveResolvers = {
 
     const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
-    if (integration.type === Integrations.IUGU) throw new Error('Iugu does not have access to affiliate store')
+    if (integration.type === Integrations.IUGU || integration.type === Integrations.KLIPFOLIO) throw new Error('Iugu does not have access to affiliate store')
 
     const paymentServiceStatus = await OrganizationRulesService.getAffiliateTeammateRules(organizationId)
     const organizationPlanHasAffiliateStore = paymentServiceStatus.affiliateStore

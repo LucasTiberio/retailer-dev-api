@@ -21,6 +21,8 @@ import {
   systemMessagesAreNotRemovable,
 } from '../../common/errors'
 import { checkCartReadOnly, getPreviousCarts, getTotalsByOrganizationId } from './helpers'
+import { Transaction } from 'knex'
+import knexDatabase from '../../knex-database'
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
@@ -114,6 +116,12 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
 }
 
 const handleCart = async (cartInfo: OrderFormDetails) => {
+  const organization = await knexDatabase.knexConfig('organizations').where('id', cartInfo.organizationId).first().select('abandoned_cart')
+
+  if (!organization) throw new Error('organization_not_found')
+
+  if (!organization.abandoned_cart) throw new Error('organization_does_not_have_abandoned_cart_active')
+
   try {
     let cartObj = await AbandonedCart.findOne({ organizationId: cartInfo.organizationId, orderFormId: cartInfo.orderFormId })
     if (cartObj) {
@@ -478,6 +486,27 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
   }
 }
 
+const handleAbandonedCartActivity = async (
+  input: {
+    active: boolean
+  },
+  organizationId: string,
+  trx: Transaction
+) => {
+  try {
+    await OrganizationRepository.handleAbandonedCartActivityByOrganizationId(input.active, organizationId, trx)
+    return true
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
+const hasAbandonedCart = async (organizationId: string) => {
+  const organizationAbandonedCart = await knexDatabase.knexConfig('organizations').where('id', organizationId).first().select('abandoned_cart')
+
+  return organizationAbandonedCart.abandoned_cart
+}
+
 export default {
   getAbandonedCarts,
   getAbandonedCartsRecoveredAmount,
@@ -485,6 +514,7 @@ export default {
   handleCart,
   handleCartOrderId,
   assumeCartAssistance,
+  handleAbandonedCartActivity,
   leaveCartAssistance,
   rejectCartAssistance,
   createObservation,
@@ -493,4 +523,5 @@ export default {
   removeCartAssistance,
   getFilteredAbandonedCarts,
   generateNewCart,
+  hasAbandonedCart,
 }

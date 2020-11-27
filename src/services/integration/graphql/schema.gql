@@ -1,11 +1,20 @@
 extend type Mutation {
   createIntegration(input: CreateIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
   createIuguIntegration(input: CreateIuguIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  createKlipfolioIntegration(input: CreateKlipfolioIntegrationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 input CreateIntegrationInput {
   secrets: IntegrationSecrets!
   type: Integrations!
+}
+
+input CreateKlipfolioIntegrationInput {
+  secrets: KlipfolioSecrets!
+}
+
+input KlipfolioSecrets {
+  appKey: String!
 }
 
 input CreateIuguIntegrationInput {
@@ -20,6 +29,7 @@ enum Integrations {
   vtex
   loja_integrada
   iugu
+  klipfolio
 }
 
 input IntegrationSecrets {
@@ -36,6 +46,7 @@ extend type Organization {
 type Integration {
   type: Integrations!
   status: Boolean!
+  asSaas: Boolean!
   createdAt: Datetime!
   updatedAt: Datetime!
 }
