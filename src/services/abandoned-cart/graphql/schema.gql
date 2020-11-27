@@ -73,6 +73,10 @@ extend type Mutation {
     @isAuthenticated
 }
 
+extend type Organization {
+  hasAbandonedCart: Boolean!
+}
+
 input HandleAbandonedCartActivityInput {
   active: Boolean!
 }

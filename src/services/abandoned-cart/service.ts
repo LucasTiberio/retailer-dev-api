@@ -22,6 +22,7 @@ import {
 } from '../../common/errors'
 import { checkCartReadOnly, getPreviousCarts, getTotalsByOrganizationId } from './helpers'
 import { Transaction } from 'knex'
+import knexDatabase from '../../knex-database'
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
@@ -494,6 +495,12 @@ const handleAbandonedCartActivity = async (
   }
 }
 
+const hasAbandonedCart = async (organizationId: string) => {
+  const organizationAbandonedCart = await knexDatabase.knexConfig('organizations').where('organization_id', organizationId).first().select('abandoned_cart')
+
+  return organizationAbandonedCart.abandoned_cart
+}
+
 export default {
   getAbandonedCarts,
   getAbandonedCartsRecoveredAmount,
@@ -510,4 +517,5 @@ export default {
   removeCartAssistance,
   getFilteredAbandonedCarts,
   generateNewCart,
+  hasAbandonedCart,
 }

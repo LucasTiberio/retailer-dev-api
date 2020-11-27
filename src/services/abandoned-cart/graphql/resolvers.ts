@@ -62,6 +62,11 @@ const resolvers: IResolvers = {
       return ServiceService.getOrganizationServicesById(obj.currentAssistantAffiliateId)
     },
   },
+  Organization: {
+    hasAbandonedCart: async (obj) => {
+      return service.hasAbandonedCart(obj.id)
+    },
+  },
 }
 
 export default resolvers
