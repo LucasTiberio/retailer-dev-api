@@ -94,7 +94,13 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string, org
       }, [])
     }, Promise.resolve())
 
-    const cleanProducts = products.map((item) => ({ nome: item.nome, id: item.id }))
+    const cleanProducts = products
+      .map((item) => {
+        if (item.filhos?.length > 0) {
+          return { nome: item.nome, id: item.id }
+        }
+      })
+      .filter((item) => item)
 
     if (organizationId) {
       await redisClient.setAsync(`lojaIntegradaProducts_${organizationId}`, JSON.stringify(cleanProducts), 'EX', 1800)
@@ -137,7 +143,7 @@ export const fetchLojaIntegradaProductById = async (lojaIntegradaToken: string, 
 
     return data
   } catch (error) {
-    console.log(error.data)
+    console.log('error.data', error.response.data)
   }
 }
 

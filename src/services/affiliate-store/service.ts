@@ -144,39 +144,42 @@ const getAffiliateStoreProducts = async (input: { term: string }, context: { sec
       if (affiliateStoreLI) {
         const currentProducts = await RepositoryAffiliateStoreProduct.getByAffiliateStoreId(affiliateStoreLI.id, trx)
 
-        return (
-          await Promise.all(
-            products.map(async (item: { id: number; nome: string }) => {
-              const productFound = currentProducts.find((product) => product.product_id === item.id.toString())
+        let items: any = []
 
-              const product = await fetchLojaIntegradaProductById(token, item.id)
-              const productStock = await fetchLojaIntegradaProductStockByProductId(token, item.id)
+        for (const item of products) {
+          const productFound = currentProducts.find((product) => product.product_id === item.id.toString())
 
-              if (!product) return null
+          const product = await fetchLojaIntegradaProductById(token, item.id)
+          // const productStock = await fetchLojaIntegradaProductStockByProductId(token, item.id)
 
-              let image = product.imagem_principal?.media || product.imagens[0]?.media
+          if (!product) continue
 
-              if (!image && product.pai) {
-                const paiMatch = product.pai.match('/api/v1/produto/77894091'.match(/[0-9]{3,}/gi))
-                if (paiMatch) {
-                  const paiId = paiMatch[0]
-                  const paiProduct = await fetchLojaIntegradaProductById(token, paiId)
-                  image = paiProduct.imagem_principal?.media
-                }
-              }
+          let image = product.imagem_principal?.media || product.imagens[0]?.media
 
-              if (!productStock.quantidade_disponivel) return null
+          // if (!image && product.pai) {
+          //   console.log({ product })
+          //   const paiMatch = product.pai.match(/[0-9]{3,}/gi)
+          //   if (paiMatch) {
+          //     const paiId = paiMatch[0]
+          //     console.log({ paiId })
+          //     const paiProduct = await fetchLojaIntegradaProductById(token, paiId)
+          //     console.log({ paiProduct })
+          //     image = paiProduct?.imagem_principal?.media
+          //   }
+          // }
 
-              return {
-                productId: item.id,
-                price: undefined,
-                image: image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
-                name: item.nome,
-                added: !!productFound,
-              }
-            })
-          )
-        ).filter((item: any) => item)
+          // if (!productStock?.quantidade_disponivel) continue
+
+          items.push({
+            productId: item.id,
+            price: undefined,
+            image: image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+            name: item.nome,
+            added: !!productFound,
+          })
+        }
+
+        return items
       }
 
       return null
@@ -526,15 +529,16 @@ const getAffiliateStoreWithProducts = async (
           if (!image && x.pai) {
             const paiMatch = x.pai.match('/api/v1/produto/77894091'.match(/[0-9]{3,}/gi))
             if (paiMatch) {
+              console.log({ x })
               const paiId = paiMatch[0]
               console.log({ paiId })
               const paiProduct = await fetchLojaIntegradaProductById(token, paiId)
               console.log({ paiProduct })
-              image = paiProduct.imagem_principal?.media
+              image = paiProduct?.imagem_principal?.media
             }
           }
 
-          if (!productStock.quantidade_disponivel) return null
+          if (!productStock?.quantidade_disponivel) return null
 
           return `
         <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem">
