@@ -502,7 +502,7 @@ const handleAbandonedCartActivity = async (
 }
 
 const hasAbandonedCart = async (organizationId: string) => {
-  const organizationAbandonedCart = await knexDatabase.knexConfig('organizations').where('organization_id', organizationId).first().select('abandoned_cart')
+  const organizationAbandonedCart = await knexDatabase.knexConfig('organizations').where('id', organizationId).first().select('abandoned_cart')
 
   return organizationAbandonedCart.abandoned_cart
 }
