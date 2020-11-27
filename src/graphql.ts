@@ -57,6 +57,7 @@ const typeDefsBase = gql`
   directive @hasAffiliateStore on FIELD | FIELD_DEFINITION
   directive @validUser on FIELD | FIELD_DEFINITION
   directive @enterpriseFeature on FIELD | FIELD_DEFINITION
+  directive @hasAbandonedCart on FIELD | FIELD_DEFINITION
 `
 
 const resolversBase: IResolvers = {
@@ -340,6 +341,17 @@ const directiveResolvers: IDirectiveResolvers = {
     if (!organizationFounder) throw new Error(MESSAGE_ERROR_USER_NOT_ORGANIZATION_FOUNDER)
 
     context.organizationId = organizationId
+    return next()
+  },
+  async hasAbandonedCart(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+
+    if (!organizationId) throw new Error('Invalid session!')
+
+    const organization = await knexDatabase.knexConfig('organizations').where('id', organizationId).first().select('abandoned_cart')
+
+    if (!organization.abandoned_cart) throw new Error('organization_does_not_have_abandoned_cart_active')
+
     return next()
   },
   async ordersService(next, _, __, context): Promise<NextFunction> {

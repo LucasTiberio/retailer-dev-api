@@ -116,6 +116,12 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
 }
 
 const handleCart = async (cartInfo: OrderFormDetails) => {
+  const organization = await knexDatabase.knexConfig('organizations').where('id', cartInfo.organizationId).first().select('abandoned_cart')
+
+  if (!organization) throw new Error('organization_not_found')
+
+  if (!organization.abandoned_cart) throw new Error('organization_does_not_have_abandoned_cart_active')
+
   try {
     let cartObj = await AbandonedCart.findOne({ organizationId: cartInfo.organizationId, orderFormId: cartInfo.orderFormId })
     if (cartObj) {

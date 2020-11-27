@@ -2,7 +2,7 @@ extend type Query {
   getAbandonedCarts: AbandonedCartAdminInfo! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsRecoveredAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
   getAbandonedCartsLostAmount: Float! @hasOrganizationRole(role: ["ADMIN"]) @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
-  getFilteredAbandonedCarts: [AbandonedCart]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getFilteredAbandonedCarts: [AbandonedCart]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @vtexFeature @hasAbandonedCart @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {
@@ -12,6 +12,7 @@ extend type Mutation {
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
+    @hasAbandonedCart
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
@@ -19,6 +20,7 @@ extend type Mutation {
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
+    @hasAbandonedCart
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
@@ -26,6 +28,7 @@ extend type Mutation {
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
+    @hasAbandonedCart
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
@@ -33,6 +36,7 @@ extend type Mutation {
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
+    @hasAbandonedCart
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
@@ -40,6 +44,7 @@ extend type Mutation {
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
+    @hasAbandonedCart
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
@@ -47,6 +52,7 @@ extend type Mutation {
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
+    @hasAbandonedCart
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
@@ -54,6 +60,7 @@ extend type Mutation {
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @organizationPaidVerify
     @vtexFeature
+    @hasAbandonedCart
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
