@@ -21,6 +21,7 @@ import {
   systemMessagesAreNotRemovable,
 } from '../../common/errors'
 import { checkCartReadOnly, getPreviousCarts, getTotalsByOrganizationId } from './helpers'
+import { Transaction } from 'knex'
 
 const getAbandonedCarts = async (organizationId: string) => {
   try {
@@ -478,6 +479,21 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
   }
 }
 
+const handleAbandonedCartActivity = async (
+  input: {
+    active: boolean
+  },
+  organizationId: string,
+  trx: Transaction
+) => {
+  try {
+    await OrganizationRepository.handleAbandonedCartActivityByOrganizationId(input.active, organizationId, trx)
+    return true
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
 export default {
   getAbandonedCarts,
   getAbandonedCartsRecoveredAmount,
@@ -485,6 +501,7 @@ export default {
   handleCart,
   handleCartOrderId,
   assumeCartAssistance,
+  handleAbandonedCartActivity,
   leaveCartAssistance,
   rejectCartAssistance,
   createObservation,

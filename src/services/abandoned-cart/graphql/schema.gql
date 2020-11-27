@@ -64,6 +64,17 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  handleAbandonedCartActivity(input: HandleAbandonedCartActivityInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @vtexFeature
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
+}
+
+input HandleAbandonedCartActivityInput {
+  active: Boolean!
 }
 
 input generateNewCartInput {
