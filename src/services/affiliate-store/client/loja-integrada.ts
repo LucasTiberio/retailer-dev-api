@@ -96,7 +96,7 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string, org
 
     const cleanProducts = products
       .map((item) => {
-        if (item.filhos?.length > 0) {
+        if (item.filhos?.length > 0 || item?.variacoes.length === 0) {
           return { nome: item.nome, id: item.id }
         }
       })
