@@ -64,9 +64,9 @@ const getSignatureCountByOrganizationId = async (context: { organizationId: stri
 const handleSaasCommissionBulkPayments = async (input: { saasCommissionIds: string[] }, context: { organizationId: string }) => {
   try {
     await SaasCommissionRepository.handleSaasCommissionBulkPayments(context.organizationId, input.saasCommissionIds)
-    return true;
+    return true
   } catch (error) {
-    throw new Error(error.message);
+    throw new Error(error.message)
   }
 }
 
