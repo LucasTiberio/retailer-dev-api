@@ -211,14 +211,19 @@ const listAvailablePlans = async (organizationId: string) => {
 
   try {
     const res = await fetchPaymentsService(query)
-    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
 
     if (res.data?.errors) {
       throw new Error(res.data.errors[0].message)
     }
 
-    const integrationType = integration.type
-    const listAvailablePlans = res.data.data.listAvailablePlans.filter((plan: any) => plan.planRules[0].rules.providers.find((provider: any) => provider.name === integrationType && provider.status))
+    let listAvailablePlans = res.data.data.listAvailablePlans
+
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
+
+    if (integration) {
+      const integrationType = integration.type
+      listAvailablePlans = res.data.data.listAvailablePlans.filter((plan: any) => plan.planRules[0].rules.providers.find((provider: any) => provider.name === integrationType && provider.status))
+    }
 
     return listAvailablePlans
   } catch (error) {
