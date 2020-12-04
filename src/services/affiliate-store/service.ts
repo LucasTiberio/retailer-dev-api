@@ -541,7 +541,7 @@ const getAffiliateStoreWithProducts = async (
           // if (!productStock?.quantidade_disponivel) return null
 
           return `
-          <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 1rem">
+          <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 3rem">
             <img style="width: 183px; height: 300px; object-fit: contain;" src="${image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}" />
             <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${item.nome} </div>
             ${productPrice.cheio ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ 150.00</div>` : ''}
