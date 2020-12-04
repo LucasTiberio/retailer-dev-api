@@ -541,15 +541,18 @@ const getAffiliateStoreWithProducts = async (
           // if (!productStock?.quantidade_disponivel) return null
 
           return `
-        <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem">
-          <div style="min-height: 80px; font-size: 1.25rem; margin-bottom: 0.5rem"> ${item.nome} </div>
-          <img style="width: 183px; height: 308px; object-fit: contain; margin-bottom: 0.5rem" src="${image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}"/>
-          ${productPrice.cheio ? `<div style="min-height: 80px; font-size: 0.875rem; margin-bottom: 0.5rem" >R$ ${Number(productPrice.cheio).toFixed(2)}</div>` : ''}  
-          <a style="border: 1px solid gray ; padding: 0.5rem ;font-size: 0.875rem; border-radius: 8px" href="${item.url}?utm_campaign=plugone-affiliate_${
-            affiliateStore.users_organization_service_roles_id
-          }_${input.organizationId}"> Comprar </a>
-        </li>
-      `
+          <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 1rem">
+            <img style="width: 183px; height: 300px; object-fit: contain;" src="${image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}" />
+            <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${item.nome} </div>
+            ${productPrice.cheio ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ 150.00</div>` : ''}
+            <a style="background: black; color: white; text-align: center; padding: 0.7rem; border-radius: 8px; width: 100%;" 
+              href="${item.url}?utm_campaign=plugone-affiliate_${
+                affiliateStore.users_organization_service_roles_id
+              }_${input.organizationId}"> 
+              COMPRAR 
+            </a>
+          </li>
+          `;
         })
       )
     ).filter((item) => item)
