@@ -562,24 +562,22 @@ const changeOrganizationAdminToMember = async (userOrganizationIds: string[], tr
 }
 
 const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx: Transaction) => {
-  let isResquested = false;
+  let isResquested = false
 
   const [user] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .where('invite_hash', responseInvitePayload.inviteHash)
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
 
-  if(user.is_requested) isResquested = true;
-
   try {
+    if (!user) return { status: true, message: userAlreadyRegistered }
+
     await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
         invite_hash: null,
         invite_status: isResquested && user.invite_status === InviteStatus.pendent ? InviteStatus.pendent : responseInvitePayload.response,
       })
       .where('invite_hash', responseInvitePayload.inviteHash)
-
-    if (!user) return { status: true, message: userAlreadyRegistered }
 
     await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
       .update({

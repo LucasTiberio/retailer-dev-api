@@ -1,6 +1,4 @@
 require('dotenv')
-import { uniqBy } from 'lodash'
-
 import knexDatabase from '../../knex-database'
 
 import ShortenerUrlService from '../shortener-url/service'
@@ -8,6 +6,8 @@ import UserService from '../users/service'
 import OrganizationService from '../organization/service'
 import IntegrationService from '../integration/service'
 import BankDataService from '../bank-data/service'
+
+import OrganizationRepository from './repositories/organization'
 
 import { _usersOrganizationServiceAdapter } from '../services/adapters'
 
@@ -68,6 +68,7 @@ import RepositoryUsersOrganizationServiceRoles from './repository/users-organiza
 /** Clients */
 
 import ClientAffiliate from './client'
+import { generateKeyPair } from 'crypto'
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL
 
@@ -402,12 +403,33 @@ const generateSalesJWT = async (
 
 const generateSalesShorten = async (
   generateSalesShortenPayload: {
-    url: string
+    organizationId: string
+    items: {
+      quantity: number
+      seller: string
+      id: string
+    }[]
   },
   context: { salesId: string },
   trx: Transaction
 ) => {
-  const shorterUrl = await ShortenerUrlService.shortenerUrl(generateSalesShortenPayload.url, trx)
+  const integration = await IntegrationService.getIntegrationByOrganizationId(generateSalesShortenPayload.organizationId)
+
+  if (integration.type !== Integrations.VTEX) {
+    throw new Error(onlyVtexIntegrationFeature)
+  }
+
+  const organizationDomain = await OrganizationRepository.getOrganizationDomainById(generateSalesShortenPayload.organizationId)
+
+  let queryString = `?utm_source=plugone_sale_affiliate&utm_campaign=${context.salesId}_${generateSalesShortenPayload.organizationId}`
+
+  generateSalesShortenPayload.items.forEach((item, index) => {
+    queryString += `&sku=${item.id}&quantity=${item.quantity}&seller=${item.seller}`
+  })
+
+  let url = `${organizationDomain.domain}/checkout/cart/add/${queryString}`
+
+  const shorterUrl = await ShortenerUrlService.shortenerUrl(url, trx)
 
   await attachShorterUrlOnAffiliate(context.salesId, shorterUrl.id, trx)
 
