@@ -67,7 +67,14 @@ type SalesSession {
 }
 
 input GenerateSalesShortenInput {
-  url: String!
+  organizationId: String!
+  items: [GenerateSalesShortenItems!]!
+}
+
+input GenerateSalesShortenItems {
+  quantity: Int!
+  seller: String!
+  id: String!
 }
 
 input GenerateSalesJwtInput {
