@@ -517,15 +517,14 @@ const getAffiliateStoreWithProducts = async (
 
     let liHtmlOrdered = ''
 
-    await Promise.all(
-      products.map(async (item) => {
-        if (!item) return null
+    for (var item of products) {
+      if (!item) return null
 
-        const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
+      const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
 
-        let image = item.imagem_principal?.media
+      let image = item.imagem_principal?.media
 
-        liHtmlOrdered += `
+      liHtmlOrdered += `
         <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 3rem">
           <img style="width: 183px; height: 300px; object-fit: contain;" src="${image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}" />
           <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${item.nome} </div>
@@ -540,8 +539,7 @@ const getAffiliateStoreWithProducts = async (
           </a>
         </li>
         `
-      })
-    )
+    }
 
     return {
       affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
