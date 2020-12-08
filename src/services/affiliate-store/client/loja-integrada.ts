@@ -139,7 +139,7 @@ export const fetchLojaIntegradaProductsByIds = async (lojaIntegradaToken: string
 export const fetchLojaIntegradaProductById = async (lojaIntegradaToken: string, id: number) => {
   params.chave_api = lojaIntegradaToken
   try {
-    let { data } = await instance.get(`/produto/${id}`, { params })
+    let { data } = await instance.get(`/produto/${id}`, { params: { ...params } })
 
     return data
   } catch (error) {

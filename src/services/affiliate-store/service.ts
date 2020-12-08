@@ -515,49 +515,37 @@ const getAffiliateStoreWithProducts = async (
         integration: Integrations.LOJA_INTEGRADA,
       }
 
-    const liHtmlOrdered = (
-      await Promise.all(
-        products.map(async (item) => {
-          const x = await fetchLojaIntegradaProductById(token, item.id)
-          const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
-          // const productStock = await fetchLojaIntegradaProductStockByProductId(token, item.id)
+    let liHtmlOrdered = ''
 
-          if (!x) return null
+    await Promise.all(
+      products.map(async (item) => {
+        if (!item) return null
 
-          let image = x.imagem_principal?.media
+        const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
 
-          // if (!image && x.pai) {
-          //   const paiMatch = x.pai.match('/api/v1/produto/77894091'.match(/[0-9]{3,}/gi))
-          //   if (paiMatch) {
-          //     console.log({ x })
-          //     const paiId = paiMatch[0]
-          //     console.log({ paiId })
-          //     const paiProduct = await fetchLojaIntegradaProductById(token, paiId)
-          //     console.log({ paiProduct })
-          //     image = paiProduct?.imagem_principal?.media
-          //   }
-          // }
+        let image = item.imagem_principal?.media
 
-          // if (!productStock?.quantidade_disponivel) return null
-
-          return `
-          <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 3rem">
-            <img style="width: 183px; height: 300px; object-fit: contain;" src="${image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}" />
-            <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${item.nome} </div>
-            ${productPrice.cheio ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ ${Number(productPrice.cheio).toFixed(2)}</div>` : ''}
-            <a style="background: black; color: white; text-align: center; padding: 0.7rem; border-radius: 8px; width: 100%;" 
-              href="${item.url}?utm_campaign=plugone-affiliate_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
-              COMPRAR 
-            </a>
-          </li>
-          `
-        })
-      )
-    ).filter((item) => item)
+        liHtmlOrdered += `
+        <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 3rem">
+          <img style="width: 183px; height: 300px; object-fit: contain;" src="${image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}" />
+          <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${item.nome} </div>
+          ${
+            productPrice?.cheio || productPrice?.promocional
+              ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ ${Number(productPrice.promocional ?? productPrice.cheio).toFixed(2)}</div>`
+              : ''
+          }
+          <a style="background: black; color: white; text-align: center; padding: 0.7rem; border-radius: 8px; width: 100%;" 
+            href="${item.url}?utm_campaign=plugone-affiliate_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
+            COMPRAR 
+          </a>
+        </li>
+        `
+      })
+    )
 
     return {
       affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
-      productsHtml: liHtmlOrdered.join('') ?? null,
+      productsHtml: liHtmlOrdered ?? null,
       affiliateId: affiliateStore?.users_organization_service_roles_id,
       integration: Integrations.LOJA_INTEGRADA,
     }
