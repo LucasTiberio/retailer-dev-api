@@ -13,7 +13,6 @@ import {
   onlyThreeBannersInAffiliateStore,
   affiliateStoreNotFound,
   organizationDoestNotHaveActiveIntegration,
-  onlyVtexIntegrationFeature,
   organizationDoesNotExist,
   organizationDomainNotFound,
 } from '../../common/errors'
@@ -37,21 +36,12 @@ import { affiliateStoreAdapter, affiliateStoreProductAdapter, organizationAffili
 
 /** Clients */
 import { fetchVtexProducts, fetchVtexProductsHtml, fetchVtexProductsByIds } from './client/vtex'
-import {
-  fetchLojaIntegradaProductsByTerm,
-  fetchLojaIntegradaProductsByIds,
-  fetchLojaIntegradaProductById,
-  fetchLojaIntegradaProductPriceByProductId,
-  fetchLojaIntegradaProductStockByProductId,
-} from './client/loja-integrada'
+import { fetchLojaIntegradaProductsByTerm, fetchLojaIntegradaProductById, fetchLojaIntegradaProductPriceByProductId } from './client/loja-integrada'
 
 import common from '../../common'
 import sharp from 'sharp'
-import knexDatabase from '../../knex-database'
-import { buildProductsHtmlVtexUrl } from '../vtex/helpers'
-import client from '../../lib/Redis'
 import { Integrations } from '../integration/types'
-import { OrganizationServiceMock } from '../../__mocks__'
+import redisClient, { ttl } from '../../lib/Redis'
 
 const handleAffiliateStore = async (
   input: ICreateAffiliateStore,
@@ -462,6 +452,14 @@ const removeOrganizationAffiliateStoreBanner = async (
   }
 }
 
+const clearAffiliateStoreLojaIntegradaCache = async (organizationId: string) => {
+  try {
+    await redisClient.del(`lojaIntegrada_affiliateStore_html_${organizationId}`)
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
 /**
  * get affiliate store with products html
  *
@@ -496,15 +494,75 @@ const getAffiliateStoreWithProducts = async (
   if (!organization.domain) throw new Error(organizationDomainNotFound)
 
   if (integration.type === Integrations.LOJA_INTEGRADA) {
-    const token = integration.identifier
     const productsIds = affiliateStoreProducts.map((item) => item.product_id)
 
-    const products = await Promise.all(
-      productsIds.map(async (item) => {
-        const product = await fetchLojaIntegradaProductById(token, item)
+    const lojaIntegradaAffiliateStoreHtmlCached = await redisClient.getAsync(`lojaIntegrada_affiliateStore_html_${input.organizationId}`)
 
+    let noCachedItems: any
+
+    let cachedItems: any
+
+    if (lojaIntegradaAffiliateStoreHtmlCached) {
+      cachedItems = JSON.parse(lojaIntegradaAffiliateStoreHtmlCached)
+
+      noCachedItems = productsIds.filter((item) => {
+        return !cachedItems.find((cachedItem: any) => {
+          return String(cachedItem.id) === item
+        })
+      })
+    }
+
+    if (!noCachedItems?.length && cachedItems && cachedItems.length) {
+      let cachedItemsHtml = ''
+
+      cachedItems
+        .filter((item: any) => {
+          return productsIds.find((productId) => {
+            return productId === String(item.id)
+          })
+        })
+        .forEach((element: any) => {
+          cachedItemsHtml += `
+        <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 3rem">
+          <img style="width: 183px; height: 300px; object-fit: contain;" src="${element.image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}" />
+          <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${element.nome} </div>
+          ${element.preco ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ ${Number(element.preco).toFixed(2)}</div>` : ''}
+          <a style="background: black; color: white; text-align: center; padding: 0.7rem; border-radius: 8px; width: 100%;" 
+            href="${element.url}?utm_campaign=plugone-affiliate_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
+            COMPRAR 
+          </a>
+        </li>
+        `
+        })
+
+      return {
+        affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
+        productsHtml: cachedItemsHtml,
+        affiliateId: affiliateStore?.users_organization_service_roles_id,
+        integration: Integrations.LOJA_INTEGRADA,
+      }
+    }
+
+    const token = integration.identifier
+
+    const products: any = await Promise.all(
+      (noCachedItems ?? productsIds).map(async (item: any) => {
+        const product = await fetchLojaIntegradaProductById(token, item.id ?? item)
         return product
       })
+    )
+
+    let cachingObject: any = products.map((product: any) => ({
+      id: product.id,
+      image: product.imagem_principal?.media,
+      nome: product.nome,
+      url: product.url,
+    }))
+
+    await new Promise((resolve) =>
+      setTimeout(() => {
+        resolve()
+      }, 3000)
     )
 
     if (products && !products.length)
@@ -515,31 +573,44 @@ const getAffiliateStoreWithProducts = async (
         integration: Integrations.LOJA_INTEGRADA,
       }
 
+    await Promise.all(
+      products.map(async (item: any) => {
+        if (!item) return null
+
+        const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
+
+        let index = cachingObject.findIndex((obj: any) => obj.id === item.id)
+        cachingObject[index].preco = productPrice?.cheio || productPrice?.promocional ? productPrice.promocional ?? productPrice.cheio : ''
+      })
+    )
+
+    const remaningTime = await ttl(`lojaIntegrada_affiliateStore_html_${input.organizationId}`)
+
+    const allProducts = cachedItems ? cachingObject.concat(cachedItems) : cachingObject
+
+    await redisClient.setAsync(`lojaIntegrada_affiliateStore_html_${input.organizationId}`, JSON.stringify(allProducts), 'EX', remaningTime > 0 ? remaningTime : 86400)
+
     let liHtmlOrdered = ''
 
-    for (var item of products) {
-      if (!item) return null
-
-      const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
-
-      let image = item.imagem_principal?.media
-
-      liHtmlOrdered += `
-        <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 3rem">
-          <img style="width: 183px; height: 300px; object-fit: contain;" src="${image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}" />
-          <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${item.nome} </div>
-          ${
-            productPrice?.cheio || productPrice?.promocional
-              ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ ${Number(productPrice.promocional ?? productPrice.cheio).toFixed(2)}</div>`
-              : ''
-          }
-          <a style="background: black; color: white; text-align: center; padding: 0.7rem; border-radius: 8px; width: 100%;" 
-            href="${item.url}?utm_campaign=plugone-affiliate_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
-            COMPRAR 
-          </a>
-        </li>
-        `
-    }
+    allProducts
+      .filter((item: any) => {
+        return productsIds.find((productId) => {
+          return productId === String(item.id)
+        })
+      })
+      .forEach((element: any) => {
+        liHtmlOrdered += `
+      <li style="display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; margin-bottom: 5rem; padding: 2rem 3rem">
+        <img style="width: 183px; height: 300px; object-fit: contain;" src="${element.image ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg'}" />
+        <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${element.nome} </div>
+        ${element.preco ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ ${Number(element.preco).toFixed(2)}</div>` : ''}
+        <a style="background: black; color: white; text-align: center; padding: 0.7rem; border-radius: 8px; width: 100%;" 
+          href="${element.url}?utm_campaign=plugone-affiliate_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
+          COMPRAR 
+        </a>
+      </li>
+      `
+      })
 
     return {
       affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
@@ -585,4 +656,5 @@ export default {
   handleProductOnAffiliateStoreOrder,
   getAffiliateStoreAddedProducts,
   handleOrganizationAffiliateStore,
+  clearAffiliateStoreLojaIntegradaCache,
 }

@@ -49,6 +49,7 @@ const typeDefsBase = gql`
   directive @ordersService on FIELD | FIELD_DEFINITION
   directive @hasEnterpriseToken on FIELD | FIELD_DEFINITION
   directive @vtexFeature on FIELD | FIELD_DEFINITION
+  directive @lojaIntegradaFeature on FIELD | FIELD_DEFINITION
   directive @hasIntegration on FIELD | FIELD_DEFINITION
   directive @hasSalesToken on FIELD | FIELD_DEFINITION
   directive @SaasIntegration on FIELD | FIELD_DEFINITION
@@ -247,6 +248,20 @@ const directiveResolvers: IDirectiveResolvers = {
 
     if (integration.type !== Integrations.VTEX) {
       throw new Error(onlyVtexIntegrationFeature)
+    }
+
+    context.secret = integration.secret
+    return next()
+  },
+  async lojaIntegradaFeature(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+
+    if (!organizationId) throw new Error('Organization identifier invalid!')
+
+    const integration = await IntegrationService.getIntegrationByOrganizationId(organizationId)
+
+    if (integration.type !== Integrations.LOJA_INTEGRADA) {
+      throw new Error('only_loja_integrada_feature')
     }
 
     context.secret = integration.secret

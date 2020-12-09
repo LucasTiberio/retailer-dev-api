@@ -20,6 +20,14 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
+  clearAffiliateStoreLojaIntegradaCache: Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @lojaIntegradaFeature
+    @hasAffiliateStore
+    @organizationPaidVerify
+    @acceptTermsAndConditions
+    @isVerified
+    @isAuthenticated
   addOrganizationAffiliateStoreBanner(input: AddOrganizationAffiliateStoreBannerInput!): OrganizationAffiliateStoreBanner!
     @hasOrganizationRole(role: ["ADMIN"])
     @hasAffiliateStore

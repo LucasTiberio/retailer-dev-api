@@ -22,4 +22,6 @@ if (process.env.NODE_ENV === 'test') {
   })
 }
 
+export const ttl = bluebird.promisify(client.ttl).bind(client)
+
 export default client
