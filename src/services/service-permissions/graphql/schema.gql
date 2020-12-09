@@ -1,13 +1,13 @@
 extend type Query {
   userOrganizationPermissions(input: UserOrganizationPermissionsInput): [OrganizationPermissions]!
     @hasOrganizationRole(role: ["ADMIN", "MEMBER"])
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   userServicePermissions(input: UserServicePermissionsInput!): [ServicePermissions]!
     @hasServiceRole(role: ["ADMIN", "RESPONSIBLE", "ANALYST", "SALE"])
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
 }
 

@@ -392,8 +392,8 @@ const directiveResolvers: IDirectiveResolvers = {
   },
   async isVerified(next, _, __, context): Promise<NextFunction> {
     const [user] = await knexDatabase.knexConfig('users').where('id', context.client.id).select()
-    if (!user) throw new Error('user not found!')
-    if (!user.verified) throw new Error('you need verify your email!')
+    if (!user) throw new Error('user_not_found')
+    if (!user.verified) throw new Error('verify_your_email')
     return next()
   },
   async hasAffiliateStore(next, _, __, context): Promise<NextFunction> {

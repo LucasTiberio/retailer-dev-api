@@ -1,5 +1,5 @@
 extend type Query {
-  menuTree: [MenuTree]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  menuTree: [MenuTree]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type MenuTree {
