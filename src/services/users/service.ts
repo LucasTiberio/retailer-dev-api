@@ -85,6 +85,14 @@ const verifyEmail = async (hash: string, trx: Transaction) => {
   }
 }
 
+const isUserVerified = async (client: IUserToken, trx: Transaction) => {
+  if (!client) throw new Error('Token must be provided.')
+
+  const user = await getUserById(client.id, trx);
+
+  return user.verified;
+}
+
 const getUserByEmail = async (email: string, trx: Transaction) => {
   const [user] = await (trx || database.knexConfig)('users').where('email', email).select()
 
@@ -164,6 +172,7 @@ export default {
   getUser,
   getUserByEmail,
   getUserById,
+  isUserVerified,
   signUpWithEmailOnly,
   _signUpAdapter,
   getUserByNameOrEmail,

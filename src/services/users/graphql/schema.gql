@@ -1,5 +1,6 @@
 extend type Query {
   getUser: User! @acceptTermsAndConditions @isVerified @isAuthenticated
+  isUserVerified: Boolean! @acceptTermsAndConditions @isAuthenticated
 }
 
 extend type Mutation {

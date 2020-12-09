@@ -32,7 +32,12 @@ const resolvers : IResolvers = {
       return database.knexConfig.transaction((trx: Transaction) => {
         return service.getUser(client, trx);
       })
-    } 
+    },
+    isUserVerified: (_, __, { client }) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
+        return service.isUserVerified(client, trx);
+      })
+    }
   },
   User: {
     organizations: (obj, { organizationId }) => {
