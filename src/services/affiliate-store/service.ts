@@ -455,6 +455,7 @@ const removeOrganizationAffiliateStoreBanner = async (
 const clearAffiliateStoreLojaIntegradaCache = async (organizationId: string) => {
   try {
     await redisClient.del(`lojaIntegrada_affiliateStore_html_${organizationId}`)
+    return true
   } catch (error) {
     throw new Error(error.message)
   }
