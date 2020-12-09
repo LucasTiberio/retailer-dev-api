@@ -1,19 +1,19 @@
 extend type Query {
-  listAvailablePlans: [Plan]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  listOrganizationCustomerPayment: [OrganizationCustomerPayment]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  getSubscriptionByOrganizationId(input: GetSubscriptionByOrganizationIdInput): Subscription @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  listAvailablePlans: [Plan]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  listOrganizationCustomerPayment: [OrganizationCustomerPayment]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getSubscriptionByOrganizationId(input: GetSubscriptionByOrganizationIdInput): Subscription @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 extend type Mutation {
-  sendRecurrencyTransaction(input: SendRecurrencyTransactionInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  sendRecurrencyTransaction(input: SendRecurrencyTransactionInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   createEnterpriseRecurrencyTransaction(input: CreateEnterpriseRecurrencyTransaction!): Boolean! @hasEnterpriseToken
-  updateRecurrencyTransaction(input: UpdateRecurrencyTransactionInput!): Subscription! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  cancelRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  activateRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  createOrganizationCustomer(input: CreateOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  editOrganizationCustomer(input: EditOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  createOrganizationCustomerPayment(input: CreateOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  removeOrganizationCustomerPayment(input: RemoveOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  updateRecurrencyTransaction(input: UpdateRecurrencyTransactionInput!): Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  cancelRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  activateRecurrencyTransaction: Subscription! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  createOrganizationCustomer(input: CreateOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  editOrganizationCustomer(input: EditOrganizationCustomerInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  createOrganizationCustomerPayment(input: CreateOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  removeOrganizationCustomerPayment(input: RemoveOrganizationCustomerPaymentInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 input CreateEnterpriseRecurrencyTransaction {

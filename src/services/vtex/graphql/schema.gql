@@ -1,5 +1,5 @@
 extend type Query {
-  vtexDepartmentsCommissions: [VtexDepartmentsComissionsAdapted]! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  vtexDepartmentsCommissions: [VtexDepartmentsComissionsAdapted]! @hasServiceRole(role: ["ANALYST", "RESPONSIBLE", "ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   vtexAffiliateCommission(input: VtexAffiliateCommissionInput!): [VtexDepartmentsComissionsPercentage]! @ordersService
 }
 
@@ -15,8 +15,8 @@ input VtexAffiliateCommissionInput {
 }
 
 extend type Mutation {
-  handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
-  verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @acceptTermsAndConditions @isVerified @isAuthenticated
+  handleOrganizationVtexCommission(input: HandleOrganizationVtexCommissionInput!): VtexDepartmentsComissions! @hasServiceRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  verifyAndAttachVtexSecrets(input: VerifyAndAttachVtexSecretsInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 input HandleOrganizationVtexCommissionInput {

@@ -1,8 +1,8 @@
 extend type Query {
   userOrganizationPermissions(input: UserOrganizationPermissionsInput): [OrganizationPermissions]!
     @hasOrganizationRole(role: ["ADMIN", "MEMBER"])
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
 }
 
