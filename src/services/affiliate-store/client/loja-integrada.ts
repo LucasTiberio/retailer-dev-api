@@ -73,7 +73,7 @@ export const fetchLojaIntegradaProducts = async (lojaIntegradaToken: string, org
       return accumulatorPromise.then(async () => {
         await new Promise(async (resolve) => {
           setTimeout(() => {
-            resolve()
+            resolve('resolvido')
           }, 100)
         })
         return await new Promise(async (resolve) => {
