@@ -118,8 +118,7 @@ const generateShortenerUrl = async (
     const iuguUrlWithMemberAttached = `${originalUrl}?utm_source=plugone_affiliate&utm_campaign=${context.organizationId}_${affiliate.id}`
     memberUrlToAttach = iuguUrlWithMemberAttached
   } else if (integration.type === Integrations.KLIPFOLIO) {
-    //TODO PERGUNTAR
-    const iuguUrlWithMemberAttached = `${originalUrl}?utm_source=plugone_affiliate&utm_campaign=${context.organizationId}_${affiliate.id}`
+    const iuguUrlWithMemberAttached = `${originalUrl}?utm_source=afiliados&utm_medium=indicaae&utm_campaign=${context.organizationId}_${affiliate.id}`
     memberUrlToAttach = iuguUrlWithMemberAttached
   } else {
     throw new Error(integrationTypeShortenerGeneratorNotFound)
