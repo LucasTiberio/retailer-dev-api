@@ -5,6 +5,7 @@ extend type Query {
 
 extend type Mutation {
   signUp(input: SignUpInput!): User!
+  signUpWithOrganization(input: SignUpWithOrganizationInput!): User!
   userVerifyEmail(input: UserVerifyEmailInput!): Boolean
   userRecoveryPassword(input: UserRecoveryPasswordInput!): Boolean
   userPasswordChange(input: UserPasswordChangeInput!): Boolean
@@ -32,6 +33,21 @@ input SignUpInput {
   phone: String!
 }
 
+input SignUpWithOrganizationInput {
+  username: String!
+  email: String!
+  password: String!
+  document: String!
+  documentType: DocumentType!
+  phone: String!
+  organizationInfos: OrganizationInfos!
+}
+
+input OrganizationInfos {
+  organization: OrganizationInput!
+  additionalInfos: AdditionalInfos!
+}
+
 type User {
   id: String!
   username: String
@@ -40,6 +56,7 @@ type User {
   documentType: DocumentType
   phone: String
   organizations(organizationId: String): [Organization]!
+  token: String
 }
 
 enum DocumentType {
