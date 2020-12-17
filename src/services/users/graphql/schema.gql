@@ -27,11 +27,22 @@ input SignUpInput {
   username: String!
   email: String!
   password: String!
+  document: String!
+  documentType: DocumentType!
+  phone: String!
 }
 
 type User {
   id: String!
   username: String
   email: String!
+  document: String
+  documentType: DocumentType
+  phone: String
   organizations(organizationId: String): [Organization]!
+}
+
+enum DocumentType {
+  rg
+  cpf
 }

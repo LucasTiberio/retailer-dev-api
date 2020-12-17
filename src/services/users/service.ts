@@ -10,6 +10,9 @@ const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
   email: record.email,
   id: record.id,
+  document: record.document,
+  documentType: record.document_type,
+  phone: record.phone,
 })
 
 const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
@@ -24,7 +27,7 @@ const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
 }
 
 const signUp = async (attrs: ISignUp, trx: Transaction) => {
-  const { username, password, email } = attrs
+  const { username, password, email, document, documentType, phone } = attrs
 
   if (!common.verifyPassword(password))
     throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
@@ -34,7 +37,7 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
   if (userPreAddedFound && (userPreAddedFound.encrypted_password || userPreAddedFound.username)) throw new Error('user already registered.')
 
   const encryptedPassword = await common.encrypt(password)
-  const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ ...attrs, timestamp: +new Date() }))
+  const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
 
   let signUpCreated: ISignUpFromDB[]
 
@@ -45,6 +48,9 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
           username,
           encrypted_password: encryptedPassword,
           verification_hash: encryptedHashVerification,
+          document,
+          documentType,
+          phone,
         })
         .where('id', userPreAddedFound.id)
         .into('users')
@@ -56,6 +62,9 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
           email,
           encrypted_password: encryptedPassword,
           verification_hash: encryptedHashVerification,
+          document,
+          documentType,
+          phone,
         })
         .into('users')
         .returning('*')
@@ -88,9 +97,9 @@ const verifyEmail = async (hash: string, trx: Transaction) => {
 const isUserVerified = async (client: IUserToken, trx: Transaction) => {
   if (!client) throw new Error('Token must be provided.')
 
-  const user = await getUserById(client.id, trx);
+  const user = await getUserById(client.id, trx)
 
-  return user.verified;
+  return user.verified
 }
 
 const getUserByEmail = async (email: string, trx: Transaction) => {
