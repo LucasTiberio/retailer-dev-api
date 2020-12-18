@@ -526,11 +526,13 @@ const requestAffiliateServiceMembers = async (users: string[], organizationId: s
           trx
         )
 
-        await MailService.sendInviteNewUserMail({
-          email: userEmail.email,
-          hashToVerify,
-          organizationName: organizationName,
-        })
+        if (organizationPublic) {
+          await MailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organizationName,
+          })
+        }
 
         return userOrganizationCreated
       })
