@@ -167,6 +167,7 @@ type ResponseOrganizationInvitePayload {
   status: Boolean!
   email: String
   message: String
+  requested: Boolean
 }
 
 input HandleUserPermissionInOrganizationInput {

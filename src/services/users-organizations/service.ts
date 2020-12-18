@@ -36,13 +36,13 @@ const handleMemberInvitation = async (
     if (member.encrypted_password && member.username) {
       await MailService.sendInviteUserMail({
         email: member.email,
-        hashToVerify: memberUpdated.verification_hash,
+        hashToVerify: memberUpdated.invite_hash,
         organizationName: organization.name,
       })
     } else {
       await MailService.sendInviteNewUserMail({
         email: member.email,
-        hashToVerify: memberUpdated.verification_hash,
+        hashToVerify: memberUpdated.invite_hash,
         organizationName: organization.name,
       })
     }
