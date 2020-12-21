@@ -5,11 +5,17 @@ import { Transaction } from 'knex'
 import database from '../../knex-database'
 import knexDatabase from '../../knex-database'
 import { IUserToken } from '../authentication/types'
+import OrganizationService from '../organization/service'
+import { RedisClient } from 'redis'
+import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
   email: record.email,
   id: record.id,
+  document: record.document,
+  documentType: record.document_type,
+  phone: record.phone,
 })
 
 const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
@@ -24,7 +30,7 @@ const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
 }
 
 const signUp = async (attrs: ISignUp, trx: Transaction) => {
-  const { username, password, email } = attrs
+  const { username, password, email, document, documentType, phone } = attrs
 
   if (!common.verifyPassword(password))
     throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
@@ -34,7 +40,7 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
   if (userPreAddedFound && (userPreAddedFound.encrypted_password || userPreAddedFound.username)) throw new Error('user already registered.')
 
   const encryptedPassword = await common.encrypt(password)
-  const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ ...attrs, timestamp: +new Date() }))
+  const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
 
   let signUpCreated: ISignUpFromDB[]
 
@@ -45,6 +51,9 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
           username,
           encrypted_password: encryptedPassword,
           verification_hash: encryptedHashVerification,
+          document,
+          document_type: documentType,
+          phone,
         })
         .where('id', userPreAddedFound.id)
         .into('users')
@@ -56,6 +65,9 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
           email,
           encrypted_password: encryptedPassword,
           verification_hash: encryptedHashVerification,
+          document,
+          document_type: documentType,
+          phone,
         })
         .into('users')
         .returning('*')
@@ -63,11 +75,95 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
 
     await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
 
-    return _signUpAdapter(signUpCreated[0])
+    return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
   } catch (e) {
     console.log(e)
     trx.rollback()
     throw new Error(e.message)
+  }
+}
+
+const signUpWithOrganization = async (
+  input: ISignUp & {
+    organizationInfos: {
+      organization: {
+        name: string
+        contactEmail: string
+        phone: string
+      }
+      additionalInfos: {
+        segment: string
+        resellersEstimate: number
+        reason: string
+        plataform: string
+      }
+    }
+  },
+  context: { redisClient: RedisClient },
+  trx: Transaction
+) => {
+  try {
+    const { username, password, email, document, documentType, phone } = input
+
+    if (!common.verifyPassword(password))
+      throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
+
+    const [userPreAddedFound] = await (trx || knexDatabase.knexConfig)('users').whereRaw('LOWER(email) = LOWER(?)', email).select('id', 'encrypted_password', 'username')
+
+    if (userPreAddedFound && (userPreAddedFound.encrypted_password || userPreAddedFound.username)) throw new Error('user already registered.')
+
+    const encryptedPassword = await common.encrypt(password)
+    const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
+
+    let signUpCreated: ISignUpFromDB[]
+
+    if (userPreAddedFound) {
+      signUpCreated = await (trx || database.knexConfig)
+        .update({
+          username,
+          encrypted_password: encryptedPassword,
+          verification_hash: encryptedHashVerification,
+          document,
+          document_type: documentType,
+          phone,
+        })
+        .where('id', userPreAddedFound.id)
+        .into('users')
+        .returning('*')
+    } else {
+      signUpCreated = await (trx || database.knexConfig)
+        .insert({
+          username,
+          email,
+          encrypted_password: encryptedPassword,
+          verification_hash: encryptedHashVerification,
+          document,
+          document_type: documentType,
+          phone,
+        })
+        .into('users')
+        .returning('*')
+    }
+
+    await OrganizationService.createOrganization(
+      input.organizationInfos,
+      {
+        client: {
+          id: signUpCreated[0].id,
+          origin: 'user',
+        },
+        redisClient: context.redisClient,
+        createOrganizationWithoutIntegrationSecret: CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET,
+      },
+      trx
+    )
+
+    await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+
+    return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
+  } catch (error) {
+    await trx.rollback()
+    throw new Error(error.message)
   }
 }
 
@@ -83,6 +179,14 @@ const verifyEmail = async (hash: string, trx: Transaction) => {
   } catch (e) {
     throw new Error(e.message)
   }
+}
+
+const isUserVerified = async (client: IUserToken, trx: Transaction) => {
+  if (!client) throw new Error('Token must be provided.')
+
+  const user = await getUserById(client.id, trx)
+
+  return user.verified
 }
 
 const getUserByEmail = async (email: string, trx: Transaction) => {
@@ -164,7 +268,9 @@ export default {
   getUser,
   getUserByEmail,
   getUserById,
+  isUserVerified,
   signUpWithEmailOnly,
   _signUpAdapter,
   getUserByNameOrEmail,
+  signUpWithOrganization,
 }

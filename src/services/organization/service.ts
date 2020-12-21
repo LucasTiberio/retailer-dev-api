@@ -526,11 +526,13 @@ const requestAffiliateServiceMembers = async (users: string[], organizationId: s
           trx
         )
 
-        await MailService.sendInviteNewUserMail({
-          email: userEmail.email,
-          hashToVerify,
-          organizationName: organizationName,
-        })
+        if (organizationPublic) {
+          await MailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organizationName,
+          })
+        }
 
         return userOrganizationCreated
       })
@@ -570,7 +572,7 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
     .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
 
   try {
-    if (!user) return { status: true, message: userAlreadyRegistered }
+    if (!user) return { status: true, message: userAlreadyRegistered, requested: user.is_requested }
 
     await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
@@ -589,10 +591,11 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
       return {
         status: false,
         email: user.email,
+        requested: user.is_requested,
       }
     }
 
-    return { status: true }
+    return { status: true, requested: user.is_requested }
   } catch (e) {
     throw new Error(e.message)
   }

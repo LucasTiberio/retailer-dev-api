@@ -1,9 +1,9 @@
 extend type Query {
-  getTermsAndConditions: TermsAndConditions @isVerified @isAuthenticated
+  getTermsAndConditions: TermsAndConditions @isAuthenticated
 }
 
 extend type Mutation {
-  sendTermsAndConditions(input: SendTermsAndConditionsInput!): Boolean! @isVerified @isAuthenticated
+  sendTermsAndConditions(input: SendTermsAndConditionsInput!): Boolean! @isAuthenticated
 }
 
 type TermsAndConditions {

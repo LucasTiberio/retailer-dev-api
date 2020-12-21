@@ -1,9 +1,9 @@
 extend type Query {
-  getAllCommissionsBonifications: [CommissionBonification]! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAllCommissionsBonifications: [CommissionBonification]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   getCommissionBonificationById(input: GetCommissionBonificationByIdInput!): CommissionBonificationWithRules!
     @hasOrganizationRole(role: ["ADMIN"])
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
 }
 
@@ -11,14 +11,14 @@ extend type Mutation {
   createCommissionBonification(input: CreateCommissionBonificationInput!): CommissionBonificationWithRules!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   deleteCommissionBonification(input: DeleteCommissionBonificationInput!): CommissionBonification!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
 }
 
