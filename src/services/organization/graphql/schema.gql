@@ -1,6 +1,6 @@
 extend type Query {
   verifyOrganizationName(input: VerifyOrganizationNameInput!): Boolean @isAuthenticated
-  listMyOrganizations: [Organization]! @isVerified @acceptTermsAndConditions @isAuthenticated
+  listMyOrganizations: [Organization]! @acceptTermsAndConditions @isAuthenticated
   organizationDetails: Organization! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   listUsersInOrganization(input: ListUsersInOrganizationInput!): ListUsersInOrganizationPayload!
     @hasOrganizationRole(role: ["ADMIN"])
