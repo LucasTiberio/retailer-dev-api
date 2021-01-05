@@ -3,14 +3,42 @@ import { buildGetCategoriesThreeVtexUrl, buildGetProductByProductIdVtexUrl, buil
 import { LOJA_INTEGRADA_APPLICATION_KEY } from '../../../common/consts'
 
 const getLojaIntegradaCategories = async (identifier: string) => {
-  const { data: dataLojaIntegradaCategories } = await Axios.get('https://api.awsli.com.br/v1/categoria', {
+  let { data: dataLojaIntegradaCategories } = await Axios.get('https://api.awsli.com.br/v1/categoria', {
     params: {
       chave_aplicacao: process.env.LOJA_INTEGRADA_APPLICATION_KEY,
       chave_api: identifier,
     },
   })
 
-  return dataLojaIntegradaCategories.objects
+  let categories = dataLojaIntegradaCategories.objects
+
+  const pagesToLoop = Math.ceil(dataLojaIntegradaCategories.meta.total_count / 20) - 1
+
+  if (pagesToLoop > 0) {
+    let offsets = []
+
+    for (let index = 1; index <= pagesToLoop; index++) {
+      offsets.push(index * 20 + 20)
+    }
+
+    let otherCategories: any = []
+
+    for (const offset of offsets) {
+      let { data: dataLojaIntegradaCategories } = await Axios.get('https://api.awsli.com.br/v1/categoria', {
+        params: {
+          chave_aplicacao: process.env.LOJA_INTEGRADA_APPLICATION_KEY,
+          chave_api: identifier,
+          offset,
+        },
+      })
+
+      otherCategories = [...otherCategories, ...dataLojaIntegradaCategories.objects]
+    }
+
+    return categories.concat(otherCategories)
+  } else {
+    return categories
+  }
 }
 
 const getVtexCategoriesCategories = async (accountName: string) => {
