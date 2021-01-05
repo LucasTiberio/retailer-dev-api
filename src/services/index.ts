@@ -23,9 +23,11 @@ import FinantialConciliation from './finantial-conciliation'
 import UserOrganizationService from './users-organizations'
 import OrganizationRulesService from './organization-rules'
 import AbandonedCartService from './abandoned-cart'
+import WhiteLabelService from './white-label'
 
 let services = [
   SaasIntegrationService,
+  WhiteLabelService,
   UserOrganizationService,
   CommissionBonificationService,
   TermsAndConditionService,

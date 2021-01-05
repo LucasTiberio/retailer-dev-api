@@ -1,0 +1,27 @@
+extend type Query {
+  getWhiteLabelInfos: WhiteLabelInfos! @isAuthenticated
+}
+
+extend type Mutation {
+  sendWhiteLabelInfos(input: SendWhiteLabelInfosInput!): WhiteLabelInfos!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @enterpriseFeature
+    @isVerified
+    @acceptTermsAndConditions
+    @isAuthenticated
+}
+
+type WhiteLabelInfos {
+  primaryColor: String
+  secondColor: String
+  tertiaryColor: String
+  logo: String
+}
+
+input SendWhiteLabelInfosInput {
+  primaryColor: String
+  secondColor: String
+  tertiaryColor: String
+  logo: String
+}
