@@ -2,7 +2,7 @@ export interface IWhiteLabelInfos {
   primaryColor: string
   secondColor: string
   tertiaryColor: string
-  logo: string
+  logo: any
 }
 
 export interface IWhiteLabelInfosFromDB {
@@ -10,4 +10,9 @@ export interface IWhiteLabelInfosFromDB {
   second_color: string
   tertiary_color: string
   logo: string
+}
+
+export interface ILogo {
+  mimetype: string
+  data: any
 }
