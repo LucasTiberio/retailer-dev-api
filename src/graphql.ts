@@ -210,10 +210,10 @@ const directiveResolvers: IDirectiveResolvers = {
     const token = context.headers['x-api-token']
     if (!token) throw new Error('token must be provided!')
 
-    const organizationId = await redisClient.getAsync(context.client.id)
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET)
       context.client = decoded
+      const organizationId = await redisClient.getAsync(context.client.id)
       if (organizationId) {
         context.organizationId = organizationId
       }
