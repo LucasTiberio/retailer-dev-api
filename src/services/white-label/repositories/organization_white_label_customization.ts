@@ -5,8 +5,13 @@ import camelToSnakeCase from '../../../utils/camelToSnakeCase'
 import { IWhiteLabelInfos } from '../types'
 import { whiteLabelInfosAdapter } from '../adapter'
 
-const getWhiteLabelInfosByOrganizationId = async (organizationId: string, trx?: Transaction) => {
-  const whiteLabelInfos = await (trx || knexDatabase.knexConfig)('organization_white_label_customization').where('organization_id', organizationId).first().select()
+const getWhiteLabelInfosByOrganizationId = async (organizationId?: string, trx?: Transaction, domain?: String) => {
+  let whiteLabelInfos
+  if (domain) {
+    whiteLabelInfos = await (trx || knexDatabase.knexConfig)('organization_white_label_customization').where('custom_domain', domain).first().select()
+  } else {
+    whiteLabelInfos = await (trx || knexDatabase.knexConfig)('organization_white_label_customization').where('organization_id', organizationId).first().select()
+  }
   return whiteLabelInfos ? whiteLabelInfosAdapter(whiteLabelInfos) : null
 }
 

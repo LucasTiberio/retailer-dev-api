@@ -17,6 +17,11 @@ const resolvers: IResolvers = {
         return service.getWhiteLabelInfos(organizationId, trx)
       })
     },
+    getWhiteLabelInfosByDomain: (_, { input }) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
+        return service.getWhiteLabelInfosByDomain(input.domain, trx)
+      })
+    },
   },
 }
 

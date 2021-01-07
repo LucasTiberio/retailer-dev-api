@@ -1,5 +1,6 @@
 extend type Query {
   getWhiteLabelInfos: WhiteLabelInfos! @isAuthenticated
+  getWhiteLabelInfosByDomain(input: GetWhiteLabelInfosInput!): WhiteLabelInfos!
 }
 
 extend type Mutation {
@@ -24,4 +25,8 @@ input SendWhiteLabelInfosInput {
   secondColor: String
   tertiaryColor: String
   logo: Upload
+}
+
+input GetWhiteLabelInfosInput {
+  domain: String!
 }

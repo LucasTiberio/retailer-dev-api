@@ -35,6 +35,21 @@ const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
   }
 }
 
+const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
+  const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, domain)
+
+  if (!whiteLabelInfos) {
+    return defaultWhiteLabel
+  }
+
+  return {
+    primaryColor: whiteLabelInfos.primaryColor ?? defaultWhiteLabel.primaryColor,
+    secondColor: whiteLabelInfos.secondColor ?? defaultWhiteLabel.secondColor,
+    tertiaryColor: whiteLabelInfos.tertiaryColor ?? defaultWhiteLabel.tertiaryColor,
+    logo: whiteLabelInfos.logo ?? defaultWhiteLabel.logo,
+  }
+}
+
 const sendWhiteLabelInfos = async (input: IWhiteLabelInfos, organizationId: string, trx: Transaction) => {
   try {
     if (input.logo) {
@@ -80,4 +95,5 @@ const handleWhiteLabelLogoImage = async (width: number, height: number, input: I
 export default {
   getWhiteLabelInfos,
   sendWhiteLabelInfos,
+  getWhiteLabelInfosByDomain,
 }
