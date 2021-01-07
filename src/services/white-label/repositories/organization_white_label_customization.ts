@@ -21,7 +21,9 @@ const sendWhiteLabelInfosByOrganizationId = async (input: IWhiteLabelInfos, orga
     let [whiteLabelInfoUpdated] = await (trx || knexDatabase.knexConfig)('organization_white_label_customization').update(inputAdapted).where('organization_id', organizationId).returning('*')
     return whiteLabelInfosAdapter(whiteLabelInfoUpdated)
   } else {
-    let [whiteLabelInfoCreated] = await (trx || knexDatabase.knexConfig)('organization_white_label_customization').insert(inputAdapted).where('organization_id', organizationId).returning('*')
+    let [whiteLabelInfoCreated] = await (trx || knexDatabase.knexConfig)('organization_white_label_customization')
+      .insert({ ...inputAdapted, organization_id: organizationId })
+      .returning('*')
     return whiteLabelInfosAdapter(whiteLabelInfoCreated)
   }
 }
