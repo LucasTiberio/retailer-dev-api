@@ -78,7 +78,7 @@ const handleWhiteLabelLogoImage = async (width: number, height: number, input: I
   const path = common.encryptSHA256(organizationId)
 
   const pipeline = sharp().resize(width, height, {
-    fit: 'cover',
+    fit: 'contain',
   })
 
   let newData
