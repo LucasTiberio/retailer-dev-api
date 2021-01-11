@@ -18,6 +18,7 @@ type WhiteLabelInfos {
   secondColor: String
   tertiaryColor: String
   logo: String
+  isWhiteLabel: Boolean
 }
 
 input SendWhiteLabelInfosInput {
