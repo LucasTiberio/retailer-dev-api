@@ -42,11 +42,10 @@ const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
     return defaultWhiteLabel
   }
 
-  const isWhiteLabel =
-    whiteLabelInfos.primaryColor !== defaultWhiteLabel.primaryColor || 
-    whiteLabelInfos.secondColor !== defaultWhiteLabel.secondColor || 
-    whiteLabelInfos.tertiaryColor !== defaultWhiteLabel.tertiaryColor || 
-    whiteLabelInfos.logo !== defaultWhiteLabel.logo;
+  let isWhiteLabel = false;
+  if (whiteLabelInfos.primaryColor || whiteLabelInfos.secondColor || whiteLabelInfos.tertiaryColor || whiteLabelInfos.logo) {
+    isWhiteLabel = true;
+  }
 
   return {
     primaryColor: whiteLabelInfos.primaryColor ?? defaultWhiteLabel.primaryColor,
