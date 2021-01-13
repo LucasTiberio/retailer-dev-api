@@ -27,3 +27,14 @@ export const _serviceAdapter = (record: IServiceAdaptedFromDB) => {
     active: record.active,
     bankDataId: record.bank_data_id
   })
+  
+  export const _usersOrganizationServiceAdapterWithSlug = (record : IUsersOrganizationServiceDB) => ({
+    id: record.id,
+    serviceRolesId: record.service_roles_id,
+    usersOrganizationId: record.users_organization_id,
+    slug: record.slug,
+    createdAt: record.created_at,
+    updatedAt: record.updated_at,
+    active: record.active,
+    bankDataId: record.bank_data_id
+  })
