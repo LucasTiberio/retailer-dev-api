@@ -470,7 +470,17 @@ const inviteAffiliateServiceMembers = async (
   }
 }
 
-const requestAffiliateServiceMembers = async (users: string[], organizationId: string, organizationName: string, organizationPublic: boolean, trx: Transaction) => {
+const requestAffiliateServiceMembers = async (
+  body: {
+    email: string
+    username: string
+    phone: string
+  }[],
+  organizationId: string,
+  organizationName: string,
+  organizationPublic: boolean,
+  trx: Transaction
+) => {
   const integration = await IntegrationsService.getIntegrationByOrganizationId(organizationId, trx)
 
   if (!integration || !integration.active) throw new Error('Integration not implemented')
@@ -481,7 +491,7 @@ const requestAffiliateServiceMembers = async (users: string[], organizationId: s
 
   const hasFounder = await isFounderBulk(
     organizationId,
-    users.map((item) => item),
+    body.map((item) => item.email),
     trx
   )
 
@@ -491,10 +501,10 @@ const requestAffiliateServiceMembers = async (users: string[], organizationId: s
 
   try {
     await Promise.all(
-      users.map(async (item: string) => {
+      body.map(async (item) => {
         let hashToVerify = await common.encryptSHA256(JSON.stringify({ item, timestamp: +new Date() }))
 
-        let userEmail = await UserService.getUserByEmail(item, trx)
+        let userEmail = await UserService.getUserByEmail(item.email, trx)
 
         if (userEmail) {
           const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
@@ -503,7 +513,7 @@ const requestAffiliateServiceMembers = async (users: string[], organizationId: s
             return console.log('ja existe')
           }
         } else {
-          userEmail = await UserService.signUpWithEmailOnly(item, trx)
+          userEmail = await UserService.signUpWithEmailPhoneName({ ...item }, trx)
         }
 
         const userOrganizationCreated = await organizationRolesAttach(
@@ -569,7 +579,9 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
   const [user] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .where('invite_hash', responseInvitePayload.inviteHash)
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
-    .select('usr.encrypted_password', 'usr.username', 'usr.email', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
+    .select('usr.encrypted_password', 'usr.username', 'usr.email', 'usr.phone', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
+
+  console.log({ user })
 
   try {
     if (!user) return { status: true, message: userAlreadyRegistered, requested: user.is_requested }
@@ -587,10 +599,12 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
       })
       .where('users_organization_id', user.user_organization_id)
 
-    if (!user.encrypted_password || !user.username) {
+    if (!user.encrypted_password) {
       return {
         status: false,
         email: user.email,
+        username: user.username,
+        phone: user.phone,
         requested: user.is_requested,
       }
     }

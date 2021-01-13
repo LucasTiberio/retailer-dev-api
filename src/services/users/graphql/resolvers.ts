@@ -6,17 +6,18 @@ import OrganizationService from '../../organization/service'
 
 const resolvers: IResolvers = {
   Mutation: {
-    signUp: (_, { input }) => {
+    signUp: (_, { input }, { headers }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.signUp(input, trx)
+        return service.signUp(input, { headers }, trx)
       })
     },
-    signUpWithOrganization: (_, { input }, { redisClient }) => {
+    signUpWithOrganization: (_, { input }, { redisClient, headers }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
         return service.signUpWithOrganization(
           input,
           {
             redisClient,
+            headers,
           },
           trx
         )
@@ -27,14 +28,14 @@ const resolvers: IResolvers = {
         return service.verifyEmail(input.verificationHash, trx)
       })
     },
-    userRecoveryPassword: (_, { input }) => {
+    userRecoveryPassword: (_, { input }, { headers }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.recoveryPassword(input.email, trx)
+        return service.recoveryPassword(input.email, { headers }, trx)
       })
     },
-    userPasswordChange: (_, { input }) => {
+    userPasswordChange: (_, { input }, { headers }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.changePassword(input, trx)
+        return service.changePassword(input, { headers }, trx)
       })
     },
   },

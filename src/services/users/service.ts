@@ -1,5 +1,6 @@
 import common from '../../common'
 import MailService from '../mail/service'
+import LojaIntegradaMailService from '../mail/loja-integrada'
 import { ISignUp, ISignUpAdapted, IChangePassword, ISignUpFromDB } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
@@ -8,6 +9,7 @@ import { IUserToken } from '../authentication/types'
 import OrganizationService from '../organization/service'
 import { RedisClient } from 'redis'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
+import { IncomingHttpHeaders } from 'http'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -29,7 +31,27 @@ const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
   return partialSignUpCreated
 }
 
-const signUp = async (attrs: ISignUp, trx: Transaction) => {
+const signUpWithEmailPhoneName = async (
+  infos: {
+    email: string
+    phone: string
+    username: string
+  },
+  trx: Transaction
+) => {
+  const [partialSignUpCreated] = await (trx || database.knexConfig)
+    .insert({
+      email: infos.email,
+      phone: infos.phone,
+      username: infos.username,
+    })
+    .into('users')
+    .returning('*')
+
+  return partialSignUpCreated
+}
+
+const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   const { username, password, email, document, documentType, phone } = attrs
 
   if (!common.verifyPassword(password))
@@ -37,7 +59,7 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
 
   const [userPreAddedFound] = await (trx || knexDatabase.knexConfig)('users').whereRaw('LOWER(email) = LOWER(?)', email).select('id', 'encrypted_password', 'username')
 
-  if (userPreAddedFound && (userPreAddedFound.encrypted_password || userPreAddedFound.username)) throw new Error('user already registered.')
+  if (userPreAddedFound && userPreAddedFound.encrypted_password) throw new Error('user already registered.')
 
   const encryptedPassword = await common.encrypt(password)
   const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
@@ -73,7 +95,11 @@ const signUp = async (attrs: ISignUp, trx: Transaction) => {
         .returning('*')
     }
 
-    await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+      await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    } else {
+      await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    }
 
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
   } catch (e) {
@@ -99,7 +125,7 @@ const signUpWithOrganization = async (
       }
     }
   },
-  context: { redisClient: RedisClient },
+  context: { redisClient: RedisClient; headers: IncomingHttpHeaders },
   trx: Transaction
 ) => {
   try {
@@ -158,7 +184,11 @@ const signUpWithOrganization = async (
       trx
     )
 
-    await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+      await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    } else {
+      await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    }
 
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
   } catch (error) {
@@ -218,7 +248,7 @@ const getUserByNameOrEmail = async (name: string, trx?: Transaction) => {
   return user
 }
 
-const recoveryPassword = async (email: string, trx: Transaction) => {
+const recoveryPassword = async (email: string, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   const user = await getUserByEmail(email, trx)
 
   if (!user) throw new Error('E-mail not found.')
@@ -226,11 +256,19 @@ const recoveryPassword = async (email: string, trx: Transaction) => {
   try {
     const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
 
-    await MailService.sendRecoveryPasswordMail({
-      email: user.email,
-      username: user.username,
-      hashToVerify: encryptedHashVerification,
-    })
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+      await LojaIntegradaMailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+      })
+    } else {
+      await MailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+      })
+    }
 
     await (trx || database.knexConfig)('users').where('email', email).update({ verification_hash: encryptedHashVerification, verified: true })
 
@@ -240,7 +278,7 @@ const recoveryPassword = async (email: string, trx: Transaction) => {
   }
 }
 
-const changePassword = async (attrs: IChangePassword, trx: Transaction) => {
+const changePassword = async (attrs: IChangePassword, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   try {
     if (!common.verifyPassword(attrs.password))
       throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
@@ -252,7 +290,11 @@ const changePassword = async (attrs: IChangePassword, trx: Transaction) => {
       .update({ encrypted_password: encryptedPassword, verification_hash: null })
       .returning(['email', 'username'])
 
-    await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+      await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
+    } else {
+      await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
+    }
 
     return true
   } catch (e) {
@@ -273,4 +315,5 @@ export default {
   _signUpAdapter,
   getUserByNameOrEmail,
   signUpWithOrganization,
+  signUpWithEmailPhoneName,
 }

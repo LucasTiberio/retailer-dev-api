@@ -168,6 +168,8 @@ type ResponseOrganizationInvitePayload {
   email: String
   message: String
   requested: Boolean
+  username: String
+  phone: String
 }
 
 input HandleUserPermissionInOrganizationInput {
