@@ -8,6 +8,9 @@ const options = {
     },
     servers: [
       {
+        url: 'http://plugone.local',
+      },
+      {
         url: 'http://localhost',
       },
       {
@@ -38,16 +41,30 @@ const options = {
               },
             },
           ],
-          summary: "Posts an array of users' e-mails for affiliation",
+          summary: "Posts an array of users' infos for affiliation",
           requestBody: {
-            description: "Array of users' e-mails",
+            description: "Array of users' infos",
             content: {
               'application/json': {
                 schema: {
                   type: 'array',
                   items: {
-                    type: 'string',
-                    format: 'email',
+                    type: 'object',
+                    properties: {
+                      email: {
+                        type: 'string',
+                        format: 'email',
+                        description: 'email of the user',
+                      },
+                      username: {
+                        type: 'string',
+                        description: 'username of the object',
+                      },
+                      phone: {
+                        type: 'string',
+                        description: 'phone of the object',
+                      },
+                    },
                   },
                 },
               },
