@@ -31,6 +31,26 @@ const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
   return partialSignUpCreated
 }
 
+const signUpWithEmailPhoneName = async (
+  infos: {
+    email: string
+    phone: string
+    username: string
+  },
+  trx: Transaction
+) => {
+  const [partialSignUpCreated] = await (trx || database.knexConfig)
+    .insert({
+      email: infos.email,
+      phone: infos.phone,
+      username: infos.username,
+    })
+    .into('users')
+    .returning('*')
+
+  return partialSignUpCreated
+}
+
 const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   const { username, password, email, document, documentType, phone } = attrs
 
@@ -39,7 +59,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
   const [userPreAddedFound] = await (trx || knexDatabase.knexConfig)('users').whereRaw('LOWER(email) = LOWER(?)', email).select('id', 'encrypted_password', 'username')
 
-  if (userPreAddedFound && (userPreAddedFound.encrypted_password || userPreAddedFound.username)) throw new Error('user already registered.')
+  if (userPreAddedFound && userPreAddedFound.encrypted_password) throw new Error('user already registered.')
 
   const encryptedPassword = await common.encrypt(password)
   const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
@@ -295,4 +315,5 @@ export default {
   _signUpAdapter,
   getUserByNameOrEmail,
   signUpWithOrganization,
+  signUpWithEmailPhoneName,
 }
