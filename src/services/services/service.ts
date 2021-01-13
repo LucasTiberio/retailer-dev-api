@@ -16,7 +16,7 @@ import {
   userOrganizationServicesByIdLoader,
   userOrganizationServicesHasLinkGeneratedByIdLoader,
 } from './loaders'
-import { _serviceAdapter, _serviceRolesAdapter, _usersOrganizationServiceAdapter } from './adapters'
+import { _serviceAdapter, _serviceRolesAdapter, _usersOrganizationServiceAdapter, _usersOrganizationServiceAdapterWithSlug } from './adapters'
 
 const createServiceInOrganization = async (serviceId: string, organizationId: string, userToken: IUserToken, trx: Transaction) => {
   if (!userToken) throw new Error('Token must be provided.')
@@ -297,6 +297,8 @@ const listAffiliatesMembers = async (
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
     .innerJoin('users_organization_roles AS uor', 'uor.users_organization_id', 'uo.id')
+    .leftJoin('organization_affiliate_store AS uas', 'uas.organization_id', 'uo.organization_id')
+    .leftJoin('affiliate_store AS as', 'as.users_organization_service_roles_id', 'uosr.id')
     .where('uosr.organization_services_id', serviceOrganization.id)
     .andWhere('uor.organization_role_id', memberOrganizationRole.id)
     .whereNot('uo.invite_status', 'refused')
@@ -315,13 +317,22 @@ const listAffiliatesMembers = async (
     query = query.offset(input.offset)
   }
 
-  const result = await query.orderBy('usr.username', 'asc').select('uosr.*')
+  const result = await query.orderBy('usr.username', 'asc').select('uosr.*', 'as.slug', 'uas.active AS showcase_active');
 
+  const isDigitalShowcaseActive = result.some(r => r.showcase_active);
+  let affiliates;
+
+  if (isDigitalShowcaseActive) {
+    affiliates = result.map(_usersOrganizationServiceAdapterWithSlug)
+  } else {
+    affiliates = result.map(_usersOrganizationServiceAdapter)
+  }
+  
   return {
     ...totalCount,
     limit: input?.limit,
     offset: input?.offset,
-    affiliates: result.map(_usersOrganizationServiceAdapter),
+    affiliates,
   }
 }
 
