@@ -71,7 +71,7 @@ export default async (req: Request, res: Response) => {
   }
 
   orgLimiter.consume(orgId)
-  const requestStatus = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
+  const requestStatus = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx, req.headers)
   if (requestStatus) {
     res.status(200).send({ status: 'success' })
   } else {

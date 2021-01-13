@@ -7,14 +7,14 @@ import ServicesService from '../../services/service'
 
 const resolvers: IResolvers = {
   Mutation: {
-    inviteTeammates: (_, { input }, { client, organizationId }) => {
+    inviteTeammates: (_, { input }, { client, organizationId, headers }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.inviteTeammates(input, { client, organizationId }, trx)
+        return service.inviteTeammates(input, { client, organizationId, headers }, trx)
       })
     },
-    reinviteServiceMember: (_, { input }, { client, organizationId }) => {
+    reinviteServiceMember: (_, { input }, { headers }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.reinviteServiceMember(input, { client, organizationId }, trx)
+        return service.reinviteServiceMember(input, { headers }, trx)
       })
     },
     handleOrganizationDomain: (_, { input }, { client, organizationId }) => {
@@ -27,9 +27,9 @@ const resolvers: IResolvers = {
         return service.handleTeammatesActivity(input, { organizationId, client }, trx)
       })
     },
-    inviteAffiliate: (_, { input }, { client, organizationId }) => {
+    inviteAffiliate: (_, { input }, { client, organizationId, headers }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.inviteAffiliateServiceMembers(input, { client, organizationId }, trx)
+        return service.inviteAffiliateServiceMembers(input, { client, organizationId, headers }, trx)
       })
     },
     handleServiceMembersActivity: (_, { input }, { organizationId }) => {

@@ -5,6 +5,7 @@ import { IUserToken } from '../authentication/types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
 import MailService from '../mail/service'
+import LojaIntegradaMailService from '../mail/loja-integrada'
 import OrganizationRulesService from '../organization-rules/service'
 import IntegrationsService from '../integration/service'
 import VtexService from '../vtex/service'
@@ -46,6 +47,7 @@ import IntegrationService from '../integration/service'
 import { Integrations } from '../integration/types'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { InviteStatus } from '../users-organizations/types'
+import { IncomingHttpHeaders } from 'http'
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL
 
@@ -248,7 +250,7 @@ const inviteTeammates = async (
   input: {
     emails: string[]
   },
-  context: { organizationId: string; client: IUserToken },
+  context: { organizationId: string; client: IUserToken; headers: IncomingHttpHeaders },
   trx: Transaction
 ) => {
   const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId)
@@ -290,11 +292,19 @@ const inviteTeammates = async (
               .where('id', usersOrganizationFound.id)
               .returning('*')
 
-            await MailService.sendInviteUserMail({
-              email: item,
-              hashToVerify,
-              organizationName: organization.name,
-            })
+            if (context.headers.origin?.includes('afiliados.b8one.com')) {
+              await LojaIntegradaMailService.sendInviteUserMail({
+                email: item,
+                hashToVerify,
+                organizationName: organization.name,
+              })
+            } else {
+              await MailService.sendInviteUserMail({
+                email: item,
+                hashToVerify,
+                organizationName: organization.name,
+              })
+            }
 
             const userInOrganizationService = await ServicesService.getUserInOrganizationServiceByUserOrganizationId({ usersOrganizationId: usersOrganizationFound.id }, trx)
 
@@ -326,11 +336,19 @@ const inviteTeammates = async (
 
         const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.ADMIN, OrganizationInviteStatus.PENDENT, trx, hashToVerify)
 
-        await MailService.sendInviteNewUserMail({
-          email: userEmail.email,
-          hashToVerify,
-          organizationName: organization.name,
-        })
+        if (context.headers.origin?.includes('afiliados.b8one.com')) {
+          await LojaIntegradaMailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organization.name,
+          })
+        } else {
+          await MailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organization.name,
+          })
+        }
 
         return userOrganizationCreated
       })
@@ -355,7 +373,7 @@ const inviteAffiliateServiceMembers = async (
       role: ServiceRoles
     }[]
   },
-  context: { organizationId: string; client: IUserToken },
+  context: { organizationId: string; client: IUserToken; headers: IncomingHttpHeaders },
   trx: Transaction
 ) => {
   const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId)
@@ -405,11 +423,19 @@ const inviteAffiliateServiceMembers = async (
               .returning('*')
 
             if (usersOrganizationFound.invite_status !== OrganizationInviteStatus.ACCEPT) {
-              await MailService.sendInviteUserMail({
-                email: item.email,
-                hashToVerify,
-                organizationName: organization.name,
-              })
+              if (context.headers.origin?.includes('afiliados.b8one.com')) {
+                await LojaIntegradaMailService.sendInviteUserMail({
+                  email: item.email,
+                  hashToVerify,
+                  organizationName: organization.name,
+                })
+              } else {
+                await MailService.sendInviteUserMail({
+                  email: item.email,
+                  hashToVerify,
+                  organizationName: organization.name,
+                })
+              }
             }
 
             const organizationAdmin = await getUserOrganizationByUserOrganizationId(usersOrganizationFound.id, trx)
@@ -454,11 +480,19 @@ const inviteAffiliateServiceMembers = async (
           trx
         )
 
-        await MailService.sendInviteNewUserMail({
-          email: userEmail.email,
-          hashToVerify,
-          organizationName: organization.name,
-        })
+        if (context.headers.origin?.includes('afiliados.b8one.com')) {
+          await LojaIntegradaMailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organization.name,
+          })
+        } else {
+          await MailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organization.name,
+          })
+        }
 
         return userOrganizationCreated
       })
@@ -479,7 +513,8 @@ const requestAffiliateServiceMembers = async (
   organizationId: string,
   organizationName: string,
   organizationPublic: boolean,
-  trx: Transaction
+  trx: Transaction,
+  headers: IncomingHttpHeaders
 ) => {
   const integration = await IntegrationsService.getIntegrationByOrganizationId(organizationId, trx)
 
@@ -537,11 +572,19 @@ const requestAffiliateServiceMembers = async (
         )
 
         if (organizationPublic) {
-          await MailService.sendInviteNewUserMail({
-            email: userEmail.email,
-            hashToVerify,
-            organizationName: organizationName,
-          })
+          if (headers.origin?.includes('afiliados.b8one.com')) {
+            await LojaIntegradaMailService.sendInviteNewUserMail({
+              email: userEmail.email,
+              hashToVerify,
+              organizationName: organizationName,
+            })
+          } else {
+            await MailService.sendInviteNewUserMail({
+              email: userEmail.email,
+              hashToVerify,
+              organizationName: organizationName,
+            })
+          }
         }
 
         return userOrganizationCreated
@@ -1059,7 +1102,7 @@ const reinviteServiceMember = async (
   input: {
     userOrganizationId: string
   },
-  context: {},
+  context: { headers: IncomingHttpHeaders },
   trx: Transaction
 ) => {
   try {
@@ -1072,11 +1115,19 @@ const reinviteServiceMember = async (
 
     if (!usersOrganizationFound.invite_hash) throw new Error(MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE)
 
-    await MailService.sendInviteNewUserMail({
-      email: usersOrganizationFound.email,
-      hashToVerify: usersOrganizationFound.invite_hash,
-      organizationName: usersOrganizationFound.name,
-    })
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+      await LojaIntegradaMailService.sendInviteNewUserMail({
+        email: usersOrganizationFound.email,
+        hashToVerify: usersOrganizationFound.invite_hash,
+        organizationName: usersOrganizationFound.name,
+      })
+    } else {
+      await MailService.sendInviteNewUserMail({
+        email: usersOrganizationFound.email,
+        hashToVerify: usersOrganizationFound.invite_hash,
+        organizationName: usersOrganizationFound.name,
+      })
+    }
 
     return true
   } catch (error) {
