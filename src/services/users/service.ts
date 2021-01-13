@@ -95,7 +95,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .returning('*')
     }
 
-    if (context.headers.host?.includes('afiliados.b8one.com')) {
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
@@ -184,7 +184,7 @@ const signUpWithOrganization = async (
       trx
     )
 
-    if (context.headers.host?.includes('afiliados.b8one.com')) {
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
@@ -256,7 +256,7 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
   try {
     const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
 
-    if (context.headers.host?.includes('afiliados.b8one.com')) {
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
       await LojaIntegradaMailService.sendRecoveryPasswordMail({
         email: user.email,
         username: user.username,
@@ -290,7 +290,7 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       .update({ encrypted_password: encryptedPassword, verification_hash: null })
       .returning(['email', 'username'])
 
-    if (context.headers.host?.includes('afiliados.b8one.com')) {
+    if (context.headers.origin?.includes('afiliados.b8one.com')) {
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
