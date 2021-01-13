@@ -51,6 +51,8 @@ import { IncomingHttpHeaders } from 'http'
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL
 
+const lojaIntegradaOrgId = '7c797775-f56e-43af-98b3-13d4aa5ac6cb'
+
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
   const { segment, resellersEstimate, reason, plataform } = input
 
@@ -513,8 +515,7 @@ const requestAffiliateServiceMembers = async (
   organizationId: string,
   organizationName: string,
   organizationPublic: boolean,
-  trx: Transaction,
-  headers: IncomingHttpHeaders
+  trx: Transaction
 ) => {
   const integration = await IntegrationsService.getIntegrationByOrganizationId(organizationId, trx)
 
@@ -572,7 +573,7 @@ const requestAffiliateServiceMembers = async (
         )
 
         if (organizationPublic) {
-          if (headers.origin?.includes('afiliados.b8one.com')) {
+          if (organizationId === lojaIntegradaOrgId) {
             await LojaIntegradaMailService.sendInviteNewUserMail({
               email: userEmail.email,
               hashToVerify,
