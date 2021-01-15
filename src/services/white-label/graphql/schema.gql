@@ -14,8 +14,6 @@ extend type Mutation {
     @isAuthenticated
 }
 
-type getWhiteLabelColorOptions: [String]
-
 type WhiteLabelInfos {
   primaryColor: String
   secondColor: String

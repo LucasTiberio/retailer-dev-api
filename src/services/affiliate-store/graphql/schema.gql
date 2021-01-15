@@ -176,7 +176,7 @@ input AffiliateCoverInput {
 
 type AffiliateStore {
   id: String!
-  usersOrganizationServiceRolesId: String!
+  usersOrganizationServiceRoles: UserOrganizationService!
   avatar: String
   cover: String
   name: String
