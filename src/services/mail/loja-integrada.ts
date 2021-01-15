@@ -10,7 +10,7 @@ const sendSignUpMail = async (data: ISendMail) => {
     await Mail.sendMail({
       from: 'Loja Integrada No-reply <noreply@plugone.io>',
       to: `${data.username || ''} <${data.email}>`,
-      subject: 'Bem vindo(a) ao programa de afiliados da Loja Integrada!',
+      subject: 'Bem vindo(a) ao Programa de Afiliados Indicaê da Loja Integrada!',
       html: `
       <!DOCTYPE html>
       <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -211,7 +211,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
     await Mail.sendMail({
       from: 'Loja Integrada No-reply <noreply@plugone.io>',
       to: `${data.username || ''} <${data.email}>`,
-      subject: 'Recuperacão de senha Programa de afiliados Loja Integrada!',
+      subject: 'Recuperacão de senha - Programa de Afiliados Indicaê da Loja Integrada',
       html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -411,7 +411,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
     await Mail.sendMail({
       from: 'Loja Integrada No-reply <noreply@plugone.io>',
       to: `${data.username || ''} <${data.email}>`,
-      subject: 'Senha recuperada Programa de afiliados Loja Integrada!',
+      subject: 'Senha recuperada - Programa de Afiliados Indicaê da Loja Integrada',
       html: `
       <!DOCTYPE html>
       <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -597,7 +597,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
     await Mail.sendMail({
       from: 'Loja Integrada No-reply <noreply@plugone.io>',
       to: `<${data.email}>`,
-      subject: `Você foi convidado por ${data.organizationName}!`,
+      subject: 'Programa de Afiliados Indicaê da Loja Integrada',
       html: `
 
 <!DOCTYPE html>
@@ -788,7 +788,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
     await Mail.sendMail({
       from: 'PlugOne No-reply <noreply@plugone.io>',
       to: `<${data.email}>`,
-      subject: `Você foi convidado à plugone por ${data.organizationName}!`,
+      subject: 'Programa de Afiliados Indicaê da Loja Integrada',
       html: `
 
       <!DOCTYPE html>
