@@ -35,6 +35,12 @@ const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
   }
 }
 
+const getWhiteLabelColorOptions = async (trx: Transaction) => {
+  const colorOptions = ['#D70000', '#ED8E00', '#95B221', '#00830D', '#00B3BE', '#0030D9', '#7E00BA', '#DB287E', '#111111'];
+
+  return colorOptions;
+}
+
 const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
   const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, domain)
 
@@ -103,4 +109,5 @@ export default {
   getWhiteLabelInfos,
   sendWhiteLabelInfos,
   getWhiteLabelInfosByDomain,
+  getWhiteLabelColorOptions,
 }

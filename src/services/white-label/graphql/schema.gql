@@ -1,6 +1,7 @@
 extend type Query {
   getWhiteLabelInfos: WhiteLabelInfos! @isAuthenticated
   getWhiteLabelInfosByDomain(input: GetWhiteLabelInfosInput!): WhiteLabelInfos!
+  getWhiteLabelColorOptions: [String]! @isAuthenticated
 }
 
 extend type Mutation {
@@ -12,6 +13,8 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isAuthenticated
 }
+
+type getWhiteLabelColorOptions: [String]
 
 type WhiteLabelInfos {
   primaryColor: String

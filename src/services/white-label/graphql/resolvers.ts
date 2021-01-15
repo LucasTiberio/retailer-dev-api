@@ -12,6 +12,11 @@ const resolvers: IResolvers = {
     },
   },
   Query: {
+    getWhiteLabelColorOptions: (_, __, ___) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
+        return service.getWhiteLabelColorOptions(trx);
+      })
+    },
     getWhiteLabelInfos: (_, __, { organizationId }) => {
       return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getWhiteLabelInfos(organizationId, trx)
