@@ -1,5 +1,5 @@
 import { Transaction } from 'knex'
-import { getPendingAndIsRequestedMembersByOrganizationId, handleMemberInviteStatus } from './repositories/users_organizations'
+import { getPendingAndIsRequestedMembersByOrganizationId, handleMemberInviteStatus, cancelMemberInvite, memberHasInvite } from './repositories/users_organizations'
 import { ResponseStatus } from './types'
 import UserService from '../users/service'
 import OrganizationService from '../organization/service'
@@ -14,6 +14,25 @@ const getPendingMembersByOrganizationId = async (
   const members = await getPendingAndIsRequestedMembersByOrganizationId(context.organizationId, trx)
 
   return members
+}
+
+const deleteMemberInvitation = async (
+  input: {
+    affiliateId: string
+  },
+  organizationId: string,
+  trx: Transaction,
+) => {
+  const memberHasInvitation = await memberHasInvite(input.affiliateId, organizationId, trx);
+
+  if (!memberHasInvitation) throw new Error('member_doesnt_have_invitation');
+
+  try {
+    await cancelMemberInvite(input.affiliateId, organizationId, trx);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 const handleMemberInvitation = async (
@@ -54,4 +73,5 @@ const handleMemberInvitation = async (
 export default {
   getPendingMembersByOrganizationId,
   handleMemberInvitation,
+  deleteMemberInvitation,
 }

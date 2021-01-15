@@ -327,7 +327,7 @@ const listAffiliatesMembers = async (
   } else {
     affiliates = result.map(_usersOrganizationServiceAdapter)
   }
-  
+
   return {
     ...totalCount,
     limit: input?.limit,
