@@ -1,15 +1,25 @@
 extend type Query {
-  getPendingMembersByOrganizationId: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @enterpriseFeature @acceptTermsAndConditions @isVerified @isAuthenticated
+  getPendingMembersByOrganizationId: [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @enterpriseFeature @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 extend type Mutation {
   handleMemberInvitation(input: HandleMemberInvitationInput!): UserOrganization!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
+    @isVerified
     @enterpriseFeature
     @acceptTermsAndConditions
-    @isVerified
     @isAuthenticated
+  deleteMemberInvitation(input: DeleteMemberInvitationInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @acceptTermsAndConditions
+    @isAuthenticated
+}
+
+input DeleteMemberInvitationInput {
+  affiliateId: String!
 }
 
 input HandleMemberInvitationInput {

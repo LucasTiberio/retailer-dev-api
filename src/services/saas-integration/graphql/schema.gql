@@ -1,19 +1,19 @@
 extend type Query {
-  getSaasDefaultCommission: SaasDefaultCommission @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
-  getSignaturesByOrganizationId: [SaasSignature]! @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
+  getSaasDefaultCommission: SaasDefaultCommission @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @isVerified @acceptTermsAndConditions @isAuthenticated
+  getSignaturesByOrganizationId: [SaasSignature]! @hasOrganizationRole(role: ["ADMIN"]) @SaasIntegration @isVerified @acceptTermsAndConditions @isAuthenticated
   getSignaturesByOrganizationIdAndAffiliateId: [SaasSignature]!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @SaasIntegration
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   getSignatureCommissionByOrganizationAndAffiliateId: [SaasSignatureCommission]!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @SaasIntegration
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
-  getSignatureCountByOrganizationId: Int! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @SaasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
+  getSignatureCountByOrganizationId: Int! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @SaasIntegration @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 extend type Mutation {
@@ -21,15 +21,15 @@ extend type Mutation {
     @hasOrganizationRole(role: ["ADMIN"])
     @SaasIntegration
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   handleSaasCommissionBulkPayments(input: HandleSaasCommissionBulkPaymentsInput!): Boolean!
     @hasOrganizationRole(role: ["ADMIN"])
     @SaasIntegration
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
 }
 

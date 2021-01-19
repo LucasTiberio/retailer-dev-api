@@ -1,0 +1,34 @@
+extend type Query {
+  getWhiteLabelInfos: WhiteLabelInfos! @isAuthenticated
+  getWhiteLabelInfosByDomain(input: GetWhiteLabelInfosInput!): WhiteLabelInfos!
+  getWhiteLabelColorOptions: [String]! @isAuthenticated
+}
+
+extend type Mutation {
+  sendWhiteLabelInfos(input: SendWhiteLabelInfosInput!): WhiteLabelInfos!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @enterpriseFeature
+    @isVerified
+    @acceptTermsAndConditions
+    @isAuthenticated
+}
+
+type WhiteLabelInfos {
+  primaryColor: String
+  secondColor: String
+  tertiaryColor: String
+  logo: String
+  isWhiteLabel: Boolean
+}
+
+input SendWhiteLabelInfosInput {
+  primaryColor: String
+  secondColor: String
+  tertiaryColor: String
+  logo: Upload
+}
+
+input GetWhiteLabelInfosInput {
+  domain: String!
+}

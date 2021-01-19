@@ -1,35 +1,35 @@
 extend type Mutation {
   handleOrganizationFinantialConciliationConfiguration(input: handleOrganizationFinantialConciliationConfigurationInput!): Boolean!
     @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
     @acceptTermsAndConditions
     @organizationPaidVerify
-    @isVerified
     @isAuthenticated
   handleOrganizationFinantialConciliationStatusAdvance(input: handleOrganizationFinantialConciliationStatusAdvanceInput!): String!
     @hasOrganizationRole(role: ["ADMIN"])
+    @isVerified
     @acceptTermsAndConditions
     @organizationPaidVerify
-    @isVerified
     @isAuthenticated
 }
 
 extend type Query {
-  getOrganizationFinantialConciliation: getOrganizationFinantialConciliationQuery! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
-  getAffiliatesValuesByMonth(input: getAffiliatesValuesByMonthInput!): getAffiliatesValuesByMonthQuery! @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getOrganizationFinantialConciliation: getOrganizationFinantialConciliationQuery! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAffiliatesValuesByMonth(input: getAffiliatesValuesByMonthInput!): getAffiliatesValuesByMonthQuery! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   getDailyRevenueAndCommissions(input: getDailyRevenueAndCommissionsInput!): getDailyRevenueAndCommissionsQuery!
     @hasOrganizationRole(role: ["ADMIN"])
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   getOrderListByAffiliateIdAndReferenceMonth(input: getOrderListByAffiliateIdAndReferenceMonthInput!): getOrderListByAffiliateIdAndReferenceMonthQuery!
     @hasOrganizationRole(role: ["ADMIN"])
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   downloadFinantialConciliationCSVByReferenceMonth(input: downloadFinantialConciliationCSVByReferenceMonthInput!): String!
     @hasOrganizationRole(role: ["ADMIN"])
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
 }
 

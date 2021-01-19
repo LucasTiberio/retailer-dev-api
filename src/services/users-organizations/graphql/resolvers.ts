@@ -10,6 +10,11 @@ const resolvers: IResolvers = {
         return service.handleMemberInvitation(input, { organizationId }, trx)
       })
     },
+    deleteMemberInvitation: (_, { input }, { organizationId }) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
+        return service.deleteMemberInvitation(input, organizationId, trx)
+      })
+    }
   },
   Query: {
     getPendingMembersByOrganizationId: (_, __, { organizationId }) => {

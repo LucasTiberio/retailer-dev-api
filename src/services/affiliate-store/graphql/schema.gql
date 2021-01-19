@@ -3,80 +3,80 @@ extend type Mutation {
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   addProductOnAffiliateStore(input: AddProductOnAffiliateStoreInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   handleOrganizationAffiliateStore(input: HandleOrganizationAffiliateStoreInput!): OrganizationAffiliateStore!
     @hasOrganizationRole(role: ["ADMIN"])
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   clearAffiliateStoreLojaIntegradaCache: Boolean!
     @hasOrganizationRole(role: ["ADMIN"])
     @lojaIntegradaFeature
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   addOrganizationAffiliateStoreBanner(input: AddOrganizationAffiliateStoreBannerInput!): OrganizationAffiliateStoreBanner!
     @hasOrganizationRole(role: ["ADMIN"])
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   removeOrganizationAffiliateStoreBanner(input: RemoveOrganizationAffiliateStoreBannerInput!): Boolean!
     @hasOrganizationRole(role: ["ADMIN"])
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   handleProductOnAffiliateStoreActivity(input: HandleProductOnAffiliateStoreActivityInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   handleProductOnAffiliateStoreOrder(input: [HandleProductOnAffiliateStoreOrderInput]!): Boolean!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
   handleProductOnAffiliateStoreSearchable(input: HandleProductOnAffiliateStoreSearchableInput!): AffiliateStoreProduct!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
 }
 
 extend type Query {
-  getAffiliateStore: AffiliateStore @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAffiliateStore: AffiliateStore @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @isVerified @acceptTermsAndConditions @isAuthenticated
   getAffiliateStoreWithProducts(input: GetAffiliateStoreWithProductsInput!): AffiliateStoreWithProducts
   getAffiliateStoreProducts(input: GetAffiliateStoreProductsInput): [AffiliateStoreProductFormatted]!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasIntegration
-    @acceptTermsAndConditions
     @isVerified
+    @acceptTermsAndConditions
     @isAuthenticated
-  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @hasIntegration @acceptTermsAndConditions @isVerified @isAuthenticated
-  getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @acceptTermsAndConditions @isVerified @isAuthenticated
-  getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @acceptTermsAndConditions @isVerified @isAuthenticated
+  getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @hasIntegration @isVerified @acceptTermsAndConditions @isAuthenticated
+  getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @isVerified @acceptTermsAndConditions @isAuthenticated
+  getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type AffiliateStoreWithProducts {
