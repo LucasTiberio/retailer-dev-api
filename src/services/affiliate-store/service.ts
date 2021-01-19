@@ -562,7 +562,7 @@ const getAffiliateStoreWithProducts = async (
 
     await new Promise<void>((resolve) =>
       setTimeout(() => {
-        resolve('resolved')
+        resolve()
       }, 3000)
     )
 
