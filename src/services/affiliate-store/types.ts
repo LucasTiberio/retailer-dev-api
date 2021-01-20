@@ -36,6 +36,7 @@ export interface IOrganizationAffiliateStore {
   shelf_id: string
   created_at: Date
   updated_at: Date
+  allow_slug_edit: Boolean
 }
 export interface IOrganizationAffiliateStoreBanner {
   id: string

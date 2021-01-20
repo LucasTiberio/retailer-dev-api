@@ -107,6 +107,7 @@ type OrganizationAffiliateStoreBanner {
 input HandleOrganizationAffiliateStoreInput {
   active: Boolean
   shelfId: String
+  allowSlugEdit: Boolean
 }
 
 type OrganizationAffiliateStore {
@@ -117,6 +118,7 @@ type OrganizationAffiliateStore {
   shelfId: String
   createdAt: Datetime!
   updatedAt: Datetime!
+  allowSlugEdit: Boolean!
 }
 
 input HandleProductOnAffiliateStoreSearchableInput {
@@ -189,6 +191,7 @@ type AffiliateStore {
   instagram: String
   createdAt: Datetime!
   updatedAt: Datetime!
+  allowSlugEdit: Boolean!
 }
 
 type AffiliateStoreProduct {
