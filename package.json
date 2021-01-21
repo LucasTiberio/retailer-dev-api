@@ -43,7 +43,7 @@
     "merge-graphql-schemas": "^1.7.6",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.25",
-    "mongoose": "^5.10.7",
+    "mongoose": "5.9.25",
     "node-fetch": "^2.6.0",
     "nodemailer": "^6.4.6",
     "pg": "^8.4.1",
@@ -60,9 +60,7 @@
     "swagger-ui-express": "^4.1.4",
     "uuid": "^8.0.0",
     "uuidv4": "^6.0.8",
-    "valid-url": "^1.0.9"
-  },
-  "devDependencies": {
+    "valid-url": "^1.0.9",
     "@babel/plugin-transform-modules-commonjs": "^7.9.6",
     "@types/bcryptjs": "^2.4.2",
     "@types/bluebird": "^3.5.32",
@@ -73,7 +71,7 @@
     "@types/jest": "^25.2.3",
     "@types/jsonwebtoken": "^8.3.9",
     "@types/lodash": "^4.14.150",
-    "@types/mongoose": "^5.7.36",
+    "@types/mongoose": "^5.7.32",
     "@types/node": "^12.12.31",
     "@types/nodemailer": "^6.4.0",
     "@types/redis": "^2.8.22",
@@ -82,7 +80,9 @@
     "@types/stream-to-array": "^2.3.0",
     "@types/swagger-jsdoc": "^3.0.2",
     "@types/swagger-ui-express": "^4.1.2",
-    "@types/uuid": "^7.0.3",
+    "@types/uuid": "^7.0.3"
+  },
+  "devDependencies": {
     "jest": "^25.2.0",
     "nodemon": "^2.0.2",
     "prettier": "^2.0.5",

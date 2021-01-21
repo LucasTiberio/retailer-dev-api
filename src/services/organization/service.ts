@@ -628,7 +628,7 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
   console.log({ user })
 
   try {
-    if (!user) return { status: true, message: userAlreadyRegistered, requested: user.is_requested }
+    if (!user) return { status: true, message: userAlreadyRegistered }
 
     await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({

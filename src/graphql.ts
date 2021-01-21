@@ -326,7 +326,7 @@ const directiveResolvers: IDirectiveResolvers = {
     } else {
       const paymentServiceStatus = await PaymentService.getSubscriptionByOrganizationId(organizationId)
 
-      if (paymentServiceStatus && moment(paymentServiceStatus.expiresAt).isAfter(moment())) {
+      if (paymentServiceStatus && moment(paymentServiceStatus.expiresAt).add(10, 'days').isAfter(moment())) {
         return next()
       }
 
