@@ -10,7 +10,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
-        group: 'menu-items',
+        group: 'menuitems',
         items: [
           {
             name: 'overview',
@@ -55,7 +55,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
 
   const baseAdminMenu: any = [
     {
-      group: 'menu-items',
+      group: 'menuitems',
       items: [
         {
           name: 'overview',
