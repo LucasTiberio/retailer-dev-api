@@ -75,6 +75,7 @@ type UserOrganizationService {
   userOrganization: UserOrganization
   createdAt: Datetime!
   updatedAt: Datetime!
+  slug: String
 }
 
 type ServiceRoles {

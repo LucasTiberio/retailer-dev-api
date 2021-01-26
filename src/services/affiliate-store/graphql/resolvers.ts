@@ -2,6 +2,7 @@ import { IResolvers } from 'apollo-server'
 import { Transaction } from 'knex'
 import knexDatabase from '../../../knex-database'
 import service from '../service'
+import ServicesService from '../../services/service'
 
 const resolvers: IResolvers = {
   Mutation: {
@@ -101,6 +102,11 @@ const resolvers: IResolvers = {
       return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getAffiliateStoreProducts(input, { secret, userServiceOrganizationRolesId, organizationId }, trx)
       })
+    },
+  },
+  AffiliateStore: {
+    usersOrganizationServiceRoles: async (obj) => {
+      return ServicesService.getOrganizationServicesById(obj.usersOrganizationServiceRolesId)
     },
   },
 }

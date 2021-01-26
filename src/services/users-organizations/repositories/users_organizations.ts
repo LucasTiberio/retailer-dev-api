@@ -27,3 +27,36 @@ export const handleMemberInviteStatus = async (
 
   return memberUpdated
 }
+
+export const memberHasInvite = async (affiliateId: string, organizationId: string, trx: Transaction): Promise<boolean> => {
+  try {
+    const [member] = await (trx || knexDatabase.knexConfig)('users_organizations')
+    .where('organization_id', organizationId)
+    .andWhere('user_id', affiliateId)
+    .andWhere('invite_status', 'pendent')
+    .whereNotNull('invite_hash');
+
+    return !!member;
+  } catch (error) {
+    return false;
+  }
+}
+
+export const cancelMemberInvite = async (affiliateId: string, organizationId: string, trx: Transaction): Promise<boolean> => {
+  try {
+    await (trx || knexDatabase.knexConfig)('users_organizations')
+    .where('organization_id', organizationId)
+    .andWhere('user_id', affiliateId)
+    .andWhere('invite_status', 'pendent')
+    .whereNotNull('invite_hash')
+    .update({
+      invite_status: 'cancelled',
+      invite_hash: null,
+      active: false,
+    })
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+}

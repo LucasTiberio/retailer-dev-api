@@ -117,7 +117,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
 
     lojaIntegradaOrders.forEach((order) => {
       returnObj.orders++
-      returnObj.revenue += order.valor_total
+      returnObj.revenue += Number(order.valor_total)
       returnObj.commission += order.affiliateInfo.commission?.amount ?? 0
       returnObj.orderList.push({
         id: order._id,
