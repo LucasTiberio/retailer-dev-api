@@ -642,7 +642,7 @@ const getAffiliateStoreWithProducts = async (
 
   return {
     affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
-    productsHtml: activeProducts.join(',') ?? null,
+    productsHtml: activeProducts.join(' ') ?? null,
     affiliateId: affiliateStore?.users_organization_service_roles_id,
     integration: Integrations.VTEX,
   }
