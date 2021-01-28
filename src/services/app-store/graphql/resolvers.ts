@@ -23,6 +23,14 @@ const resolvers: IResolvers = {
     getInstalledAffiliateStoreApps: async (_, __, { organizationId }) => {
       return service.getInstalledAffiliateStoreApps(organizationId)
     },
+    getInstalledAffiliateStoreApp: async (_, { input }, { organizationId }) => {
+      return service.getInstalledAffiliateStoreApp(input, organizationId)
+    },
+  },
+  OrganizationAffiliateStoreApp: {
+    affiliateStoreApp: (obj, _, { organizationId }) => {
+      return service.getAffiliateStoreApp({ id: obj.affiliateStoreApp.toString() }, organizationId)
+    },
   },
 }
 

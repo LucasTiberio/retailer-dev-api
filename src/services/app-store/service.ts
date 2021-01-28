@@ -88,28 +88,30 @@ const editOrganizationAffiliateStoreAppConfig = async (input: { id: string; conf
 const getAffiliateStoreApps = async (organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApps = await OrganizationAffiliateStoreApps.find({ organizationId })
-  const appList = await AffiliateStoreApps.find({})
-
-  return appList
+  const installedAppsIds = installedApps.map((app) => app.affiliateStoreApp.toString())
+  const appList = await AffiliateStoreApps.find({}).lean()
+  const storeApps = appList
     .filter((app) => !app.plans.length || (app.plans.length && app.plans.includes(planType)))
     .map((app) => ({
       ...app,
-      isInstalled: installedApps.find((installedApp) => installedApp.affiliateStoreApp === app._id) !== null,
+      id: app._id,
+      isInstalled: installedAppsIds.includes(app._id.toString()),
     }))
+  return storeApps
 }
 
 const getInstalledAffiliateStoreApps = async (organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApps = await OrganizationAffiliateStoreApps.find({ organizationId })
-  const installedAppsStoreIds = installedApps.map((app) => app.affiliateStoreApp)
+  const installedAppsStoreIds = installedApps.map((app) => app.affiliateStoreApp.toString())
   const installedAppsInStore = await AffiliateStoreApps.find({
     _id: {
       $in: installedAppsStoreIds,
     },
-  })
+  }).lean()
 
   for (const installedApp of installedApps) {
-    const storeApp = installedAppsInStore.find((app) => app._id === installedApp.affiliateStoreApp)
+    const storeApp = installedAppsInStore.find((app) => app._id.toString() === installedApp.affiliateStoreApp.toString())
     if (!storeApp) {
       throw new Error('app_not_found')
     }
@@ -120,20 +122,60 @@ const getInstalledAffiliateStoreApps = async (organizationId: string) => {
 
   const updatedInstalledApps = await OrganizationAffiliateStoreApps.find({ organizationId })
 
-  return updatedInstalledApps.map((app) => ({ ...app, isInstalled: true }))
+  return updatedInstalledApps.map((installedApp) => {
+    const storeApp = installedAppsInStore.find((app) => app._id.toString() === installedApp.affiliateStoreApp.toString())
+    if (!storeApp) {
+      throw new Error('app_not_found')
+    }
+    return {
+      id: installedApp._id,
+      affiliateStoreApp: installedApp.affiliateStoreApp,
+      configs: installedApp.configs,
+    }
+  })
+}
+
+const getInstalledAffiliateStoreApp = async (input: { id: string }, organizationId: string) => {
+  const planType = await OrganizationRulesService.getPlanType(organizationId)
+  const installedApp = await OrganizationAffiliateStoreApps.findOne({ _id: input.id, organizationId })
+
+  if (!installedApp) {
+    throw new Error('app_not_found')
+  }
+
+  const installedAppInStore = await AffiliateStoreApps.findById(installedApp.affiliateStoreApp)
+
+  if (!installedAppInStore) {
+    throw new Error('app_not_found')
+  }
+
+  if (installedAppInStore.plans.length && !installedAppInStore.plans.includes(planType)) {
+    await installedApp.remove()
+  }
+
+  const updatedInstalledApp = await OrganizationAffiliateStoreApps.findOne({ _id: input.id, organizationId })
+  if (!updatedInstalledApp) {
+    throw new Error('app_not_found')
+  }
+
+  return {
+    id: updatedInstalledApp._id,
+    affiliateStoreApp: updatedInstalledApp.affiliateStoreApp,
+    configs: updatedInstalledApp.configs,
+  }
 }
 
 const getAffiliateStoreApp = async (input: { id: string }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ affiliateStoreApp: input.id, organizationId })
-  const app = await AffiliateStoreApps.findOne({ _id: input.id })
+  const app = await AffiliateStoreApps.findOne({ _id: input.id }).lean()
   if (!app) {
     throw new Error('app_not_found')
   }
   if (app.plans.length && !app.plans.includes(planType)) {
     throw new Error('app_not_found')
   }
-  return { ...app, isInstalled: !!installedApp }
+  return { ...app, id: app._id, isInstalled: !!installedApp }
 }
 
 export default {
@@ -142,5 +184,6 @@ export default {
   editOrganizationAffiliateStoreAppConfig,
   getAffiliateStoreApps,
   getInstalledAffiliateStoreApps,
+  getInstalledAffiliateStoreApp,
   getAffiliateStoreApp,
 }

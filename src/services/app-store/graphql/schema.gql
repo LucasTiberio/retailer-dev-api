@@ -12,7 +12,8 @@ extend type Mutation {
 extend type Query {
   getAffiliateStoreApps: [AffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   getAffiliateStoreApp(input: GetAffiliateStoreAppInput!): AffiliateStoreApp @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
-  getInstalledAffiliateStoreApps: [AffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getInstalledAffiliateStoreApps: [OrganizationAffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getInstalledAffiliateStoreApp(input: GetInstalledAffiliateStoreAppInput!): OrganizationAffiliateStoreApp @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type AffiliateStoreApp {
@@ -37,7 +38,22 @@ type AffiliateStoreAppConfig {
   exampleValue: String
 }
 
+type OrganizationAffiliateStoreApp {
+  id: String!
+  affiliateStoreApp: AffiliateStoreApp
+  configs: [OrganizationAffiliateStoreAppConfig]!
+}
+
+type OrganizationAffiliateStoreAppConfig {
+  key: String!
+  value: String!
+}
+
 input GetAffiliateStoreAppInput {
+  id: String!
+}
+
+input GetInstalledAffiliateStoreAppInput {
   id: String!
 }
 
