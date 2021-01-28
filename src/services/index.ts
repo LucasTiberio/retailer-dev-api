@@ -24,6 +24,7 @@ import UserOrganizationService from './users-organizations'
 import OrganizationRulesService from './organization-rules'
 import AbandonedCartService from './abandoned-cart'
 import WhiteLabelService from './white-label'
+import AppStoreService from './app-store'
 
 let services = [
   SaasIntegrationService,
@@ -50,6 +51,7 @@ let services = [
   FinantialConciliation,
   OrganizationRulesService,
   AbandonedCartService,
+  AppStoreService,
 ]
 
 export default {

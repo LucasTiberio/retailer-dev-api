@@ -1,0 +1,61 @@
+extend type Mutation {
+  installAffiliateStoreApp(input: InstallAffiliateStoreAppInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  uninstallAffiliateStoreApp(input: UninstallAffiliateStoreAppInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  editOrganizationAffiliateStoreAppConfig(input: EditOrganizationAffiliateStoreAppConfigInput!): Boolean!
+    @hasOrganizationRole(role: ["ADMIN"])
+    @organizationPaidVerify
+    @isVerified
+    @acceptTermsAndConditions
+    @isAuthenticated
+}
+
+extend type Query {
+  getAffiliateStoreApps: [AffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAffiliateStoreApp(input: GetAffiliateStoreAppInput!): AffiliateStoreApp @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getInstalledAffiliateStoreApps: [AffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+type AffiliateStoreApp {
+  id: String!
+  name: String!
+  shortDescription: String!
+  description: String!
+  tags: [String]!
+  mainImage: String!
+  images: [String]
+  authorName: String!
+  authorLogo: String
+  authorUrl: String
+  configs: [AffiliateStoreAppConfig]!
+  isInstalled: Boolean!
+  plans: [String]!
+}
+
+type AffiliateStoreAppConfig {
+  name: String!
+  displayName: String!
+  exampleValue: String
+}
+
+input GetAffiliateStoreAppInput {
+  id: String!
+}
+
+input InstallAffiliateStoreAppInput {
+  id: String!
+  configs: [AffiliateStoreAppConfigInput]!
+}
+
+input UninstallAffiliateStoreAppInput {
+  id: String!
+}
+
+input EditOrganizationAffiliateStoreAppConfigInput {
+  id: String!
+  configs: [AffiliateStoreAppConfigInput]!
+}
+
+input AffiliateStoreAppConfigInput {
+  key: String!
+  value: String!
+}
