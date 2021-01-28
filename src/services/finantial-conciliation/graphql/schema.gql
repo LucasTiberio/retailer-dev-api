@@ -107,6 +107,7 @@ type OrderList {
   date: String!
   value: Float!
   commission: Float!
+  isPaid: Boolean!
 }
 
 input downloadFinantialConciliationCSVByReferenceMonthInput {

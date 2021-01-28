@@ -28,9 +28,9 @@ const resolvers: IResolvers = {
         return service.generateShortenerUrl(input, { client, organizationId }, trx)
       })
     },
-    paidAffiliateCommission: (_, attrs, { client, organizationId }) => {
+    changeAffiliateCommissionPayStatus: (_, attrs, { client, organizationId }) => {
       const { input } = attrs
-      return service.paidAffiliateCommission(input, { client, organizationId })
+      return service.changeAffiliateCommissionPayStatus(input, { client, organizationId })
     },
     generateSalesShorten: (_, attrs, { salesId }) => {
       const { input } = attrs
