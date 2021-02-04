@@ -1,6 +1,8 @@
 import knexDatabase from '../../../knex-database'
 import { Transaction } from 'knex'
 import removeUndefinedOfObjects from '../../../utils/removeUndefinedOfObjects'
+import ServiceServices from '../../services/service'
+import { Services } from '../../services/types'
 
 const getFinantialConciliationConfigurationByOrganizationId = async (organizationId: string, trx: Transaction) => {
   const organizationCommission = await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay as osttp')
@@ -26,10 +28,16 @@ const updateFinantialConciliationByOrganizationId = async (organizationId: strin
 
   removeUndefinedOfObjects(update)
 
-  const { organization_service_id } = await getFinantialConciliationConfigurationByOrganizationId(organizationId, trx)
-
   try {
-    await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay').where('organization_service_id', organization_service_id).update(update)
+    const organizationService = await ServiceServices.getOrganizationServiceByServiceName({ service: Services.AFFILIATE, organizationId: organizationId }, trx)
+
+    const organizationServicesTimeToPay = await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay').where('organization_service_id', organizationService.id).select().first()
+
+    if (organizationServicesTimeToPay) {
+      return await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay').where('id', organizationServicesTimeToPay.id).update(update)
+    }
+
+    await (trx || knexDatabase.knexConfig)('organization_services_time_to_pay').insert({ ...update, type: 'commission', days: 30, organization_service_id: organizationService.id })
   } catch (error) {
     console.log(error)
     throw new Error(error)
