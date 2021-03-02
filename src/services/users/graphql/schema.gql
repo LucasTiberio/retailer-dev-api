@@ -62,4 +62,5 @@ type User {
 enum DocumentType {
   rg
   cpf
+  cnpj
 }
