@@ -1,7 +1,7 @@
 exports.up = function(knex, Promise) {
   return knex.schema.raw(`
     ALTER TABLE "users" DROP CONSTRAINT "users_document_type_check";
-    ALTER TABLE "users" ADD CONSTRAINT "users_document_type_check" CHECK (document_type IN ('cnpj'::text, 'ELECTRIC'::text, 'cpf'::text, 'rg'::text))
+    ALTER TABLE "users" ADD CONSTRAINT "users_document_type_check" CHECK (document_type IN ('cnpj'::text, 'cpf'::text, 'rg'::text))
   `);
 };
 
