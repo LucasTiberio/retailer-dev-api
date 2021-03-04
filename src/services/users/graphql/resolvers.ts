@@ -11,6 +11,11 @@ const resolvers: IResolvers = {
         return service.signUp(input, { headers }, trx)
       })
     },
+    resendConfirmationEmail: (_, __, { client }) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
+        return service.resendConfirmationEmail(client.id, trx);
+      })
+    },
     signUpWithOrganization: (_, { input }, { redisClient, headers }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
         return service.signUpWithOrganization(

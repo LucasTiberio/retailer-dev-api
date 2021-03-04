@@ -51,6 +51,22 @@ const signUpWithEmailPhoneName = async (
   return partialSignUpCreated
 }
 
+const resendConfirmationEmail = async (userId: string, trx: Transaction) => {
+  const user = await getUserById(userId, trx);
+
+  if (!user) throw new Error('user_not_found');
+
+  const { email, username, verification_hash } = user;
+
+  try {
+    await MailService.sendSignUpMail({ email, username, hashToVerify: verification_hash })
+    
+    return true;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
 const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   const { username, password, email, document, documentType, phone } = attrs
 
@@ -304,6 +320,7 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
 
 export default {
   signUp,
+  resendConfirmationEmail,
   verifyEmail,
   recoveryPassword,
   changePassword,

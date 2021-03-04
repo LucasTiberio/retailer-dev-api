@@ -5,6 +5,7 @@ extend type Query {
 
 extend type Mutation {
   signUp(input: SignUpInput!): User!
+  resendConfirmationEmail: Boolean! @acceptTermsAndConditions @isAuthenticated
   signUpWithOrganization(input: SignUpWithOrganizationInput!): User!
   userVerifyEmail(input: UserVerifyEmailInput!): Boolean
   userRecoveryPassword(input: UserRecoveryPasswordInput!): Boolean
