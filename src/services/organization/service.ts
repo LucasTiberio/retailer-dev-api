@@ -29,6 +29,7 @@ import {
   MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST,
   MESSAGE_ERROR_USER_TEAMMATE,
   MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE,
+  ORGANIZATIONS_WITH_STYLES_IN_DOMAIN,
 } from '../../common/consts'
 import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
@@ -294,7 +295,7 @@ const inviteTeammates = async (
               .where('id', usersOrganizationFound.id)
               .returning('*')
 
-            if (context.headers.origin?.includes('afiliados.b8one.com')) {
+            if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(context.headers.origin || '')) {
               await LojaIntegradaMailService.sendInviteUserMail({
                 email: item,
                 hashToVerify,
@@ -338,7 +339,7 @@ const inviteTeammates = async (
 
         const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.ADMIN, OrganizationInviteStatus.PENDENT, trx, hashToVerify)
 
-        if (context.headers.origin?.includes('afiliados.b8one.com')) {
+        if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(context.headers.origin || '')) {
           await LojaIntegradaMailService.sendInviteNewUserMail({
             email: userEmail.email,
             hashToVerify,
@@ -425,7 +426,7 @@ const inviteAffiliateServiceMembers = async (
               .returning('*')
 
             if (usersOrganizationFound.invite_status !== OrganizationInviteStatus.ACCEPT) {
-              if (context.headers.origin?.includes('afiliados.b8one.com')) {
+              if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(context.headers.origin || '')) {
                 await LojaIntegradaMailService.sendInviteUserMail({
                   email: item.email,
                   hashToVerify,
@@ -482,7 +483,7 @@ const inviteAffiliateServiceMembers = async (
           trx
         )
 
-        if (context.headers.origin?.includes('afiliados.b8one.com')) {
+        if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(context.headers.origin || '')) {
           await LojaIntegradaMailService.sendInviteNewUserMail({
             email: userEmail.email,
             hashToVerify,
@@ -1116,7 +1117,7 @@ const reinviteServiceMember = async (
 
     if (!usersOrganizationFound.invite_hash) throw new Error(MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE)
 
-    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(context.headers.origin || '')) {
       await LojaIntegradaMailService.sendInviteNewUserMail({
         email: usersOrganizationFound.email,
         hashToVerify: usersOrganizationFound.invite_hash,
