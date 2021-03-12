@@ -112,7 +112,8 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .returning('*')
     }
 
-    if (context.headers.origin?.includes('indicae.lojaintegrada.com.br')) {
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
@@ -201,7 +202,8 @@ const signUpWithOrganization = async (
       trx
     )
 
-    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(context.headers.origin || '')) {
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
@@ -273,7 +275,8 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
   try {
     const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
 
-    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(context.headers.origin || '')) {
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveryPasswordMail({
         email: user.email,
         username: user.username,
@@ -307,7 +310,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       .update({ encrypted_password: encryptedPassword, verification_hash: null })
       .returning(['email', 'username'])
 
-    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(context.headers.origin || '')) {
+      let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+      if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
