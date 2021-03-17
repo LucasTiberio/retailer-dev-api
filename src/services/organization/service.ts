@@ -631,7 +631,7 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
     .select('usr.encrypted_password', 'usr.username', 'usr.email', 'usr.phone', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
 
   try {
-    if (user) return { status: false, message: userAlreadyRegistered }
+    if (!user) return { status: false, message: userAlreadyRegistered }
 
     await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
