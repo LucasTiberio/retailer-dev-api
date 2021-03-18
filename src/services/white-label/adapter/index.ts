@@ -9,5 +9,5 @@ export const whiteLabelInfosAdapter = (record: IWhiteLabelInfosAdapter) => ({
   secondColor: record.second_color,
   tertiaryColor: record.tertiary_color,
   logo: record.logo,
-  organizationName: record.name
+  organizationName: record.name || '',
 })
