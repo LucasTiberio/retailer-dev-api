@@ -58,6 +58,7 @@ const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
     secondColor: whiteLabelInfos.secondColor ?? defaultWhiteLabel.secondColor,
     tertiaryColor: whiteLabelInfos.tertiaryColor ?? defaultWhiteLabel.tertiaryColor,
     logo: whiteLabelInfos.logo ?? defaultWhiteLabel.logo,
+    organizationName: whiteLabelInfos.organizationName ?? '',
     isWhiteLabel,
   }
 }

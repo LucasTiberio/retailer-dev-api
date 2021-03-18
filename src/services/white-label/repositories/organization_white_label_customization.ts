@@ -8,10 +8,15 @@ import { whiteLabelInfosAdapter } from '../adapter'
 const getWhiteLabelInfosByOrganizationId = async (organizationId?: string, trx?: Transaction, domain?: String) => {
   let whiteLabelInfos
   if (domain) {
-    whiteLabelInfos = await (trx || knexDatabase.knexConfig)('organization_white_label_customization').where('custom_domain', domain).first().select()
+    whiteLabelInfos = await (trx || knexDatabase.knexConfig)('organization_white_label_customization AS owlc')
+      .innerJoin('organizations AS o', 'o.id', 'owlc.organization_id')
+      .where('custom_domain', domain)
+      .select('owlc.primary_color', 'owlc.second_color', 'owlc.tertiary_color', 'owlc.logo', 'o.name')
+      .first()
   } else {
     whiteLabelInfos = await (trx || knexDatabase.knexConfig)('organization_white_label_customization').where('organization_id', organizationId).first().select()
   }
+
   return whiteLabelInfos ? whiteLabelInfosAdapter(whiteLabelInfos) : null
 }
 
