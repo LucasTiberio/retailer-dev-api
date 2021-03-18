@@ -29,7 +29,7 @@ import {
   MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST,
   MESSAGE_ERROR_USER_TEAMMATE,
   MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE,
-  ORGANIZATIONS_WITH_STYLES_IN_DOMAIN,
+  INDICAE_LI_WHITE_LABEL_DOMAIN,
 } from '../../common/consts'
 import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
@@ -296,7 +296,7 @@ const inviteTeammates = async (
               .returning('*')
 
               let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-              if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+              if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
               await LojaIntegradaMailService.sendInviteUserMail({
                 email: item,
                 hashToVerify,
@@ -341,7 +341,7 @@ const inviteTeammates = async (
         const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.ADMIN, OrganizationInviteStatus.PENDENT, trx, hashToVerify)
 
         let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-        if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+        if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
           await LojaIntegradaMailService.sendInviteNewUserMail({
             email: userEmail.email,
             hashToVerify,
@@ -429,7 +429,7 @@ const inviteAffiliateServiceMembers = async (
 
             if (usersOrganizationFound.invite_status !== OrganizationInviteStatus.ACCEPT) {
               let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-              if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+              if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
                 await LojaIntegradaMailService.sendInviteUserMail({
                   email: item.email,
                   hashToVerify,
@@ -487,7 +487,7 @@ const inviteAffiliateServiceMembers = async (
         )
 
         let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-        if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+        if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
           await LojaIntegradaMailService.sendInviteNewUserMail({
             email: userEmail.email,
             hashToVerify,
@@ -1120,7 +1120,7 @@ const reinviteServiceMember = async (
     if (!usersOrganizationFound.invite_hash) throw new Error(MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE)
 
     let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendInviteNewUserMail({
         email: usersOrganizationFound.email,
         hashToVerify: usersOrganizationFound.invite_hash,

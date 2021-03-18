@@ -10,7 +10,7 @@ import OrganizationService from '../organization/service'
 import { RedisClient } from 'redis'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { IncomingHttpHeaders } from 'http'
-import { ORGANIZATIONS_WITH_STYLES_IN_DOMAIN } from '../../common/consts'
+import { INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../common/consts'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -113,7 +113,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
     }
 
     let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
@@ -203,7 +203,7 @@ const signUpWithOrganization = async (
     )
 
     let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
@@ -276,7 +276,7 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
     const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
 
     let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-    if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveryPasswordMail({
         email: user.email,
         username: user.username,
@@ -311,7 +311,7 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       .returning(['email', 'username'])
 
       let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-      if (ORGANIZATIONS_WITH_STYLES_IN_DOMAIN.includes(HEADER_HOST)) {
+      if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })

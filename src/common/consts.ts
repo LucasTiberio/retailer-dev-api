@@ -25,4 +25,4 @@ export const LOJA_INTEGRADA_APPLICATION_KEY = process.env.LOJA_INTEGRADA_APPLICA
 
 export const FREE_TRIAL_DAYS = 10
 
-export const ORGANIZATIONS_WITH_STYLES_IN_DOMAIN = ['indicae.lojaintegrada.com.br', 'afiliados.b8one.com'];
+export const INDICAE_LI_WHITE_LABEL_DOMAIN = ['indicae.lojaintegrada.com.br', 'afiliados.b8one.com'];
