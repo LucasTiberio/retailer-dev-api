@@ -24,7 +24,7 @@ const _signUpAdapter = (record: ISignUpFromDB) => ({
 const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
   const [partialSignUpCreated] = await (trx || database.knexConfig)
     .insert({
-      email,
+      email: email.toLowerCase(),
     })
     .into('users')
     .returning('*')
@@ -42,7 +42,7 @@ const signUpWithEmailPhoneName = async (
 ) => {
   const [partialSignUpCreated] = await (trx || database.knexConfig)
     .insert({
-      email: infos.email,
+      email: infos.email.toLowerCase(),
       phone: infos.phone,
       username: infos.username,
     })
@@ -53,18 +53,18 @@ const signUpWithEmailPhoneName = async (
 }
 
 const resendConfirmationEmail = async (userId: string, trx: Transaction) => {
-  const user = await getUserById(userId, trx);
+  const user = await getUserById(userId, trx)
 
-  if (!user) throw new Error('user_not_found');
+  if (!user) throw new Error('user_not_found')
 
-  const { email, username, verification_hash } = user;
+  const { email, username, verification_hash } = user
 
   try {
     await MailService.sendSignUpMail({ email, username, hashToVerify: verification_hash })
-    
-    return true;
+
+    return true
   } catch (error) {
-    throw new Error(error.message);
+    throw new Error(error.message)
   }
 }
 
@@ -101,7 +101,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
       signUpCreated = await (trx || database.knexConfig)
         .insert({
           username,
-          email,
+          email: email.toLowerCase(),
           encrypted_password: encryptedPassword,
           verification_hash: encryptedHashVerification,
           document,
@@ -112,7 +112,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .returning('*')
     }
 
-    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
@@ -178,7 +178,7 @@ const signUpWithOrganization = async (
       signUpCreated = await (trx || database.knexConfig)
         .insert({
           username,
-          email,
+          email: email.toLowerCase(),
           encrypted_password: encryptedPassword,
           verification_hash: encryptedHashVerification,
           document,
@@ -202,7 +202,7 @@ const signUpWithOrganization = async (
       trx
     )
 
-    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
@@ -239,7 +239,7 @@ const isUserVerified = async (client: IUserToken, trx: Transaction) => {
 }
 
 const getUserByEmail = async (email: string, trx: Transaction) => {
-  const [user] = await (trx || database.knexConfig)('users').where('email', email).select()
+  const [user] = await (trx || database.knexConfig)('users').where('email', email.toLowerCase()).select()
 
   return user
 }
@@ -275,7 +275,7 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
   try {
     const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
 
-    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveryPasswordMail({
         email: user.email,
@@ -290,7 +290,7 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
       })
     }
 
-    await (trx || database.knexConfig)('users').where('email', email).update({ verification_hash: encryptedHashVerification, verified: true })
+    await (trx || database.knexConfig)('users').where('email', email.toLowerCase()).update({ verification_hash: encryptedHashVerification, verified: true })
 
     return true
   } catch (e) {
@@ -310,8 +310,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       .update({ encrypted_password: encryptedPassword, verification_hash: null })
       .returning(['email', 'username'])
 
-      let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
-      if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
