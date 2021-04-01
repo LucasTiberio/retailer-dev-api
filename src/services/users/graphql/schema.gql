@@ -64,5 +64,4 @@ enum DocumentType {
   rg
   cnpj
   cpf
-  cnpj
 }
