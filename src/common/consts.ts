@@ -24,3 +24,5 @@ export const BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH = process.env.BUCKET_AFFIL
 export const LOJA_INTEGRADA_APPLICATION_KEY = process.env.LOJA_INTEGRADA_APPLICATION_KEY
 
 export const FREE_TRIAL_DAYS = 10
+
+export const INDICAE_LI_WHITE_LABEL_DOMAIN = ['indicae.lojaintegrada.com.br', 'afiliados.b8one.com'];

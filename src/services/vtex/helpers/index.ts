@@ -1,4 +1,4 @@
-export const ORDER_MOMENTS = ['payment-pending', 'payment-approved', 'payment-denied', 'canceled']
+export const ORDER_MOMENTS = ['payment-pending', 'payment-approved', 'payment-denied', 'canceled', 'invoiced', 'order-created']
 
 export const buildVerifyVtexSecretsUrl = (accountName: string) => `https://${accountName}.vtexcommercestable.com.br/api/oms/pvt/orders`
 

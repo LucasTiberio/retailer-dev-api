@@ -96,8 +96,11 @@ const createIntegration = async (
     switch (type) {
       case Integrations.VTEX:
         if (secrets.xVtexApiAppKey && secrets.xVtexApiAppToken && secrets.accountName) {
+          console.log('VtexService.verifyVtexSecrets')
           await VtexService.verifyVtexSecrets(secrets)
+          console.log('VtexService.createVtexHook')
           await VtexService.createVtexHook(secrets)
+          console.log('attachIntegration')
           const jwtSecret = await _secretToJwt(input.secrets)
           await attachIntegration(context.organizationId, jwtSecret, type, input.secrets.xVtexApiAppKey, trx)
           return true

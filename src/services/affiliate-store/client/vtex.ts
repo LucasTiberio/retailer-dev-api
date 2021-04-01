@@ -2,7 +2,7 @@ import { buildGetProductsVtexUrl, buildProductsHtmlVtexUrl } from '../../vtex/he
 import Axios from 'axios'
 
 export const fetchVtexProducts = async (accountName: string, term: string) => {
-  const { data: vtexProductsData } = await Axios.get(`${buildGetProductsVtexUrl(accountName)}/${term}?_from=0&_to=49`, {
+  const { data: vtexProductsData } = await Axios.get(`${buildGetProductsVtexUrl(accountName)}/${encodeURIComponent(term)}?_from=0&_to=49`, {
     headers: {
       'content-type': 'Content-Type',
     },
@@ -40,6 +40,8 @@ export const fetchVtexProductsByIds = async (accountName: string, productIds: st
 }
 
 export const fetchVtexProductsHtml = async (accountName: string, shelfId: string, affiliateStoreIds: string) => {
+  console.log(buildProductsHtmlVtexUrl(accountName.replace('https://', '').replace('http://', ''), shelfId, affiliateStoreIds))
+
   const { data: vtexProductsData } = await Axios.get(buildProductsHtmlVtexUrl(accountName.replace('https://', '').replace('http://', ''), shelfId, affiliateStoreIds), {
     headers: {
       'content-type': 'Content-Type',

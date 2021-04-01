@@ -1,7 +1,7 @@
 import { Transaction } from 'knex'
 import knexDatabase from '../../../knex-database'
 import { usersOrganizationsAdapter } from '../adapters'
-import { ResponseStatus } from '../types'
+import { InviteStatus, ResponseStatus } from '../types'
 
 export const getPendingAndIsRequestedMembersByOrganizationId = async (organizationId: string, trx: Transaction) => {
   const members = await (trx || knexDatabase.knexConfig)('users_organizations').where('organization_id', organizationId).andWhere('is_requested', true).andWhere('invite_status', 'pendent')
@@ -44,16 +44,23 @@ export const memberHasInvite = async (affiliateId: string, organizationId: strin
 
 export const cancelMemberInvite = async (affiliateId: string, organizationId: string, trx: Transaction): Promise<boolean> => {
   try {
+
+    const [userOrganization] = await (trx || knexDatabase.knexConfig)('users_organizations')
+      .where('organization_id', organizationId)
+      .andWhere('user_id', affiliateId)
+      .andWhere('invite_status', 'pendent')
+      .whereNotNull('invite_hash');
+
+      
+    if (!userOrganization) throw new Error("user_organization_not_found")
+      
     await (trx || knexDatabase.knexConfig)('users_organizations')
-    .where('organization_id', organizationId)
-    .andWhere('user_id', affiliateId)
-    .andWhere('invite_status', 'pendent')
-    .whereNotNull('invite_hash')
-    .update({
-      invite_status: 'cancelled',
-      invite_hash: null,
-      active: false,
-    })
+      .where('id', userOrganization.id)
+      .update({
+        invite_status: InviteStatus.refused,
+        invite_hash: null,
+        active: false,
+      })
 
     return true;
   } catch (error) {

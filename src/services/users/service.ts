@@ -10,6 +10,7 @@ import OrganizationService from '../organization/service'
 import { RedisClient } from 'redis'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { IncomingHttpHeaders } from 'http'
+import { INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../common/consts'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -49,6 +50,22 @@ const signUpWithEmailPhoneName = async (
     .returning('*')
 
   return partialSignUpCreated
+}
+
+const resendConfirmationEmail = async (userId: string, trx: Transaction) => {
+  const user = await getUserById(userId, trx);
+
+  if (!user) throw new Error('user_not_found');
+
+  const { email, username, verification_hash } = user;
+
+  try {
+    await MailService.sendSignUpMail({ email, username, hashToVerify: verification_hash })
+    
+    return true;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 }
 
 const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
@@ -95,7 +112,8 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .returning('*')
     }
 
-    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
@@ -184,7 +202,8 @@ const signUpWithOrganization = async (
       trx
     )
 
-    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
@@ -256,7 +275,8 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
   try {
     const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
 
-    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveryPasswordMail({
         email: user.email,
         username: user.username,
@@ -290,7 +310,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       .update({ encrypted_password: encryptedPassword, verification_hash: null })
       .returning(['email', 'username'])
 
-    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+      let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+      if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
@@ -304,6 +325,7 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
 
 export default {
   signUp,
+  resendConfirmationEmail,
   verifyEmail,
   recoveryPassword,
   changePassword,

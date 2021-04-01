@@ -1,7 +1,7 @@
 import Mail from '../../lib/Mail'
 import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail } from './types'
 
-const frontUrl = 'https://afiliados.b8one.com'
+const frontUrl = 'https://indicae.lojaintegrada.com.br'
 
 const sendSignUpMail = async (data: ISendMail) => {
   if (process.env.NODE_ENV === 'test') return

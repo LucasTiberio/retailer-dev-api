@@ -61,6 +61,7 @@ const verifyVtexSecrets = async (secrets: IVtexSecrets) => {
 
     return false
   } catch (e) {
+    console.log('erro da vtex', e)
     let errorMessage = e.response?.data?.error?.message || e.message
     if (errorMessage === 'An error has occurred') errorMessage = 'Verifique as chaves inseridas.'
     throw new Error(errorMessage)

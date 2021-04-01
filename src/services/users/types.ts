@@ -35,7 +35,7 @@ export interface ISignUpFromDB {
 export enum IDocumentType {
   RG = 'rg',
   CPF = 'cpf',
-  cnpj = 'cnpj',
+  CNPJ = 'cnpj',
 }
 
 export interface ISignUpAdapted {

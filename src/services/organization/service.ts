@@ -29,6 +29,7 @@ import {
   MESSAGE_ERROR_ORGANIZATION_SERVICE_DOES_NOT_EXIST,
   MESSAGE_ERROR_USER_TEAMMATE,
   MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE,
+  INDICAE_LI_WHITE_LABEL_DOMAIN,
 } from '../../common/consts'
 import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
@@ -294,7 +295,8 @@ const inviteTeammates = async (
               .where('id', usersOrganizationFound.id)
               .returning('*')
 
-            if (context.headers.origin?.includes('afiliados.b8one.com')) {
+              let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+              if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
               await LojaIntegradaMailService.sendInviteUserMail({
                 email: item,
                 hashToVerify,
@@ -338,7 +340,8 @@ const inviteTeammates = async (
 
         const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.ADMIN, OrganizationInviteStatus.PENDENT, trx, hashToVerify)
 
-        if (context.headers.origin?.includes('afiliados.b8one.com')) {
+        let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+        if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
           await LojaIntegradaMailService.sendInviteNewUserMail({
             email: userEmail.email,
             hashToVerify,
@@ -425,7 +428,8 @@ const inviteAffiliateServiceMembers = async (
               .returning('*')
 
             if (usersOrganizationFound.invite_status !== OrganizationInviteStatus.ACCEPT) {
-              if (context.headers.origin?.includes('afiliados.b8one.com')) {
+              let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+              if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
                 await LojaIntegradaMailService.sendInviteUserMail({
                   email: item.email,
                   hashToVerify,
@@ -482,7 +486,8 @@ const inviteAffiliateServiceMembers = async (
           trx
         )
 
-        if (context.headers.origin?.includes('afiliados.b8one.com')) {
+        let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+        if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
           await LojaIntegradaMailService.sendInviteNewUserMail({
             email: userEmail.email,
             hashToVerify,
@@ -625,10 +630,8 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
     .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
     .select('usr.encrypted_password', 'usr.username', 'usr.email', 'usr.phone', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
 
-  console.log({ user })
-
   try {
-    if (!user) return { status: true, message: userAlreadyRegistered }
+    if (!user) return { status: false, message: userAlreadyRegistered }
 
     await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
@@ -1116,7 +1119,8 @@ const reinviteServiceMember = async (
 
     if (!usersOrganizationFound.invite_hash) throw new Error(MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE)
 
-    if (context.headers.origin?.includes('afiliados.b8one.com')) {
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0];
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendInviteNewUserMail({
         email: usersOrganizationFound.email,
         hashToVerify: usersOrganizationFound.invite_hash,

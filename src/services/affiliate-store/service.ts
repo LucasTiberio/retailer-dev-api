@@ -633,16 +633,22 @@ const getAffiliateStoreWithProducts = async (
 
   const productIdsOrdered = affiliateStoreProducts.map((item) => item.product_id)
 
-  const htmlOrdered = productIdsOrdered
-    .map((item) => {
-      const prevLi = $(`#helperComplement_${item}`).prev()[0]
-      return $.html(prevLi)
-    })
-    .join('')
+  const activeProducts: string[] = []
+
+  productIdsOrdered.forEach((item) => {
+    const helperComplement = $(`#helperComplement_${item}`)
+    if (helperComplement) {
+      const prevHelperComplement = helperComplement.prev()
+      if (prevHelperComplement && prevHelperComplement.length) {
+        console.log({ item })
+        activeProducts.push($.html(prevHelperComplement[0]))
+      }
+    }
+  })
 
   return {
     affiliateStore: affiliateStore ? affiliateStoreAdapter(affiliateStore) : null,
-    productsHtml: htmlOrdered ?? null,
+    productsHtml: activeProducts.join(' ') ?? null,
     affiliateId: affiliateStore?.users_organization_service_roles_id,
     integration: Integrations.VTEX,
   }
