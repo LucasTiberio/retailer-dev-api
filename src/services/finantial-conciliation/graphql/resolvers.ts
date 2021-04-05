@@ -30,7 +30,9 @@ const resolvers: IResolvers = {
         let returnCSV = 'Membro;CPF;Banco;Agência;Conta;Total em vendas;Comissão\n'
         affiliateValues.affiliates.forEach((affiliateValue) => {
           returnCSV +=
-            `${affiliateValue.name};${affiliateValue.document};${affiliateValue.bank};${affiliateValue.agency};${affiliateValue.account};${affiliateValue.revenue};${affiliateValue.commission}` + '\n'
+            `${affiliateValue.name};${affiliateValue.document};${affiliateValue.bank};${affiliateValue.agency};${affiliateValue.account};${Number(affiliateValue.revenue).toFixed(2)};${Number(
+              affiliateValue
+            ).toFixed(2)}` + '\n'
         })
         return Buffer.from(returnCSV).toString('base64')
       })
