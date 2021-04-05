@@ -31,7 +31,7 @@ const resolvers: IResolvers = {
         affiliateValues.affiliates.forEach((affiliateValue) => {
           returnCSV +=
             `${affiliateValue.name};${affiliateValue.document};${affiliateValue.bank};${affiliateValue.agency};${affiliateValue.account};${Number(affiliateValue.revenue).toFixed(2)};${Number(
-              affiliateValue
+              affiliateValue.commission
             ).toFixed(2)}` + '\n'
         })
         return Buffer.from(returnCSV).toString('base64')
