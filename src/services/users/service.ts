@@ -1,16 +1,21 @@
 import common from '../../common'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
-import { ISignUp, ISignUpAdapted, IChangePassword, ISignUpFromDB } from './types'
+import { ISignUp, IChangePassword, ISignUpFromDB } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
 import knexDatabase from '../../knex-database'
 import { IUserToken } from '../authentication/types'
 import OrganizationService from '../organization/service'
+import ServicesService from '../services/service'
+import WhiteLabelService from '../white-label/service'
 import { RedisClient } from 'redis'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { IncomingHttpHeaders } from 'http'
-import { INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../common/consts'
+import { DEFAULT_DOMAINS, INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../common/consts'
+import getHeaderDomain from '../../utils/getHeaderDomain'
+import { OrganizationInviteStatus, OrganizationRoles } from '../organization/types'
+import { ServiceRoles, Services } from '../services/types'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -78,6 +83,19 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
   if (userPreAddedFound && userPreAddedFound.encrypted_password) throw new Error('user already registered.')
 
+  let organizationIdFoundByDomain
+
+  const origin = context.headers.origin
+  const domain = getHeaderDomain(origin || '')
+
+  if (!DEFAULT_DOMAINS.includes(domain)) {
+    const whiteLabelInfos = await WhiteLabelService.getWhiteLabelInfosDomain(domain, trx)
+
+    if (whiteLabelInfos) {
+      organizationIdFoundByDomain = whiteLabelInfos.organizationId
+    }
+  }
+
   const encryptedPassword = await common.encrypt(password)
   const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
 
@@ -112,8 +130,35 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .returning('*')
     }
 
-    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
-    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+    if (organizationIdFoundByDomain) {
+      const organization = await OrganizationService.getOrganizationById(organizationIdFoundByDomain, trx)
+
+      const [serviceOrganizationFound] = await ServicesService.serviceOrganizationByName(organization.id, Services.AFFILIATE, trx)
+
+      if (!serviceOrganizationFound) throw new Error('Organization doesnt have this service')
+
+      const userOrganizationCreated = await OrganizationService.organizationRolesAttach(
+        signUpCreated[0].id,
+        organization.id,
+        OrganizationRoles.MEMBER,
+        organization.public ? OrganizationInviteStatus.ACCEPT : OrganizationInviteStatus.PENDENT,
+        trx,
+        undefined,
+        false
+      )
+
+      await ServicesService.attachUserInOrganizationAffiliateService(
+        {
+          userOrganizationId: userOrganizationCreated.id,
+          role: ServiceRoles.ANALYST,
+          organizationId: organization.id,
+          serviceOrganization: serviceOrganizationFound,
+        },
+        trx
+      )
+    }
+
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(domain)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })

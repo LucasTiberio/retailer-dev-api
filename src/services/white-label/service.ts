@@ -14,6 +14,12 @@ const defaultWhiteLabel = {
   logo: 'https://plugone-production.nyc3.digitaloceanspaces.com/Captura%20de%20Tela%202021-01-05%20a%CC%80s%2018.17.52.png',
 }
 
+const getWhiteLabelInfosDomain = async (domain: string, trx: Transaction) => {
+  const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, domain)
+
+  return whiteLabelInfos
+}
+
 const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
 
@@ -36,9 +42,9 @@ const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
 }
 
 const getWhiteLabelColorOptions = async (trx: Transaction) => {
-  const colorOptions = ['#D70000', '#ED8E00', '#95B221', '#00830D', '#00B3BE', '#0030D9', '#7E00BA', '#DB287E', '#111111'];
+  const colorOptions = ['#D70000', '#ED8E00', '#95B221', '#00830D', '#00B3BE', '#0030D9', '#7E00BA', '#DB287E', '#111111']
 
-  return colorOptions;
+  return colorOptions
 }
 
 const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
@@ -48,9 +54,9 @@ const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
     return defaultWhiteLabel
   }
 
-  let isWhiteLabel = false;
+  let isWhiteLabel = false
   if (whiteLabelInfos.primaryColor || whiteLabelInfos.secondColor || whiteLabelInfos.tertiaryColor || whiteLabelInfos.logo) {
-    isWhiteLabel = true;
+    isWhiteLabel = true
   }
 
   return {
@@ -111,4 +117,5 @@ export default {
   sendWhiteLabelInfos,
   getWhiteLabelInfosByDomain,
   getWhiteLabelColorOptions,
+  getWhiteLabelInfosDomain,
 }

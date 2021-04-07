@@ -9,7 +9,9 @@ export interface IWhiteLabelInfosFromDB {
   primary_color: string
   second_color: string
   tertiary_color: string
+  organization_id: string
   logo: string
+  custom_domain: string
 }
 
 export interface ILogo {
