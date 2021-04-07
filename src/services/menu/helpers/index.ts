@@ -132,7 +132,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
 
 export const organizationMemberMenu = [
   {
-    group: 'menu-items',
+    group: 'menuitems',
     items: [
       {
         name: 'overview',
@@ -146,7 +146,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
-        group: 'menu-items',
+        group: 'menuitems',
         items: [
           {
             name: 'overview',

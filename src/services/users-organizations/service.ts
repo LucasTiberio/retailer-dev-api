@@ -18,20 +18,20 @@ const getPendingMembersByOrganizationId = async (
 
 const deleteMemberInvitation = async (
   input: {
-    affiliateId: string
+    userOrganizationId: string
   },
   organizationId: string,
-  trx: Transaction,
+  trx: Transaction
 ) => {
-  const memberHasInvitation = await memberHasInvite(input.affiliateId, organizationId, trx);
+  const memberHasInvitation = await memberHasInvite(input.userOrganizationId, organizationId, trx)
 
-  if (!memberHasInvitation) throw new Error('member_doesnt_have_invitation');
+  if (!memberHasInvitation) throw new Error('member_doesnt_have_invitation')
 
   try {
-    await cancelMemberInvite(input.affiliateId, organizationId, trx);
-    return true;
+    await cancelMemberInvite(input.userOrganizationId, organizationId, trx)
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 

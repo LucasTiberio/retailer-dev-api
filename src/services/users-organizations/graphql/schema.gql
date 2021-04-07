@@ -10,16 +10,11 @@ extend type Mutation {
     @enterpriseFeature
     @acceptTermsAndConditions
     @isAuthenticated
-  deleteMemberInvitation(input: DeleteMemberInvitationInput!): Boolean!
-    @hasOrganizationRole(role: ["ADMIN"])
-    @organizationPaidVerify
-    @isVerified
-    @acceptTermsAndConditions
-    @isAuthenticated
+  deleteMemberInvitation(input: DeleteMemberInvitationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 input DeleteMemberInvitationInput {
-  affiliateId: String!
+  userOrganizationId: String!
 }
 
 input HandleMemberInvitationInput {
