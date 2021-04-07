@@ -144,7 +144,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         organization.public ? OrganizationInviteStatus.ACCEPT : OrganizationInviteStatus.PENDENT,
         trx,
         undefined,
-        false
+        true
       )
 
       await ServicesService.attachUserInOrganizationAffiliateService(
