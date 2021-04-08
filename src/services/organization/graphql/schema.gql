@@ -89,6 +89,7 @@ extend type Mutation {
   reinviteServiceMember(input: ReinviteServiceMemberInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @acceptTermsAndConditions @isAuthenticated
   setCurrentOrganization(input: SetCurrentOrganizationInput!): Boolean! @isVerified @acceptTermsAndConditions @isAuthenticated
+  setCurrentOrganizationReturnInfos(input: SetCurrentOrganizationReturnInfosInput!): Organization @isVerified @acceptTermsAndConditions @isAuthenticated
   organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
@@ -149,6 +150,10 @@ input InviteTeammatesInput {
 }
 
 input SetCurrentOrganizationInput {
+  organizationId: String
+}
+
+input SetCurrentOrganizationReturnInfosInput {
   organizationId: String
 }
 

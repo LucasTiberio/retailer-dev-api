@@ -48,6 +48,11 @@ const resolvers: IResolvers = {
         return service.setCurrentOrganization(input, context, trx)
       })
     },
+    setCurrentOrganizationReturnInfos: (_, { input }, context) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
+        return service.setCurrentOrganizationReturnInfos(input, context, trx)
+      })
+    },
     organizationUploadImage: async (_, { input }, { client, organizationId }) => {
       const { createReadStream, filename, mimetype } = await input.data
       return database.knexConfig.transaction((trx: Transaction) => {
