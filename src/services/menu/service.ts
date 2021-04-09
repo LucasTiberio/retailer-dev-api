@@ -7,7 +7,7 @@ import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_
 import { OrganizationRoles } from '../organization/types'
 import { organizationAdminMenu, organizationMemberMenu, affiliateMemberMountMenu } from './helpers'
 
-const getMenuTree = async (context: { organizationId: string; client: IUserToken }, trx: Transaction) => {
+const getMenuTree = async (context: { organizationId: string; client: IUserToken; organizationSlug: string }, trx: Transaction) => {
   if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
 
   const userOrganization = await OrganizationService.getUserOrganizationByIds(context.client.id, context.organizationId, trx)
@@ -21,20 +21,20 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
   const integration = await IntegrationService.getIntegrationByOrganizationId(context.organizationId, trx)
 
   if (organizationRole.name === OrganizationRoles.ADMIN) {
-    return organizationAdminMenu(integration?.type, context.organizationId)
+    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug)
   }
 
   const userOrganizationService = await ServicesService.getUserInOrganizationService({ userOrganizationId: userOrganization.id }, context, trx)
 
   if (organizationRole.name === OrganizationRoles.MEMBER && (!userOrganizationService || !userOrganizationService.active)) {
-    return organizationMemberMenu
+    return organizationMemberMenu(context.organizationSlug)
   }
 
   if (!userOrganizationService) throw new Error(MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE)
 
   const userOrganizationServiceRole = await ServicesService.getUserOrganizationServiceRoleById(userOrganizationService.id, trx)
 
-  return affiliateMemberMountMenu(userOrganizationServiceRole.name, integration?.type, context.organizationId)
+  return affiliateMemberMountMenu(userOrganizationServiceRole.name, integration?.type, context.organizationId, context.organizationSlug)
 }
 
 export default {
