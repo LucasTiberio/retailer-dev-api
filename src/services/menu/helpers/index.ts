@@ -170,7 +170,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
               },
               {
                 name: 'linkGenerator',
-                slug: `/org/affiliate/link/${slug}-generator`,
+                slug: `/org/${slug}/affiliate/link-generator`,
               },
               {
                 name: 'payments',
@@ -200,7 +200,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
       },
       {
         name: 'linkGenerator',
-        slug: `/org/affiliate/link/${slug}-generator`,
+        slug: `/org/${slug}/affiliate/link-generator`,
       },
     ],
   }

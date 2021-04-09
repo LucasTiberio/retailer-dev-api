@@ -15,9 +15,9 @@ const defaultWhiteLabel = {
 }
 
 const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
-  const planType = await OrganizationRulesService.getPlanType(organizationId)
+  const planType = await OrganizationRulesService.verifyPlanType(organizationId)
 
-  if (planType !== 'Enterprise') {
+  if (!planType || planType !== 'Enterprise') {
     return defaultWhiteLabel
   }
 
