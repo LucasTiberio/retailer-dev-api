@@ -8,9 +8,9 @@ const sendSignUpMail = async (data: ISendMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'PlugOne No-reply <noreply@plugone.io>',
+      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
       to: `${data.username || ''} <${data.email}>`,
-      subject: 'Bem vindo(a) a PlugOne!',
+      subject: 'Bem vindo(a) a Hubly Retailer!',
       html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -20,7 +20,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <meta name="x-apple-disable-message-reformatting">
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-                <title>PLUGONE.io - Email Template</title>
+                <title>gohubly.com - Email Template</title>
                 <!--[if mso]>
                 <xml>
                 <o:OfficeDocumentSettings>
@@ -227,7 +227,7 @@ const sendSignUpMail = async (data: ISendMail) => {
             <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
             
             
-                <div style="display:none;font-size:0;line-height:0;">"Bem vindo(a) a PlugOne!</div>
+                <div style="display:none;font-size:0;line-height:0;">"Bem vindo(a) a Hubly Retailer!</div>
             
                 <!-- WRAPPER -->
                 <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -286,7 +286,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                     <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                         <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                            <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/logo-positive-horizontal.png" alt="Logo" width="116px" style="width:116px; max-width: 116px;">
+                                                            <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
                                                         </td>
                                                         </tr>
                                                     </table>
@@ -304,7 +304,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                     <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                         <td class="col" align="center" width="400" bgcolor="#FFFFFF" style="padding-left:228px;padding-right: 228px;margin-top:36px">
-                                                            <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/welcome.png" alt="Bem vindo à Plugone!" width="100%" style="width:100%; max-width: 100%;">
+                                                            <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/welcome.png" alt="Bem vindo à Hubly Retailer!" width="100%" style="width:100%; max-width: 100%;">
                                                         </td>
                                                         </tr>
                                                     </table>
@@ -323,11 +323,11 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                             <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
                                                               data.username || ''
                                                             }!</h1>
-                                                            <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Hoje começa a sua jornada com a Plugone, por isso queremos mostrar tudo que você pode fazer com a nossa poderosa ferramenta. Mas pra isso precisamos que confirme seu e-mail, assim a gente garante com segurança que você é você mesmo.</p>
+                                                            <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Hoje começa a sua jornada com a Hubly Retailer, por isso queremos mostrar tudo que você pode fazer com a nossa poderosa ferramenta. Mas pra isso precisamos que confirme seu e-mail, assim a gente garante com segurança que você é você mesmo.</p>
                                                             <table border="0" cellpadding="0" cellspacing="0" align="center" class="inter" style="font-family: 'Inter', sans-serif!important;" width="100%">
                                                                 <tbody>
                                                                     <tr>
-                                                                        <td align="center" height="36" bgcolor="#3B24A8" width="330" style="width:330px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background:linear-gradient(200.34deg, #3C5ED9 -2.42%, #3B24A8 79.51%);border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
+                                                                        <td align="center" height="36" bgcolor="#3B24A8" width="330" style="width:330px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color: #EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
                                                                             <a href="${frontUrl}/verification/${
         data.hashToVerify
       }" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
@@ -347,7 +347,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                             <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/team.png" alt="Team" width="105px" style="width: 105px; max-width: 105px;">
                                                         </td>
                                                         <td class="col px-sm-16" bgcolor="#FFFFFF" align="center" width="535" style="padding-right:148px;">
-                                                            <p class="inter" style="color: #1C1637;font-size: 14px; font-weight: 500; line-height: 20px;letter-spacing: 0.001em;text-align: left;margin-bottom: 8px;">Convide sua equipe para a PlugOne</p><p style="color: #666372;font-size: 14px; font-weight: 500; line-height: 20px;letter-spacing: 0.001em;text-align: left;">Traga sua equipe para a plataforma e comece a aumentar suas vendas hoje mesmo.</p>
+                                                            <p class="inter" style="color: #1C1637;font-size: 14px; font-weight: 500; line-height: 20px;letter-spacing: 0.001em;text-align: left;margin-bottom: 8px;">Convide sua equipe para a Hubly Retailer</p><p style="color: #666372;font-size: 14px; font-weight: 500; line-height: 20px;letter-spacing: 0.001em;text-align: left;">Traga sua equipe para a plataforma e comece a aumentar suas vendas hoje mesmo.</p>
                                                         </td>
                                                         </tr>
                                                     </tbody></table>
@@ -374,7 +374,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                     <table cellpadding="0" cellspacing="0" role="presentation" width="100%" style="padding:0 48px 12px 48px" bgcolor="#FFFFFF">
                                                         <tr>
                                                         <td class="col px-16" bgcolor="#FFFFFF" align="left" width="100%" >
-                                                            <p class="inter" style="color: #1C1637;font-size: 12px; font-weight: 500; line-height: 20px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Obrigado,<br> <strong>Equipe Plugone</strong>.</p>
+                                                            <p class="inter" style="color: #1C1637;font-size: 12px; font-weight: 500; line-height: 20px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Obrigado,<br> <strong>Equipe Hubly Retailer</strong>.</p>
             
             
                                 
@@ -393,18 +393,17 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                     <td class="px-16" style="padding:0 24px;" bgcolor="#FFFFFF">
                                                     <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
-                                
                                                         <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                            <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#3C5ED9;">plugone.io</span></a>
+                                                            <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
                                                         </td>
                                 
                                                         <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                        <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                        <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                      </a> -->
-                                                      <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                          <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                        </a>
+                                                            <a href="https://www.instagram.com/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                                  <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/instagram.png" alt="instagram" width="38px" style="width: 38px; max-width: 38px;">
+                                                                </a>
+                                                                <a href="https://www.linkedin.com/company/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                                    <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/linkedin.png" alt="linkedin" width="38px" style="width: 38px; max-width: 38px;">
+                                                                  </a>
                                                         </td>
                                 
                                                         </tr>
@@ -488,9 +487,9 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'PlugOne No-reply <noreply@plugone.io>',
+      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
       to: `${data.username || ''} <${data.email}>`,
-      subject: 'Recuperacão de senha Plugone!',
+      subject: 'Recuperacão de senha Hubly Retailer!',
       html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -500,7 +499,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <meta name="x-apple-disable-message-reformatting">
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-                <title>PLUGONE.io - Email Template</title>
+                <title>gohubly.com - Email Template</title>
                 <!--[if mso]>
                 <xml>
                   <o:OfficeDocumentSettings>
@@ -711,7 +710,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
               <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
             
             
-                <div style="display:none;font-size:0;line-height:0;">Recuperacão de senha Plugone!</div>
+                <div style="display:none;font-size:0;line-height:0;">Recuperacão de senha Hubly Retailer!</div>
             
                   <!-- WRAPPER -->
                   <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -770,7 +769,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                       <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                           <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                            <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/logo-positive-horizontal.png" alt="Logo" width="116px" style="width:116px; max-width: 116px;">
+                                                            <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
                                                           </td>
                                                         </tr>
                                                       </table>
@@ -788,7 +787,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                       <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                           <td class="col" align="center" width="400" bgcolor="#FFFFFF" style="padding-left:166px;padding-right: 166px;margin-top:36px">
-                                                            <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/password_recover.png" alt="Bem vindo à Plugone!" width="100%" style="width:100%; max-width: 100%;">
+                                                            <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/password_recover.png" alt="Bem vindo à Hubly Retailer!" width="100%" style="width:100%; max-width: 100%;">
                                                           </td>
                                                         </tr>
                                                       </table>
@@ -817,11 +816,11 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                                 <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
                                                                   data.username || ''
                                                                 }!</h1>
-                                                                <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Hoje começa a sua jornada com a Plugone, por isso queremos mostrar tudo que você pode fazer com a nossa poderosa ferramenta. Mas pra isso precisamos que confirme seu e-mail, assim a gente garante com segurança que você é você mesmo.</p>
+                                                                <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Hoje começa a sua jornada com a Hubly Retailer, por isso queremos mostrar tudo que você pode fazer com a nossa poderosa ferramenta. Mas pra isso precisamos que confirme seu e-mail, assim a gente garante com segurança que você é você mesmo.</p>
                                                                 <table border="0" cellpadding="0" cellspacing="0" align="center" class="inter" style="font-family: 'Inter', sans-serif!important;" width="100%">
                                                                     <tbody>
                                                                         <tr>
-                                                                            <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background:linear-gradient(200.34deg, #3C5ED9 -2.42%, #3B24A8 79.51%);border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
+                                                                            <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color: #EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
                                                                                 <a href="${frontUrl}/recovery-password/change-password/${
         data.hashToVerify
       }" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
@@ -848,16 +847,16 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                         <tr>
                                 
                                                           <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                            <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#3C5ED9;">plugone.io</span></a>
+                                                            <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
                                                           </td>
-                                
+                                      
                                                           <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                          <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                              <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                            </a> -->
-                                                            <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                              </a>
+                                                              <a href="https://www.instagram.com/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                                  <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/instagram.png" alt="instagram" width="38px" style="width: 38px; max-width: 38px;">
+                                                                </a>
+                                                                <a href="https://www.linkedin.com/company/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                                    <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/linkedin.png" alt="linkedin" width="38px" style="width: 38px; max-width: 38px;">
+                                                                  </a>
                                                           </td>
                                 
                                                         </tr>
@@ -941,9 +940,9 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'PlugOne No-reply <noreply@plugone.io>',
+      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
       to: `${data.username || ''} <${data.email}>`,
-      subject: 'Senha recuperada Plugone!',
+      subject: 'Senha recuperada Hubly Retailer!',
       html: `
                     <!DOCTYPE html>
                     <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -953,7 +952,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                         <meta name="viewport" content="width=device-width, initial-scale=1">
                         <meta name="x-apple-disable-message-reformatting">
                         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-                        <title>PLUGONE.io - Email Template</title>
+                        <title>gohubly.com - Email Template</title>
                         <!--[if mso]>
                         <xml>
                         <o:OfficeDocumentSettings>
@@ -1161,7 +1160,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                     <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
 
 
-                        <div style="display:none;font-size:0;line-height:0;">Senha recuperada Plugone!</div>
+                        <div style="display:none;font-size:0;line-height:0;">Senha recuperada Hubly Retailer!</div>
 
                         <!-- WRAPPER -->
                         <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -1220,7 +1219,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                             <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                 <tr>
                                                                 <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/logo-positive-horizontal.png" alt="Logo" width="116px" style="width:116px; max-width: 116px;">
+                                                                    <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
                                                                 </td>
                                                                 </tr>
                                                             </table>
@@ -1238,7 +1237,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                             <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                 <tr>
                                                                 <td class="col" align="center" width="400" bgcolor="#FFFFFF" style="padding-left:166px;padding-right: 166px;margin-top:36px">
-                                                                    <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/password_recovered.png" alt="Bem vindo à Plugone!" width="100%" style="width:100%; max-width: 100%;">
+                                                                    <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/password_recovered.png" alt="Bem vindo à Hubly Retailer!" width="100%" style="width:100%; max-width: 100%;">
                                                                 </td>
                                                                 </tr>
                                                             </table>
@@ -1259,9 +1258,9 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                                     <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: left;">Olá, ${
                                                                       data.username || ''
                                                                     }!</h1>
-                                                                    <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;"><strong style="font-weight: 700;">A sua senha da Plugone foi redefinida</strong>. Se você fez isso,  pode desconsiderar este email com segurança.</p>
+                                                                    <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;"><strong style="font-weight: 700;">A sua senha da Hubly Retailer foi redefinida</strong>. Se você fez isso,  pode desconsiderar este email com segurança.</p>
                                                                     <p class="inter" style="color: #1C1637;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Se você não solicitou redefinir sua senha, <strong style="color:#3B24A8">entre em contato conosco</strong>.</p>
-                                                                    <p class="inter" style="color: #1C1637;font-size: 12px; font-weight: 500; line-height: 20px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Obrigado,<br> <strong>Equipe Plugone</strong>.</p>
+                                                                    <p class="inter" style="color: #1C1637;font-size: 12px; font-weight: 500; line-height: 20px ; margin-bottom: 25px; letter-spacing: 0.001em;text-align: left;">Obrigado,<br> <strong>Equipe Hubly Retailer</strong>.</p>
 
 
                                         
@@ -1282,15 +1281,15 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                                 <tr>
                                         
                                                                 <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                                    <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#3C5ED9;">plugone.io</span></a>
+                                                                    <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
                                                                 </td>
                                         
                                                                 <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                                <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                              </a> -->
-                                                              <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                                  <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                                <a href="https://www.instagram.com/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                                <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/instagram.png" alt="instagram" width="38px" style="width: 38px; max-width: 38px;">
+                                                              </a>
+                                                              <a href="https://www.linkedin.com/company/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                                  <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/linkedin.png" alt="linkedin" width="38px" style="width: 38px; max-width: 38px;">
                                                                 </a>
                                                                 </td>
                                         
@@ -1375,7 +1374,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'PlugOne No-reply <noreply@plugone.io>',
+      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
       to: `<${data.email}>`,
       subject: `Você foi convidado por ${data.organizationName}!`,
       html: `
@@ -1388,7 +1387,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="x-apple-disable-message-reformatting">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <title>PLUGONE.io - Email Template</title>
+    <title>gohubly.com - Email Template</title>
     <!--[if mso]>
     <xml>
       <o:OfficeDocumentSettings>
@@ -1596,7 +1595,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
   <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
 
 
-    <div style="display:none;font-size:0;line-height:0;">Você foi convidado para a Plugone!</div>
+    <div style="display:none;font-size:0;line-height:0;">Você foi convidado para a Hubly Retailer!</div>
 
       <!-- WRAPPER -->
       <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -1655,7 +1654,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                             <tr>
                                               <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/logo-positive-horizontal.png" alt="Logo" width="116px" style="width:116px; max-width: 116px;">
+                                                <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
                                               </td>
                                             </tr>
                                           </table>
@@ -1673,7 +1672,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                             <tr>
                                               <td class="col" align="center" width="400" bgcolor="#FFFFFF" style="padding-left:66px;padding-right: 66px;margin-top:36px">
-                                                <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/invite.png" alt="Bem vindo à Plugone!" width="100%" style="width:100%; max-width: 100%;">
+                                                <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/invite.png" alt="Bem vindo à Hubly Retailer!" width="100%" style="width:100%; max-width: 100%;">
                                               </td>
                                             </tr>
                                           </table>
@@ -1696,7 +1695,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                                     <table border="0" cellpadding="0" cellspacing="0" align="center" class="inter" style="font-family: 'Inter', sans-serif!important;" width="100%">
                                                     <tbody>
                                                         <tr>
-                                                            <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background:linear-gradient(200.34deg, #3C5ED9 -2.42%, #3B24A8 79.51%);border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;margin-bottom: 10px">
+                                                            <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color:#EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;margin-bottom: 10px">
                                                                 <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
                                                                 Aceitar convite
                                                                 </a>
@@ -1722,16 +1721,16 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                             <tr>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#3C5ED9;">plugone.io</span></a>
+                                                <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
                                               </td>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                          <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                              <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                            </a> -->
-                                                            <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                              </a>
+                                              <a href="https://www.instagram.com/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                              <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/instagram.png" alt="instagram" width="38px" style="width: 38px; max-width: 38px;">
+                                              </a>
+                                              <a href="https://www.linkedin.com/company/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/linkedin.png" alt="linkedin" width="38px" style="width: 38px; max-width: 38px;">
+                                              </a>
                                               </td>
                     
                                             </tr>
@@ -1813,9 +1812,9 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
   if (process.env.NODE_ENV === 'test') return
 
   await Mail.sendMail({
-    from: 'PlugOne No-reply <noreply@plugone.io>',
+    from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
     to: `<${data.email}>`,
-    subject: `Você foi requisitado para ajudar ${data.organizationName} na PlugOne`,
+    subject: `Você foi requisitado para ajudar ${data.organizationName} na Hubly Retailer`,
     html: `
     <!DOCTYPE html>
     <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -1825,7 +1824,7 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="x-apple-disable-message-reformatting">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        <title>PLUGONE.io - Email Template</title>
+        <title>gohubly.com - Email Template</title>
         <!--[if mso]>
         <xml>
           <o:OfficeDocumentSettings>
@@ -2092,7 +2091,7 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
                                               <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                 <tr>
                                                   <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/logo-positive-horizontal.png" alt="Logo" width="116px" style="width:116px; max-width: 116px;">
+                                                    <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
                                                   </td>
                                                 </tr>
                                               </table>
@@ -2111,11 +2110,11 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
                                                 <tr>
                                                   <td class="col" width="400" bgcolor="#FFFFFF" style="padding-left:66px;padding-right: 66px;margin-top:36px">
                                                     <p>Olá, ${data.organizationName} precisa de sua ajuda para instalar um snippet javascript em seu site para mesclar os dados de engajamento com suas métricas financeiras. Deve demorar apenas 10 minutos.</p>
-                                                    <p>Algumas funcionalidades da plugone precisam que você adicione um pouco de JavaScript ao seu aplicativo para que ele possa identificar quando seus vendedores internos fazem login no seu e-commerce ou para criar as vitrines digitais.</p>
+                                                    <p>Algumas funcionalidades da Hubly Retailer precisam que você adicione um pouco de JavaScript ao seu aplicativo para que ele possa identificar quando seus vendedores internos fazem login no seu e-commerce ou para criar as vitrines digitais.</p>
                                                     <p>As instruções estão abaixo - mas se você tiver alguma dúvida, por favor nos avise.</p>
                                                     <h2 id="instru-es-de-instala-o">Instruções de instalação</h2>
                                                     <h2 id="vis-o-geral">Visão geral</h2>
-                                                    <p>Cole o código da Plugone antes do fechamento da tag body (&lt;/body&gt;) de todas as páginas de sua loja (geralmente coloca-se junto ao footer).</p>
+                                                    <p>Cole o código da Hubly Retailer antes do fechamento da tag body (&lt;/body&gt;) de todas as páginas de sua loja (geralmente coloca-se junto ao footer).</p>
                                                     <br/>
                                                     <hr/>
                                                     <br/>
@@ -2140,11 +2139,11 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
                                                   <hr/>
                         
                                                   <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px;line-height: 12px!important;" >
-                                                              <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                                  <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                                </a> -->
-                                                                <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                                    <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
+                                                               <a href="https://www.instagram.com/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                                                  <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/instagram.png" alt="instagram" width="38px" style="width: 38px; max-width: 38px;">
+                                                                </a>
+                                                                <a href="https://www.linkedin.com/company/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                                    <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/linkedin.png" alt="linkedin" width="38px" style="width: 38px; max-width: 38px;">
                                                                   </a>
                                                   </td>
                         
@@ -2225,9 +2224,9 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'PlugOne No-reply <noreply@plugone.io>',
+      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
       to: `<${data.email}>`,
-      subject: `Você foi convidado à plugone por ${data.organizationName}!`,
+      subject: `Você foi convidado à Hubly Retailer por ${data.organizationName}!`,
       html: `
 
 <!DOCTYPE html>
@@ -2238,7 +2237,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="x-apple-disable-message-reformatting">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <title>PLUGONE.io - Email Template</title>
+    <title>gohubly.com - Email Template</title>
     <!--[if mso]>
     <xml>
       <o:OfficeDocumentSettings>
@@ -2505,7 +2504,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                             <tr>
                                               <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/logo-positive-horizontal.png" alt="Logo" width="116px" style="width:116px; max-width: 116px;">
+                                                <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
                                               </td>
                                             </tr>
                                           </table>
@@ -2523,7 +2522,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                             <tr>
                                               <td class="col" align="center" width="400" bgcolor="#FFFFFF" style="padding-left:66px;padding-right: 66px;margin-top:36px">
-                                                <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/invite.png" alt="Bem vindo à Plugone!" width="100%" style="width:100%; max-width: 100%;">
+                                                <img class="full-width-sm" src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/invite.png" alt="Bem vindo à Hubly Retailer!" width="100%" style="width:100%; max-width: 100%;">
                                               </td>
                                             </tr>
                                           </table>
@@ -2541,8 +2540,8 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                             <tr>
                                               <td class="col px-16" bgcolor="#FFFFFF" align="left" width="352" style="padding: 48px 24px 32px 24px;" >
-                                                <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: center;">Bem vindo à Plugone!</h1>
-                                                <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em; margin-left:95px;margin-right: 95px;text-align: center;">Você foi convidado para utilizar a plataforma Plugone. Clique abaixo para aceitar o convite.</p>
+                                                <h1 class="inter" style="color: #1C1637;font-size: 32px; font-weight: 700; line-height: 36px ; margin-bottom: 20px;text-align: center;">Bem vindo à Hubly Retailer!</h1>
+                                                <p class="inter" style="color: #666372;font-size: 16px; font-weight: 500; line-height: 24px ; margin-bottom: 25px; letter-spacing: 0.001em; margin-left:95px;margin-right: 95px;text-align: center;">Você foi convidado para utilizar a plataforma Hubly Retailer. Clique abaixo para aceitar o convite.</p>
                                                 <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                 <tr>
                                                 <td class="col px-16" bgcolor="#FFFFFF" align="left" width="352" style="padding: 48px 24px 32px 24px;" >
@@ -2551,7 +2550,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                                     <table border="0" cellpadding="0" cellspacing="0" align="center" class="inter" style="font-family: 'Inter', sans-serif!important;" width="100%">
                                                     <tbody>
                                                         <tr>
-                                                            <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background:linear-gradient(200.34deg, #3C5ED9 -2.42%, #3B24A8 79.51%);border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
+                                                            <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color:#EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
                                                                 <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
                                                                 Aceitar convite
                                                                 </a>
@@ -2576,16 +2575,16 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                             <tr>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#3C5ED9;">plugone.io</span></a>
+                                                <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
                                               </td>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
-                                                          <!-- <a href="https://www.instagram.com/plugone.io/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
-                                                              <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/instagram.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                            </a> -->
-                                                            <a href="https://www.linkedin.com/company/plugone/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
-                                                                <img src="https://plugone-staging.nyc3.digitaloceanspaces.com/email-assets/linkedin.png" alt="twitter" width="38px" style="width: 38px; max-width: 38px;">
-                                                              </a>
+                                              <a href="https://www.instagram.com/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;margin-right:15px;">
+                                              <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/instagram.png" alt="instagram" width="38px" style="width: 38px; max-width: 38px;">
+                                              </a>
+                                              <a href="https://www.linkedin.com/company/gohubly/" class="inter" style="color: #3C5ED9;font-size: 12px; font-weight: 500; line-height: 12px!important; text-decoration: none;">
+                                                <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/email-assets/linkedin.png" alt="linkedin" width="38px" style="width: 38px; max-width: 38px;">
+                                              </a>
                                               </td>
                     
                                             </tr>
@@ -2663,10 +2662,10 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
 }
 
 export default {
-  sendSignUpMail,
-  sendRecoveryPasswordMail,
-  sendRecoveredPasswordMail,
-  sendInviteUserMail,
-  sendInviteNewUserMail,
-  sendHelpToSpecialist,
+  sendSignUpMail, // feito
+  sendRecoveryPasswordMail, // feito
+  sendRecoveredPasswordMail, // feito
+  sendInviteUserMail, // to do
+  sendInviteNewUserMail, // to do
+  sendHelpToSpecialist, //feito
 }
