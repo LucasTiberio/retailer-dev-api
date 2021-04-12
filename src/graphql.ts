@@ -196,11 +196,13 @@ const directiveResolvers: IDirectiveResolvers = {
       .innerJoin('users_organizations AS uo', 'uo.user_id', 'usr.id')
       .innerJoin('users_organization_roles as uor', 'uo.id', 'uor.users_organization_id')
       .innerJoin('organization_roles as or', 'uor.organization_role_id', 'or.id')
-      .select('or.name')
+      .innerJoin('organizations as org', 'uo.organization_id', 'org.id')
+      .select('or.name', 'org.slug')
 
     const hasSpecifiedRole = userOrganizationRoles.some((role: IOrganizationRoleResponse) => args.role.includes(role.name))
     if (hasSpecifiedRole) {
       context.organizationId = organizationId
+      context.organizationSlug = userOrganizationRoles[0].slug
       return next()
     } else {
       throw new Error(`Must have role: ${args.role}, you have role: ${userOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)

@@ -81,6 +81,11 @@ input VerifyOrganizationNameInput {
   name: String!
 }
 
+type SetCurrentOrganizationReturnInfosPayload {
+  organization: Organization
+  whiteLabelInfos: WhiteLabelInfos
+}
+
 extend type Mutation {
   inviteAffiliate(input: InviteAffiliateInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   inviteTeammates(input: InviteTeammatesInput!): [UserOrganization]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
@@ -89,6 +94,7 @@ extend type Mutation {
   reinviteServiceMember(input: ReinviteServiceMemberInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   createOrganization(input: CreateOrganizationInput!): Organization! @isVerified @acceptTermsAndConditions @isAuthenticated
   setCurrentOrganization(input: SetCurrentOrganizationInput!): Boolean! @isVerified @acceptTermsAndConditions @isAuthenticated
+  setCurrentOrganizationReturnInfos(input: SetCurrentOrganizationReturnInfosInput!): SetCurrentOrganizationReturnInfosPayload @isVerified @acceptTermsAndConditions @isAuthenticated
   organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
@@ -149,6 +155,10 @@ input InviteTeammatesInput {
 }
 
 input SetCurrentOrganizationInput {
+  organizationId: String
+}
+
+input SetCurrentOrganizationReturnInfosInput {
   organizationId: String
 }
 

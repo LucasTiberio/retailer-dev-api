@@ -8,10 +8,10 @@ import common from '../../common'
 import sharp from 'sharp'
 
 const defaultWhiteLabel = {
-  primaryColor: '#3B24A8',
-  secondColor: '#2C1A84',
-  tertiaryColor: '#1DA4C3',
-  logo: 'https://plugone-production.nyc3.digitaloceanspaces.com/Captura%20de%20Tela%202021-01-05%20a%CC%80s%2018.17.52.png',
+  primaryColor: '#DB0046',
+  secondColor: '#111111',
+  tertiaryColor: '#EEEEEE',
+  logo: 'https://plugone-production.nyc3.digitaloceanspaces.com/assets/logo.png',
 }
 
 const getWhiteLabelInfosDomain = async (domain: string, trx: Transaction) => {
@@ -21,9 +21,9 @@ const getWhiteLabelInfosDomain = async (domain: string, trx: Transaction) => {
 }
 
 const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
-  const planType = await OrganizationRulesService.getPlanType(organizationId)
+  const planType = await OrganizationRulesService.verifyPlanType(organizationId)
 
-  if (planType !== 'Enterprise') {
+  if (!planType || planType !== 'Enterprise') {
     return defaultWhiteLabel
   }
 

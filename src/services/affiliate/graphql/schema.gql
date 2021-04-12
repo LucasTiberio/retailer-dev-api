@@ -14,7 +14,7 @@ extend type Mutation {
   generateSalesJwt(input: GenerateSalesJwtInput!): SalesSession!
   createAffiliateBankValues(input: CreateAffiliateBankValuesInput!): UserOrganizationService! @hasServiceRole(role: ["ANALYST", "SALE"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   generateSalesShorten(input: GenerateSalesShortenInput!): ShortenerUrl! @hasSalesToken
-  paidAffiliateCommission(input: PaidAffiliateCommissionInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  changeAffiliateCommissionPayStatus(input: ChangeAffiliateCommissionPayStatusInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   handleTimeToPayCommission(input: HandleTimeToPayCommissionInput!): TimeToPayCommission!
     @hasServiceRole(role: ["ADMIN"])
     @organizationPaidVerify
@@ -51,7 +51,7 @@ input HandleDefaultCommissionInput {
   percentage: Float!
 }
 
-input PaidAffiliateCommissionInput {
+input ChangeAffiliateCommissionPayStatusInput {
   affiliateCommissionSetPaid: [AffiliateCommissionSetPaid]!
 }
 
@@ -59,6 +59,7 @@ input AffiliateCommissionSetPaid {
   _id: String
   affiliateId: String!
   orderId: String!
+  isPaid: Boolean!
 }
 
 type SalesSession {

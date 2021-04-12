@@ -6,19 +6,19 @@ import OrganizationRulesService from '../../organization-rules/service'
 import { Integrations } from '../../integration/types'
 import knexDatabase from '../../../knex-database'
 
-export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string) => {
+export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string) => {
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
-        group: 'menu-items',
+        group: 'menuitems',
         items: [
           {
             name: 'overview',
-            slug: '/overview',
+            slug: `/org/${slug}/overview`,
           },
           {
             name: 'settings',
-            slug: '/settings',
+            slug: `/org/${slug}/settings`,
           },
         ],
       },
@@ -30,19 +30,19 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
             children: [
               {
                 name: 'signatures',
-                slug: '/affiliate/signatures',
+                slug: `/org/${slug}/affiliate/signatures`,
               },
               {
                 name: 'commission',
-                slug: '/affiliate/commission',
+                slug: `/org/${slug}/affiliate/commission`,
               },
               {
                 name: 'members',
-                slug: '/affiliate/members',
+                slug: `/org/${slug}/affiliate/members`,
               },
               {
                 name: 'payments',
-                slug: '/affiliate/payments',
+                slug: `/org/${slug}/affiliate/payments`,
               },
             ],
           },
@@ -55,15 +55,15 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
 
   const baseAdminMenu: any = [
     {
-      group: 'menu-items',
+      group: 'menuitems',
       items: [
         {
           name: 'overview',
-          slug: '/overview',
+          slug: `/org/${slug}/overview`,
         },
         {
           name: 'settings',
-          slug: '/settings',
+          slug: `/org/${slug}/settings`,
         },
       ],
     },
@@ -75,20 +75,24 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
           children: [
             {
               name: 'orders',
-              slug: '/affiliate/orders',
+              slug: `/org/${slug}/affiliate/orders`,
             },
             {
               name: 'commission',
-              slug: '/affiliate/commission',
+              slug: `/org/${slug}/affiliate/commission`,
             },
             {
               name: 'members',
-              slug: '/affiliate/members',
+              slug: `/org/${slug}/affiliate/members`,
             },
             {
               name: 'payments',
-              slug: '/affiliate/payments',
+              slug: `/org/${slug}/affiliate/payments`,
             },
+            // {
+            //   name: 'Plug Store',
+            //   slug: `/org/${slug}/affiliate/app-store`,
+            // },
           ],
         },
       ],
@@ -101,7 +105,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
     if (paymentServiceStatus.affiliateStore) {
       baseAdminMenu[1].items[0].children.push({
         name: 'showCase',
-        slug: '/affiliate/showcase',
+        slug: `/org/${slug}/affiliate/showcase`,
       })
     }
   }
@@ -111,11 +115,11 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
       baseAdminMenu[1].items[0].children.push(
         {
           name: 'insideSales',
-          slug: '/affiliate/inside-sales',
+          slug: `/org/${slug}/affiliate/inside-sales`,
         },
         {
           name: 'abandonedCarts',
-          slug: '/affiliate/abandoned-carts',
+          slug: `/org/${slug}/affiliate/abandoned-carts`,
         }
       )
     }
@@ -126,27 +130,27 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
   return baseAdminMenu
 }
 
-export const organizationMemberMenu = [
+export const organizationMemberMenu = (slug: string) => [
   {
-    group: 'menu-items',
+    group: 'menuitems',
     items: [
       {
         name: 'overview',
-        slug: '/overview',
+        slug: `/org/${slug}/overview`,
       },
     ],
   },
 ]
 
-export const affiliateMemberMountMenu = async (serviceRole: string, integrationType: Integrations, organizationId: string) => {
+export const affiliateMemberMountMenu = async (serviceRole: string, integrationType: Integrations, organizationId: string, slug: string) => {
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
-        group: 'menu-items',
+        group: 'menuitems',
         items: [
           {
             name: 'overview',
-            slug: '/overview',
+            slug: `/org/${slug}/overview`,
           },
         ],
       },
@@ -158,19 +162,19 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
             children: [
               {
                 name: 'signatures',
-                slug: '/affiliate/signatures',
+                slug: `/org/${slug}/affiliate/signatures`,
               },
               {
                 name: 'commission',
-                slug: '/affiliate/commission',
+                slug: `/org/${slug}/affiliate/commission`,
               },
               {
                 name: 'linkGenerator',
-                slug: '/affiliate/link-generator',
+                slug: `/org/${slug}/affiliate/link-generator`,
               },
               {
                 name: 'payments',
-                slug: '/affiliate/payments',
+                slug: `/org/${slug}/affiliate/payments`,
               },
             ],
           },
@@ -184,19 +188,19 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
     children: [
       {
         name: 'orders',
-        slug: '/affiliate/orders',
+        slug: `/org/${slug}/affiliate/orders`,
       },
       {
         name: 'commission',
-        slug: '/affiliate/commission',
+        slug: `/org/${slug}/affiliate/commission`,
       },
       {
         name: 'payments',
-        slug: '/affiliate/payments',
+        slug: `/org/${slug}/affiliate/payments`,
       },
       {
         name: 'linkGenerator',
-        slug: '/affiliate/link-generator',
+        slug: `/org/${slug}/affiliate/link-generator`,
       },
     ],
   }
@@ -206,19 +210,19 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
     children: [
       {
         name: 'orders',
-        slug: '/affiliate/orders',
+        slug: `/org/${slug}/affiliate/orders`,
       },
       {
         name: 'commission',
-        slug: '/affiliate/commission',
+        slug: `/org/${slug}/affiliate/commission`,
       },
       {
         name: 'payments',
-        slug: '/affiliate/payments',
+        slug: `/org/${slug}/affiliate/payments`,
       },
       {
         name: 'linkGenerator',
-        slug: '/affiliate/link-generator',
+        slug: `/org/affiliate/link/${slug}-generator`,
       },
     ],
   }
@@ -236,7 +240,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
             ...affiliateAnalyst.children,
             {
               name: 'showCase',
-              slug: '/affiliate/showcase',
+              slug: `/org/${slug}/affiliate/showcase`,
             },
           ],
         }
@@ -249,13 +253,13 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
             ...affiliateAnalyst.children,
             {
               name: 'abandonedCart',
-              slug: '/affiliate/abandoned-carts',
+              slug: `/org/affiliate/abandoned/${slug}-carts`,
             },
           ],
         }
       }
 
-      return [...organizationMemberMenu, { group: 'services', items: [affiliateAnalyst] }]
+      return [...organizationMemberMenu(slug), { group: 'services', items: [affiliateAnalyst] }]
     case ServiceRoles.SALE:
       if (paymentServiceStatus.affiliateStore) {
         affiliateSale = {
@@ -264,7 +268,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
             ...affiliateSale.children,
             {
               name: 'showCase',
-              slug: '/affiliate/showcase',
+              slug: `/org/${slug}/affiliate/showcase`,
             },
           ],
         }
@@ -277,12 +281,12 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
             ...affiliateSale.children,
             {
               name: 'abandonedCart',
-              slug: '/affiliate/abandoned-carts',
+              slug: `/org/affiliate/abandoned/${slug}-carts`,
             },
           ],
         }
       }
-      return [...organizationMemberMenu, { group: 'services', items: [affiliateSale] }]
+      return [...organizationMemberMenu(slug), { group: 'services', items: [affiliateSale] }]
     default:
       return
   }

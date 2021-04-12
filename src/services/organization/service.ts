@@ -12,6 +12,7 @@ import VtexService from '../vtex/service'
 import UserService from '../users/service'
 import ServicesService from '../services/service'
 import PaymentService from '../payments/service'
+import WhiteLabelService from '../white-label/service'
 import StorageService from '../storage/service'
 import knexDatabase from '../../knex-database'
 import common from '../../common'
@@ -969,6 +970,41 @@ const setCurrentOrganization = async (currentOrganizationPayload: { organization
   }
 }
 
+const setCurrentOrganizationReturnInfos = async (currentOrganizationPayload: { organizationId: string | null }, context: { client: IUserToken; redisClient: RedisClient }, trx: Transaction) => {
+  if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
+
+  if (!currentOrganizationPayload.organizationId) {
+    return context.redisClient.del(context.client.id)
+  }
+
+  const isUserOrganization = await getUserOrganizationByIds(context.client.id, currentOrganizationPayload.organizationId, trx)
+
+  console.log({ isUserOrganization })
+
+  if (!isUserOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION)
+
+  try {
+    const currentOrganization = await context.redisClient.setAsync(context.client.id, isUserOrganization.organization_id)
+
+    const organization = await organizationDetails({ client: context.client, organizationId: isUserOrganization.organization_id }, trx)
+
+    const getOrganizationWhiteLabelInfos = await WhiteLabelService.getWhiteLabelInfos(isUserOrganization.organization_id, trx)
+
+    getOrganizationWhiteLabelInfos
+
+    if (currentOrganization !== 'OK') {
+      return null
+    }
+
+    return {
+      organization,
+      whiteLabelInfos: getOrganizationWhiteLabelInfos,
+    }
+  } catch (e) {
+    throw new Error(e.message)
+  }
+}
+
 const verifyShowFirstSteps = async (organizationId: string) => {
   const members = await organizationHasAnyMemberLoader().load(organizationId)
 
@@ -1285,4 +1321,5 @@ export default {
   handlePublicOrganization,
   requestAffiliateServiceMembers,
   organizationRolesAttach,
+  setCurrentOrganizationReturnInfos,
 }

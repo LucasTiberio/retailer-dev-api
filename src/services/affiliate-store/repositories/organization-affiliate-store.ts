@@ -12,6 +12,7 @@ const findOrUpdate = async (
     active?: boolean
     scriptUrl?: string
     shelfId?: string
+    allowSlugEdit?: boolean
   },
   trx: Transaction
 ) => {

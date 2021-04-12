@@ -81,7 +81,12 @@ const getAffiliateStore = async (context: { userServiceOrganizationRolesId: stri
 
   const affiliateStore = await RepositoryAffiliateStore.getById(context.userServiceOrganizationRolesId, trx)
 
-  return affiliateStore ? affiliateStoreAdapter(affiliateStore) : null
+  if (affiliateStore) {
+    const { allow_slug_edit } = await RepositoryOrganizationAffiliateStore.getByOrganizationId(affiliateStore.organization_id, trx)
+    return affiliateStoreAdapter(affiliateStore, !!allow_slug_edit)
+  }
+
+  return null
 }
 
 const handleAffiliateStoreImages = async (width: number, height: number, type: string, input: IAvatar, affiliateId: string, trx: Transaction) => {
@@ -315,6 +320,7 @@ const handleOrganizationAffiliateStore = async (
   input: {
     active?: boolean
     shelfId?: string
+    allowSlugEdit?: boolean
   },
   context: { organizationId: string },
   trx: Transaction

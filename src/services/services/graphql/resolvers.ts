@@ -45,8 +45,9 @@ const resolvers: IResolvers = {
         return service.getUserInOrganizationService(input, { client }, trx)
       })
     },
-    getUserOrganizationByServiceName: (_, attrs, { client, userServiceOrganizationRolesId }) => {
+    getUserOrganizationByServiceName: (_, attrs, { client, userServiceOrganizationRolesId, isOrganizationAdmin }) => {
       const { input } = attrs
+      if (isOrganizationAdmin) return null
       if (!userServiceOrganizationRolesId) throw new Error('user service organization role id doesnt exists!')
       return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return service.getUserOrganizationServiceByServiceName(input, { client, userServiceOrganizationRolesId }, trx)

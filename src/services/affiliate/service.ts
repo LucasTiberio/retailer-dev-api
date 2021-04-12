@@ -218,10 +218,14 @@ const getAvailableBonifications = async (context: { client: IUserToken; organiza
   }
 }
 
-const paidAffiliateCommission = async (
+const changeAffiliateCommissionPayStatus = async (
   input: {
-    userOrganizationServiceId: string
-    orderId: string[]
+    affiliateCommissionSetPaid: {
+      _id?: string
+      affiliateId: string
+      orderId: string
+      isPaid: boolean
+    }[]
   },
   context: { client: IUserToken; organizationId: string }
 ) => {
@@ -924,7 +928,7 @@ export default {
   getOrganizationAverageTicket,
   getOrganizationTotalOrdersByAffiliate,
   getOrganizationCommissionByAffiliate,
-  paidAffiliateCommission,
+  changeAffiliateCommissionPayStatus,
   getDefaultCommission,
   handleTimeToPayCommission,
   handleDefaultommission,

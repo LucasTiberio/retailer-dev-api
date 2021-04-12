@@ -163,6 +163,7 @@ const getLojaIntegradaOrdersDailyDict = async (organizationId: string, yearMonth
   const lojaIntegradaOrders = await LojaIntegradaOrders.find({
     data_criacao: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
     externalId: organizationId,
+    type: 'organization',
   })
   const lojaIntegradaDict = lojaIntegradaOrders.reduce((acc: any, cur: any) => {
     const day = moment(cur.data_criacao).date()
@@ -271,6 +272,7 @@ const advanceFinancialConciliationStatus = async (organizationId: string, refere
     case FinancialReconciliationStatus.CLOSED:
       nextStatus = FinancialReconciliationStatus.PAID
       financialReconciliationItem.status = FinancialReconciliationStatus.PAID
+      await payAllOrders(referenceMonth, organizationId)
       break
     default:
       throw new Error('financial_reconciliation_cannot_advance')
@@ -279,6 +281,43 @@ const advanceFinancialConciliationStatus = async (organizationId: string, refere
   await financialReconciliationItem.save()
 
   return nextStatus
+}
+
+const payAllOrders = async (referenceMonth: string, organizationId: string) => {
+  const date = moment(referenceMonth, 'YYYY-MM').utc()
+  const firstDayOfMonth = date.startOf('month').toISOString()
+  const lastDayOfMonth = date.endOf('month').toISOString()
+
+  await AffiliateOrders.update(
+    {
+      creationDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+      organizationId,
+    },
+    {
+      isPaid: true,
+    }
+  )
+
+  await LojaIntegradaOrders.update(
+    {
+      data_criacao: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+      externalId: organizationId,
+      type: 'organization',
+    },
+    {
+      isPaid: true,
+    }
+  )
+
+  await Bonifications.update(
+    {
+      createdAt: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+      organizationId,
+    },
+    {
+      isPaid: true,
+    }
+  )
 }
 
 export default {

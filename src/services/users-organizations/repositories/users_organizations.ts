@@ -28,42 +28,39 @@ export const handleMemberInviteStatus = async (
   return memberUpdated
 }
 
-export const memberHasInvite = async (affiliateId: string, organizationId: string, trx: Transaction): Promise<boolean> => {
+export const memberHasInvite = async (userOrganizationId: string, organizationId: string, trx: Transaction): Promise<boolean> => {
   try {
-    const [member] = await (trx || knexDatabase.knexConfig)('users_organizations')
-    .where('organization_id', organizationId)
-    .andWhere('user_id', affiliateId)
-    .andWhere('invite_status', 'pendent')
-    .whereNotNull('invite_hash');
+    const member = await (trx || knexDatabase.knexConfig)('users_organizations')
+      .where('id', userOrganizationId)
+      .andWhere('organization_id', organizationId)
+      .andWhere('invite_status', 'pendent')
+      .whereNotNull('invite_hash')
+      .first()
 
-    return !!member;
+    return member
   } catch (error) {
-    return false;
+    return false
   }
 }
 
-export const cancelMemberInvite = async (affiliateId: string, organizationId: string, trx: Transaction): Promise<boolean> => {
+export const cancelMemberInvite = async (userOrganizationId: string, organizationId: string, trx: Transaction): Promise<boolean> => {
   try {
-
     const [userOrganization] = await (trx || knexDatabase.knexConfig)('users_organizations')
+      .andWhere('id', userOrganizationId)
       .where('organization_id', organizationId)
-      .andWhere('user_id', affiliateId)
       .andWhere('invite_status', 'pendent')
-      .whereNotNull('invite_hash');
+      .whereNotNull('invite_hash')
 
-      
-    if (!userOrganization) throw new Error("user_organization_not_found")
-      
-    await (trx || knexDatabase.knexConfig)('users_organizations')
-      .where('id', userOrganization.id)
-      .update({
-        invite_status: InviteStatus.refused,
-        invite_hash: null,
-        active: false,
-      })
+    if (!userOrganization) throw new Error('user_organization_not_found')
 
-    return true;
+    await (trx || knexDatabase.knexConfig)('users_organizations').where('id', userOrganization.id).update({
+      invite_status: InviteStatus.refused,
+      invite_hash: null,
+      active: false,
+    })
+
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }

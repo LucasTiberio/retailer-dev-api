@@ -17,6 +17,7 @@ interface IAffiliateOrder extends Document {
   organizationId: string
   value: string
   clientProfileData: any
+  isPaid: boolean
 }
 
 const AffiliateVtexOrderSchema = new Schema<IAffiliateOrder>({

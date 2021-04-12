@@ -106,6 +106,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
         date: moment(order.creationDate).format('DD/MM/YYYY - HH:mm:ss'),
         value: Number(order.value),
         commission: order.affiliateInfo.commission?.amount ?? 0,
+        isPaid: order.isPaid,
       })
     })
 
@@ -125,6 +126,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
         date: moment(order.data_criacao).format('DD/MM/YYYY - HH:mm:ss'),
         value: order.valor_total,
         commission: order.affiliateInfo.commission?.amount ?? 0,
+        isPaid: order.isPaid,
       })
     })
 
@@ -144,6 +146,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
         date: moment(order.createdAt).format('DD/MM/YYYY - HH:mm:ss'),
         value: order.value,
         commission: order.value,
+        isPaid: order.isPaid,
       })
     })
 
@@ -163,6 +166,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
         date: moment(order.createdAt).format('DD/MM/YYYY - HH:mm:ss'),
         value: order.value,
         commission: order.commission,
+        isPaid: order.isPaid,
       })
     })
 
