@@ -17,6 +17,7 @@ import {
   userOrganizationServicesHasLinkGeneratedByIdLoader,
 } from './loaders'
 import { _serviceAdapter, _serviceRolesAdapter, _usersOrganizationServiceAdapter, _usersOrganizationServiceAdapterWithSlug } from './adapters'
+import { InviteStatus } from '../users-organizations/types'
 
 const createServiceInOrganization = async (serviceId: string, organizationId: string, userToken: IUserToken, trx: Transaction) => {
   if (!userToken) throw new Error('Token must be provided.')
@@ -137,6 +138,7 @@ const usersInServiceOrganizationCount = async (serviceRoleId: string, serviceOrg
     .andWhere('uosr.organization_services_id', serviceOrganizationId)
     .andWhere('uosr.active', true)
     .whereNotIn('u.email', emails)
+    .andWhereNot('uo.invite_status', InviteStatus.refused)
     .count()
 
   return usersInServiceOrganizationCounted.count
@@ -168,7 +170,7 @@ const verifyAffiliateMaxRules = async (
     let quantity = usersByRole[user.role]?.quantity || 0
     Object.assign(usersByRole, {
       [user.role]: {
-        quantity: quantity += 1,
+        quantity: (quantity += 1),
         emails: usersByRole[user.role] ? [...usersByRole[user.role].emails, user.email] : [user.email],
       },
     })
@@ -317,10 +319,10 @@ const listAffiliatesMembers = async (
     query = query.offset(input.offset)
   }
 
-  const result = await query.orderBy('usr.username', 'asc').select('uosr.*', 'as.slug', 'uas.active AS showcase_active');
+  const result = await query.orderBy('usr.username', 'asc').select('uosr.*', 'as.slug', 'uas.active AS showcase_active')
 
-  const isDigitalShowcaseActive = result.some(r => r.showcase_active);
-  let affiliates;
+  const isDigitalShowcaseActive = result.some((r) => r.showcase_active)
+  let affiliates
 
   if (isDigitalShowcaseActive) {
     affiliates = result.map(_usersOrganizationServiceAdapterWithSlug)
