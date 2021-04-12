@@ -222,7 +222,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
       },
       {
         name: 'linkGenerator',
-        slug: `/org/affiliate/link/${slug}-generator`,
+        slug: `/org/${slug}/affiliate/link-generator`,
       },
     ],
   }
@@ -253,7 +253,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
             ...affiliateAnalyst.children,
             {
               name: 'abandonedCart',
-              slug: `/org/affiliate/abandoned/${slug}-carts`,
+              slug: `/org/${slug}/affiliate/abandoned-carts`,
             },
           ],
         }
@@ -281,7 +281,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
             ...affiliateSale.children,
             {
               name: 'abandonedCart',
-              slug: `/org/affiliate/abandoned/${slug}-carts`,
+              slug: `/org/${slug}/affiliate/abandoned-carts`,
             },
           ],
         }
