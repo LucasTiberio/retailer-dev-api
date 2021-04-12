@@ -133,7 +133,7 @@ extend type Query {
     @isVerified
     @isAuthenticated
   getOrganizationCommissionByAffiliate(input: GetOrganizationCommissionByAffiliateInput!): SimpleOrganizationCommission!
-    @hasServiceRole(role: ["ANALYST"])
+    @hasServiceRole(role: ["ANALYST", "SALE"])
     @acceptTermsAndConditions
     @isVerified
     @isAuthenticated
