@@ -303,6 +303,7 @@ const listAffiliatesMembers = async (
     .leftJoin('affiliate_store AS as', 'as.users_organization_service_roles_id', 'uosr.id')
     .where('uosr.organization_services_id', serviceOrganization.id)
     .andWhere('uor.organization_role_id', memberOrganizationRole.id)
+    .andWhere('uosr.showable', true)
     .whereNot('uo.invite_status', 'refused')
 
   if (input && input.name) {
@@ -319,7 +320,9 @@ const listAffiliatesMembers = async (
     query = query.offset(input.offset)
   }
 
-  const result = await query.orderBy('usr.username', 'asc').select('uosr.*', 'as.slug', 'uas.active AS showcase_active')
+  const result = await query.orderBy('usr.username', 'asc').select('uosr.*', 'as.slug', 'uas.active AS showcase_active', 'uo.active')
+
+  result.sort((a, b) => b.active - a.active)
 
   const isDigitalShowcaseActive = result.some((r) => r.showcase_active)
   let affiliates
