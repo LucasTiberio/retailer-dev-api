@@ -1033,8 +1033,8 @@ const handleServiceMembersActivity = async (
 
     const userOrganizationServiceRoleFound = await (trx || knexDatabase.knexConfig)('users_organization_service_roles AS uosr')
       .innerJoin('service_roles AS sr', 'sr.id', 'uosr.service_roles_id')
-      .where('users_organization_id', userOrganizationId)
-      .andWhere('organization_services_id', organizationService.id)
+      .where('uosr.id', userOrganizationId)
+      .andWhere('uosr.organization_services_id', organizationService.id)
       .first()
       .select('uosr.*', 'sr.name AS service_role_name')
 
@@ -1065,7 +1065,7 @@ const handleServiceMembersActivity = async (
     if (!hasMoreServices.length) {
       await _handleMemberActivity(
         {
-          userOrganizationId: userOrganizationId,
+          userOrganizationId: userOrganizationServiceRoleFound.users_organization_id,
           activity: false,
         },
         trx
@@ -1075,7 +1075,7 @@ const handleServiceMembersActivity = async (
     if (activity) {
       await _handleMemberActivity(
         {
-          userOrganizationId: userOrganizationId,
+          userOrganizationId: userOrganizationServiceRoleFound.users_organization_id,
           activity: true,
         },
         trx
