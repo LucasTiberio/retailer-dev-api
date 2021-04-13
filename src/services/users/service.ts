@@ -87,23 +87,15 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
   const origin = context.headers.origin
 
-  console.log({ origin })
-
   const domain = getHeaderDomain(origin || '')
-
-  console.log({ domain })
 
   if (!DEFAULT_DOMAINS.includes(domain)) {
     const whiteLabelInfos = await WhiteLabelService.getWhiteLabelInfosDomain(domain, trx)
-
-    console.log({ whiteLabelInfos })
 
     if (whiteLabelInfos) {
       organizationIdFoundByDomain = whiteLabelInfos.organizationId
     }
   }
-
-  console.log({ organizationIdFoundByDomain })
 
   const encryptedPassword = await common.encrypt(password)
   const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))

@@ -12,7 +12,7 @@ const getWhiteLabelInfosByOrganizationId = async (organizationId?: string, trx?:
       .innerJoin('organizations AS o', 'o.id', 'owlc.organization_id')
       .where('custom_domain', domain)
       .andWhere('owlc.active', true)
-      .select('owlc.primary_color', 'owlc.second_color', 'owlc.tertiary_color', 'owlc.logo', 'o.name')
+      .select('owlc.primary_color', 'owlc.second_color', 'owlc.tertiary_color', 'owlc.logo', 'o.name', 'owlc.organization_id')
       .first()
   } else {
     whiteLabelInfos = await (trx || knexDatabase.knexConfig)('organization_white_label_customization').where('organization_id', organizationId).andWhere('active', true).first().select()
