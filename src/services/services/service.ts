@@ -530,6 +530,7 @@ const affiliatesCapacities = async (context: { organizationId: string }, trx: Tr
     .where('uosr.organization_services_id', serviceOrganization.id)
     .andWhere('uo.active', true)
     .andWhere('uor.organization_role_id', memberOrganizationRole.id)
+    .whereNot('uo.invite_status', 'refused')
     .select('sr.name')
     .groupBy('sr.name')
     .count()
