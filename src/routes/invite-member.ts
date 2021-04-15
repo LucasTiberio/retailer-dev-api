@@ -26,7 +26,12 @@ const orgLimiter = new RateLimiterRedis({
 
 export default async (req: Request, res: Response) => {
   const ipAddress = req.ip
+
+  console.log({ ipAddress })
+
   const orgId = req.params.organizationId
+
+  console.log({ orgId })
 
   const resIP = await ipLimiter.get(ipAddress)
 
@@ -45,6 +50,9 @@ export default async (req: Request, res: Response) => {
   retrySecs = 0
 
   const token = req.headers['x-plugone-api-token']
+
+  console.log({ token })
+
   if (!token) {
     res.status(400).send({ error: 'Bad request: Token must be provided' })
     return
@@ -53,6 +61,8 @@ export default async (req: Request, res: Response) => {
   let trx = await knexDatabase.knexConfig.transaction()
 
   const organization = await (trx || knexDatabase.knexConfig)('organizations').where('id', orgId).andWhere('api_key', token).first().select('name', 'id', 'public')
+
+  console.log({ organization })
 
   if (!organization) {
     res.status(400).send({ error: 'Bad request: Invalid API Key or Organization' })
@@ -71,6 +81,9 @@ export default async (req: Request, res: Response) => {
   }
 
   orgLimiter.consume(orgId)
+
+  console.log({ body: req.body })
+
   const requestStatus = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
   if (requestStatus) {
     res.status(200).send({ status: 'success' })

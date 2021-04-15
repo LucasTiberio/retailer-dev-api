@@ -1,7 +1,6 @@
 import prometheusBundle from 'express-prom-bundle'
 import express from 'express'
 import cors from 'cors'
-import bodyParser from 'body-parser'
 import server from './server'
 import { MONGO_URI } from './common/envs'
 import connectMongo from './database'
@@ -13,6 +12,9 @@ import inviteMember from './routes/invite-member'
 
 const logger = require('pino')()
 const app = express()
+
+app.use(cors())
+
 const prometheusMiddleware = prometheusBundle({
   includeMethod: true,
   includePath: true,
@@ -31,9 +33,8 @@ try {
 }
 
 app.use(prometheusMiddleware)
-app.use(cors())
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 const apiTimeout = 100 * 10000
 app.use((req, res, next) => {
@@ -65,7 +66,9 @@ app.get('/health', async (req, res) => {
 })
 
 app.post('/invite-member/:organizationId', inviteMember)
+
 const specs = swaggerJsdoc(swaggerOptions)
+
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: false }))
 
 server.applyMiddleware({ app, cors: true })
