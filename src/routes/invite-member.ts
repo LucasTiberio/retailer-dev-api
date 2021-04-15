@@ -84,6 +84,10 @@ export default async (req: Request, res: Response) => {
 
   console.log({ body: req.body })
 
+  if (!req.body.length) {
+    res.status(400).send({ error: 'Invalid body' })
+  }
+
   const requestStatus = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
   if (requestStatus) {
     res.status(200).send({ status: 'success' })
