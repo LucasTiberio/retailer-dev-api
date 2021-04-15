@@ -145,11 +145,13 @@ const usersInServiceOrganizationCount = async (serviceRoleId: string, serviceOrg
 }
 
 const _usersInServiceOrganizationCountById = async (serviceRoleId: string, serviceOrganizationId: string, userOrganizationServiceRoleId: string, trx: Transaction) => {
-  const [usersInServiceOrganizationCounted] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
-    .where('service_roles_id', serviceRoleId)
-    .andWhere('organization_services_id', serviceOrganizationId)
-    .andWhere('active', true)
-    .andWhereNot('id', userOrganizationServiceRoleId)
+  const [usersInServiceOrganizationCounted] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles AS uosr')
+    .innerJoin('users_organizations AS uo', 'uo.id', 'uosr.users_organization_id')
+    .where('uosr.service_roles_id', serviceRoleId)
+    .andWhere('uosr.organization_services_id', serviceOrganizationId)
+    .andWhere('uosr.active', true)
+    .andWhereNot('uosr.id', userOrganizationServiceRoleId)
+    .andWhereNot('uo.invite_status', InviteStatus.refused)
     .count()
 
   return usersInServiceOrganizationCounted.count
