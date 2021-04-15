@@ -65,6 +65,7 @@ export default async (req: Request, res: Response) => {
   console.log({ organization })
 
   if (!organization) {
+    trx.rollback()
     res.status(400).send({ error: 'Bad request: Invalid API Key or Organization' })
     return
   }
@@ -85,13 +86,16 @@ export default async (req: Request, res: Response) => {
   console.log({ body: req.body })
 
   if (!req.body.length) {
+    trx.rollback()
     res.status(400).send({ error: 'Invalid body' })
   }
 
   const requestStatus = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
   if (requestStatus) {
+    trx.commit()
     res.status(200).send({ status: 'success' })
   } else {
+    trx.rollback()
     res.status(500).send({ error: 'Internal Server Error' })
   }
 }
