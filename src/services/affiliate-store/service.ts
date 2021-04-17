@@ -42,6 +42,7 @@ import common from '../../common'
 import sharp from 'sharp'
 import { Integrations } from '../integration/types'
 import redisClient, { ttl } from '../../lib/Redis'
+import { slugRegex } from './helpers'
 
 const handleAffiliateStore = async (
   input: ICreateAffiliateStore,
@@ -654,6 +655,35 @@ const getAffiliateStoreWithProducts = async (
   }
 }
 
+const handleAffiliateStoreSlug = async (
+  input: {
+    slug: string
+    userOrganizationServiceRoleId: string
+  },
+  context: { organizationId: string },
+  trx: Transaction
+) => {
+  try {
+    const result = slugRegex(input.slug)
+
+    if (!result) {
+      throw new Error('slug_invalid_format')
+    }
+
+    const affiliateStore = await RepositoryAffiliateStore.getByOrganizationIdAndUserOrganizationServiceRoleId(input.userOrganizationServiceRoleId, context.organizationId, trx)
+
+    if (!affiliateStore) {
+      throw new Error('affiliate_store_not_found')
+    }
+
+    await RepositoryAffiliateStore.updateAffiliateStoreSlug(affiliateStore.id, input.slug, trx)
+
+    return true
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
 export default {
   handleAffiliateStore,
   removeOrganizationAffiliateStoreBanner,
@@ -670,4 +700,5 @@ export default {
   getAffiliateStoreAddedProducts,
   handleOrganizationAffiliateStore,
   clearAffiliateStoreLojaIntegradaCache,
+  handleAffiliateStoreSlug,
 }

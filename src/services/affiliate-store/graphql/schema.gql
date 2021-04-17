@@ -1,4 +1,5 @@
 extend type Mutation {
+  handleAffiliateStoreSlug(input: HandleAffiliateStoreSlugInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   handleAffiliateStore(input: HandleAffiliateStoreInput!): AffiliateStore!
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
@@ -77,6 +78,11 @@ extend type Query {
   getAffiliateStoreAddedProducts: [AffiliateStoreProduct]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @hasIntegration @isVerified @acceptTermsAndConditions @isAuthenticated
   getOrganizationAffiliateStoreBanner: [OrganizationAffiliateStoreBanner]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @isVerified @acceptTermsAndConditions @isAuthenticated
   getOrganizationAffiliateStore: OrganizationAffiliateStore @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+input HandleAffiliateStoreSlugInput {
+  slug: String!
+  userOrganizationServiceRoleId: String!
 }
 
 type AffiliateStoreWithProducts {

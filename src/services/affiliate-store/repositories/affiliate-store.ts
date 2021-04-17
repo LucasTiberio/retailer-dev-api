@@ -6,6 +6,18 @@ const getBySlugAndOrganizationId = async (slug: string, organizationId: string, 
   return await (trx || knexDatabase.knexConfig)('affiliate_store').where('slug', slug).andWhere('organization_id', organizationId).first().select()
 }
 
+const updateAffiliateStoreSlug = async (affiliateStoreId: string, slug: string, trx: Transaction) => {
+  return await (trx || knexDatabase.knexConfig)('affiliate_store').update({ slug }).where('id', affiliateStoreId).returning('*')
+}
+
+const getByOrganizationIdAndUserOrganizationServiceRoleId = async (userOrganizationServiceRoleId: string, organizationId: string, trx: Transaction) => {
+  return await (trx || knexDatabase.knexConfig)('affiliate_store')
+    .where('users_organization_service_roles_id', userOrganizationServiceRoleId)
+    .andWhere('organization_id', organizationId)
+    .first()
+    .select()
+}
+
 const getById = async (affiliateId: string, trx: Transaction) => {
   return await (trx || knexDatabase.knexConfig)('affiliate_store').where('users_organization_service_roles_id', affiliateId).first().select()
 }
@@ -48,4 +60,6 @@ export default {
   getById,
   createAffiliateStore,
   getBySlugAndOrganizationId,
+  getByOrganizationIdAndUserOrganizationServiceRoleId,
+  updateAffiliateStoreSlug,
 }

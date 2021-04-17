@@ -38,6 +38,11 @@ const resolvers: IResolvers = {
         return service.addProductOnAffiliateStore(input, { userServiceOrganizationRolesId, organizationId }, trx)
       })
     },
+    handleAffiliateStoreSlug: async (_, { input }, { organizationId }) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
+        return service.handleAffiliateStoreSlug(input, { organizationId }, trx)
+      })
+    },
     clearAffiliateStoreLojaIntegradaCache: async (_, __, { organizationId }) => {
       return service.clearAffiliateStoreLojaIntegradaCache(organizationId)
     },
