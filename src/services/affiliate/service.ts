@@ -580,7 +580,7 @@ const getOrganizationCommission = async (
   let startDate = input?.startDate || moment('1900-01-01T00:00:00.000Z')
   let endDate = input?.endDate || moment('2200-01-01T00:00:00.000Z')
 
-  let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate${endDate}`
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/commission/total?startDate=${startDate}&endDate=${endDate}`
 
   if (input?.paid) {
     url += `&isCommissionPaid=${input?.paid}`
