@@ -18,7 +18,7 @@ const getLojaIntegradaCategories = async (identifier: string) => {
     let offsets = []
 
     for (let index = 1; index <= pagesToLoop; index++) {
-      offsets.push(index * 20 + 20)
+      offsets.push(index * 20)
     }
 
     let otherCategories: any = []
@@ -35,7 +35,9 @@ const getLojaIntegradaCategories = async (identifier: string) => {
       otherCategories = [...otherCategories, ...dataLojaIntegradaCategories.objects]
     }
 
-    return categories.concat(otherCategories)
+    const responseCategories = categories.concat(otherCategories)
+
+    return responseCategories
   } else {
     return categories
   }
