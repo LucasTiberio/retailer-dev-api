@@ -421,6 +421,10 @@ const getOrganizationAffiliateStoreBanner = async (
 ) => {
   const affiliateStore = await RepositoryOrganizationAffiliateStore.getByOrganizationId(context.organizationId, trx)
 
+  if (!affiliateStore) {
+    return []
+  }
+
   const affiliateStoreBanners = await RepositoryOrganizationAffiliateStoreBanner.getByAffiliateStoreId(affiliateStore.id, trx)
 
   return affiliateStoreBanners.map(organizationAffiliateStoreBannerAdapter)

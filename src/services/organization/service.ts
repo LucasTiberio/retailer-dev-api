@@ -1239,6 +1239,10 @@ const fetchOrganizationDomain = async (
 
   const decoded: any = await common.jwtDecode(integration.secret)
 
+  if (integration.type === Integrations.LOJA_INTEGRADA) {
+    return []
+  }
+
   const domains = await fetchVtexDomains(decoded)
 
   return domains.reduce((acc: string[], current: { id: number; name: string; hosts: string[] }) => {
