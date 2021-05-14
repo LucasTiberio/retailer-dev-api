@@ -76,6 +76,14 @@ const resendConfirmationEmail = async (userId: string, trx: Transaction) => {
 const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   const { username, password, email, document, documentType, phone } = attrs
 
+  if (!document) {
+    throw new Error('document_is_required')
+  }
+
+  if (!documentType) {
+    throw new Error('documentType_is_required')
+  }
+
   if (!common.verifyPassword(password))
     throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
 
@@ -194,6 +202,14 @@ const signUpWithOrganization = async (
 ) => {
   try {
     const { username, password, email, document, documentType, phone } = input
+
+    if (!document) {
+      throw new Error('document_is_required')
+    }
+
+    if (!documentType) {
+      throw new Error('documentType_is_required')
+    }
 
     if (!common.verifyPassword(password))
       throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
