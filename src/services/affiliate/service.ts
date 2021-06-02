@@ -455,7 +455,7 @@ const getOrganizationRevenue = async (
 
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/revenue?startDate=${startDate}&endDate=${endDate}`
 
-  if (input.status) {
+  if (input?.status) {
     url += `&status=${input.status}`
   }
 
