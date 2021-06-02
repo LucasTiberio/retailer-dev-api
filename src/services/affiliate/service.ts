@@ -149,11 +149,11 @@ const getAllOrganizationOrders = async (
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/order?limit=${limit}`
 
   if (input?.startDate) {
-    url += `&startDate=${input.startDate}`
+    url += `&startDate=${input.startDate.toISOString()}`
   }
 
   if (input?.endDate) {
-    url += `&endDate=${input.endDate}`
+    url += `&endDate=${input.endDate.toISOString()}`
   }
 
   if (input?.name) {
@@ -163,6 +163,8 @@ const getAllOrganizationOrders = async (
   if (input?.status) {
     url += `&status=${input.status}`
   }
+
+  console.log({ input2: input })
 
   try {
     const { data } = await Axios.get(url)
@@ -448,10 +450,10 @@ const getOrganizationRevenue = async (
 ) => {
   if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
 
-  let startDate = input?.startDate || moment('1900-01-01T00:00:00.000Z')
-  let endDate = input?.endDate || moment('2200-01-01T00:00:00.000Z')
+  let startDate = input?.startDate.toISOString() || moment('1900-01-01T00:00:00.000Z')
+  let endDate = input?.endDate.toISOString() || moment('2200-01-01T00:00:00.000Z')
 
-  let url = `${ordersServiceUrl}/organization/${context.organizationId}/revenue?startDate=${startDate}&endDate${endDate}`
+  let url = `${ordersServiceUrl}/organization/${context.organizationId}/revenue?startDate=${startDate}&endDate=${endDate}`
 
   if (input.status) {
     url += `&status=${input.status}`
