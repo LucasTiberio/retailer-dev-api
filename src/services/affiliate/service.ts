@@ -169,11 +169,9 @@ const getAllOrganizationOrders = async (
 
     let affiliateIds = data.data
       .filter((item: any) => {
-        // console.log(item.affiliateInfo)
         return !!item.affiliateInfo
       })
       .map((payment: any, i: number) => {
-        console.log(payment.affiliateInfo)
         return payment.affiliateInfo.affiliateId
       })
 
@@ -444,6 +442,7 @@ const getOrganizationRevenue = async (
   input: {
     startDate: Date
     endDate: Date
+    status: IVtexStatus
   },
   context: { client: IUserToken; organizationId: string }
 ) => {
@@ -453,6 +452,10 @@ const getOrganizationRevenue = async (
   let endDate = input?.endDate || moment('2200-01-01T00:00:00.000Z')
 
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/revenue?startDate=${startDate}&endDate${endDate}`
+
+  if (input.status) {
+    url += `&status=${input.status}`
+  }
 
   try {
     const { data } = await Axios.get(url)
@@ -466,6 +469,7 @@ const getOrganizationAverageTicket = async (
   input: {
     startDate: Date
     endDate: Date
+    status: IVtexStatus
   },
   context: { client: IUserToken; organizationId: string }
 ) => {
@@ -475,6 +479,10 @@ const getOrganizationAverageTicket = async (
   let endDate = input?.endDate || moment('2200-01-01T00:00:00.000Z')
 
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/average/ticket?startDate=${startDate}&endDate${endDate}`
+
+  if (input.status) {
+    url += `&status=${input.status}`
+  }
 
   try {
     const { data } = await Axios.get(url)
@@ -488,6 +496,7 @@ const getOrganizationTotalOrders = async (
   input: {
     startDate: Date
     endDate: Date
+    status: IVtexStatus
   },
   context: { client: IUserToken; organizationId: string }
 ) => {
@@ -497,6 +506,10 @@ const getOrganizationTotalOrders = async (
   let endDate = input?.endDate || moment('2200-01-01T00:00:00.000Z')
 
   let url = `${ordersServiceUrl}/organization/${context.organizationId}/order/total?startDate=${startDate}&endDate${endDate}`
+
+  if (input.status) {
+    url += `&status=${input.status}`
+  }
 
   try {
     const { data } = await Axios.get(url)

@@ -193,6 +193,7 @@ type OrganizationRevenue {
 input GetOrganizationRevenueInput {
   startDate: Datetime
   endDate: Datetime
+  status: OrderFilterStatus
 }
 
 input GetOrganizationCommissionInput {
@@ -204,6 +205,7 @@ input GetOrganizationCommissionInput {
 input GetOrganizationTotalOrdersInput {
   startDate: Datetime
   endDate: Datetime
+  status: OrderFilterStatus
 }
 
 input GetOrganizationTotalOrdersByAffiliateInput {
@@ -215,6 +217,7 @@ input GetOrganizationTotalOrdersByAffiliateInput {
 input GetOrganizationAverageTicketInput {
   startDate: Datetime
   endDate: Datetime
+  status: OrderFilterStatus
 }
 
 input GetAllCommissionsInput {
@@ -240,13 +243,20 @@ input GetAllOrganizationOrdersInput {
   startDate: Datetime
   endDate: Datetime
   name: String
-  status: OrderStatus
+  status: OrderFilterStatus
+}
+
+enum OrderFilterStatus {
+  Pending
+  Approved
+  Reproved
 }
 
 enum OrderStatus {
   approved
   canceled
   reproved
+  pending
 }
 
 input CreateAffiliateBankValuesInput {
