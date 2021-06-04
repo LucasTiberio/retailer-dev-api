@@ -74,6 +74,7 @@ input getAffiliatesValuesByMonthInput {
 type getDailyRevenueAndCommissionsQuery {
   status: String!
   days: [DailyRevenueAndCommission]
+  orders: Int!
 }
 
 type DailyRevenueAndCommission {
