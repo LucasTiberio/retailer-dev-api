@@ -58,6 +58,7 @@ const typeDefsBase = gql`
   directive @hasAffiliateStore on FIELD | FIELD_DEFINITION
   directive @validUser on FIELD | FIELD_DEFINITION
   directive @enterpriseFeature on FIELD | FIELD_DEFINITION
+  directive @enterpriseOrNeptuneFeature on FIELD | FIELD_DEFINITION
   directive @hasAbandonedCart on FIELD | FIELD_DEFINITION
 `
 
@@ -439,6 +440,15 @@ const directiveResolvers: IDirectiveResolvers = {
     const organizationId = await redisClient.getAsync(context.client.id)
     const planType = await OrganizationRulesService.getPlanType(organizationId)
     if (planType === 'Enterprise') {
+      return next()
+    }
+
+    throw new Error('This feature is available only on enterprise plans')
+  },
+  async enterpriseOrNeptuneFeature(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+    const planType = await OrganizationRulesService.getPlanType(organizationId)
+    if (planType === 'Enterprise' || planType === 'Neptune') {
       return next()
     }
 

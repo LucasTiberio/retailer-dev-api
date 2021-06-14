@@ -23,7 +23,7 @@ extend type Query {
     @isVerified
     @acceptTermsAndConditions
     @isAuthenticated
-  getOrganizationApiKey: String! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @enterpriseFeature @isVerified @acceptTermsAndConditions @isAuthenticated
+  getOrganizationApiKey: String! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @enterpriseOrNeptuneFeature @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type TeammatesCapacities {
