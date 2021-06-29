@@ -1,9 +1,9 @@
 import AffiliateStoreApps from './models/AffiliateStoreApps'
 import OrganizationAffiliateStoreApps from './models/OrganizationAffiliateStoreApps'
 import OrganizationRulesService from '../organization-rules/service'
-import { OrganizationAffiliateStoreAppConfig } from './types'
+import { OrganizationAffiliateStoreAppConfig, OrganizationAffiliateStoreAppRequirement } from './types'
 
-const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[] }, organizationId: string) => {
+const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ affiliateStoreApp: input.id, organizationId })
   if (installedApp) {
@@ -34,6 +34,7 @@ const installAffiliateStoreApp = async (input: { id: string; configs: Organizati
     affiliateStoreApp: appToInstall._id,
     organizationId,
     configs: input.configs,
+    requirements: input.requirements,
   })
 
   if (createdInstallation) return true
@@ -50,7 +51,10 @@ const uninstallAffiliateStoreApp = async (input: { id: string }, organizationId:
   return true
 }
 
-const editOrganizationAffiliateStoreAppConfig = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[] }, organizationId: string) => {
+const editOrganizationAffiliateStoreAppConfig = async (
+  input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] },
+  organizationId: string
+) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ _id: input.id, organizationId })
   if (!installedApp) {
@@ -80,6 +84,8 @@ const editOrganizationAffiliateStoreAppConfig = async (input: { id: string; conf
   })
 
   installedApp.configs = input.configs
+  installedApp.requirements = input.requirements
+
   await installedApp.save()
 
   return true
@@ -131,6 +137,7 @@ const getInstalledAffiliateStoreApps = async (organizationId: string) => {
       id: installedApp._id,
       affiliateStoreApp: installedApp.affiliateStoreApp,
       configs: installedApp.configs,
+      requirements: installedApp.requirements,
     }
   })
 }
@@ -162,6 +169,7 @@ const getInstalledAffiliateStoreApp = async (input: { id: string }, organization
     id: updatedInstalledApp._id,
     affiliateStoreApp: updatedInstalledApp.affiliateStoreApp,
     configs: updatedInstalledApp.configs,
+    requirements: updatedInstalledApp.requirements,
   }
 }
 

@@ -42,11 +42,19 @@ type OrganizationAffiliateStoreApp {
   id: String!
   affiliateStoreApp: AffiliateStoreApp
   configs: [OrganizationAffiliateStoreAppConfig]!
+  requirements: [OrganizationAffiliateStoreAppRequirements]!
 }
 
 type OrganizationAffiliateStoreAppConfig {
   key: String!
   value: String!
+}
+
+type OrganizationAffiliateStoreAppRequirements {
+  id: String!
+  value: String!
+  required: Boolean
+  active: Boolean
 }
 
 input GetAffiliateStoreAppInput {
@@ -60,6 +68,7 @@ input GetInstalledAffiliateStoreAppInput {
 input InstallAffiliateStoreAppInput {
   id: String!
   configs: [AffiliateStoreAppConfigInput]!
+  requirements: [AffiliateStoreAppRequirementInput]!
 }
 
 input UninstallAffiliateStoreAppInput {
@@ -69,9 +78,17 @@ input UninstallAffiliateStoreAppInput {
 input EditOrganizationAffiliateStoreAppConfigInput {
   id: String!
   configs: [AffiliateStoreAppConfigInput]!
+  requirements: [AffiliateStoreAppRequirementInput]!
 }
 
 input AffiliateStoreAppConfigInput {
   key: String!
   value: String!
+}
+
+input AffiliateStoreAppRequirementInput {
+  id: String!
+  value: String!
+  required: Boolean
+  active: Boolean
 }

@@ -89,10 +89,14 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
               name: 'payments',
               slug: `/org/${slug}/affiliate/payments`,
             },
-            // {
-            //   name: 'Plug Store',
-            //   slug: `/org/${slug}/affiliate/app-store`,
-            // },
+            {
+              name: 'Plug Store',
+              slug: `/org/${slug}/affiliate/app-store`,
+            },
+            {
+              name: 'Meus Apps',
+              slug: `/org/${slug}/affiliate/apps`,
+            },
           ],
         },
       ],

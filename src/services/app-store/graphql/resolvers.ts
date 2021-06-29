@@ -11,7 +11,7 @@ const resolvers: IResolvers = {
     },
     editOrganizationAffiliateStoreAppConfig: async (_, { input }, { organizationId }) => {
       return service.editOrganizationAffiliateStoreAppConfig(input, organizationId)
-    },
+    }
   },
   Query: {
     getAffiliateStoreApps: async (_, __, { organizationId }) => {
