@@ -9,6 +9,7 @@ import LojaIntegradaOrders from './model/LojaIntegradaOrders'
 import SaasCommissions from '../saas-integration/models/SaasCommission'
 import ServicesTimeToPayRepository from './repository/organization_services_time_to_pay'
 import UsersOrganizationServiceRoleRepository from './repository/users_organization_service_roles'
+import { PlugOneAffiliateStatus } from './types'
 
 const handleOrganizationFinantialConciliationConfiguration = async (
   input: {
@@ -92,6 +93,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
 
     const affiliateOrders = await AffiliateOrders.find({
       creationDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+      plugoneAffiliateStatus: PlugOneAffiliateStatus.Approved,
       organizationId: context.organizationId,
       'affiliateInfo.affiliateId': context.affiliateId,
     })
@@ -113,6 +115,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
     const lojaIntegradaOrders = await LojaIntegradaOrders.find({
       data_criacao: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
       externalId: context.organizationId,
+      plugoneAffiliateStatus: PlugOneAffiliateStatus.Approved,
       'affiliateInfo.affiliateId': context.affiliateId,
     })
 
