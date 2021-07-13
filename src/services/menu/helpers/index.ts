@@ -5,24 +5,23 @@ import { ServiceRoles } from '../../services/types'
 import OrganizationRulesService from '../../organization-rules/service'
 import { Integrations } from '../../integration/types'
 import knexDatabase from '../../../knex-database'
+import { IAffiliateStoreApp, InstalledAffiliateStoreApp } from '../../app-store/types'
+import { parseAppName } from '../../apps/helpers'
 
-const getAffiliateAppMenu = (appId: string, slug: string): { name: string; slug: string } | null => {
-  const menus = {
-    '60d2193024d3230e2bdd7a5f': {
-      name: 'plugForm',
-      slug: `/org/${slug}/affiliate/app/60d2193024d3230e2bdd7a5f`,
-    },
-  } as { [key: string]: { name: string; slug: string } }
+const getAffiliateAppMenu = (data: {
+  installedApp: InstalledAffiliateStoreApp,
+  app?: IAffiliateStoreApp
+}[], slug: string): { name: string; slug: string }[] => {
+  return data.map(appData => {
+    if (appData.app) {
+      return {
+        name: parseAppName(appData.app.name) ?? appData.app.name,
+        slug: `/org/${slug}/affiliate/app/${(appData.installedApp as any).id}`
+      }
+    }
 
-  const foundMenu = menus[appId]
-
-  return foundMenu ? foundMenu : null
-}
-
-const mountAffiliateAppMenu = (apps: string[], slug: string): { name: string; slug: string }[] => {
-  const appsList = apps.map((appId) => getAffiliateAppMenu(appId, slug)).filter((menu) => !!menu) as { name: string; slug: string }[]
-
-  return appsList
+    return null
+  }).filter(data => !!data) as { name: string; slug: string }[]
 }
 
 export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string) => {
@@ -165,8 +164,17 @@ export const organizationMemberMenu = (slug: string) => [
   },
 ]
 
-export const affiliateMemberMountMenu = async (serviceRole: string, integrationType: Integrations, organizationId: string, slug: string, apps: string[]) => {
-  const affiliateApps = mountAffiliateAppMenu(apps, slug)
+export const affiliateMemberMountMenu = async (
+  serviceRole: string,
+  integrationType: Integrations,
+  organizationId: string,
+  slug: string,
+  appData: {
+    installedApp: InstalledAffiliateStoreApp,
+    app?: IAffiliateStoreApp
+  }[]
+) => {
+  const affiliateApps = getAffiliateAppMenu(appData, slug)
 
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
