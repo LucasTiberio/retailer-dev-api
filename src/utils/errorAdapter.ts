@@ -38,6 +38,7 @@ import {
   observationNotFound,
   systemMessagesAreNotRemovable,
   cannotGenerateNewCartAtTheMoment,
+  organizationHasBillingDependency,
 } from '../common/errors'
 
 export default (message: string) => {
@@ -242,10 +243,26 @@ export default (message: string) => {
         code: 79,
         explication: 'Cannot gennerate new cart at the moment',
       }
-    default:
+    case organizationHasBillingDependency:
       return {
-        code: 999,
-        explication: 'Undefined error',
+        code: 80,
+        explication: 'Organization has billing pendency.'
       }
+    default:
+      return parseUndefinedErrors(message)
+  }
+}
+
+const parseUndefinedErrors = (message: string) => {
+  if (message.toLowerCase().includes('must have role')) {
+    return {
+      code: 81,
+      explication: 'Insufficient role'
+    }
+  }
+
+  return {
+    code: 999,
+    explication: 'Undefined error'
   }
 }

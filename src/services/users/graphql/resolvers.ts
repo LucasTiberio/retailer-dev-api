@@ -13,7 +13,7 @@ const resolvers: IResolvers = {
     },
     resendConfirmationEmail: (_, __, { client }) => {
       return database.knexConfig.transaction((trx: Transaction) => {
-        return service.resendConfirmationEmail(client.id, trx);
+        return service.resendConfirmationEmail(client.id, trx)
       })
     },
     signUpWithOrganization: (_, { input }, { redisClient, headers }) => {
@@ -55,12 +55,21 @@ const resolvers: IResolvers = {
         return service.isUserVerified(client, trx)
       })
     },
+    getUserPendencies: (_, __, { organizationId, organizationRoles, client: { id: userId } }) => {
+      console.log({ organizationId, organizationRoles })
+      return service.getUserPendencies({ organizationId, userId, organizationRoles })
+    },
   },
   User: {
     organizations: (obj, { organizationId }) => {
       return OrganizationService.getOrganizationByUserId(obj.id, organizationId)
     },
   },
+  UserPendenciesWithMetadata: {
+    metadata: (obj, _, { organizationId }) => {
+      return service.getPendencyMetadata(obj.pendency, { organizationId })
+    },
+  }
 }
 
 export default resolvers

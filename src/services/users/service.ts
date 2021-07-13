@@ -1,7 +1,7 @@
 import common from '../../common'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
-import { ISignUp, IChangePassword, ISignUpFromDB } from './types'
+import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
 import knexDatabase from '../../knex-database'
@@ -16,6 +16,8 @@ import { DEFAULT_DOMAINS, INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../common/con
 import getHeaderDomain from '../../utils/getHeaderDomain'
 import { OrganizationInviteStatus, OrganizationRoles } from '../organization/types'
 import { ServiceRoles, Services } from '../services/types'
+import AppsService from '../apps/service'
+import AppsStoreService from '../app-store/service'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -385,6 +387,36 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
   }
 }
 
+const getUserPendencies = async (ctx: { userId: string, organizationId: string, organizationRoles: OrganizationRoles[] }) => {
+  const pendencies: UserPendencies[] = []
+  const { userId, organizationId } = ctx
+
+  const hasFilledFields = await AppsService.hasFilledFields({ organizationId, userId })
+
+  if (hasFilledFields !== null && !ctx.organizationRoles.includes(OrganizationRoles.ADMIN)) {
+    if (!hasFilledFields) pendencies.push({
+      pendency: EUserPendencies.PLUG_FORM,
+    })
+  }
+
+  return pendencies
+}
+
+const getPendencyMetadata = async (pendency: EUserPendencies, ctx: { organizationId: string }) => {
+  if (pendency === EUserPendencies.PLUG_FORM) {
+    const apps = await AppsStoreService.getAffiliateStoreApps(ctx.organizationId)
+
+    const plugForm = apps.find(app => app.name.toLowerCase().replace(/ /ig, '') === 'plugform')
+    const installedApps = await AppsStoreService.getInstalledAffiliateStoreApps(ctx.organizationId)
+
+    console.log({ plugForm, ctx })
+
+    return installedApps.find(app => app.affiliateStoreApp.toString() === plugForm?.id.toString())?.id ?? ''
+  }
+
+  return ''
+}
+
 export default {
   signUp,
   resendConfirmationEmail,
@@ -400,4 +432,6 @@ export default {
   getUserByNameOrEmail,
   signUpWithOrganization,
   signUpWithEmailPhoneName,
+  getUserPendencies,
+  getPendencyMetadata
 }
