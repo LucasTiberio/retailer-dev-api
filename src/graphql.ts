@@ -17,7 +17,7 @@ import PaymentService from './services/payments/service'
 import IntegrationService from './services/integration/service'
 import { PaymentServiceStatus } from './services/payments/types'
 import { Integrations } from './services/integration/types'
-import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions } from './common/errors'
+import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions, organizationHasBillingDependency } from './common/errors'
 import TermsAndConditionsService from './services/terms-and-conditions/service'
 import OrganizationRulesService from './services/organization-rules/service'
 import { InviteStatus } from './services/users-organizations/types'
@@ -204,6 +204,7 @@ const directiveResolvers: IDirectiveResolvers = {
     if (hasSpecifiedRole) {
       context.organizationId = organizationId
       context.organizationSlug = userOrganizationRoles[0].slug
+      context.organizationRoles = userOrganizationRoles.map(({ name }) => name)
       return next()
     } else {
       throw new Error(`Must have role: ${args.role}, you have role: ${userOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
@@ -352,7 +353,7 @@ const directiveResolvers: IDirectiveResolvers = {
       }
     }
 
-    throw new Error('Organization has billing pendency.')
+    throw new Error(organizationHasBillingDependency)
   },
   async asOrganizationFounder(next, _, __, context): Promise<NextFunction> {
     const organizationId = await redisClient.getAsync(context.client.id)

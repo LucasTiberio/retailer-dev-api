@@ -10,10 +10,14 @@ extend type Mutation {
 }
 
 extend type Query {
-  getAffiliateStoreApps: [AffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAffiliateStoreApps: [AffiliateStoreApp]! @organizationPaidVerify @enterpriseOrNeptuneFeature @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   getAffiliateStoreApp(input: GetAffiliateStoreAppInput!): AffiliateStoreApp @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   getInstalledAffiliateStoreApps: [OrganizationAffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
-  getInstalledAffiliateStoreApp(input: GetInstalledAffiliateStoreAppInput!): OrganizationAffiliateStoreApp @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getInstalledAffiliateStoreApp(input: GetInstalledAffiliateStoreAppInput!): OrganizationAffiliateStoreApp
+    @hasOrganizationRole(role: ["ADMIN", "MEMBER"])
+    @isVerified
+    @acceptTermsAndConditions
+    @isAuthenticated
 }
 
 type AffiliateStoreApp {
