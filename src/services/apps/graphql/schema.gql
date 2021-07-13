@@ -1,0 +1,40 @@
+extend type Mutation {
+  savePlugForm(input: SavePlugFormInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  editPlugForm(input: EditPlugFormInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+extend type Query {
+  getPlugForm: PlugFormPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+type PlugFormPayload {
+  id: String!
+  userId: String!
+  organizationId: String!
+  fields: [PlugFormField]!
+  installedApp: OrganizationAffiliateStoreApp!
+}
+
+type PlugFormField {
+  label: String!
+  value: String!
+}
+
+input SavePlugFormInput {
+  fields: [PlugFormFieldInput]!
+  installedApp: String!
+}
+
+input PlugFormFieldInput {
+  label: String!
+  value: String!
+}
+
+input GetPlugFormInput {
+  installedAppId: String!
+}
+
+input EditPlugFormInput {
+  id: String!
+  fields: [PlugFormFieldInput]!
+}
