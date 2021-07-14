@@ -1,5 +1,6 @@
 import knexDatabase from '../../../knex-database'
 import { Transaction } from 'knex'
+import plugFormRepository from '../../apps/repositories/plug-form-repository'
 
 const getBankDataByAffiliateIds = async (ids: string[], trx: Transaction) => {
   const affiliatesBankData = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
@@ -34,8 +35,42 @@ const getAffiliateNameAndDocumentById = async (id: string, trx: Transaction) => 
   return { name: affiliateInfo.username ?? affiliateInfo.email, document: affiliateInfo.document }
 }
 
+const getAffiliateForm = async (input: { id: string, organizationId: string }, trx: Transaction) => {
+  const affiliateInfo = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
+    .where('uosr.id', input.id)
+    .innerJoin('users_organizations as uo', 'uo.id', 'uosr.users_organization_id')
+    .innerJoin('users as u', 'u.id', 'uo.user_id')
+    .select('u.id')
+    .first()
+
+    console.log({ affiliateInfo })
+
+  if (affiliateInfo.id) {
+    const form = await plugFormRepository.getPlugFormFields({
+      userId: affiliateInfo.id,
+      organizationId: input.organizationId,
+    })
+
+    console.log({ form })
+
+    if (form) {
+      const fieldsObj = form.fields.reduce((previous, { label, value }) => {
+        return {
+          ...previous,
+          [label]: value
+        }
+      }, {})
+
+      return fieldsObj
+    }
+  }
+
+  return {}
+}
+
 export default {
   getBankDataByAffiliateIds,
   getAffiliateNameById,
   getAffiliateNameAndDocumentById,
+  getAffiliateForm
 }

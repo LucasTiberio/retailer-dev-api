@@ -48,6 +48,11 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
     const affiliateIds = Object.keys(affiliates)
     const affiliatesBankData = await UsersOrganizationServiceRoleRepository.getBankDataByAffiliateIds(affiliateIds, trx)
     for (const affiliateId of affiliateIds) {
+      const plugFormFields = await UsersOrganizationServiceRoleRepository.getAffiliateForm({
+        id: affiliateId,
+        organizationId: context.organizationId
+      }, trx)
+      console.log({ plugFormFields })
       let affiliateObj = {
         ...affiliates[affiliateId],
         name: null,
@@ -55,6 +60,7 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
         agency: null,
         account: null,
         bank: null,
+        plugFormFields: JSON.stringify(plugFormFields),
       }
       let bankData = affiliatesBankData.find((bd) => bd.affiliate_id === affiliateId)
       if (bankData) {
@@ -65,6 +71,7 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
         affiliateObj.bank = `${bankData.bank_code} - ${bankData.bank_name}`
       }
       affiliateList.push(affiliateObj)
+      console.log({affiliateObj})
     }
     return {
       affiliates: affiliateList,

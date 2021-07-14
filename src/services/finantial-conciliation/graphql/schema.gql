@@ -65,6 +65,7 @@ type AffiliateValues {
   account: String
   bank: String
   orders: Int
+  plugFormFields: String
 }
 
 input getAffiliatesValuesByMonthInput {
