@@ -131,7 +131,9 @@ const getInstalledAffiliateStoreApps = async (organizationId: string) => {
       throw new Error('app_not_found')
     }
     if (storeApp.plans.length && !storeApp.plans.includes(planType)) {
-      await installedApp.remove()
+      await installedApp.update({
+        active: false
+      })
     }
   }
 
@@ -142,13 +144,15 @@ const getInstalledAffiliateStoreApps = async (organizationId: string) => {
     if (!storeApp) {
       throw new Error('app_not_found')
     }
+
     return {
       id: installedApp._id,
       affiliateStoreApp: installedApp.affiliateStoreApp,
       configs: installedApp.configs,
       requirements: installedApp.requirements,
+      active: installedApp.active
     }
-  })
+  }).filter(app => app.active)
 }
 
 const getInstalledAffiliateStoreApp = async (input: { id: string }, organizationId: string) => {
@@ -166,7 +170,9 @@ const getInstalledAffiliateStoreApp = async (input: { id: string }, organization
   }
 
   if (installedAppInStore.plans.length && !installedAppInStore.plans.includes(planType)) {
-    await installedApp.remove()
+    await installedApp.update({
+      active: false
+    })
   }
 
   const updatedInstalledApp = await OrganizationAffiliateStoreApps.findOne({ _id: input.id, organizationId })
@@ -179,6 +185,7 @@ const getInstalledAffiliateStoreApp = async (input: { id: string }, organization
     affiliateStoreApp: updatedInstalledApp.affiliateStoreApp,
     configs: updatedInstalledApp.configs,
     requirements: updatedInstalledApp.requirements,
+    active: updatedInstalledApp.active
   }
 }
 

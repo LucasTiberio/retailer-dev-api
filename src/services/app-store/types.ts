@@ -28,6 +28,7 @@ export type InstalledAffiliateStoreApp = {
   affiliateStoreApp: string;
   configs: OrganizationAffiliateStoreAppConfig[];
   requirements: OrganizationAffiliateStoreAppRequirement[];
+  active?: boolean;
 }
 
 export interface IAffiliateStoreApp {
