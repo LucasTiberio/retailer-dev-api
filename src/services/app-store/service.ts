@@ -6,9 +6,7 @@ import { OrganizationAffiliateStoreAppConfig, OrganizationAffiliateStoreAppRequi
 const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ affiliateStoreApp: input.id, organizationId })
-  if (installedApp) {
-    throw new Error('app_already_installed')
-  }
+
   const appToInstall = await AffiliateStoreApps.findById(input.id)
   if (!appToInstall) {
     throw new Error('app_not_found')
@@ -30,11 +28,20 @@ const installAffiliateStoreApp = async (input: { id: string; configs: Organizati
     }
   })
 
+  if (installedApp) {
+    await installedApp.update({
+      active: true
+    })
+
+    return true
+  }
+
   const createdInstallation = await OrganizationAffiliateStoreApps.create({
     affiliateStoreApp: appToInstall._id,
     organizationId,
     configs: input.configs,
     requirements: input.requirements,
+    active: true
   })
 
   if (createdInstallation) return true
@@ -47,7 +54,10 @@ const uninstallAffiliateStoreApp = async (input: { id: string }, organizationId:
   if (!installedApp) {
     throw new Error('app_not_installed')
   }
-  await installedApp.remove()
+  await installedApp.update({
+    active: false
+  })
+
   return true
 }
 
@@ -94,14 +104,13 @@ const editOrganizationAffiliateStoreAppConfig = async (
 const getAffiliateStoreApps = async (organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApps = await OrganizationAffiliateStoreApps.find({ organizationId })
-  const installedAppsIds = installedApps.map((app) => app.affiliateStoreApp.toString())
   const appList = await AffiliateStoreApps.find({}).lean()
   const storeApps = appList
     .filter((app) => !app.plans.length || (app.plans.length && app.plans.includes(planType)))
     .map((app) => ({
       ...app,
       id: app._id,
-      isInstalled: installedAppsIds.includes(app._id.toString()),
+      isInstalled: installedApps.find((installedApp) => installedApp.id === app._id.toString())?.active ?? false,
     }))
   return storeApps
 }

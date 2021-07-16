@@ -47,6 +47,7 @@ type OrganizationAffiliateStoreApp {
   affiliateStoreApp: AffiliateStoreApp
   configs: [OrganizationAffiliateStoreAppConfig]!
   requirements: [OrganizationAffiliateStoreAppRequirements]!
+  active: Boolean!
 }
 
 type OrganizationAffiliateStoreAppConfig {

@@ -6,6 +6,7 @@ interface IOrganizationAffiliateStoreApps extends Document {
   organizationId: string
   configs: OrganizationAffiliateStoreAppConfig[]
   requirements: OrganizationAffiliateStoreAppRequirement[]
+  active: boolean;
 }
 
 const OrganizationAffiliateStoreApps = new Schema<IOrganizationAffiliateStoreApps>({
@@ -28,6 +29,10 @@ const OrganizationAffiliateStoreApps = new Schema<IOrganizationAffiliateStoreApp
     default: [],
     required: true,
   },
+  active: {
+    type: Boolean,
+    required: true
+  }
 })
 
 export default mongoose.model<IOrganizationAffiliateStoreApps>('OrganizationAffiliateStoreApps', OrganizationAffiliateStoreApps, 'OrganizationAffiliateStoreApps')
