@@ -39,6 +39,7 @@ import {
   systemMessagesAreNotRemovable,
   cannotGenerateNewCartAtTheMoment,
   organizationHasBillingDependency,
+  subscriptionNotFound
 } from '../common/errors'
 
 export default (message: string) => {
@@ -248,6 +249,12 @@ export default (message: string) => {
         code: 80,
         explication: 'Organization has billing pendency.'
       }
+    case subscriptionNotFound: {
+      return {
+        code: 82,
+        explication: 'Subscription not found'
+      }
+    }
     default:
       return parseUndefinedErrors(message)
   }
