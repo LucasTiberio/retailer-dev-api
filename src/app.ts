@@ -9,6 +9,9 @@ import swaggerOptions from './swagger-options'
 import swaggerJsdoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
 import inviteMember from './routes/invite-member'
+import ipLimiter from './middlewares/ip-limiter'
+import getAffiliateInfo from './routes/get-affiliate-info'
+import orgLimiter from './middlewares/org-limiter'
 
 const logger = require('pino')()
 const app = express()
@@ -66,6 +69,7 @@ app.get('/health', async (req, res) => {
 })
 
 app.post('/invite-member/:organizationId', inviteMember)
+app.get('/affiliates/:organizationId', ipLimiter, getAffiliateInfo, orgLimiter)
 
 const specs = swaggerJsdoc(swaggerOptions)
 

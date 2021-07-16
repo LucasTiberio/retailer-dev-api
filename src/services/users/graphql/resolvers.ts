@@ -56,7 +56,6 @@ const resolvers: IResolvers = {
       })
     },
     getUserPendencies: (_, __, { organizationId, organizationRoles, client: { id: userId } }) => {
-      console.log({ organizationId, organizationRoles })
       return service.getUserPendencies({ organizationId, userId, organizationRoles })
     },
   },

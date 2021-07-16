@@ -27,3 +27,10 @@ export const FREE_TRIAL_DAYS = 10
 
 export const INDICAE_LI_WHITE_LABEL_DOMAIN = ['indicae.lojaintegrada.com.br', 'afiliados.b8one.com']
 export const DEFAULT_DOMAINS = ['staging.plugone.io', 'app.plugone.io']
+
+export const DEFAULT_IP_POINT_DURATION = 60 // 1 minute
+export const DEFAULT_IP_BLOCK_DURATION = 60 // 1 minute
+export const DEFAULT_IP_POINTS_LIMIT = 1
+export const DEFAULT_ORG_POINT_DURATION = 60 * 60 * 24 // 1 day / 24 hours
+export const DEFAULT_ORG_BLOCK_DURATION = 60 * 60 * 24 // 1 day / 24 hours
+export const DEFAULT_ORG_POINTS_LIMIT = 1440

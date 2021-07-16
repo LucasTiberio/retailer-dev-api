@@ -92,6 +92,72 @@ const options = {
           ],
         },
       },
+      '/affiliates/{organizationId}': {
+        get: {
+          tags: ['Get Affiliate Info'],
+          parameters: [
+            {
+              name: 'organizationId',
+              in: 'path',
+              description: 'Organization identifier',
+              required: true,
+              schema: {
+                type: 'string',
+                format: 'uuid',
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'A list of affiliates',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        username: {
+                          type: 'string',
+                          description: 'affiliate username'
+                        },
+                        email: {
+                          type: 'string',
+                          description: 'affiliate email'
+                        },
+                      }
+                    },
+                    example: [
+                      {
+                        username: 'gabrielb8one',
+                        email: 'gabriel@b8one.com'
+                      },
+                      {
+                        username: 'gabriel',
+                        email: 'gabriel.tamura@b8one.com'
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Invalid token or organizationId',
+            },
+            '429': {
+              description: 'Too many requests',
+            },
+            '500': {
+              description: 'Internal Server Error',
+            },
+          },
+          security: [
+            {
+              'x-plugone-api-token': [],
+            },
+          ]
+        }
+      }
     },
     components: {
       securitySchemes: {

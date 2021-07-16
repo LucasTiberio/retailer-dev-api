@@ -35,7 +35,7 @@ const getAffiliateNameAndDocumentById = async (id: string, trx: Transaction) => 
   return { name: affiliateInfo.username ?? affiliateInfo.email, document: affiliateInfo.document }
 }
 
-const getAffiliateForm = async (input: { id: string, organizationId: string }, trx: Transaction) => {
+const getAffiliateForm = async (input: { id: string, organizationId: string }, trx?: Transaction) => {
   const affiliateInfo = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
     .where('uosr.id', input.id)
     .innerJoin('users_organizations as uo', 'uo.id', 'uosr.users_organization_id')
@@ -68,9 +68,36 @@ const getAffiliateForm = async (input: { id: string, organizationId: string }, t
   return {}
 }
 
+const getAllAffiliates = async (organizationId: string, trx?: Transaction) => {
+  const affiliates = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
+  .where('uo.organization_id', organizationId)
+  .innerJoin('users_organizations as uo', 'uo.id', 'uosr.users_organization_id')
+  .innerJoin('users as u', 'u.id', 'uo.user_id')
+  .select('uosr.id', 'u.username', 'u.email')
+  
+  console.log({affiliates})
+  const affiliatesList = []
+
+  if (affiliates.length) {
+    for (const affiliate of affiliates) {
+      const { id, ...rest } = affiliate
+      const plugFormFields = await getAffiliateForm({
+        id, organizationId
+      }, trx)
+      
+      affiliatesList.push({ ...rest, ...plugFormFields })
+    }
+
+    return affiliatesList
+  }
+
+  return []
+}
+
 export default {
   getBankDataByAffiliateIds,
   getAffiliateNameById,
   getAffiliateNameAndDocumentById,
-  getAffiliateForm
+  getAffiliateForm,
+  getAllAffiliates
 }

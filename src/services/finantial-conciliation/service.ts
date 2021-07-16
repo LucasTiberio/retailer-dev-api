@@ -52,7 +52,7 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
         id: affiliateId,
         organizationId: context.organizationId
       }, trx)
-      console.log({ plugFormFields })
+
       let affiliateObj = {
         ...affiliates[affiliateId],
         name: null,
@@ -71,7 +71,6 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
         affiliateObj.bank = `${bankData.bank_code} - ${bankData.bank_name}`
       }
       affiliateList.push(affiliateObj)
-      console.log({affiliateObj})
     }
     return {
       affiliates: affiliateList,
