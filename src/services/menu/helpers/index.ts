@@ -108,7 +108,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
               slug: `/org/${slug}/affiliate/payments`,
             },
             {
-              name: 'Plug Store',
+              name: 'Hubly Store',
               slug: `/org/${slug}/affiliate/app-store`,
             },
             {
