@@ -290,7 +290,6 @@ export const affiliateMemberMountMenu = async (
           ...affiliateAnalyst,
           children: [
             ...affiliateAnalyst.children,
-            ...affiliateApps,
             {
               name: 'abandonedCart',
               slug: `/org/${slug}/affiliate/abandoned-carts`,
@@ -320,7 +319,6 @@ export const affiliateMemberMountMenu = async (
           ...affiliateSale,
           children: [
             ...affiliateSale.children,
-            ...affiliateApps,
             {
               name: 'abandonedCart',
               slug: `/org/${slug}/affiliate/abandoned-carts`,
