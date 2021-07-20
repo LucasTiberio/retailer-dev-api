@@ -8,20 +8,25 @@ import knexDatabase from '../../../knex-database'
 import { IAffiliateStoreApp, InstalledAffiliateStoreApp } from '../../app-store/types'
 import { parseAppName } from '../../apps/helpers'
 
-const getAffiliateAppMenu = (data: {
-  installedApp: InstalledAffiliateStoreApp,
-  app?: IAffiliateStoreApp
-}[], slug: string): { name: string; slug: string }[] => {
-  return data.map(appData => {
-    if (appData.app) {
-      return {
-        name: parseAppName(appData.app.name) ?? appData.app.name,
-        slug: `/org/${slug}/affiliate/app/${(appData.installedApp as any).id}`
+const getAffiliateAppMenu = (
+  data: {
+    installedApp: InstalledAffiliateStoreApp
+    app?: IAffiliateStoreApp
+  }[],
+  slug: string
+): { name: string; slug: string }[] => {
+  return data
+    .map((appData) => {
+      if (appData.app) {
+        return {
+          name: parseAppName(appData.app.name) ?? appData.app.name,
+          slug: `/org/${slug}/affiliate/app/${(appData.installedApp as any).id}`,
+        }
       }
-    }
 
-    return null
-  }).filter(data => !!data) as { name: string; slug: string }[]
+      return null
+    })
+    .filter((data) => !!data) as { name: string; slug: string }[]
 }
 
 export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string) => {
@@ -170,7 +175,7 @@ export const affiliateMemberMountMenu = async (
   organizationId: string,
   slug: string,
   appData: {
-    installedApp: InstalledAffiliateStoreApp,
+    installedApp: InstalledAffiliateStoreApp
     app?: IAffiliateStoreApp
   }[]
 ) => {
@@ -301,6 +306,7 @@ export const affiliateMemberMountMenu = async (
           ...affiliateSale,
           children: [
             ...affiliateSale.children,
+            ...affiliateApps,
             {
               name: 'showCase',
               slug: `/org/${slug}/affiliate/showcase`,
@@ -314,6 +320,7 @@ export const affiliateMemberMountMenu = async (
           ...affiliateSale,
           children: [
             ...affiliateSale.children,
+            ...affiliateApps,
             {
               name: 'abandonedCart',
               slug: `/org/${slug}/affiliate/abandoned-carts`,
