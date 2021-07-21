@@ -29,7 +29,26 @@ const getAffiliateAppMenu = (
     .filter((data) => !!data) as { name: string; slug: string }[]
 }
 
-export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string) => {
+const attachEnterpriseMenus = (plan: string, menus: any[]): any[] => {
+  if (plan === 'Enterprise') {
+    return menus
+  }
+
+  return []
+}
+
+export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string, plan: string) => {
+  const enterpriseMenus = [
+    {
+      name: 'Hubly Store',
+      slug: `/org/${slug}/affiliate/app-store`,
+    },
+    {
+      name: 'Meus Apps',
+      slug: `/org/${slug}/affiliate/apps`,
+    }
+  ]
+
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
@@ -112,14 +131,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
               name: 'payments',
               slug: `/org/${slug}/affiliate/payments`,
             },
-            {
-              name: 'Hubly Store',
-              slug: `/org/${slug}/affiliate/app-store`,
-            },
-            {
-              name: 'Meus Apps',
-              slug: `/org/${slug}/affiliate/apps`,
-            },
+            ...attachEnterpriseMenus(plan, enterpriseMenus)
           ],
         },
       ],

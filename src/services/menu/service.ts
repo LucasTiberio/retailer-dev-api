@@ -4,6 +4,7 @@ import OrganizationService from '../organization/service'
 import ServicesService from '../services/service'
 import IntegrationService from '../integration/service'
 import AffiliateStoreApps from '../app-store/service'
+import OrganizationRulesService from '../organization-rules/service'
 import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE } from '../../common/consts'
 import { OrganizationRoles } from '../organization/types'
 import { organizationAdminMenu, organizationMemberMenu, affiliateMemberMountMenu } from './helpers'
@@ -22,8 +23,11 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
 
   const integration = await IntegrationService.getIntegrationByOrganizationId(context.organizationId, trx)
 
+  const plan = await OrganizationRulesService.getPlanType(context.organizationId)
+
   if (organizationRole.name === OrganizationRoles.ADMIN) {
-    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug)
+    
+    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug, plan)
   }
 
   const userOrganizationService = await ServicesService.getUserInOrganizationService({ userOrganizationId: userOrganization.id }, context, trx)
