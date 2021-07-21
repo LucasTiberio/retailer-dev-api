@@ -125,7 +125,7 @@ const generateShortenerUrl = async (
     throw new Error(integrationTypeShortenerGeneratorNotFound)
   }
 
-  const shorterUrl = await ShortenerUrlService.shortenerUrl(memberUrlToAttach, trx)
+  const shorterUrl = await ShortenerUrlService.shortenerUrl(memberUrlToAttach, context.organizationId, trx)
 
   const attachedShorterUrlOnAffiliate = await attachShorterUrlOnAffiliate(affiliate.id, shorterUrl.id, trx)
 
@@ -433,7 +433,7 @@ const generateSalesShorten = async (
 
   let url = `${organizationDomain.domain}/checkout/cart/add/${queryString}`
 
-  const shorterUrl = await ShortenerUrlService.shortenerUrl(url, trx)
+  const shorterUrl = await ShortenerUrlService.shortenerUrl(url, generateSalesShortenPayload.organizationId, trx)
 
   await attachShorterUrlOnAffiliate(context.salesId, shorterUrl.id, trx)
 

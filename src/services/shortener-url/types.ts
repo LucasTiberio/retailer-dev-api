@@ -5,4 +5,5 @@ export interface IShortenerUrlFromDB{
     url_code: string
     created_at: Date
     updated_at: Date
+    whitelabel_domain: string
 }
