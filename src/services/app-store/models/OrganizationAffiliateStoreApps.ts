@@ -1,10 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose'
-import { OrganizationAffiliateStoreAppConfig } from '../types'
+import { OrganizationAffiliateStoreAppConfig, OrganizationAffiliateStoreAppRequirement } from '../types'
 
 interface IOrganizationAffiliateStoreApps extends Document {
   affiliateStoreApp: string
   organizationId: string
   configs: OrganizationAffiliateStoreAppConfig[]
+  requirements: OrganizationAffiliateStoreAppRequirement[]
+  active: boolean;
 }
 
 const OrganizationAffiliateStoreApps = new Schema<IOrganizationAffiliateStoreApps>({
@@ -22,6 +24,15 @@ const OrganizationAffiliateStoreApps = new Schema<IOrganizationAffiliateStoreApp
     default: [],
     required: true,
   },
+  requirements: {
+    type: [Object],
+    default: [],
+    required: true,
+  },
+  active: {
+    type: Boolean,
+    required: true
+  }
 })
 
 export default mongoose.model<IOrganizationAffiliateStoreApps>('OrganizationAffiliateStoreApps', OrganizationAffiliateStoreApps, 'OrganizationAffiliateStoreApps')

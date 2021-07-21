@@ -10,10 +10,14 @@ extend type Mutation {
 }
 
 extend type Query {
-  getAffiliateStoreApps: [AffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAffiliateStoreApps: [AffiliateStoreApp]! @organizationPaidVerify @enterpriseOrNeptuneFeature @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   getAffiliateStoreApp(input: GetAffiliateStoreAppInput!): AffiliateStoreApp @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   getInstalledAffiliateStoreApps: [OrganizationAffiliateStoreApp]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
-  getInstalledAffiliateStoreApp(input: GetInstalledAffiliateStoreAppInput!): OrganizationAffiliateStoreApp @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getInstalledAffiliateStoreApp(input: GetInstalledAffiliateStoreAppInput!): OrganizationAffiliateStoreApp
+    @hasOrganizationRole(role: ["ADMIN", "MEMBER"])
+    @isVerified
+    @acceptTermsAndConditions
+    @isAuthenticated
 }
 
 type AffiliateStoreApp {
@@ -42,11 +46,20 @@ type OrganizationAffiliateStoreApp {
   id: String!
   affiliateStoreApp: AffiliateStoreApp
   configs: [OrganizationAffiliateStoreAppConfig]!
+  requirements: [OrganizationAffiliateStoreAppRequirements]!
+  active: Boolean!
 }
 
 type OrganizationAffiliateStoreAppConfig {
   key: String!
   value: String!
+}
+
+type OrganizationAffiliateStoreAppRequirements {
+  id: String!
+  value: String!
+  required: Boolean
+  active: Boolean
 }
 
 input GetAffiliateStoreAppInput {
@@ -60,6 +73,7 @@ input GetInstalledAffiliateStoreAppInput {
 input InstallAffiliateStoreAppInput {
   id: String!
   configs: [AffiliateStoreAppConfigInput]!
+  requirements: [AffiliateStoreAppRequirementInput]!
 }
 
 input UninstallAffiliateStoreAppInput {
@@ -69,9 +83,17 @@ input UninstallAffiliateStoreAppInput {
 input EditOrganizationAffiliateStoreAppConfigInput {
   id: String!
   configs: [AffiliateStoreAppConfigInput]!
+  requirements: [AffiliateStoreAppRequirementInput]!
 }
 
 input AffiliateStoreAppConfigInput {
   key: String!
   value: String!
+}
+
+input AffiliateStoreAppRequirementInput {
+  id: String!
+  value: String!
+  required: Boolean
+  active: Boolean
 }

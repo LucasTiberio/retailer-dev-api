@@ -1,21 +1,9 @@
 import mongoose, { Schema, Document, Types } from 'mongoose'
-import { AffiliateStoreAppConfig } from '../types'
+import { IAffiliateStoreApp } from '../types'
 
-interface IAffiliateStoreApps extends Document {
-  name: string
-  shortDescription: string
-  description: string
-  tags?: string[]
-  mainImage: string
-  images?: string[]
-  authorName: string
-  authorLogo?: string
-  authorUrl?: string
-  configs: AffiliateStoreAppConfig[]
-  plans: string[]
-}
+interface IAffiliateStoreAppsDocument extends IAffiliateStoreApp, Document {}
 
-const AffiliateStoreApps = new Schema<IAffiliateStoreApps>({
+const AffiliateStoreApps = new Schema<IAffiliateStoreAppsDocument>({
   name: {
     type: String,
     required: true,
@@ -60,4 +48,4 @@ const AffiliateStoreApps = new Schema<IAffiliateStoreApps>({
   },
 })
 
-export default mongoose.model<IAffiliateStoreApps>('AffiliateStoreApps', AffiliateStoreApps, 'AffiliateStoreApps')
+export default mongoose.model<IAffiliateStoreAppsDocument>('AffiliateStoreApps', AffiliateStoreApps, 'AffiliateStoreApps')

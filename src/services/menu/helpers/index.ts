@@ -5,6 +5,29 @@ import { ServiceRoles } from '../../services/types'
 import OrganizationRulesService from '../../organization-rules/service'
 import { Integrations } from '../../integration/types'
 import knexDatabase from '../../../knex-database'
+import { IAffiliateStoreApp, InstalledAffiliateStoreApp } from '../../app-store/types'
+import { parseAppName } from '../../apps/helpers'
+
+const getAffiliateAppMenu = (
+  data: {
+    installedApp: InstalledAffiliateStoreApp
+    app?: IAffiliateStoreApp
+  }[],
+  slug: string
+): { name: string; slug: string }[] => {
+  return data
+    .map((appData) => {
+      if (appData.app) {
+        return {
+          name: parseAppName(appData.app.name) ?? appData.app.name,
+          slug: `/org/${slug}/affiliate/app/${(appData.installedApp as any).id}`,
+        }
+      }
+
+      return null
+    })
+    .filter((data) => !!data) as { name: string; slug: string }[]
+}
 
 export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string) => {
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
@@ -89,10 +112,14 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
               name: 'payments',
               slug: `/org/${slug}/affiliate/payments`,
             },
-            // {
-            //   name: 'Plug Store',
-            //   slug: `/org/${slug}/affiliate/app-store`,
-            // },
+            {
+              name: 'Hubly Store',
+              slug: `/org/${slug}/affiliate/app-store`,
+            },
+            {
+              name: 'Meus Apps',
+              slug: `/org/${slug}/affiliate/apps`,
+            },
           ],
         },
       ],
@@ -142,7 +169,18 @@ export const organizationMemberMenu = (slug: string) => [
   },
 ]
 
-export const affiliateMemberMountMenu = async (serviceRole: string, integrationType: Integrations, organizationId: string, slug: string) => {
+export const affiliateMemberMountMenu = async (
+  serviceRole: string,
+  integrationType: Integrations,
+  organizationId: string,
+  slug: string,
+  appData: {
+    installedApp: InstalledAffiliateStoreApp
+    app?: IAffiliateStoreApp
+  }[]
+) => {
+  const affiliateApps = getAffiliateAppMenu(appData, slug)
+
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
@@ -238,6 +276,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
           ...affiliateAnalyst,
           children: [
             ...affiliateAnalyst.children,
+            ...affiliateApps,
             {
               name: 'showCase',
               slug: `/org/${slug}/affiliate/showcase`,
@@ -266,6 +305,7 @@ export const affiliateMemberMountMenu = async (serviceRole: string, integrationT
           ...affiliateSale,
           children: [
             ...affiliateSale.children,
+            ...affiliateApps,
             {
               name: 'showCase',
               slug: `/org/${slug}/affiliate/showcase`,

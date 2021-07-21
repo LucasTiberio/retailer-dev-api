@@ -17,7 +17,7 @@ import PaymentService from './services/payments/service'
 import IntegrationService from './services/integration/service'
 import { PaymentServiceStatus } from './services/payments/types'
 import { Integrations } from './services/integration/types'
-import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions } from './common/errors'
+import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions, organizationHasBillingDependency } from './common/errors'
 import TermsAndConditionsService from './services/terms-and-conditions/service'
 import OrganizationRulesService from './services/organization-rules/service'
 import { InviteStatus } from './services/users-organizations/types'
@@ -58,6 +58,7 @@ const typeDefsBase = gql`
   directive @hasAffiliateStore on FIELD | FIELD_DEFINITION
   directive @validUser on FIELD | FIELD_DEFINITION
   directive @enterpriseFeature on FIELD | FIELD_DEFINITION
+  directive @enterpriseOrNeptuneFeature on FIELD | FIELD_DEFINITION
   directive @hasAbandonedCart on FIELD | FIELD_DEFINITION
 `
 
@@ -203,6 +204,7 @@ const directiveResolvers: IDirectiveResolvers = {
     if (hasSpecifiedRole) {
       context.organizationId = organizationId
       context.organizationSlug = userOrganizationRoles[0].slug
+      context.organizationRoles = userOrganizationRoles.map(({ name }) => name)
       return next()
     } else {
       throw new Error(`Must have role: ${args.role}, you have role: ${userOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
@@ -351,7 +353,7 @@ const directiveResolvers: IDirectiveResolvers = {
       }
     }
 
-    throw new Error('Organization has billing pendency.')
+    throw new Error(organizationHasBillingDependency)
   },
   async asOrganizationFounder(next, _, __, context): Promise<NextFunction> {
     const organizationId = await redisClient.getAsync(context.client.id)
@@ -439,6 +441,15 @@ const directiveResolvers: IDirectiveResolvers = {
     const organizationId = await redisClient.getAsync(context.client.id)
     const planType = await OrganizationRulesService.getPlanType(organizationId)
     if (planType === 'Enterprise') {
+      return next()
+    }
+
+    throw new Error('This feature is available only on enterprise plans')
+  },
+  async enterpriseOrNeptuneFeature(next, _, __, context): Promise<NextFunction> {
+    const organizationId = await redisClient.getAsync(context.client.id)
+    const planType = await OrganizationRulesService.getPlanType(organizationId)
+    if (planType === 'Enterprise' || planType === 'Neptune') {
       return next()
     }
 

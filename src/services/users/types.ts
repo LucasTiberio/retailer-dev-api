@@ -48,3 +48,12 @@ export interface IChangePassword {
   password: string
   hash: string
 }
+
+export interface UserPendencies {
+  pendency: EUserPendencies
+  metadata?: string
+}
+
+export enum EUserPendencies {
+  PLUG_FORM = 'PLUG_FORM',
+}

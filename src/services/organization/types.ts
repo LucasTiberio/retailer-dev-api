@@ -48,6 +48,7 @@ export interface IOrganizationFromDB {
   logo?: string
   api_key?: string
   public: boolean
+  show_gamification: boolean
 }
 
 export interface IOrganizationRoleFromDb {

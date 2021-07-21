@@ -1,6 +1,7 @@
 extend type Query {
   getUser: User! @acceptTermsAndConditions @isVerified @isAuthenticated
   isUserVerified: Boolean! @acceptTermsAndConditions @isAuthenticated
+  getUserPendencies: [UserPendenciesWithMetadata]! @acceptTermsAndConditions @isVerified @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isAuthenticated
 }
 
 extend type Mutation {
@@ -64,4 +65,13 @@ enum DocumentType {
   rg
   cnpj
   cpf
+}
+
+type UserPendenciesWithMetadata {
+  pendency: UserPendencies!
+  metadata: String
+}
+
+enum UserPendencies {
+  PLUG_FORM
 }

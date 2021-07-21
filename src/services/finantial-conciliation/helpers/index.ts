@@ -4,6 +4,7 @@ import Bonifications from '../model/Bonifications'
 import LojaIntegradaOrders from '../model/LojaIntegradaOrders'
 import SaasCommissions from '../../saas-integration/models/SaasCommission'
 import FinancialReconciliation, { FinancialReconciliationStatus } from '../model/FinancialReconciliation'
+import { PlugOneAffiliateStatus } from '../types'
 
 const getAffiliateOrdersDict = async (organizationId: string, yearMonth: string) => {
   const date = moment(yearMonth, 'YYYY-MM').utc()
@@ -11,6 +12,7 @@ const getAffiliateOrdersDict = async (organizationId: string, yearMonth: string)
   const lastDayOfMonth = date.endOf('month').toISOString()
   const affiliateOrders = await AffiliateOrders.find({
     creationDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+    plugoneAffiliateStatus: PlugOneAffiliateStatus.Approved,
     organizationId,
   })
   const affiliateDict = affiliateOrders.reduce((acc: any, cur: any) => {
@@ -36,6 +38,7 @@ const getLojaIntegradaOrdersDict = async (organizationId: string, yearMonth: str
   const lastDayOfMonth = date.endOf('month').toISOString()
   const lojaIntegradaOrders = await LojaIntegradaOrders.find({
     data_criacao: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+    plugoneAffiliateStatus: PlugOneAffiliateStatus.Approved,
     externalId: organizationId,
   })
   const lojaIntegradaDict = lojaIntegradaOrders.reduce((acc: any, cur: any) => {
@@ -249,11 +252,12 @@ const getDailyRevenueAndCommissions = async (organizationId: string, yearMonth: 
   dict = mergeToDailyDict(await getBonificationDailyDict(organizationId, yearMonth), dict)
   dict = mergeToDailyDict(await getSaasCommissionsDailyDict(organizationId, yearMonth), dict)
 
-  const FinancialReconciliationFound = await FinancialReconciliation.findOne({ referenceMonth: yearMonth, organizationId }).select('status')
+  const FinancialReconciliationFound = await FinancialReconciliation.findOne({ referenceMonth: yearMonth, organizationId }).select(['status', 'orders'])
 
   return {
     status: FinancialReconciliationFound?.status,
     days: Object.values(dict),
+    orders: FinancialReconciliationFound?.orders,
   }
 }
 

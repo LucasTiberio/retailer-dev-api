@@ -3,6 +3,7 @@ import redisClient from '../lib/Redis'
 import { RateLimiterRedis } from 'rate-limiter-flexible'
 import OrganizationService from '../services/organization/service'
 import { Request, Response } from 'express'
+import { DEFAULT_IP_BLOCK_DURATION, DEFAULT_IP_POINT_DURATION, DEFAULT_ORG_BLOCK_DURATION, DEFAULT_ORG_POINT_DURATION } from '../common/consts'
 
 /* INVITE MEMBER RATE LIMIT */
 const ipLimit = 1
@@ -12,16 +13,16 @@ const ipLimiter = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: 'invite_member_ip_limit',
   points: ipLimit,
-  duration: 60, // one minute
-  blockDuration: 60, // blocks ip one minute if exceeded points
+  duration: DEFAULT_IP_POINT_DURATION, // one minute
+  blockDuration: DEFAULT_IP_BLOCK_DURATION, // blocks ip one minute if exceeded points
 })
 
 const orgLimiter = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: 'invite_member_org_limit',
   points: organizationLimit,
-  duration: 60 * 60 * 24,
-  blockDuration: 60 * 60 * 24,
+  duration: DEFAULT_ORG_POINT_DURATION,
+  blockDuration: DEFAULT_ORG_BLOCK_DURATION,
 })
 
 export default async (req: Request, res: Response) => {

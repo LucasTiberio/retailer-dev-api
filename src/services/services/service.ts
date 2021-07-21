@@ -474,8 +474,11 @@ const getOrganizationServicesById = async (userOrganizationServiceId: string) =>
   return organizationServices
 }
 
-const verifyFirstSteps = async (userServiceOrganizationId: string, bankDataId: string) => {
+const verifyFirstSteps = async (userServiceOrganizationId: string, bankDataId: string, context: { organizationId: string }) => {
   const bankData = await BankDataService.getBankDataById(bankDataId)
+  const { showGamification } = await OrganizationService.getOrganizationById(context.organizationId)
+
+  if (!showGamification) return false
 
   const hasLinkGenerated = await userOrganizationServicesHasLinkGeneratedByIdLoader().load(userServiceOrganizationId)
 

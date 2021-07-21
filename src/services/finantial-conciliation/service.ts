@@ -9,6 +9,7 @@ import LojaIntegradaOrders from './model/LojaIntegradaOrders'
 import SaasCommissions from '../saas-integration/models/SaasCommission'
 import ServicesTimeToPayRepository from './repository/organization_services_time_to_pay'
 import UsersOrganizationServiceRoleRepository from './repository/users_organization_service_roles'
+import { PlugOneAffiliateStatus } from './types'
 
 const handleOrganizationFinantialConciliationConfiguration = async (
   input: {
@@ -47,6 +48,11 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
     const affiliateIds = Object.keys(affiliates)
     const affiliatesBankData = await UsersOrganizationServiceRoleRepository.getBankDataByAffiliateIds(affiliateIds, trx)
     for (const affiliateId of affiliateIds) {
+      const plugFormFields = await UsersOrganizationServiceRoleRepository.getAffiliateForm({
+        id: affiliateId,
+        organizationId: context.organizationId
+      }, trx)
+
       let affiliateObj = {
         ...affiliates[affiliateId],
         name: null,
@@ -54,6 +60,7 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
         agency: null,
         account: null,
         bank: null,
+        plugFormFields: JSON.stringify(plugFormFields),
       }
       let bankData = affiliatesBankData.find((bd) => bd.affiliate_id === affiliateId)
       if (bankData) {
@@ -92,6 +99,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
 
     const affiliateOrders = await AffiliateOrders.find({
       creationDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+      plugoneAffiliateStatus: PlugOneAffiliateStatus.Approved,
       organizationId: context.organizationId,
       'affiliateInfo.affiliateId': context.affiliateId,
     })
@@ -113,6 +121,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
     const lojaIntegradaOrders = await LojaIntegradaOrders.find({
       data_criacao: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
       externalId: context.organizationId,
+      plugoneAffiliateStatus: PlugOneAffiliateStatus.Approved,
       'affiliateInfo.affiliateId': context.affiliateId,
     })
 

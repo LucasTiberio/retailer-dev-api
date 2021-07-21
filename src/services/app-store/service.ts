@@ -1,14 +1,12 @@
 import AffiliateStoreApps from './models/AffiliateStoreApps'
 import OrganizationAffiliateStoreApps from './models/OrganizationAffiliateStoreApps'
 import OrganizationRulesService from '../organization-rules/service'
-import { OrganizationAffiliateStoreAppConfig } from './types'
+import { OrganizationAffiliateStoreAppConfig, OrganizationAffiliateStoreAppRequirement } from './types'
 
-const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[] }, organizationId: string) => {
+const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ affiliateStoreApp: input.id, organizationId })
-  if (installedApp) {
-    throw new Error('app_already_installed')
-  }
+
   const appToInstall = await AffiliateStoreApps.findById(input.id)
   if (!appToInstall) {
     throw new Error('app_not_found')
@@ -30,10 +28,20 @@ const installAffiliateStoreApp = async (input: { id: string; configs: Organizati
     }
   })
 
+  if (installedApp) {
+    await installedApp.update({
+      active: true
+    })
+
+    return true
+  }
+
   const createdInstallation = await OrganizationAffiliateStoreApps.create({
     affiliateStoreApp: appToInstall._id,
     organizationId,
     configs: input.configs,
+    requirements: input.requirements,
+    active: true
   })
 
   if (createdInstallation) return true
@@ -46,11 +54,17 @@ const uninstallAffiliateStoreApp = async (input: { id: string }, organizationId:
   if (!installedApp) {
     throw new Error('app_not_installed')
   }
-  await installedApp.remove()
+  await installedApp.update({
+    active: false
+  })
+
   return true
 }
 
-const editOrganizationAffiliateStoreAppConfig = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[] }, organizationId: string) => {
+const editOrganizationAffiliateStoreAppConfig = async (
+  input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] },
+  organizationId: string
+) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ _id: input.id, organizationId })
   if (!installedApp) {
@@ -80,6 +94,8 @@ const editOrganizationAffiliateStoreAppConfig = async (input: { id: string; conf
   })
 
   installedApp.configs = input.configs
+  installedApp.requirements = input.requirements
+
   await installedApp.save()
 
   return true
@@ -88,14 +104,13 @@ const editOrganizationAffiliateStoreAppConfig = async (input: { id: string; conf
 const getAffiliateStoreApps = async (organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApps = await OrganizationAffiliateStoreApps.find({ organizationId })
-  const installedAppsIds = installedApps.map((app) => app.affiliateStoreApp.toString())
   const appList = await AffiliateStoreApps.find({}).lean()
   const storeApps = appList
     .filter((app) => !app.plans.length || (app.plans.length && app.plans.includes(planType)))
     .map((app) => ({
       ...app,
       id: app._id,
-      isInstalled: installedAppsIds.includes(app._id.toString()),
+      isInstalled: installedApps.find((installedApp) => installedApp.id === app._id.toString())?.active ?? false,
     }))
   return storeApps
 }
@@ -116,7 +131,9 @@ const getInstalledAffiliateStoreApps = async (organizationId: string) => {
       throw new Error('app_not_found')
     }
     if (storeApp.plans.length && !storeApp.plans.includes(planType)) {
-      await installedApp.remove()
+      await installedApp.update({
+        active: false
+      })
     }
   }
 
@@ -127,12 +144,15 @@ const getInstalledAffiliateStoreApps = async (organizationId: string) => {
     if (!storeApp) {
       throw new Error('app_not_found')
     }
+
     return {
       id: installedApp._id,
       affiliateStoreApp: installedApp.affiliateStoreApp,
       configs: installedApp.configs,
+      requirements: installedApp.requirements,
+      active: installedApp.active
     }
-  })
+  }).filter(app => app.active)
 }
 
 const getInstalledAffiliateStoreApp = async (input: { id: string }, organizationId: string) => {
@@ -150,7 +170,9 @@ const getInstalledAffiliateStoreApp = async (input: { id: string }, organization
   }
 
   if (installedAppInStore.plans.length && !installedAppInStore.plans.includes(planType)) {
-    await installedApp.remove()
+    await installedApp.update({
+      active: false
+    })
   }
 
   const updatedInstalledApp = await OrganizationAffiliateStoreApps.findOne({ _id: input.id, organizationId })
@@ -162,6 +184,8 @@ const getInstalledAffiliateStoreApp = async (input: { id: string }, organization
     id: updatedInstalledApp._id,
     affiliateStoreApp: updatedInstalledApp.affiliateStoreApp,
     configs: updatedInstalledApp.configs,
+    requirements: updatedInstalledApp.requirements,
+    active: updatedInstalledApp.active
   }
 }
 

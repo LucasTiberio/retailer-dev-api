@@ -571,7 +571,7 @@ const requestAffiliateServiceMembers = async (
         await ServicesService.attachUserInOrganizationAffiliateService(
           {
             userOrganizationId: userOrganizationCreated.id,
-            role: ServiceRoles.ANALYST,
+            role: ServiceRoles.SALE,
             organizationId: organizationId,
             serviceOrganization: serviceOrganizationFound,
           },

@@ -65,6 +65,7 @@ type AffiliateValues {
   account: String
   bank: String
   orders: Int
+  plugFormFields: String
 }
 
 input getAffiliatesValuesByMonthInput {
@@ -74,6 +75,7 @@ input getAffiliatesValuesByMonthInput {
 type getDailyRevenueAndCommissionsQuery {
   status: String!
   days: [DailyRevenueAndCommission]
+  orders: Int!
 }
 
 type DailyRevenueAndCommission {
