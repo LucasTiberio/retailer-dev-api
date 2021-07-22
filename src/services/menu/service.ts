@@ -9,6 +9,7 @@ import { MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED, MESSAGE_ERROR_USER_NOT_EXISTS_IN_
 import { OrganizationRoles } from '../organization/types'
 import { organizationAdminMenu, organizationMemberMenu, affiliateMemberMountMenu } from './helpers'
 import { IAffiliateStoreApp, InstalledAffiliateStoreApp } from '../app-store/types'
+import { subscriptionNotFound } from '../../common/errors'
 
 const getMenuTree = async (context: { organizationId: string; client: IUserToken; organizationSlug: string }, trx: Transaction) => {
   if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
@@ -24,6 +25,14 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
   const integration = await IntegrationService.getIntegrationByOrganizationId(context.organizationId, trx)
 
   const plan = await OrganizationRulesService.getPlanType(context.organizationId)
+    .catch(error => {
+      if (error.message === subscriptionNotFound) {
+        return null
+      }
+
+      throw error
+    })
+    console.log('teste', { plan })
 
   if (organizationRole.name === OrganizationRoles.ADMIN) {
     
