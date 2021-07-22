@@ -220,8 +220,8 @@ const getAffiliateStoreAddedProducts = async (context: { userServiceOrganization
 
           return affiliateStoreProductAdapter({
             ...item,
-            name: x.nome,
-            image: x.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+            name: x?.nome ?? 'Produto sem nome',
+            image: x?.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
           })
         })
       )
