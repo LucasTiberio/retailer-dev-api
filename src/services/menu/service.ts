@@ -32,7 +32,6 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
 
       throw error
     })
-    console.log('teste', { plan })
 
   if (organizationRole.name === OrganizationRoles.ADMIN) {
     
