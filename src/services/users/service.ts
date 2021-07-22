@@ -406,7 +406,7 @@ const getPendencyMetadata = async (pendency: EUserPendencies, ctx: { organizatio
   if (pendency === EUserPendencies.PLUG_FORM) {
     const apps = await AppsStoreService.getAffiliateStoreApps(ctx.organizationId)
 
-    const plugForm = apps.find(app => app.name.toLowerCase().replace(/ /ig, '') === 'plugform')
+    const plugForm = apps.find(app => app.name.toLowerCase().replace(/ /ig, '') === 'hublyform')
     const installedApps = await AppsStoreService.getInstalledAffiliateStoreApps(ctx.organizationId)
 
     return installedApps.find(app => app.affiliateStoreApp.toString() === plugForm?.id.toString())?.id ?? ''
