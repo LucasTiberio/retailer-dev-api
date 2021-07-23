@@ -217,11 +217,12 @@ const getAffiliateStoreAddedProducts = async (context: { userServiceOrganization
       return await Promise.all(
         products.map(async (item) => {
           const x = await fetchLojaIntegradaProductById(token, item.product_id)
+          const [image = null] = x?.imagens
 
           return affiliateStoreProductAdapter({
             ...item,
             name: x?.nome ?? 'Produto sem nome',
-            image: x?.imagem_principal?.media ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
+            image: x?.imagem_principal?.media ?? image?.grande ?? 'https://plugone-staging.nyc3.digitaloceanspaces.com/app-assets/semfoto.jpeg',
           })
         })
       )
@@ -566,7 +567,7 @@ const getAffiliateStoreWithProducts = async (
 
     let cachingObject: any = products.map((product: any) => ({
       id: product.id,
-      image: product.imagem_principal?.media,
+      image: product.imagem_principal?.media ?? product?.images[0]?.grande,
       nome: product.nome,
       url: product.url,
     }))
