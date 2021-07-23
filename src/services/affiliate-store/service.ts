@@ -567,7 +567,7 @@ const getAffiliateStoreWithProducts = async (
 
     let cachingObject: any = products.map((product: any) => ({
       id: product.id,
-      image: product.imagem_principal?.media ?? product?.images[0]?.grande,
+      image: product.imagem_principal?.media ?? product?.imagens[0]?.grande,
       nome: product.nome,
       url: product.url,
     }))
