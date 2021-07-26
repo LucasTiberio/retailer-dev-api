@@ -63,7 +63,7 @@ const shortenerUrl = async (originalUrl: string, organizationId: string, trx: Tr
           original_url: originalUrl,
           short_url: `${backendRedirectUrl}/${shortId}`,
           url_code: shortId,
-          whitelabel_domain: whitelabel?.customDomain
+          whitelabel_domain: whitelabel?.redirectWhiteLabel
         })
         .returning('*');
     

@@ -2,6 +2,7 @@ import { IWhiteLabelInfosFromDB } from '../types'
 
 interface IWhiteLabelInfosAdapter extends IWhiteLabelInfosFromDB {
   name: string
+  redirect_whitelabel: string
 }
 
 export const whiteLabelInfosAdapter = (record: IWhiteLabelInfosAdapter) => ({
@@ -12,4 +13,5 @@ export const whiteLabelInfosAdapter = (record: IWhiteLabelInfosAdapter) => ({
   logo: record.logo,
   organizationName: record.name || '',
   customDomain: record.custom_domain || '',
+  redirectWhiteLabel: record.redirect_whitelabel
 })
