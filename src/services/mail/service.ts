@@ -10,7 +10,7 @@ const sendSignUpMail = async (data: ISendMail) => {
     await Mail.sendMail({
       from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
       to: `${data.username || ''} <${data.email}>`,
-      subject: 'Bem vindo(a) a Hubly Retailer!',
+      subject: `Bem vindo(a) a ${data?.whiteLabelInfo?.organizationName ?? 'Hubly Retailer'}!`,
       html: `
             <!DOCTYPE html>
             <html lang="pt-BR" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -286,7 +286,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                     <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                         <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                            <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
+                                                            <img src="${data?.whiteLabelInfo?.logo ?? 'https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png'}" alt="Logo" width="100%" style="max-width: 247px;">
                                                         </td>
                                                         </tr>
                                                     </table>
@@ -769,7 +769,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                       <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                           <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                            <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
+                                                          <img src="${data?.whiteLabelInfo?.logo ?? 'https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png'}" alt="Logo" width="100%" style="max-width: 247px;">
                                                           </td>
                                                         </tr>
                                                       </table>
@@ -1219,7 +1219,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                             <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                                 <tr>
                                                                 <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                                    <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
+                                                                <img src="${data?.whiteLabelInfo?.logo ?? 'https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png'}" alt="Logo" width="100%" style="max-width: 247px;">
                                                                 </td>
                                                                 </tr>
                                                             </table>
@@ -1595,7 +1595,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
   <body style="box-sizing:border-box;margin:0;padding:0;width:100%;word-break:break-word;-webkit-font-smoothing:antialiased;">
 
 
-    <div style="display:none;font-size:0;line-height:0;">Você foi convidado para a Hubly Retailer!</div>
+    <div style="display:none;font-size:0;line-height:0;">Você foi convidado para a ${data?.whiteLabelInfo?.organizationName}!</div>
 
       <!-- WRAPPER -->
       <table class="full-width-sm" cellspacing="0" cellpadding="0" border="0" align="center" width="100%" bgcolor="#E5E5E5" style="width: 100%; background-color: #E5E5E5;">
@@ -1654,7 +1654,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                             <tr>
                                               <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
+                                              <img src="${data?.whiteLabelInfo?.logo ?? 'https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png'}" alt="Logo" width="100%" style="max-width: 247px;">
                                               </td>
                                             </tr>
                                           </table>
@@ -2091,7 +2091,7 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
                                               <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                 <tr>
                                                   <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                    <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
+                                                  <img src="${data?.whiteLabelInfo?.logo ?? 'https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png'}" alt="Logo" width="100%" style="max-width: 247px;">
                                                   </td>
                                                 </tr>
                                               </table>
@@ -2504,7 +2504,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                             <tr>
                                               <td class="col px-48" align="left" style="padding: 32px 48px;" bgcolor="#FFFFFF">
-                                                <img src="https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png" alt="Logo" width="100%" style="max-width: 247px;">
+                                              <img src="${data?.whiteLabelInfo?.logo ?? 'https://plugone-production.nyc3.digitaloceanspaces.com/hubly/retailer/logos/logo-with-text-background-white.png'}" alt="Logo" width="100%" style="max-width: 247px;">
                                               </td>
                                             </tr>
                                           </table>

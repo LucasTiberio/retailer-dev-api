@@ -6,6 +6,9 @@ import { onlyPnhAndJpgIsSupported } from '../../common/errors'
 import StorageService from '../storage/service'
 import common from '../../common'
 import sharp from 'sharp'
+import { IncomingHttpHeaders } from 'http'
+import getHeaderDomain from '../../utils/getHeaderDomain'
+import { DEFAULT_DOMAINS } from '../../common/consts'
 
 const defaultWhiteLabel = {
   primaryColor: '#DB0046',
@@ -14,10 +17,20 @@ const defaultWhiteLabel = {
   logo: 'https://plugone-production.nyc3.digitaloceanspaces.com/assets/logo.png',
 }
 
-const getWhiteLabelInfosDomain = async (domain: string, trx: Transaction) => {
-  const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, domain)
+const getWhiteLabelInfosDomain = async (context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
 
-  return whiteLabelInfos
+  const origin = context.headers.origin
+
+  const domain = getHeaderDomain(origin || '')
+
+  if (!DEFAULT_DOMAINS.includes(domain)) {
+    const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, 'afiliados.madesa.com')
+    
+    console.log({ whiteLabelInfos })
+    return whiteLabelInfos ?? undefined
+  }
+
+  return undefined
 }
 
 const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
