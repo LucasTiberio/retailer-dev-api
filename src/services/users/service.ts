@@ -18,6 +18,7 @@ import { OrganizationInviteStatus, OrganizationRoles } from '../organization/typ
 import { ServiceRoles, Services } from '../services/types'
 import AppsService from '../apps/service'
 import AppsStoreService from '../app-store/service'
+import { IBaseMail } from '../mail/types'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -27,6 +28,7 @@ const _signUpAdapter = (record: ISignUpFromDB) => ({
   documentType: record.document_type,
   phone: record.phone,
 })
+
 
 const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
   const [partialSignUpCreated] = await (trx || database.knexConfig)
@@ -59,7 +61,7 @@ const signUpWithEmailPhoneName = async (
   return partialSignUpCreated
 }
 
-const resendConfirmationEmail = async (userId: string, trx: Transaction) => {
+const resendConfirmationEmail = async (userId: string, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   const user = await getUserById(userId, trx)
 
   if (!user) throw new Error('user_not_found')
@@ -67,7 +69,8 @@ const resendConfirmationEmail = async (userId: string, trx: Transaction) => {
   const { email, username, verification_hash } = user
 
   try {
-    await MailService.sendSignUpMail({ email, username, hashToVerify: verification_hash })
+    const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+    await MailService.sendSignUpMail({ email, username, hashToVerify: verification_hash, whiteLabelInfo })
 
     return true
   } catch (error) {
@@ -96,15 +99,11 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
   let organizationIdFoundByDomain
 
   const origin = context.headers.origin
-
   const domain = getHeaderDomain(origin || '')
+  const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
 
-  if (!DEFAULT_DOMAINS.includes(domain)) {
-    const whiteLabelInfos = await WhiteLabelService.getWhiteLabelInfosDomain(domain, trx)
-
-    if (whiteLabelInfos) {
-      organizationIdFoundByDomain = whiteLabelInfos.organizationId
-    }
+  if (whiteLabelInfo) {
+    organizationIdFoundByDomain = whiteLabelInfo.organizationId
   }
 
   const encryptedPassword = await common.encrypt(password)
@@ -172,7 +171,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(domain)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
-      await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+      await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     }
 
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
@@ -270,7 +269,8 @@ const signUpWithOrganization = async (
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
-      await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+      await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     }
 
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
@@ -347,10 +347,12 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
         hashToVerify: encryptedHashVerification,
       })
     } else {
+      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveryPasswordMail({
         email: user.email,
         username: user.username,
         hashToVerify: encryptedHashVerification,
+        whiteLabelInfo
       })
     }
 
@@ -378,7 +380,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
-      await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
+      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+      await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username, whiteLabelInfo })
     }
 
     return true

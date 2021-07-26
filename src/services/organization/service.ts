@@ -304,10 +304,12 @@ const inviteTeammates = async (
                 organizationName: organization.name,
               })
             } else {
+              const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
               await MailService.sendInviteUserMail({
                 email: item,
                 hashToVerify,
                 organizationName: organization.name,
+                whiteLabelInfo
               })
             }
 
@@ -437,10 +439,12 @@ const inviteAffiliateServiceMembers = async (
                   organizationName: organization.name,
                 })
               } else {
+                const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
                 await MailService.sendInviteUserMail({
                   email: item.email,
                   hashToVerify,
                   organizationName: organization.name,
+                  whiteLabelInfo
                 })
               }
             }
@@ -1163,10 +1167,13 @@ const reinviteServiceMember = async (
         organizationName: usersOrganizationFound.name,
       })
     } else {
+      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+
       await MailService.sendInviteNewUserMail({
         email: usersOrganizationFound.email,
         hashToVerify: usersOrganizationFound.invite_hash,
         organizationName: usersOrganizationFound.name,
+        whiteLabelInfo
       })
     }
 

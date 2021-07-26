@@ -5,9 +5,9 @@ import service from '../service'
 
 const resolvers: IResolvers = {
   Mutation: {
-    handleMemberInvitation: (_, { input }, { organizationId }) => {
+    handleMemberInvitation: (_, { input }, { organizationId, headers }) => {
       return knexDatabase.knexConfig.transaction((trx: Transaction) => {
-        return service.handleMemberInvitation(input, { organizationId }, trx)
+        return service.handleMemberInvitation(input, { organizationId, headers }, trx)
       })
     },
     deleteMemberInvitation: (_, { input }, { organizationId }) => {

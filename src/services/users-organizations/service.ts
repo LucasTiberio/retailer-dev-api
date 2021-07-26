@@ -4,6 +4,8 @@ import { ResponseStatus } from './types'
 import UserService from '../users/service'
 import OrganizationService from '../organization/service'
 import MailService from '../mail/service'
+import WhiteLabelService from '../white-label/service'
+import { IncomingHttpHeaders } from 'http'
 
 const getPendingMembersByOrganizationId = async (
   context: {
@@ -41,7 +43,8 @@ const handleMemberInvitation = async (
     userOrganizationId: string
   },
   context: {
-    organizationId: string
+    organizationId: string,
+    headers: IncomingHttpHeaders
   },
   trx: Transaction
 ) => {
@@ -52,17 +55,21 @@ const handleMemberInvitation = async (
   const organization = await OrganizationService.getOrganizationById(context.organizationId, trx)
 
   if (input.inviteStatus === ResponseStatus.accept) {
+    const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+
     if (member.encrypted_password && member.username) {
       await MailService.sendInviteUserMail({
         email: member.email,
         hashToVerify: memberUpdated.invite_hash,
         organizationName: organization.name,
+        whiteLabelInfo
       })
     } else {
       await MailService.sendInviteNewUserMail({
         email: member.email,
         hashToVerify: memberUpdated.invite_hash,
         organizationName: organization.name,
+        whiteLabelInfo
       })
     }
   }
