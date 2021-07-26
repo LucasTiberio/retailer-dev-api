@@ -302,10 +302,6 @@ export const affiliateMemberMountMenu = async (
           ...affiliateAnalyst,
           children: [
             ...affiliateAnalyst.children,
-            {
-              name: 'abandonedCart',
-              slug: `/org/${slug}/affiliate/abandoned-carts`,
-            },
           ],
         }
       }
