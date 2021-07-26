@@ -70,6 +70,10 @@ const shortenerUrl = async (originalUrl: string, organizationId: string, trx: Tr
       return shortUrlAdapter(shortIdFoundOnDb);
     };
 
+    if(whitelabel?.redirectWhiteLabel){
+      originalUrlFound.shortUrl = `https://${whitelabel.redirectWhiteLabel}/${originalUrlFound.urlCode}`
+    }
+
     return originalUrlFound
 
 }
