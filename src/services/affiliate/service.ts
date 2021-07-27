@@ -461,7 +461,7 @@ const getOrganizationRevenue = async (
     url += `&status=${input.status}`
   }
 
-  if (input.name) {
+  if (input?.name) {
     url += `&name=${input.name}`
   }
 
