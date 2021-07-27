@@ -13,8 +13,7 @@ const shortUrlAdapter = (record : IShortenerUrlFromDB) => ({
   shortUrl: record.short_url,
   urlCode: record.url_code,
   createdAt: record.created_at,
-  updatedAt: record.updated_at,
-  whitelabelDomain: record.whitelabel_domain
+  updatedAt: record.updated_at
 })
 
 
@@ -24,11 +23,7 @@ const getShortenerUrlByLoader = store.registerOneToOneLoader(
     .whereIn('id', shortenerUrlIds)
     .select('*')
 
-    return query.map(({ whitelabel_domain, url_code, short_url, ...rest }) => ({
-      ...rest,
-      url_code,
-      short_url: whitelabel_domain ? `https://${whitelabel_domain}/${url_code}` : short_url
-    }));
+    return query
   },
     'id',
     shortUrlAdapter
@@ -52,7 +47,6 @@ const shortenerUrl = async (originalUrl: string, organizationId: string, trx: Tr
   // if(!userToken) throw new Error("token must be provided");
 
     const originalUrlFound = await getShortnerUrlByOriginalUrl(originalUrl, trx);
-    const whitelabel = await OrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(organizationId)
 
     if(!originalUrlFound) {
 
@@ -62,17 +56,12 @@ const shortenerUrl = async (originalUrl: string, organizationId: string, trx: Tr
         .insert({
           original_url: originalUrl,
           short_url: `${backendRedirectUrl}/${shortId}`,
-          url_code: shortId,
-          whitelabel_domain: whitelabel?.redirectWhiteLabel
+          url_code: shortId
         })
         .returning('*');
     
       return shortUrlAdapter(shortIdFoundOnDb);
     };
-
-    if(whitelabel?.redirectWhiteLabel){
-      originalUrlFound.shortUrl = `https://${whitelabel.redirectWhiteLabel}/${originalUrlFound.urlCode}`
-    }
 
     return originalUrlFound
 
@@ -104,9 +93,16 @@ const getOriginalUrlByCode = async (urlCode: string ,trx: Transaction) => {
 
 }
 
-const getShortenerUrlById = async (urlShortenerId: string) => {
-
+const getShortenerUrlById = async (organizationId: string, urlShortenerId: string) => {
   const userOrganizationRole = await getShortenerUrlByLoader().load(urlShortenerId);
+  const whitelabel = await OrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(organizationId)  
+
+  if (whitelabel?.redirectWhiteLabel) {
+    return {
+      ...userOrganizationRole,
+      shortUrl: `https://${whitelabel.redirectWhiteLabel}/${userOrganizationRole.urlCode}`
+    }
+  }
 
   return userOrganizationRole;
 
