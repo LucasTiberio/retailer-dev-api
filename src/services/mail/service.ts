@@ -3,6 +3,12 @@ import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail, ISend
 
 const frontUrl = process.env.FRONT_URL
 
+const getBaseUrl = (whiteLabelDomain?: string) => {
+  if (whiteLabelDomain) return `https://${whiteLabelDomain}`
+
+  return frontUrl
+}
+
 const sendSignUpMail = async (data: ISendMail) => {
   if (process.env.NODE_ENV === 'test') return
 
@@ -328,7 +334,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                                 <tbody>
                                                                     <tr>
                                                                         <td align="center" height="36" bgcolor="#3B24A8" width="330" style="width:330px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color: #EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
-                                                                            <a href="${frontUrl}/verification/${
+                                                                            <a href="${getBaseUrl(data?.whiteLabelInfo?.customDomain)}/verification/${
         data.hashToVerify
       }" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
                                                                                     Confirmar email e ativar conta
@@ -394,7 +400,7 @@ const sendSignUpMail = async (data: ISendMail) => {
                                                     <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
                                                         <tr>
                                                         <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                            <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
+                                                            <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">${data?.whiteLabelInfo?.organizationName ?? 'Hubly Retailer'}</span></a>
                                                         </td>
                                 
                                                         <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
@@ -821,7 +827,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                                     <tbody>
                                                                         <tr>
                                                                             <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color: #EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
-                                                                                <a href="${frontUrl}/recovery-password/change-password/${
+                                                                                <a href="${getBaseUrl(data?.whiteLabelInfo?.customDomain)}/recovery-password/change-password/${
         data.hashToVerify
       }" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
                                                                                     Escolher nova senha
@@ -847,7 +853,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                         <tr>
                                 
                                                           <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                            <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
+                                                            <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">${data?.whiteLabelInfo?.organizationName ?? 'Hubly Retailer'}</span></a>
                                                           </td>
                                       
                                                           <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
@@ -1281,7 +1287,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
                                                                 <tr>
                                         
                                                                 <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                                    <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
+                                                                    <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">${data?.whiteLabelInfo?.organizationName ?? 'Hubly Retailer'}</span></a>
                                                                 </td>
                                         
                                                                 <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
@@ -1696,14 +1702,14 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                                     <tbody>
                                                         <tr>
                                                             <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color:#EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;margin-bottom: 10px">
-                                                                <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
+                                                                <a href="${getBaseUrl(data?.whiteLabelInfo?.customDomain)}/member-invited/${data.hashToVerify}/accept" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
                                                                 Aceitar convite
                                                                 </a>
                                                             </td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
-                                                <a href="${frontUrl}/member-invited/${data.hashToVerify}/refused" class="inter" style="display: block; text-align: center;cursor: pointer;text-decoration: none;">Recusar convite</a>
+                                                <a href="${getBaseUrl(data?.whiteLabelInfo?.customDomain)}/member-invited/${data.hashToVerify}/refused" class="inter" style="display: block; text-align: center;cursor: pointer;text-decoration: none;">Recusar convite</a>
                                               </td>
                                             </tr>
                                           </table>
@@ -1721,7 +1727,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
                                             <tr>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
+                                                <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">${data?.whiteLabelInfo?.organizationName ?? 'Hubly Retailer'}</span></a>
                                               </td>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
@@ -2551,7 +2557,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                                     <tbody>
                                                         <tr>
                                                             <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color:#EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
-                                                                <a href="${frontUrl}/member-invited/${data.hashToVerify}/accept" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
+                                                                <a href="${getBaseUrl(data?.whiteLabelInfo?.customDomain)}/member-invited/${data.hashToVerify}/accept" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
                                                                 Aceitar convite
                                                                 </a>
                                                             </td>
@@ -2575,7 +2581,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
                                             <tr>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="left" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7; line-height: 12px!important;margin-left:48px" >
-                                                <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">Hubly Retailer</span></a>
+                                                <a href="#" class="inter" style="color: #666372;font-size: 12px; font-weight: 500; line-height: 42px!important; text-decoration: none;">Enviado por <span style="color:#EB0045;">${data?.whiteLabelInfo?.organizationName ?? 'Hubly Retailer'}</span></a>
                                               </td>
                     
                                               <td class="col col-6" bgcolor="#FFFFFF" align="right" width="320" style="padding: 32px 0px 32px 0px; border-top: 2px solid #EDF2F7;line-height: 12px!important;" >
