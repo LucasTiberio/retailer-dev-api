@@ -143,7 +143,7 @@ export const fetchLojaIntegradaProductById = async (lojaIntegradaToken: string, 
 
     return data
   } catch (error) {
-    console.log('error.data', error.response.data)
+    console.log('error.data', error)
   }
 }
 

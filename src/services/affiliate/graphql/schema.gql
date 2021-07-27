@@ -191,6 +191,7 @@ type OrganizationRevenue {
 }
 
 input GetOrganizationRevenueInput {
+  name: String
   startDate: Datetime
   endDate: Datetime
   status: OrderFilterStatus
@@ -203,6 +204,7 @@ input GetOrganizationCommissionInput {
 }
 
 input GetOrganizationTotalOrdersInput {
+  name: String
   startDate: Datetime
   endDate: Datetime
   status: OrderFilterStatus
@@ -215,6 +217,7 @@ input GetOrganizationTotalOrdersByAffiliateInput {
 }
 
 input GetOrganizationAverageTicketInput {
+  name: String
   startDate: Datetime
   endDate: Datetime
   status: OrderFilterStatus

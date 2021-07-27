@@ -168,6 +168,7 @@ const getAllOrganizationOrders = async (
 
   try {
     const { data } = await Axios.get(url)
+    console.log({ url })
 
     let affiliateIds = data.data
       .filter((item: any) => {
@@ -442,6 +443,7 @@ const generateSalesShorten = async (
 
 const getOrganizationRevenue = async (
   input: {
+    name?: string,
     startDate: Date
     endDate: Date
     status: IVtexStatus
@@ -459,6 +461,10 @@ const getOrganizationRevenue = async (
     url += `&status=${input.status}`
   }
 
+  if (input.name) {
+    url += `&name=${input.name}`
+  }
+
   try {
     const { data } = await Axios.get(url)
     return { amount: data.amount }
@@ -469,6 +475,7 @@ const getOrganizationRevenue = async (
 
 const getOrganizationAverageTicket = async (
   input: {
+    name?: string,
     startDate: Date
     endDate: Date
     status: IVtexStatus
@@ -486,6 +493,10 @@ const getOrganizationAverageTicket = async (
     url += `&status=${input.status}`
   }
 
+  if (input.name) {
+    url += `&name=${input.name}`
+  }
+
   try {
     const { data } = await Axios.get(url)
     return { amount: data.amount }
@@ -496,6 +507,7 @@ const getOrganizationAverageTicket = async (
 
 const getOrganizationTotalOrders = async (
   input: {
+    name?: string,
     startDate: Date
     endDate: Date
     status: IVtexStatus
@@ -511,6 +523,10 @@ const getOrganizationTotalOrders = async (
 
   if (input.status) {
     url += `&status=${input.status}`
+  }
+  
+  if (input.name) {
+    url += `&name=${input.name}`
   }
 
   try {
