@@ -64,6 +64,15 @@ const options = {
                         type: 'string',
                         description: 'phone of the object',
                       },
+                      document: {
+                        type: 'string',
+                        description: 'document of the object',
+                      },
+                      documentType: {
+                        type: 'string',
+                        enum: ["rg", "cpf", "cnpj"],
+                        description: 'document type of the object',
+                      },
                     },
                   },
                 },
