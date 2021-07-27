@@ -13,8 +13,7 @@ const shortUrlAdapter = (record : IShortenerUrlFromDB) => ({
   shortUrl: record.short_url,
   urlCode: record.url_code,
   createdAt: record.created_at,
-  updatedAt: record.updated_at,
-  whitelabelDomain: record.whitelabel_domain
+  updatedAt: record.updated_at
 })
 
 
@@ -24,11 +23,7 @@ const getShortenerUrlByLoader = store.registerOneToOneLoader(
     .whereIn('id', shortenerUrlIds)
     .select('*')
 
-    return query.map(({ whitelabel_domain, url_code, short_url, ...rest }) => ({
-      ...rest,
-      url_code,
-      short_url: whitelabel_domain ? `https://${whitelabel_domain}/${url_code}` : short_url
-    }));
+    return query
   },
     'id',
     shortUrlAdapter
@@ -62,8 +57,7 @@ const shortenerUrl = async (originalUrl: string, organizationId: string, trx: Tr
         .insert({
           original_url: originalUrl,
           short_url: `${backendRedirectUrl}/${shortId}`,
-          url_code: shortId,
-          whitelabel_domain: whitelabel?.redirectWhiteLabel
+          url_code: shortId
         })
         .returning('*');
     
