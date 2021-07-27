@@ -70,8 +70,7 @@ const options = {
                       },
                       documentType: {
                         type: 'string',
-                        enum: ["rg", "cpf", "cnpj"],
-                        description: 'document type of the object',
+                        description: 'document type "rg" or "cpf" or "cnpj" of the object',
                       },
                     },
                   },
