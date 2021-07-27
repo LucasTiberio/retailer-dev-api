@@ -164,8 +164,8 @@ const resolvers: IResolvers = {
     },
   },
   UserOrganizationServiceRolesUrlShortener: {
-    shortenerUrl: async (obj) => {
-      return ShortenerUrlService.getShortenerUrlById(obj.urlShortenId)
+    shortenerUrl: async (obj, _, { organizationId }) => {
+      return ShortenerUrlService.getShortenerUrlById(organizationId, obj.urlShortenId)
     },
     userOrganizationService: async (obj) => {
       return ServicesService.getOrganizationServicesById(obj.usersOrganizationServiceRolesId)

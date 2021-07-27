@@ -47,7 +47,6 @@ const shortenerUrl = async (originalUrl: string, organizationId: string, trx: Tr
   // if(!userToken) throw new Error("token must be provided");
 
     const originalUrlFound = await getShortnerUrlByOriginalUrl(originalUrl, trx);
-    const whitelabel = await OrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(organizationId)
 
     if(!originalUrlFound) {
 
@@ -63,10 +62,6 @@ const shortenerUrl = async (originalUrl: string, organizationId: string, trx: Tr
     
       return shortUrlAdapter(shortIdFoundOnDb);
     };
-
-    if(whitelabel?.redirectWhiteLabel){
-      originalUrlFound.shortUrl = `https://${whitelabel.redirectWhiteLabel}/${originalUrlFound.urlCode}`
-    }
 
     return originalUrlFound
 
@@ -98,9 +93,16 @@ const getOriginalUrlByCode = async (urlCode: string ,trx: Transaction) => {
 
 }
 
-const getShortenerUrlById = async (urlShortenerId: string) => {
-
+const getShortenerUrlById = async (organizationId: string, urlShortenerId: string) => {
   const userOrganizationRole = await getShortenerUrlByLoader().load(urlShortenerId);
+  const whitelabel = await OrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(organizationId)  
+
+  if (whitelabel?.redirectWhiteLabel) {
+    return {
+      ...userOrganizationRole,
+      shortUrl: `https://${whitelabel.redirectWhiteLabel}/${userOrganizationRole.urlCode}`
+    }
+  }
 
   return userOrganizationRole;
 
