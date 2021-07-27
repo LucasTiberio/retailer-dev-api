@@ -1,7 +1,7 @@
 import common from '../../common'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
-import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies } from './types'
+import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
 import knexDatabase from '../../knex-database'
@@ -41,11 +41,13 @@ const signUpWithEmailOnly = async (email: string, trx: Transaction) => {
   return partialSignUpCreated
 }
 
-const signUpWithEmailPhoneName = async (
+const signUpWithEmailPhoneNameDocument = async (
   infos: {
     email: string
     phone: string
     username: string
+    document: string
+    documentType: IDocumentType
   },
   trx: Transaction
 ) => {
@@ -54,6 +56,8 @@ const signUpWithEmailPhoneName = async (
       email: infos.email.toLowerCase(),
       phone: infos.phone,
       username: infos.username,
+      document: infos.document,
+      document_type: infos.documentType,
     })
     .into('users')
     .returning('*')
@@ -432,7 +436,7 @@ export default {
   _signUpAdapter,
   getUserByNameOrEmail,
   signUpWithOrganization,
-  signUpWithEmailPhoneName,
+  signUpWithEmailPhoneNameDocument,
   getUserPendencies,
   getPendencyMetadata
 }
