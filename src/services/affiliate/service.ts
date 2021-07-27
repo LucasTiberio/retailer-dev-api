@@ -814,7 +814,13 @@ const getOrganizationCommissionByOrganizationId = async (context: { organization
       const lojaIntegradaProductCommission = organizationCommission.filter((item) => item.identifier === OrganizationCommissionIdentifiers.Product)
       const lojaIntegradaProductAttachedList = await attachLojaIntegradaProductName(lojaIntegradaProductCommission, integration.identifier)
 
-      return lojaIntegradaAttachedList.concat(lojaIntegradaAffiliateAttachedList).concat(lojaIntegradaProductAttachedList).map(organizationCommissionAdapter)
+      const liAttachedList = lojaIntegradaAttachedList.concat(lojaIntegradaAffiliateAttachedList).concat(lojaIntegradaProductAttachedList).map(organizationCommissionAdapter)
+
+      liAttachedList.sort(function(a: any,b: any){
+        return b.createdAt - a.createdAt;
+      });
+
+      return liAttachedList
     case Integrations.VTEX:
       const departmentCommission = organizationCommission.filter((item) => item.identifier === OrganizationCommissionIdentifiers.Department)
       const vtexDepartmentAttachedList = await attachVtexCategoryName(departmentCommission, integration.secret)
@@ -830,13 +836,19 @@ const getOrganizationCommissionByOrganizationId = async (context: { organization
 
       const productCommission = organizationCommission.filter((item) => item.identifier === OrganizationCommissionIdentifiers.Product)
       const vtexProductAttachedList = await attachVtexProductName(productCommission, integration.secret)
+      
+      const vtexAttachedList = vtexDepartmentAttachedList
+      .concat(vtexCategoryAttachedList)
+      .concat(vtexAffiliateAttachedList)
+      .concat(vtexSellerAttachedList)
+      .concat(vtexProductAttachedList)
+      .map(organizationCommissionAdapter)
 
-      return vtexDepartmentAttachedList
-        .concat(vtexCategoryAttachedList)
-        .concat(vtexAffiliateAttachedList)
-        .concat(vtexSellerAttachedList)
-        .concat(vtexProductAttachedList)
-        .map(organizationCommissionAdapter)
+      vtexAttachedList.sort(function(a: any,b: any){
+        return b.createdAt - a.createdAt;
+      });
+
+      return vtexAttachedList
     default:
       return []
   }
