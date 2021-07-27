@@ -50,6 +50,7 @@ import { Integrations } from '../integration/types'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { InviteStatus } from '../users-organizations/types'
 import { IncomingHttpHeaders } from 'http'
+import { IDocumentType } from '../users/types'
 
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL
 
@@ -521,6 +522,8 @@ const requestAffiliateServiceMembers = async (
     email: string
     username: string
     phone: string
+    document: string
+    documentType: IDocumentType
   }[],
   organizationId: string,
   organizationName: string,
@@ -545,6 +548,20 @@ const requestAffiliateServiceMembers = async (
     throw new Error('Founder doesnt attached a member service')
   }
 
+  body.forEach(item => {
+    if(!item.document){
+      throw new Error("document is required")
+    }
+
+    if(!item.documentType){
+      throw new Error("documentType is required")
+    }
+
+    if(item.documentType !== IDocumentType.CNPJ && item.documentType !== IDocumentType.CPF && item.documentType !== IDocumentType.RG){
+      throw new Error(`documentType should be ${IDocumentType.CNPJ} or ${IDocumentType.CPF} or ${IDocumentType.RG}`)
+    }
+  })
+
   try {
     await Promise.all(
       body.map(async (item) => {
@@ -559,7 +576,7 @@ const requestAffiliateServiceMembers = async (
             return console.log('ja existe')
           }
         } else {
-          userEmail = await UserService.signUpWithEmailPhoneName({ ...item }, trx)
+          userEmail = await UserService.signUpWithEmailPhoneNameDocument({ ...item }, trx)
         }
 
         const userOrganizationCreated = await organizationRolesAttach(
