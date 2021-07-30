@@ -398,11 +398,21 @@ const getUserPendencies = async (ctx: { userId: string, organizationId: string, 
   const pendencies: UserPendencies[] = []
   const { userId, organizationId } = ctx
 
-  const hasFilledFields = await AppsService.hasFilledFields({ organizationId, userId })
+  if (ctx.organizationRoles.includes(OrganizationRoles.ADMIN)) {
+    return []
+  }
 
-  if (hasFilledFields !== null && !ctx.organizationRoles.includes(OrganizationRoles.ADMIN)) {
+  const hasFilledFields = await AppsService.hasFilledFields({ organizationId, userId })
+  const hasPendingInvoice = await AppsService.hasInvoicePending({ organizationId, userId }) 
+
+  if (hasFilledFields !== null) {
     if (!hasFilledFields) pendencies.push({
       pendency: EUserPendencies.PLUG_FORM,
+    })
+  }
+  if (hasPendingInvoice !== null) {
+    if (hasPendingInvoice) pendencies.push({
+      pendency: EUserPendencies.HUBLY_INVOICE
     })
   }
 
@@ -411,15 +421,16 @@ const getUserPendencies = async (ctx: { userId: string, organizationId: string, 
 
 const getPendencyMetadata = async (pendency: EUserPendencies, ctx: { organizationId: string }) => {
   if (pendency === EUserPendencies.PLUG_FORM) {
-    const apps = await AppsStoreService.getAffiliateStoreApps(ctx.organizationId)
+    const [hublyInvoice] = await AppsStoreService.getInstalledAffiliateStoreApps(ctx.organizationId, 'Hubly Form')
 
-    const plugForm = apps.find(app => app.name.toLowerCase().replace(/ /ig, '') === 'hublyform')
-    const installedApps = await AppsStoreService.getInstalledAffiliateStoreApps(ctx.organizationId)
-
-    return installedApps.find(app => app.affiliateStoreApp.toString() === plugForm?.id.toString())?.id ?? ''
+    return hublyInvoice?.id ?? ''
   }
 
-  return ''
+  if (pendency === EUserPendencies.HUBLY_INVOICE) {
+    const [hublyInvoice] = await AppsStoreService.getInstalledAffiliateStoreApps(ctx.organizationId, 'Hubly Invoice')
+
+    return hublyInvoice?.id ?? ''
+  }
 }
 
 export default {

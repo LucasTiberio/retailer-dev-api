@@ -73,5 +73,6 @@ type UserPendenciesWithMetadata {
 }
 
 enum UserPendencies {
-  PLUG_FORM
+  PLUG_FORM,
+  HUBLY_INVOICE
 }

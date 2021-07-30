@@ -56,4 +56,5 @@ export interface UserPendencies {
 
 export enum EUserPendencies {
   PLUG_FORM = 'PLUG_FORM',
+  HUBLY_INVOICE = 'HUBLY_INVOICE'
 }
