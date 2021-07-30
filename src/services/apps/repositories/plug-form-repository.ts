@@ -1,5 +1,4 @@
 import PlugFormData from '../models/PlugFormData'
-import mongoose from 'mongoose'
 import { IEditPlugFormInput, IGetPlugFormInput, IPlugFormData, IPlugFormDataInput } from '../types'
 
 const savePlugFormFields = async (input: IPlugFormDataInput, ctx: { userId: string; organizationId: string }) => {

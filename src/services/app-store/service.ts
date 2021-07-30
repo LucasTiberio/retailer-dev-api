@@ -1,7 +1,7 @@
 import AffiliateStoreApps from './models/AffiliateStoreApps'
 import OrganizationAffiliateStoreApps from './models/OrganizationAffiliateStoreApps'
 import OrganizationRulesService from '../organization-rules/service'
-import { OrganizationAffiliateStoreAppConfig, OrganizationAffiliateStoreAppRequirement } from './types'
+import { InstalledAffiliateStoreApp, OrganizationAffiliateStoreAppConfig, OrganizationAffiliateStoreAppRequirement } from './types'
 
 const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
@@ -30,7 +30,9 @@ const installAffiliateStoreApp = async (input: { id: string; configs: Organizati
 
   if (installedApp) {
     await installedApp.update({
-      active: true
+      active: true,
+      configs: input.configs,
+      requirements: input.requirements
     })
 
     return true
@@ -110,12 +112,13 @@ const getAffiliateStoreApps = async (organizationId: string) => {
     .map((app) => ({
       ...app,
       id: app._id,
-      isInstalled: installedApps.find((installedApp) => installedApp.id === app._id.toString())?.active ?? false,
+      isInstalled: installedApps.find((installedApp) => installedApp.affiliateStoreApp.toString() === app._id.toString())?.active ?? false,
     }))
   return storeApps
 }
 
-const getInstalledAffiliateStoreApps = async (organizationId: string) => {
+const getInstalledAffiliateStoreApps = async (organizationId: string, name?: string) => {
+  const nameRegex = name ? new RegExp(name.replace(' ', '\\s\?'), 'ig') : null
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApps = await OrganizationAffiliateStoreApps.find({ organizationId })
   const installedAppsStoreIds = installedApps.map((app) => app.affiliateStoreApp.toString())
@@ -141,8 +144,15 @@ const getInstalledAffiliateStoreApps = async (organizationId: string) => {
 
   return updatedInstalledApps.map((installedApp) => {
     const storeApp = installedAppsInStore.find((app) => app._id.toString() === installedApp.affiliateStoreApp.toString())
+
     if (!storeApp) {
       throw new Error('app_not_found')
+    }
+
+    if (nameRegex) {
+      if (!nameRegex.test(storeApp?.name)) {
+        return null
+      }
     }
 
     return {
@@ -152,7 +162,7 @@ const getInstalledAffiliateStoreApps = async (organizationId: string) => {
       requirements: installedApp.requirements,
       active: installedApp.active
     }
-  }).filter(app => app.active)
+  }).filter(app => !!app && app.active) as InstalledAffiliateStoreApp[]
 }
 
 const getInstalledAffiliateStoreApp = async (input: { id: string }, organizationId: string) => {
