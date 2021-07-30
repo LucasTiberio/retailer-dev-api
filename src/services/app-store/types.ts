@@ -2,6 +2,8 @@ export type AffiliateStoreAppConfig = {
   name: string
   displayName: string
   exampleValue?: string
+  type?: "Date" | "string" | "number" | "bool"
+  required?: boolean;
 }
 
 export type OrganizationAffiliateStoreAppConfig = {

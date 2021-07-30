@@ -1,10 +1,12 @@
 extend type Mutation {
   savePlugForm(input: SavePlugFormInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   editPlugForm(input: EditPlugFormInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  uploadInvoice(input: UploadInvoiceInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 extend type Query {
   getPlugForm: PlugFormPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  getInvoice: HublyInvoicePayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type PlugFormPayload {
@@ -37,4 +39,27 @@ input GetPlugFormInput {
 input EditPlugFormInput {
   id: String!
   fields: [PlugFormFieldInput]!
+}
+
+input UploadInvoiceInput {
+  data: Upload!
+  mimeType: String!
+  month: String!
+}
+
+input UploadInvoiceInput {
+  id: String
+  data: Upload!
+  mimeType: String!
+  month: String!
+}
+
+type HublyInvoicePayload {
+  id: String!
+  organizationId: String!
+  userId: String!
+  month: String!
+  year: String!
+  invoice: String!
+  received: Boolean!
 }

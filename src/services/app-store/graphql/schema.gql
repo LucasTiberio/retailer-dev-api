@@ -40,6 +40,8 @@ type AffiliateStoreAppConfig {
   name: String!
   displayName: String!
   exampleValue: String
+  type: String
+  required: Boolean
 }
 
 type OrganizationAffiliateStoreApp {
