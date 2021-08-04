@@ -23,8 +23,12 @@ const getWhiteLabelInfosDomain = async (context: { headers: IncomingHttpHeaders 
 
   const domain = getHeaderDomain(origin || '')
 
+  console.log({domain})
+
   if (!DEFAULT_DOMAINS.includes(domain)) {
     const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, domain)
+
+    console.log({whiteLabelInfos})
     
     return whiteLabelInfos ?? undefined
   }
