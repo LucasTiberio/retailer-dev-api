@@ -1,6 +1,7 @@
 import common from '../../common'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
+import MadesaMailService from '../mail/madesa'
 import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
@@ -12,7 +13,7 @@ import WhiteLabelService from '../white-label/service'
 import { RedisClient } from 'redis'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { IncomingHttpHeaders } from 'http'
-import { DEFAULT_DOMAINS, INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../common/consts'
+import { DEFAULT_DOMAINS, INDICAE_LI_WHITE_LABEL_DOMAIN, MADESA_WHITE_LABEL_DOMAIN } from '../../common/consts'
 import getHeaderDomain from '../../utils/getHeaderDomain'
 import { OrganizationInviteStatus, OrganizationRoles } from '../organization/types'
 import { ServiceRoles, Services } from '../services/types'
@@ -174,6 +175,8 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(domain)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(domain)) {
+      await MadesaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     }
