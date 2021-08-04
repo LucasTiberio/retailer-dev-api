@@ -106,11 +106,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
   const origin = context.headers.origin
   const domain = getHeaderDomain(origin || '')
 
-  console.log({domain})
-
   const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
-
-  console.log({whiteLabelInfo})
 
   if (whiteLabelInfo) {
     organizationIdFoundByDomain = whiteLabelInfo.organizationId
@@ -150,9 +146,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .returning('*')
     }
 
-    console.log({organizationIdFoundByDomain})
-
-    if (organizationIdFoundByDomain) {
+    if (organizationIdFoundByDomain && !userPreAddedFound) {
       const organization = await OrganizationService.getOrganizationById(organizationIdFoundByDomain, trx)
 
       const [serviceOrganizationFound] = await ServicesService.serviceOrganizationByName(organization.id, Services.AFFILIATE, trx)

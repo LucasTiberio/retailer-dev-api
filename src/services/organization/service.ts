@@ -170,14 +170,6 @@ const organizationRolesAttach = async (
 
   if (!organizationRole) throw new Error('Organization role not found.')
 
-  console.log({
-    user_id: userId,
-    organization_id: organizationId,
-    invite_status: inviteStatus,
-    invite_hash: hashToVerify,
-    is_requested: !!isRequested,
-  })
-
   const [userOrganizationCreated] = await (trx || knexDatabase.knexConfig)('users_organizations')
     .insert({
       user_id: userId,
@@ -187,8 +179,6 @@ const organizationRolesAttach = async (
       is_requested: !!isRequested,
     })
     .returning('*')
-
-  console.log("passei")
 
   const [organizationRoleId] = await (trx || knexDatabase.knexConfig)('users_organization_roles')
     .insert({
