@@ -51,6 +51,7 @@ enum ServicePermissionName {
   abandonedCarts
   payments
   members
+  apps
 }
 
 enum PermissionGrant {
