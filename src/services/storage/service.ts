@@ -135,4 +135,6 @@ export default {
   uploadImage,
   getImageById,
   deleteImage,
+  getImageByUrl,
+  imageAdapter
 }
