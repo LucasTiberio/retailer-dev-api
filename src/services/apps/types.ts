@@ -43,9 +43,10 @@ export interface IStoreHublyInvoice {
 
 export interface IUpdateHublyInvoice {
   id: string
-  month: string
-  invoice: string
-  year: string;
+  month?: string
+  invoice?: string
+  year?: string;
+  received?: boolean;
 }
 
 export interface IHublyInvoiceData {

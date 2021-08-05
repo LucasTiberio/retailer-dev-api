@@ -10,7 +10,7 @@ const resolvers: IResolvers = {
     },
     getInvoice: (_, __, { organizationId, client: { id: userId } }) => {
       return AppsService.getInvoice({ organizationId, userId })
-    }
+    },
   },
   Mutation: {
     savePlugForm: (_, { input }, { organizationId, client: { id: userId } }) => {
@@ -23,6 +23,9 @@ const resolvers: IResolvers = {
       return database.knexConfig.transaction((trx: Transaction) => {
         return AppsService.uploadInvoice(input, { organizationId, userId }, trx)
       })
+    },
+    receiveInvoice: (_, { input }) => {
+      return AppsService.receiveInvoice(input)
     }
   },
 }

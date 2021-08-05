@@ -12,15 +12,12 @@ const storeInvoice = async (input: IStoreHublyInvoice, ctx: { userId: string, or
   throw new Error('cannot_save_invoice')
 }
 
-const updateInvoice = async (input: IUpdateHublyInvoice, ctx: { userId: string, organizationId: string }) => {
+const updateInvoice = async (input: IUpdateHublyInvoice) => {
   const { id, ...rest } = input
 
-  const payload = await HublyInvoiceData.findOneAndUpdate({
-    ...ctx,
-    _id: id
-  }, {
-    ...rest
-  })
+  const data = await HublyInvoiceData.findById(id)
+
+  const payload = await data?.updateOne({ ...rest })
 
   if (payload) return true
 

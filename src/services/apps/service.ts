@@ -6,6 +6,8 @@ import { getInvoicesPath } from '../../utils/get-path'
 import PlugFormRepository from './repositories/plug-form-repository'
 import HublyInvoiceRepository from './repositories/hubly-invoice-repository'
 import moment from 'moment'
+import Axios from 'axios'
+import { encodeBase64 } from 'bcryptjs'
 
 export const savePlugFormFields = (input: IPlugFormDataInput, ctx: { userId: string; organizationId: string }) => {
   return PlugFormRepository.savePlugFormFields(input, ctx)
@@ -26,21 +28,24 @@ export const uploadInvoice = async (input: IUploadInvoiceInput, ctx: { userId: s
     month,
     year,
     organizationId: ctx.organizationId,
-    userId: ctx.userId
+    userId: ctx.userId,
+    mimeType
   })
   const stream = (await data).createReadStream()
-  const { url } = await StorageService.uploadImage(path, stream, mimeType, trx)
+  const { url, ...rest } = await StorageService.uploadImage(path, stream, mimeType, trx)
+
+  console.log({url, rest})
 
   if (!input.id) {
     return HublyInvoiceRepository.storeInvoice({ month, invoice: url, year }, ctx )
   }
 
-  return HublyInvoiceRepository.updateInvoice({ id, month, invoice: url, year }, ctx )
+  return HublyInvoiceRepository.updateInvoice({ id, month, invoice: url, year })
 }
 
 export const getInvoice = async(ctx: { userId: string; organizationId: string }) => {
   const today = moment()
-  const month = today.format('M')
+  const month = today.format('MM')
   const year = today.format('yyyy')
 
   return HublyInvoiceRepository.getInvoice({ month, year }, ctx)
@@ -63,7 +68,7 @@ export const hasFilledFields = async (ctx: { userId: string; organizationId: str
 
 export const hasInvoicePending = async (ctx: { userId: string; organizationId: string }) => {
   const today = moment()
-  const month = today.format('M')
+  const month = today.format('MM')
   const year = today.format('yyyy')
 
   const [installedApp] = await AppStoreService.getInstalledAffiliateStoreApps(ctx.organizationId, 'Hubly Invoice')
@@ -87,6 +92,10 @@ export const hasInvoicePending = async (ctx: { userId: string; organizationId: s
   return false
 }
 
+export const receiveInvoice = async (input: { id: string, received?: boolean }) => {
+  return HublyInvoiceRepository.updateInvoice(input)
+}
+
 export default {
   savePlugFormFields,
   getPlugFormFields,
@@ -96,5 +105,6 @@ export default {
   hasInvoicePending,
 
   uploadInvoice,
-  getInvoice
+  getInvoice,
+  receiveInvoice
 }
