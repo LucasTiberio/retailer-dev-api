@@ -33,9 +33,20 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
       throw error
     })
 
+  const installedApps = await AffiliateStoreApps.getInstalledAffiliateStoreApps(context.organizationId)
+  const appsDetails = await Promise.all(installedApps.map(app => AffiliateStoreApps.getAffiliateStoreApp({ id: app.affiliateStoreApp }, context.organizationId)))
+  const installedAppsWithDetail = installedApps.map(installedApp => {
+    const app = appsDetails.find(detail => detail.id.toString() === installedApp.affiliateStoreApp.toString()) as IAffiliateStoreApp | undefined
+
+    return {
+      installedApp,
+      app
+    }
+  })
+
   if (organizationRole.name === OrganizationRoles.ADMIN) {
     
-    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug, plan)
+    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug, plan, installedAppsWithDetail)
   }
 
   const userOrganizationService = await ServicesService.getUserInOrganizationService({ userOrganizationId: userOrganization.id }, context, trx)
@@ -47,17 +58,6 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
   if (!userOrganizationService) throw new Error(MESSAGE_ERROR_USER_NOT_EXISTS_IN_ORGANIZATION_SERIVCE)
 
   const userOrganizationServiceRole = await ServicesService.getUserOrganizationServiceRoleById(userOrganizationService.id, trx)
-
-  const installedApps = await AffiliateStoreApps.getInstalledAffiliateStoreApps(context.organizationId)
-  const appsDetails = await Promise.all(installedApps.map(app => AffiliateStoreApps.getAffiliateStoreApp({ id: app.affiliateStoreApp }, context.organizationId)))
-  const installedAppsWithDetail = installedApps.map(installedApp => {
-    const app = appsDetails.find(detail => detail.id.toString() === installedApp.affiliateStoreApp.toString()) as IAffiliateStoreApp | undefined
-
-    return {
-      installedApp,
-      app
-    }
-  })
 
   return affiliateMemberMountMenu(userOrganizationServiceRole.name, integration?.type, context.organizationId, context.organizationSlug, installedAppsWithDetail)
 }

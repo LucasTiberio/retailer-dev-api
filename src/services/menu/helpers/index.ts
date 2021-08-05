@@ -37,7 +37,14 @@ const attachEnterpriseMenus = (plan: string, menus: any[]): any[] => {
   return []
 }
 
-export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string, plan: string) => {
+export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string, plan: string, appsData: {
+  installedApp: InstalledAffiliateStoreApp
+  app?: IAffiliateStoreApp
+}[]) => {
+  const apps = getAffiliateAppMenu(appsData, slug).filter(menu => menu.name !== 'Hubly Form')
+
+  console.log({apps})
+
   const enterpriseMenus = [
     {
       name: 'Hubly Store',
@@ -46,7 +53,8 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
     {
       name: 'Meus Apps',
       slug: `/org/${slug}/affiliate/apps`,
-    }
+    },
+    ...apps
   ]
 
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
