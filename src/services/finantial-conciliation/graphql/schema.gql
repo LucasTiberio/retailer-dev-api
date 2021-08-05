@@ -55,6 +55,12 @@ type getAffiliatesValuesByMonthQuery {
   affiliates: [AffiliateValues]!
 }
 
+type InvoiceData {
+  id:  String
+  url: String
+  received: Boolean
+}
+
 type AffiliateValues {
   affiliateId: String!
   revenue: Float!
@@ -66,6 +72,7 @@ type AffiliateValues {
   bank: String
   orders: Int
   plugFormFields: String
+  invoice: InvoiceData
 }
 
 input getAffiliatesValuesByMonthInput {

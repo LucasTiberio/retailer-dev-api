@@ -52,6 +52,11 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
         id: affiliateId,
         organizationId: context.organizationId
       }, trx)
+      const invoice = await UsersOrganizationServiceRoleRepository.getAffiliateInvoice({
+        id: affiliateId,
+        organizationId: context.organizationId,
+        year_month: context.year_month
+      })
 
       let affiliateObj = {
         ...affiliates[affiliateId],
@@ -61,6 +66,7 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
         account: null,
         bank: null,
         plugFormFields: JSON.stringify(plugFormFields),
+        invoice
       }
       let bankData = affiliatesBankData.find((bd) => bd.affiliate_id === affiliateId)
       if (bankData) {

@@ -1,6 +1,7 @@
 import knexDatabase from '../../../knex-database'
 import { Transaction } from 'knex'
 import plugFormRepository from '../../apps/repositories/plug-form-repository'
+import hublyInvoiceRepository from '../../apps/repositories/hubly-invoice-repository'
 
 const getBankDataByAffiliateIds = async (ids: string[], trx: Transaction) => {
   const affiliatesBankData = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
@@ -43,15 +44,11 @@ const getAffiliateForm = async (input: { id: string, organizationId: string }, t
     .select('u.id')
     .first()
 
-    console.log({ affiliateInfo })
-
   if (affiliateInfo.id) {
     const form = await plugFormRepository.getPlugFormFields({
       userId: affiliateInfo.id,
       organizationId: input.organizationId,
     })
-
-    console.log({ form })
 
     if (form) {
       const fieldsObj = form.fields.reduce((previous, { label, value }) => {
@@ -68,6 +65,37 @@ const getAffiliateForm = async (input: { id: string, organizationId: string }, t
   return {}
 }
 
+const getAffiliateInvoice = async (input: { year_month: string, id: string, organizationId: string }, trx?: Transaction) => {
+  const affiliateInfo = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
+    .where('uosr.id', input.id)
+    .innerJoin('users_organizations as uo', 'uo.id', 'uosr.users_organization_id')
+    .innerJoin('users as u', 'u.id', 'uo.user_id')
+    .select('u.id')
+    .first()
+
+  const [year, month] = input.year_month.split('-')
+
+  if (affiliateInfo.id) {
+    const invoiceData = await hublyInvoiceRepository.getInvoice({
+      month,
+      year
+    }, {
+      userId: affiliateInfo.id,
+      organizationId: input.organizationId,
+    })
+
+    if (invoiceData) {
+      return {
+        id: invoiceData.id,
+        url: invoiceData.invoice,
+        received: invoiceData.received
+      }
+    }
+  }
+
+  return null
+}
+
 const getAllAffiliates = async (organizationId: string, trx?: Transaction) => {
   const affiliates = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
   .where('uo.organization_id', organizationId)
@@ -75,7 +103,6 @@ const getAllAffiliates = async (organizationId: string, trx?: Transaction) => {
   .innerJoin('users as u', 'u.id', 'uo.user_id')
   .select('uosr.id', 'u.username', 'u.email')
   
-  console.log({affiliates})
   const affiliatesList = []
 
   if (affiliates.length) {
@@ -99,5 +126,6 @@ export default {
   getAffiliateNameById,
   getAffiliateNameAndDocumentById,
   getAffiliateForm,
-  getAllAffiliates
+  getAllAffiliates,
+  getAffiliateInvoice
 }

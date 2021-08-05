@@ -27,12 +27,12 @@ const resolvers: IResolvers = {
     downloadFinantialConciliationCSVByReferenceMonth: async (_, { input: { referenceMonth } }, { organizationId }) => {
       return database.knexConfig.transaction(async (trx: Transaction) => {
         const affiliateValues = await service.getAffiliatesValuesByMonth({ organizationId, year_month: referenceMonth }, trx)
-        let returnCSV = 'Membro;CPF;Banco;Agência;Conta;Total em vendas;Comissão\n'
+        let returnCSV = 'Membro;CPF;Banco;Agência;Conta;Total em vendas;Comissão;Nota Fiscal\n'
         affiliateValues.affiliates.forEach((affiliateValue) => {
           returnCSV +=
             `${affiliateValue.name};${affiliateValue.document};${affiliateValue.bank};${affiliateValue.agency};${affiliateValue.account};${Number(affiliateValue.revenue).toFixed(2)};${Number(
               affiliateValue.commission
-            ).toFixed(2)}` + '\n'
+            ).toFixed(2)};${affiliateValue.invoice?.url}` + '\n'
         })
         return Buffer.from(returnCSV).toString('base64')
       })
