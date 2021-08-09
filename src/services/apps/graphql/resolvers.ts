@@ -8,8 +8,11 @@ const resolvers: IResolvers = {
     getPlugForm: (_, __, { organizationId, client: { id: userId } }) => {
       return AppsService.getPlugFormFields({ userId, organizationId })
     },
-    getInvoice: (_, __, { organizationId, client: { id: userId } }) => {
-      return AppsService.getInvoice({ organizationId, userId })
+     getInvoice: (_, { input }, { organizationId, client: { id: userId } }) => {
+      return AppsService.getInvoice(input, { organizationId, userId })
+    },
+    getInvoices: (_, { input }, { organizationId, client: { id: userId } }) => {
+      return AppsService.getInvoices(input, { organizationId, userId })
     },
   },
   Mutation: {

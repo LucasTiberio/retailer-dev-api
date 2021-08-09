@@ -33,6 +33,7 @@ export interface IUploadInvoiceInput {
   data: any;
   month: string;
   mimeType: string;
+  year: string
 }
 
 export interface IStoreHublyInvoice {
@@ -60,5 +61,10 @@ export interface IHublyInvoiceData {
 
 export interface IGetInvoiceInput {
   month: string
+  year: string
+}
+
+export interface IGetInvoicesInput {
+  month?: string
   year: string
 }

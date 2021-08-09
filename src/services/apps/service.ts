@@ -1,13 +1,11 @@
 import { Transaction } from 'knex'
-import { IPlugFormDataInput, IEditPlugFormInput, IUploadInvoiceInput, IGetInvoiceInput } from './types'
+import { IPlugFormDataInput, IEditPlugFormInput, IUploadInvoiceInput,IGetInvoiceInput, IGetInvoicesInput } from './types'
 import AppStoreService from '../app-store/service'
 import StorageService from '../storage/service'
 import { getInvoicesPath } from '../../utils/get-path'
 import PlugFormRepository from './repositories/plug-form-repository'
 import HublyInvoiceRepository from './repositories/hubly-invoice-repository'
 import moment from 'moment'
-import Axios from 'axios'
-import { encodeBase64 } from 'bcryptjs'
 
 export const savePlugFormFields = (input: IPlugFormDataInput, ctx: { userId: string; organizationId: string }) => {
   return PlugFormRepository.savePlugFormFields(input, ctx)
@@ -22,8 +20,7 @@ export const editPlugForm = (input: IEditPlugFormInput) => {
 }
 
 export const uploadInvoice = async (input: IUploadInvoiceInput, ctx: { userId: string; organizationId: string }, trx: Transaction) => {
-  const { id, month, data, mimeType } = input
-  const year = new Date().getFullYear().toString()
+  const { id, month, year, data, mimeType } = input
   const path = getInvoicesPath({
     month,
     year,
@@ -34,8 +31,6 @@ export const uploadInvoice = async (input: IUploadInvoiceInput, ctx: { userId: s
   const stream = (await data).createReadStream()
   const { url, ...rest } = await StorageService.uploadImage(path, stream, mimeType, trx)
 
-  console.log({url, rest})
-
   if (!input.id) {
     return HublyInvoiceRepository.storeInvoice({ month, invoice: url, year }, ctx )
   }
@@ -43,12 +38,12 @@ export const uploadInvoice = async (input: IUploadInvoiceInput, ctx: { userId: s
   return HublyInvoiceRepository.updateInvoice({ id, month, invoice: url, year })
 }
 
-export const getInvoice = async(ctx: { userId: string; organizationId: string }) => {
-  const today = moment()
-  const month = today.format('MM')
-  const year = today.format('yyyy')
+export const getInvoice = async(input: IGetInvoiceInput, ctx: { userId: string; organizationId: string }) => {
+  return HublyInvoiceRepository.getInvoice(input, ctx)
+}
 
-  return HublyInvoiceRepository.getInvoice({ month, year }, ctx)
+export const getInvoices = async(input: IGetInvoicesInput, ctx: { userId: string; organizationId: string }) => {
+  return HublyInvoiceRepository.getInvoices(input, ctx)
 }
 
 export const hasFilledFields = async (ctx: { userId: string; organizationId: string }): Promise<boolean | null> => {
@@ -106,5 +101,6 @@ export default {
 
   uploadInvoice,
   getInvoice,
+  getInvoices,
   receiveInvoice
 }

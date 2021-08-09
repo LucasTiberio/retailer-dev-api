@@ -74,10 +74,11 @@ const getAffiliateInvoice = async (input: { year_month: string, id: string, orga
     .first()
 
   const [year, month] = input.year_month.split('-')
+  const monthNumber = +month - 1
 
   if (affiliateInfo.id) {
     const invoiceData = await hublyInvoiceRepository.getInvoice({
-      month,
+      month: `0${monthNumber}`,
       year
     }, {
       userId: affiliateInfo.id,

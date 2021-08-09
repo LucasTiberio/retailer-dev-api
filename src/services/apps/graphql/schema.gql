@@ -7,7 +7,8 @@ extend type Mutation {
 
 extend type Query {
   getPlugForm: PlugFormPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
-  getInvoice: HublyInvoicePayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  getInvoice(input: GetInvoiceInput!): HublyInvoicePayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  getInvoices(input: GetInvoicesInput!): [HublyInvoicePayload]! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type PlugFormPayload {
@@ -52,6 +53,17 @@ input UploadInvoiceInput {
   data: Upload!
   mimeType: String!
   month: String!
+  year: String!
+}
+
+input GetInvoiceInput {
+  year: String
+  month: String
+}
+
+input GetInvoicesInput {
+  year: String
+  month: String
 }
 
 type HublyInvoicePayload {

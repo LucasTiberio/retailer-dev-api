@@ -1,5 +1,5 @@
 import HublyInvoiceData from '../models/HublyInvoiceData'
-import { IGetInvoiceInput, IStoreHublyInvoice, IUpdateHublyInvoice } from "../types";
+import { IGetInvoiceInput, IGetInvoicesInput, IStoreHublyInvoice, IUpdateHublyInvoice } from "../types";
 
 const storeInvoice = async (input: IStoreHublyInvoice, ctx: { userId: string, organizationId: string }) => {
   const payload = await HublyInvoiceData.create({
@@ -37,13 +37,30 @@ export const getInvoice = async (input: IGetInvoiceInput, ctx: { userId: string;
     }
   }
 
-  console.log({payload})
-
   return null
+}
+
+export const getInvoices = async (input: IGetInvoicesInput, ctx: { userId: string; organizationId: string }) => {
+  const payload = await HublyInvoiceData.find({
+    ...ctx,
+    ...input
+  }).lean()
+
+  console.log({payload, input, ctx})
+
+  if (payload) {
+    return payload.map(data => ({
+      ...data,
+      id: data._id
+    }))
+  }
+
+  return []
 }
 
 export default {
   storeInvoice,
   updateInvoice,
-  getInvoice
+  getInvoice,
+  getInvoices
 }
