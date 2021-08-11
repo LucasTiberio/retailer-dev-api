@@ -118,7 +118,7 @@ const generateShortenerUrl = async (
     const iuguUrlWithMemberAttached = `${originalUrl}?utm_source=plugone_affiliate&utm_campaign=${context.organizationId}_${affiliate.id}`
     memberUrlToAttach = iuguUrlWithMemberAttached
   } else if (integration.type === Integrations.KLIPFOLIO) {
-    const lojaIntegradaRedirectUrl = 'https://lojaintegrada.com.br/criar-loja-virtual'
+    const lojaIntegradaRedirectUrl = 'https://criar.lojaintegrada.com.br/indicaae'
     const klipfolioUrlWithMemberAttached = `${lojaIntegradaRedirectUrl}?utm_source=afiliados&utm_medium=indicaae&utm_campaign=${context.organizationId}_${affiliate.id}`
     memberUrlToAttach = klipfolioUrlWithMemberAttached
   } else {
