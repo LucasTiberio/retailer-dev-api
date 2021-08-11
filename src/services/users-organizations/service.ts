@@ -2,10 +2,12 @@ import { Transaction } from 'knex'
 import { getPendingAndIsRequestedMembersByOrganizationId, handleMemberInviteStatus, cancelMemberInvite, memberHasInvite } from './repositories/users_organizations'
 import { ResponseStatus } from './types'
 import UserService from '../users/service'
+import MadesaMailService from '../mail/madesa'
 import OrganizationService from '../organization/service'
 import MailService from '../mail/service'
 import WhiteLabelService from '../white-label/service'
 import { IncomingHttpHeaders } from 'http'
+import { MADESA_WHITE_LABEL_DOMAIN } from '../../common/consts'
 
 const getPendingMembersByOrganizationId = async (
   context: {
@@ -54,6 +56,8 @@ const handleMemberInvitation = async (
 
   const organization = await OrganizationService.getOrganizationById(context.organizationId, trx)
 
+  let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
+
   if (input.inviteStatus === ResponseStatus.accept) {
     const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
 
@@ -65,12 +69,22 @@ const handleMemberInvitation = async (
         whiteLabelInfo
       })
     } else {
-      await MailService.sendInviteNewUserMail({
-        email: member.email,
-        hashToVerify: memberUpdated.invite_hash,
-        organizationName: organization.name,
-        whiteLabelInfo
-      })
+
+      if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+        await MadesaMailService.sendInviteNewUserMail({
+          email: member.email,
+          hashToVerify: memberUpdated.invite_hash,
+          organizationName: organization.name,
+        })
+      } else {
+        await MailService.sendInviteNewUserMail({
+          email: member.email,
+          hashToVerify: memberUpdated.invite_hash,
+          organizationName: organization.name,
+          whiteLabelInfo
+        })
+      }
+
     }
   }
 

@@ -9,6 +9,7 @@ import sharp from 'sharp'
 import { IncomingHttpHeaders } from 'http'
 import getHeaderDomain from '../../utils/getHeaderDomain'
 import { DEFAULT_DOMAINS } from '../../common/consts'
+import { cacheManager } from '../../utils/cache'
 
 const defaultWhiteLabel = {
   primaryColor: '#DB0046',
@@ -17,15 +18,16 @@ const defaultWhiteLabel = {
   logo: 'https://plugone-production.nyc3.digitaloceanspaces.com/assets/logo.png',
 }
 
-const getWhiteLabelInfosDomain = async (context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
 
+
+const getWhiteLabelInfosDomain = async (context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   const origin = context.headers.origin
 
   const domain = getHeaderDomain(origin || '')
 
   if (!DEFAULT_DOMAINS.includes(domain)) {
     const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, domain)
-    
+
     return whiteLabelInfos ?? undefined
   }
 
@@ -33,6 +35,14 @@ const getWhiteLabelInfosDomain = async (context: { headers: IncomingHttpHeaders 
 }
 
 const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
+  const key = `WHITE_LABEL_${organizationId}`
+
+  const cached = await cacheManager({
+    key,
+  });
+
+  if (cached) return cached;
+
   const planType = await OrganizationRulesService.verifyPlanType(organizationId)
 
   if (!planType || planType !== 'Enterprise') {
@@ -45,12 +55,16 @@ const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
     return defaultWhiteLabel
   }
 
-  return {
-    primaryColor: whiteLabelInfos.primaryColor ?? defaultWhiteLabel.primaryColor,
-    secondColor: whiteLabelInfos.secondColor ?? defaultWhiteLabel.secondColor,
-    tertiaryColor: whiteLabelInfos.tertiaryColor ?? defaultWhiteLabel.tertiaryColor,
-    logo: whiteLabelInfos.logo ?? defaultWhiteLabel.logo,
-  }
+  return cacheManager({
+    key,
+    data: {
+      primaryColor: whiteLabelInfos.primaryColor ?? defaultWhiteLabel.primaryColor,
+      secondColor: whiteLabelInfos.secondColor ?? defaultWhiteLabel.secondColor,
+      tertiaryColor: whiteLabelInfos.tertiaryColor ?? defaultWhiteLabel.tertiaryColor,
+      logo: whiteLabelInfos.logo ?? defaultWhiteLabel.logo,
+    },
+    shouldCacheIfEmpty: true,
+  })
 }
 
 const getWhiteLabelColorOptions = async (trx: Transaction) => {
@@ -92,6 +106,12 @@ const sendWhiteLabelInfos = async (input: IWhiteLabelInfos, organizationId: stri
       const imageUrl = await handleWhiteLabelLogoImage(130, 36, logoImageData, organizationId, trx)
       input.logo = imageUrl
     }
+
+    await cacheManager({
+      key: `WHITE_LABEL_${organizationId}`,
+      data: input,
+      replace: true,
+    })
 
     return await RepositoryOrganizationWhiteLabelCustomization.sendWhiteLabelInfosByOrganizationId(input, organizationId, trx)
   } catch (error) {

@@ -1,6 +1,7 @@
 import common from '../../common'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
+import MadesaMailService from '../mail/madesa'
 import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
@@ -12,7 +13,7 @@ import WhiteLabelService from '../white-label/service'
 import { RedisClient } from 'redis'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { IncomingHttpHeaders } from 'http'
-import { DEFAULT_DOMAINS, INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../common/consts'
+import { DEFAULT_DOMAINS, INDICAE_LI_WHITE_LABEL_DOMAIN, MADESA_WHITE_LABEL_DOMAIN } from '../../common/consts'
 import getHeaderDomain from '../../utils/getHeaderDomain'
 import { OrganizationInviteStatus, OrganizationRoles } from '../organization/types'
 import { ServiceRoles, Services } from '../services/types'
@@ -104,6 +105,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
   const origin = context.headers.origin
   const domain = getHeaderDomain(origin || '')
+
   const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
 
   if (whiteLabelInfo) {
@@ -144,7 +146,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .returning('*')
     }
 
-    if (organizationIdFoundByDomain) {
+    if (organizationIdFoundByDomain && !userPreAddedFound) {
       const organization = await OrganizationService.getOrganizationById(organizationIdFoundByDomain, trx)
 
       const [serviceOrganizationFound] = await ServicesService.serviceOrganizationByName(organization.id, Services.AFFILIATE, trx)
@@ -174,6 +176,8 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(domain)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(domain)) {
+      await MadesaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     }
@@ -350,7 +354,13 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
         username: user.username,
         hashToVerify: encryptedHashVerification,
       })
-    } else {
+    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await MadesaMailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+      })
+    }else {
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveryPasswordMail({
         email: user.email,
@@ -383,6 +393,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
     let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
+    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await MadesaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username, whiteLabelInfo })

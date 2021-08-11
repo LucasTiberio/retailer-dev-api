@@ -6,6 +6,7 @@ import { Transaction } from 'knex'
 import database from '../../knex-database'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
+import MadesaMailService from '../mail/madesa'
 import OrganizationRulesService from '../organization-rules/service'
 import IntegrationsService from '../integration/service'
 import VtexService from '../vtex/service'
@@ -31,6 +32,7 @@ import {
   MESSAGE_ERROR_USER_TEAMMATE,
   MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE,
   INDICAE_LI_WHITE_LABEL_DOMAIN,
+  MADESA_WHITE_LABEL_DOMAIN,
 } from '../../common/consts'
 import { stringToSlug } from './helpers'
 import { _organizationRoleAdapter, _organizationAdapter, _usersOrganizationsAdapter, _usersOrganizationsRolesAdapter } from './adapters'
@@ -55,6 +57,7 @@ import { IDocumentType } from '../users/types'
 const ordersServiceUrl = process.env.ORDER_SERVICE_URL
 
 const lojaIntegradaOrgId = '7c797775-f56e-43af-98b3-13d4aa5ac6cb'
+const madesaOrgId = 'a1161753-fe07-4bfa-8d4c-c8546dfa9e95'
 
 const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalInfos, trx: Transaction) => {
   const { segment, resellersEstimate, reason, plataform } = input
@@ -493,8 +496,15 @@ const inviteAffiliateServiceMembers = async (
         )
 
         let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
+
         if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
           await LojaIntegradaMailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organization.name,
+          })
+        } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+          await MadesaMailService.sendInviteNewUserMail({
             email: userEmail.email,
             hashToVerify,
             organizationName: organization.name,
@@ -600,18 +610,26 @@ const requestAffiliateServiceMembers = async (
         )
 
         if (organizationPublic) {
-          if (organizationId === lojaIntegradaOrgId) {
-            await LojaIntegradaMailService.sendInviteNewUserMail({
-              email: userEmail.email,
-              hashToVerify,
-              organizationName: organizationName,
-            })
-          } else {
-            await MailService.sendInviteNewUserMail({
-              email: userEmail.email,
-              hashToVerify,
-              organizationName: organizationName,
-            })
+
+          switch (organizationId) {
+            case lojaIntegradaOrgId:
+              await LojaIntegradaMailService.sendInviteNewUserMail({
+                email: userEmail.email,
+                hashToVerify,
+                organizationName: organizationName,
+              })
+            case madesaOrgId:
+              await MadesaMailService.sendInviteNewUserMail({
+                email: userEmail.email,
+                hashToVerify,
+                organizationName: organizationName,
+              })
+            default:
+              await MailService.sendInviteNewUserMail({
+                email: userEmail.email,
+                hashToVerify,
+                organizationName: organizationName,
+              });
           }
         }
 
