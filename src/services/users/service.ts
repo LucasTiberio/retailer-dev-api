@@ -354,7 +354,13 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
         username: user.username,
         hashToVerify: encryptedHashVerification,
       })
-    } else {
+    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await MadesaMailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+      })
+    }else {
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveryPasswordMail({
         email: user.email,
@@ -387,6 +393,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
     let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
+    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await MadesaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username, whiteLabelInfo })
