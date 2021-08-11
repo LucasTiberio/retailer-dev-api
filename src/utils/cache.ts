@@ -12,8 +12,6 @@ export const cacheManager = async <T>(options: {
 
   const cached = await redisClient.getAsync(key);
 
-  console.log({cached})
-
   if (cached) return JSON.parse(cached) as T;
 
   if ((shouldCacheIfEmpty || replace) && data) {
