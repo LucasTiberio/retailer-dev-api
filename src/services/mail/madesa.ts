@@ -1,5 +1,5 @@
 import Mail from '../../lib/Mail'
-import { ISendMail, ISendInviteUserMail } from './types'
+import { ISendMail, ISendInviteUserMail, ISendRecoveryPasswordMail, IMail } from './types'
 
 const frontUrl = 'https://afiliados.madesa.com'
 
@@ -612,7 +612,621 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
   }
 }
 
+const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
+  if (process.env.NODE_ENV === 'test') return
+
+  try {
+    await Mail.sendMail({
+      from: 'Madesa No-reply <noreply@gohubly.com>',
+      to: `${data.username || ''} <${data.email}>`,
+      subject: 'Recuperacão de senha - Programa de Afiliados Madesa',
+      html: `
+
+      <!doctype html>
+      <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+      <head>
+        <title>
+        </title>
+    <!--[if !mso]>
+      <!-->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!--<![endif]-->
+          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style type="text/css"> #outlook a { padding:0; } body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; } table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; } img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; } p { display:block;margin:13px 0; } </style>
+    <!--[if mso]>
+    <xml>
+    <o:OfficeDocumentSettings>
+    <o:AllowPNG/>
+    <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type="text/css"> .mj-outlook-group-fix { width:100% !important; } </style>
+    <![endif]-->
+      <style type="text/css"> @media only screen and (min-width:480px) {.mj-column-per-100 { width:100% !important; max-width: 100%; } } </style>
+      <style type="text/css"> @media only screen and (max-width:480px) {table.mj-full-width-mobile { width: 100% !important; } td.mj-full-width-mobile { width: auto !important; } } </style>
+    </head>
+    <body style="word-spacing:normal;background-color:#fafafa;">
+      <div style="display:none;font-size:1px;color:#fafafa;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;"> &nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌ </div>
+      <div style="background-color:#fafafa;">
+        <!-- -------------- BANNER LOGO--------------------- -->
+    <!--[if mso | IE]>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:600px;" width="600" >
+    <tr>
+    <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+    <![endif]-->
+      <div  style="background:#fafafa;background-color:#fafafa;margin:0px auto;max-width:600px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#fafafa;background-color:#fafafa;width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0 0 0 0;text-align:center;">
+    <!--[if mso | IE]>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+    <td class="" style="vertical-align:top;width:590px;" >
+    <![endif]-->
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          <tbody>
+            <tr>
+              <td  style="background-color:#ffffff;vertical-align:top;padding:0 0 0 0;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 0 0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 0 0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td  style="width:590px;">
+                                <a href="?????????" target="_blank">
+                                  <img alt="Afiliados | Madesa" height="auto" src="https://madesa.s3.sa-east-1.amazonaws.com/Emails_afiliados/Header_senha.png" style="border:0;border-radius:0px;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="Afiliados | Madesa" width="590"/>
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <!-- --------- TEXTO ---------- -->
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:25px 20px 0px 20px;word-break:break-word;">
+                        <div style="font-family:Arial, sans-serif;font-size:28px;letter-spacing:1px;line-height:36px;text-align:left;color:#24292E;">
+                          <b>Olá, ${data.username}!</b>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:35px 20px 0px 20px;word-break:break-word;">
+                        <div style="font-family:Arial, sans-serif;font-size:16px;letter-spacing:1px;line-height:28px;text-align:left;color:#24292E;"> Esqueceu sua senha? Não se preocupe. Isso acontece 😉
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:20px 20px 0px 20px;word-break:break-word;">
+                        <div style="font-family:Arial, sans-serif;font-size:16px;letter-spacing:1px;line-height:28px;text-align:left;color:#24292E;"> Para escolher uma nova,<b> clique no link abaixo:</b>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+      <!-- ----------- BOTÃO --------- -->
+    <!--[if mso | IE]>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:600px;" width="600" >
+    <tr>
+    <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+    <![endif]-->
+      <div  style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:20px 0 15px 0;text-align:center;">
+    <!--[if mso | IE]>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+    <td class="" style="vertical-align:top;width:600px;" >
+    <![endif]-->
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          <tbody>
+            <tr>
+              <td  style="background-color:#ffffff;border-radius:20px;vertical-align:top;padding:20px 0 20px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" vertical-align="middle" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;width:150px;line-height:100%;">
+                          <tr>
+                            <td align="center" bgcolor="#f52523" role="presentation" style="border:none;border-radius:10px;cursor:auto;mso-padding-alt:20px 25px;background:#f52523;" valign="middle">
+                              <a href="${frontUrl}/recovery-password/change-password/${data.hashToVerify}" style="display:inline-block;width:250px;background:#f52523;color:#ffffff;font-family:Montserrat, Arial, sans-serif;font-size:16px;font-weight:normal;line-height:200%;margin:0;text-decoration:none;text-transform:none;padding:5px 15px;mso-padding-alt:0px;border-radius:10px;" target="_blank"> Escolher nova senha </a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    <!----------------- traço de separação ------------------->
+    <tr>
+      <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;background-color:#ffffff;">
+    <!--[if mso | IE]>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+    <td class="" style="vertical-align:top;width:600px;">
+    <![endif]-->
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;background:#ffffff;background-color:#ffffff;width:100%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+          <tr>
+            <td style="font-size:0px;padding:50px 25px 0px 25px;word-break:break-word;background-color:#ffffff;">
+              <p style="border-top:solid 1px red;font-size:1px;margin:0px auto;width:75%;">
+              </p>
+    <!--[if mso | IE]>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px red;font-size:1px;margin:0px auto;width:400px;" role="presentation" width="400px">
+    <tr>
+    <td style="height:0;line-height:0;"> &nbsp; </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </table>
+    </div>
+    <!-- ------- REDES SOCIAIS ------ -->
+    <!--[if mso | IE]>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:600px;" width="600" >
+    <tr>
+    <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+    <![endif]-->
+      <div  style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:10px 10px 10px 300px;text-align:center;">
+    <!--[if mso | IE]>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+    <td class="" style="width:290px;" >
+    <![endif]-->
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0;line-height:0;text-align:left;display:inline-block;width:100%;direction:ltr;">
+    <!--[if mso | IE]>
+    <table border="0" cellpadding="0" cellspacing="0" role="presentation" >
+    <tr>
+    <td style="vertical-align:top;width:145px;" >
+    <![endif]-->
+      <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:50%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          <tbody>
+            <tr>
+              <td  style="background-color:#ffffff;vertical-align:top;padding:10px 0px 0px 0px;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="right" style="font-size:0px;padding:10px 0px 10px 5px;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td  style="width:50px;">
+                                <a href="https://www.instagram.com/madesamoveis/?utm_term=footer_instagram" target="_blank">
+                                  <img alt="Instagram | Madesa" height="auto" src="https://madesa.s3.sa-east-1.amazonaws.com/Emails_afiliados/ig.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="Instagram | Madesa" width="50"/>
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <!--[if mso | IE]>
+    </td>
+    <td style="vertical-align:top;width:145px;" >
+    <![endif]-->
+      <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:50%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          <tbody>
+            <tr>
+              <td  style="background-color:#ffffff;vertical-align:top;padding:10px 0px 0px 0px;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 0px 10px 5px;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td  style="width:50px;">
+                                <a href="https://www.youtube.com/channel/UCCTJyZaZsozHvZgU0TZNnmg?utm_term=footer_youtube" target="_blank">
+                                  <img alt="Youtube | Madesa" height="auto" src="https://madesa.s3.sa-east-1.amazonaws.com/Emails_afiliados/yt.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="Youtube | Madesa" width="50"/>
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+      <!-- --- FIM REDES SOCIAIS --- -->
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </div>
+    </body>
+    </html>
+                 `,
+    })
+  } catch (e) {
+    throw new Error(e.message)
+  }
+}
+
+const sendRecoveredPasswordMail = async (data: IMail) => {
+  if (process.env.NODE_ENV === 'test') return
+
+  try {
+    await Mail.sendMail({
+      from: 'Madesa No-reply <noreply@gohubly.com>',
+      to: `${data.username || ''} <${data.email}>`,
+      subject: 'Senha recuperada - Programa de Afiliados Madesa',
+      html: `
+
+      <!doctype html>
+      <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+      <head>
+        <title>
+        </title>
+    <!--[if !mso]>
+      <!-->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!--<![endif]-->
+          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style type="text/css"> #outlook a { padding:0; } body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; } table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; } img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; } p { display:block;margin:13px 0; } </style>
+    <!--[if mso]>
+    <xml>
+    <o:OfficeDocumentSettings>
+    <o:AllowPNG/>
+    <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type="text/css"> .mj-outlook-group-fix { width:100% !important; } </style>
+    <![endif]-->
+      <style type="text/css"> @media only screen and (min-width:480px) {.mj-column-per-100 { width:100% !important; max-width: 100%; } } </style>
+      <style type="text/css"> @media only screen and (max-width:480px) {table.mj-full-width-mobile { width: 100% !important; } td.mj-full-width-mobile { width: auto !important; } } </style>
+    </head>
+    <body style="word-spacing:normal;background-color:#fafafa;">
+      <div style="display:none;font-size:1px;color:#fafafa;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;"> &nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌ </div>
+      <div style="background-color:#fafafa;">
+        <!-- -------------- BANNER LOGO--------------------- -->
+    <!--[if mso | IE]>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:600px;" width="600" >
+    <tr>
+    <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+    <![endif]-->
+      <div  style="background:#fafafa;background-color:#fafafa;margin:0px auto;max-width:600px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#fafafa;background-color:#fafafa;width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0 0 0 0;text-align:center;">
+    <!--[if mso | IE]>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+    <td class="" style="vertical-align:top;width:590px;" >
+    <![endif]-->
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          <tbody>
+            <tr>
+              <td  style="background-color:#ffffff;vertical-align:top;padding:0 0 0 0;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 0 0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 0 0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td  style="width:590px;">
+                                <a href="?????????" target="_blank">
+                                  <img alt="Afiliados | Madesa" height="auto" src="https://madesa.s3.sa-east-1.amazonaws.com/Emails_afiliados/Header_novasenha.png" style="border:0;border-radius:0px;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="Afiliados | Madesa" width="590"/>
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <!-- --------- TEXTO ---------- -->
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:20px 20px 0px 20px;word-break:break-word;">
+                        <div style="font-family:Arial, sans-serif;font-size:28px;letter-spacing:1px;line-height:36px;text-align:left;color:#24292E;">
+                          <b>Olá, ${data.username}!</b>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:25px 20px 0px 20px;word-break:break-word;">
+                        <div style="font-family:Arial, sans-serif;font-size:16px;letter-spacing:1px;line-height:28px;text-align:left;color:#24292E;"> <b>A sua senha foi redefinida.</b> Se você fez isso, pode desconsiderar este email com segurança.
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:25px 20px 0px 20px;word-break:break-word;">
+                        <div style="font-family:Arial, sans-serif;font-size:16px;letter-spacing:1px;line-height:28px;text-align:left;color:#24292E;"> Se você não solicitou redefinir sua senha, <b>entre em contato conosco.</b>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:35px 20px 0px 20px;word-break:break-word;">
+                        <div style="font-family:Arial, sans-serif;font-size:16px;letter-spacing:1px;line-height:28px;text-align:left;color:#24292E;"> Obrigado, <br><b>Equipe Madesa.</b>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    <!----------------- traço de separação ------------------->
+    <tr>
+      <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;background-color:#ffffff;">
+    <!--[if mso | IE]>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+    <td class="" style="vertical-align:top;width:600px;">
+    <![endif]-->
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;background:#ffffff;background-color:#ffffff;width:100%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+          <tr>
+            <td style="font-size:0px;padding:50px 25px 0px 25px;word-break:break-word;background-color:#ffffff;">
+              <p style="border-top:solid 1px red;font-size:1px;margin:0px auto;width:75%;">
+              </p>
+    <!--[if mso | IE]>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px red;font-size:1px;margin:0px auto;width:400px;" role="presentation" width="400px">
+    <tr>
+    <td style="height:0;line-height:0;"> &nbsp; </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </table>
+    </div>
+    <!-- ------- REDES SOCIAIS ------ -->
+    <!--[if mso | IE]>
+    <table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:600px;" width="600" >
+    <tr>
+    <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+    <![endif]-->
+      <div  style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:10px 10px 10px 300px;text-align:center;">
+    <!--[if mso | IE]>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+    <td class="" style="width:290px;" >
+    <![endif]-->
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0;line-height:0;text-align:left;display:inline-block;width:100%;direction:ltr;">
+    <!--[if mso | IE]>
+    <table border="0" cellpadding="0" cellspacing="0" role="presentation" >
+    <tr>
+    <td style="vertical-align:top;width:145px;" >
+    <![endif]-->
+      <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:50%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          <tbody>
+            <tr>
+              <td  style="background-color:#ffffff;vertical-align:top;padding:10px 0px 0px 0px;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="right" style="font-size:0px;padding:10px 0px 10px 5px;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td  style="width:50px;">
+                                <a href="https://www.instagram.com/madesamoveis/?utm_term=footer_instagram" target="_blank">
+                                  <img alt="Instagram | Madesa" height="auto" src="https://madesa.s3.sa-east-1.amazonaws.com/Emails_afiliados/ig.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="Instagram | Madesa" width="50"/>
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <!--[if mso | IE]>
+    </td>
+    <td style="vertical-align:top;width:145px;" >
+    <![endif]-->
+      <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:50%;">
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          <tbody>
+            <tr>
+              <td  style="background-color:#ffffff;vertical-align:top;padding:10px 0px 0px 0px;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 0px 10px 5px;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td  style="width:50px;">
+                                <a href="https://www.youtube.com/channel/UCCTJyZaZsozHvZgU0TZNnmg?utm_term=footer_youtube" target="_blank">
+                                  <img alt="Youtube | Madesa" height="auto" src="https://madesa.s3.sa-east-1.amazonaws.com/Emails_afiliados/yt.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="Youtube | Madesa" width="50"/>
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+      <!-- --- FIM REDES SOCIAIS --- -->
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    <!--[if mso | IE]>
+    </td>
+    </tr>
+    </table>
+    <![endif]-->
+    </td>
+    </tr>
+    </div>
+    </body>
+    </html>
+           `,
+    })
+  } catch (e) {
+    throw new Error(e.message)
+  }
+}
+
 export default {
   sendSignUpMail,
   sendInviteNewUserMail,
+  sendRecoveryPasswordMail,
+  sendRecoveredPasswordMail
 }
