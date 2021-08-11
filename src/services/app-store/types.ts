@@ -16,6 +16,7 @@ export type OrganizationAffiliateStoreAppRequirement = {
   value: string
   required?: boolean
   active?: boolean
+  additionalFields?: string
 }
 
 export type OrganizationAffiliateStoreApps = {

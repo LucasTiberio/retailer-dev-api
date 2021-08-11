@@ -160,7 +160,7 @@ const getInstalledAffiliateStoreApps = async (organizationId: string, name?: str
       affiliateStoreApp: installedApp.affiliateStoreApp,
       configs: installedApp.configs,
       requirements: installedApp.requirements,
-      active: installedApp.active
+      active: installedApp.active,
     }
   }).filter(app => !!app && app.active) as InstalledAffiliateStoreApp[]
 }

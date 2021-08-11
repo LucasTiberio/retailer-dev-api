@@ -62,6 +62,7 @@ type OrganizationAffiliateStoreAppRequirements {
   value: String!
   required: Boolean
   active: Boolean
+  additionalFields: String
 }
 
 input GetAffiliateStoreAppInput {
@@ -98,4 +99,5 @@ input AffiliateStoreAppRequirementInput {
   value: String!
   required: Boolean
   active: Boolean
+  additionalFields: String
 }
