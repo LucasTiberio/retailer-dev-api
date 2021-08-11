@@ -41,11 +41,7 @@ const getWhiteLabelInfos = async (organizationId: string, trx: Transaction) => {
     key,
   });
 
-  console.log(`has cache`, cached);
-
   if (cached) return cached;
-
-  console.log('not has cache');
 
   const planType = await OrganizationRulesService.verifyPlanType(organizationId)
 
