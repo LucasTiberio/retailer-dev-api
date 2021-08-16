@@ -10,6 +10,7 @@ type TermsAndConditions {
   status: Boolean!
   termsAndConditionsId: String
   text: String
+  personalizedTermsAndConditions: String
 }
 
 input SendTermsAndConditionsInput {
