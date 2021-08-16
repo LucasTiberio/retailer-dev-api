@@ -15,9 +15,9 @@ const getTermsAndConditions = async (
     client: {
       id: string
     },
-    headers: IncomingHttpHeaders
+    headers?: IncomingHttpHeaders
   },
-  trx: Transaction
+  trx?: Transaction
 ) => {
   const userTermsAndConditions = await TermsAndConditionsRepositories.getTermsAndConditionsByUserId(context.client.id, trx)
 
@@ -31,7 +31,7 @@ const getTermsAndConditions = async (
     }
   }
 
-  const origin = context.headers.origin
+  const origin = context.headers?.origin
 
   const domain = getHeaderDomain(origin || '')
 

@@ -74,7 +74,7 @@ const getWhiteLabelColorOptions = async (trx: Transaction) => {
   return colorOptions
 }
 
-const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
+const getWhiteLabelInfosByDomain = async (domain: string, trx?: Transaction) => {
   const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, domain)
 
   if (!whiteLabelInfos) {
