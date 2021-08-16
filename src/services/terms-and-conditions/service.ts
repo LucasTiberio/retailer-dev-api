@@ -15,7 +15,7 @@ const getTermsAndConditions = async (
     client: {
       id: string
     },
-    headers?: IncomingHttpHeaders
+    headers: IncomingHttpHeaders
   },
   trx?: Transaction
 ) => {
@@ -31,7 +31,7 @@ const getTermsAndConditions = async (
     }
   }
 
-  const origin = context.headers?.origin
+  const origin = context.headers.origin
 
   const domain = getHeaderDomain(origin || '')
 
