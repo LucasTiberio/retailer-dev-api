@@ -5,6 +5,7 @@ import service from '../service'
 import { ICreateServiceInOrganization } from '../types'
 import OrganizationService from '../../organization/service'
 import AppsService from '../../apps/service'
+import UrlShortenerService from '../../shortener-url/service'
 
 const resolvers: IResolvers = {
   Mutation: {
@@ -77,6 +78,11 @@ const resolvers: IResolvers = {
       return AppsService.getUserCluster({
         affiliateId: obj.id
       }, { organizationId })
+    },
+    lastGeneratedUrl: (obj) => {
+      return knexDatabase.knexConfig.transaction((trx: Transaction) => {
+        return UrlShortenerService.getAffiliateLastGeneratedUrl(obj.id, trx)
+      })
     }
   },
   Service: {

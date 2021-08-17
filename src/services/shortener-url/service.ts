@@ -108,8 +108,22 @@ const getShortenerUrlById = async (organizationId: string, urlShortenerId: strin
 
 }
 
+const getAffiliateLastGeneratedUrl = async(affiliateId: string, trx: Transaction) => {
+  const result = await (trx || knexDatabase.knexConfig)('url_shorten as us')
+  .select('us.*')
+  .innerJoin('users_organization_service_roles_url_shortener as uosr', 'uosr.url_shorten_id', 'us.id')
+  .where('uosr.users_organization_service_roles_id', affiliateId)
+  .orderBy('us.created_at', 'desc')
+  .first()
+
+  console.log({ result })
+
+  return result ? shortUrlAdapter(result) : null
+}
+
 export default {
   shortenerUrl,
   getOriginalUrlByCode,
-  getShortenerUrlById
+  getShortenerUrlById,
+  getAffiliateLastGeneratedUrl
 };
