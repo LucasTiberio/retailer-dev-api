@@ -156,10 +156,10 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
           name: 'insideSales',
           slug: `/org/${slug}/affiliate/inside-sales`,
         },
-        {
-          name: 'abandonedCarts',
-          slug: `/org/${slug}/affiliate/abandoned-carts`,
-        }
+        // {
+        //   name: 'abandonedCarts',
+        //   slug: `/org/${slug}/affiliate/abandoned-carts`,
+        // }
       )
     }
 
@@ -327,10 +327,10 @@ export const affiliateMemberMountMenu = async (
           ...affiliateSale,
           children: [
             ...affiliateSale.children,
-            {
-              name: 'abandonedCart',
-              slug: `/org/${slug}/affiliate/abandoned-carts`,
-            },
+            // {
+            //   name: 'abandonedCart',
+            //   slug: `/org/${slug}/affiliate/abandoned-carts`,
+            // },
           ],
         }
       }
