@@ -12,9 +12,9 @@ const resolvers: IResolvers = {
     },
   },
   Query: {
-    getTermsAndConditions: (_, __, { client }) => {
+    getTermsAndConditions: (_, __, context) => {
       return knexDatabase.knexConfig.transaction((trx: Transaction) => {
-        return service.getTermsAndConditions({ client }, trx)
+        return service.getTermsAndConditions(context, trx)
       })
     },
   },
