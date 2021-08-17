@@ -16,6 +16,7 @@ const defaultWhiteLabel = {
   secondColor: '#111111',
   tertiaryColor: '#EEEEEE',
   logo: 'https://plugone-production.nyc3.digitaloceanspaces.com/assets/logo.png',
+  personalizedTermsAndConditions: ""
 }
 
 
@@ -73,7 +74,7 @@ const getWhiteLabelColorOptions = async (trx: Transaction) => {
   return colorOptions
 }
 
-const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
+const getWhiteLabelInfosByDomain = async (domain: string, trx?: Transaction) => {
   const whiteLabelInfos = await RepositoryOrganizationWhiteLabelCustomization.getWhiteLabelInfosByOrganizationId(undefined, trx, domain)
 
   if (!whiteLabelInfos) {
@@ -92,6 +93,7 @@ const getWhiteLabelInfosByDomain = async (domain: string, trx: Transaction) => {
     logo: whiteLabelInfos.logo ?? defaultWhiteLabel.logo,
     organizationName: whiteLabelInfos.organizationName ?? '',
     isWhiteLabel,
+    personalizedTermsAndConditions: whiteLabelInfos.personalizedTermsAndConditions
   }
 }
 

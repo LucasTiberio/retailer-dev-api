@@ -237,6 +237,7 @@ const directiveResolvers: IDirectiveResolvers = {
       client: {
         id: context.client.id,
       },
+      headers: context.headers.origin
     })
 
     if (!validTermsAndConditions) return next()

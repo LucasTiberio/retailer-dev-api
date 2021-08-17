@@ -1,7 +1,9 @@
 import { Transaction } from 'knex'
 
 import TermsAndConditionsRepositories from './repositories/terms-and-conditions'
-import { IContext } from '../../common/types'
+import { IncomingHttpHeaders } from 'http'
+import getHeaderDomain from '../../utils/getHeaderDomain'
+import WhiteLabelService from '../white-label/service'
 
 /**
  * User get terms and conditions
@@ -12,7 +14,8 @@ const getTermsAndConditions = async (
   context: {
     client: {
       id: string
-    }
+    },
+    headers: IncomingHttpHeaders
   },
   trx?: Transaction
 ) => {
@@ -28,10 +31,17 @@ const getTermsAndConditions = async (
     }
   }
 
+  const origin = context.headers.origin
+
+  const domain = getHeaderDomain(origin || '')
+
+  const whiteLabelInfos = await WhiteLabelService.getWhiteLabelInfosByDomain(domain, trx)
+
   return {
     status: false,
     termsAndConditionsId: lastTermsAndConditions.id,
     text: lastTermsAndConditions.text,
+    personalizedTermsAndConditions: whiteLabelInfos?.personalizedTermsAndConditions
   }
 }
 
