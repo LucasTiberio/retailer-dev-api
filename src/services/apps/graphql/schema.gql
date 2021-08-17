@@ -3,12 +3,15 @@ extend type Mutation {
   editPlugForm(input: EditPlugFormInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   uploadInvoice(input: UploadInvoiceInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   receiveInvoice(input: ReceiveInvoiceInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  changeDefaultCluster(input: ChangeDefaultClusterInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  updateUserCluster(input: [UpdateUserClusterInput]!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 extend type Query {
   getPlugForm: PlugFormPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getInvoice(input: GetInvoiceInput!): HublyInvoicePayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getInvoices(input: GetInvoicesInput!): [HublyInvoicePayload]! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  getUserCluster(input: GetUserClusterInput!): HublyClusterPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type PlugFormPayload {
@@ -64,6 +67,25 @@ input GetInvoiceInput {
 input GetInvoicesInput {
   year: String
   month: String
+}
+
+input ChangeDefaultClusterInput {
+  cluster: String!
+}
+
+input GetUserClusterInput {
+  affiliateId: String!
+}
+
+input UpdateUserClusterInput {
+  affiliateId: String!
+  cluster: String!
+}
+
+type HublyClusterPayload {
+  organizationId: String!
+  affiliateId: String!
+  name: String!
 }
 
 type HublyInvoicePayload {

@@ -76,6 +76,7 @@ type UserOrganizationService {
   createdAt: Datetime!
   updatedAt: Datetime!
   slug: String
+  cluster: HublyClusterPayload
 }
 
 type ServiceRoles {

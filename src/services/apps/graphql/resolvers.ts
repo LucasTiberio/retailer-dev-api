@@ -14,6 +14,9 @@ const resolvers: IResolvers = {
     getInvoices: (_, { input }, { organizationId, client: { id: userId } }) => {
       return AppsService.getInvoices(input, { organizationId, userId })
     },
+    getUserCluster: (_, { input }, { organizationId }) => {
+      return AppsService.getUserCluster(input, { organizationId })
+    }
   },
   Mutation: {
     savePlugForm: (_, { input }, { organizationId, client: { id: userId } }) => {
@@ -29,7 +32,13 @@ const resolvers: IResolvers = {
     },
     receiveInvoice: (_, { input }) => {
       return AppsService.receiveInvoice(input)
-    }
+    },
+    changeDefaultCluster: (_, { input }, { organizationId }) => {
+      return AppsService.changeDefaultCluster(input, { organizationId })
+    },
+    updateUserCluster: (_, { input }, { organizationId }) => {
+      return AppsService.updateUserCluster(input, { organizationId })
+    },
   },
 }
 

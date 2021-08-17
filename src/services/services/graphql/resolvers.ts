@@ -4,6 +4,7 @@ import { Transaction } from 'knex'
 import service from '../service'
 import { ICreateServiceInOrganization } from '../types'
 import OrganizationService from '../../organization/service'
+import AppsService from '../../apps/service'
 
 const resolvers: IResolvers = {
   Mutation: {
@@ -72,6 +73,11 @@ const resolvers: IResolvers = {
     showFirstSteps: (obj, _, { organizationId }) => {
       return service.verifyFirstSteps(obj.id, obj.bankDataId, { organizationId })
     },
+    cluster: (obj, _, { organizationId }) => {
+      return AppsService.getUserCluster({
+        affiliateId: obj.id
+      }, { organizationId })
+    }
   },
   Service: {
     serviceRoles: (obj) => {
