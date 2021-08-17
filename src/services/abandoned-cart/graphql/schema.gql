@@ -6,8 +6,8 @@ extend type Query {
 }
 
 extend type Mutation {
-  handleCart(input: HandleCartInput!): Boolean!
-  handleCartOrderId(input: HandleCartOrderIdInput!): Boolean!
+  # handleCart(input: HandleCartInput!): Boolean!
+  # handleCartOrderId(input: HandleCartOrderIdInput!): Boolean!
   assumeCartAssistance(input: AssumeOrLeaveCartAssistanceInput!): AbandonedCart!
     @hasServiceRole(role: ["SALE"], serviceName: "affiliate")
     @organizationPaidVerify
