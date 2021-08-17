@@ -68,3 +68,9 @@ export interface IGetInvoicesInput {
   month?: string
   year: string
 }
+
+export interface IHublyClusterData {
+  organizationId: string
+  affiliateId: string
+  name: string
+}

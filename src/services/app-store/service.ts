@@ -32,7 +32,7 @@ const installAffiliateStoreApp = async (input: { id: string; configs: Organizati
     await installedApp.update({
       active: true,
       configs: input.configs,
-      requirements: input.requirements
+      requirements: installedApp.requirements
     })
 
     return true

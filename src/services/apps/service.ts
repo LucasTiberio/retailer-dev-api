@@ -5,7 +5,9 @@ import StorageService from '../storage/service'
 import { getInvoicesPath } from '../../utils/get-path'
 import PlugFormRepository from './repositories/plug-form-repository'
 import HublyInvoiceRepository from './repositories/hubly-invoice-repository'
+import HublyClusterRepository from './repositories/hubly-cluster-repository'
 import moment from 'moment'
+import { cacheManager } from '../../utils/cache'
 
 export const savePlugFormFields = (input: IPlugFormDataInput, ctx: { userId: string; organizationId: string }) => {
   return PlugFormRepository.savePlugFormFields(input, ctx)
@@ -91,6 +93,78 @@ export const receiveInvoice = async (input: { id: string, received?: boolean }) 
   return HublyInvoiceRepository.updateInvoice(input)
 }
 
+export const changeDefaultCluster = async (input: { cluster: string }, ctx: { organizationId: string }) => {
+  await cacheManager({
+    key: `default_cluster_${ctx.organizationId}`,
+    data: input.cluster,
+    replace: true,
+    shouldCacheIfEmpty: true
+  })
+
+  return true
+}
+
+const getDefaultCluster = async (ctx: { organizationId: string }) => {
+  const key = `default_cluster_${ctx.organizationId}`
+
+  const defaultCluster = await cacheManager({
+    key,
+  })
+
+  if (defaultCluster) return defaultCluster
+
+  const [installedApp] = await AppStoreService.getInstalledAffiliateStoreApps(ctx.organizationId, 'Hubly Cluster')
+
+  const requirement = installedApp.requirements.find(requirement => {
+    return requirement.additionalFields ? JSON.parse(requirement.additionalFields)?.isDefault : false
+  })
+
+  await cacheManager({
+    key,
+    data: requirement?.value,
+    shouldCacheIfEmpty: true
+  })
+
+  return requirement?.value;
+}
+
+export const getUserCluster = async (input: { affiliateId: string,  }, ctx: { organizationId: string }) => {
+  const defaultCluster = await getDefaultCluster(ctx)
+  
+  const cluster = await HublyClusterRepository.getClusterByUserId(input, ctx)
+
+  if (cluster) {
+    return {
+      ...cluster,
+      name: cluster?.name || defaultCluster
+    }
+  }
+
+  return {
+    ...input,
+    ...ctx,
+    name: defaultCluster,
+  }
+}
+
+export const updateUserCluster = async (input: { affiliateId: string, cluster: string  }[], ctx: { organizationId: string }) => {
+  const defaultCluster = await getDefaultCluster(ctx);
+
+  console.log(input.length)
+
+  for (const clusterData of input) {
+    const data = {
+      ...clusterData,
+      cluster: clusterData.cluster === defaultCluster ? '' : clusterData.cluster
+    }
+    const payload = await HublyClusterRepository.updateUserCluster(data, ctx)
+
+    if (!payload) await HublyClusterRepository.saveUserInCluster(data, ctx)
+  }
+
+  return true
+}
+
 export default {
   savePlugFormFields,
   getPlugFormFields,
@@ -102,5 +176,9 @@ export default {
   uploadInvoice,
   getInvoice,
   getInvoices,
-  receiveInvoice
+  receiveInvoice,
+
+  changeDefaultCluster,
+  updateUserCluster,
+  getUserCluster
 }
