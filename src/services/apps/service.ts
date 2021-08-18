@@ -34,10 +34,10 @@ export const uploadInvoice = async (input: IUploadInvoiceInput, ctx: { userId: s
   const { url, ...rest } = await StorageService.uploadImage(path, stream, mimeType, trx)
 
   if (!input.id) {
-    return HublyInvoiceRepository.storeInvoice({ month, invoice: url, year }, ctx )
+    return HublyInvoiceRepository.storeInvoice({ month, url, year }, ctx )
   }
 
-  return HublyInvoiceRepository.updateInvoice({ id, month, invoice: url, year })
+  return HublyInvoiceRepository.updateInvoice({ id, month, url, year })
 }
 
 export const getInvoice = async(input: IGetInvoiceInput, ctx: { userId: string; organizationId: string }) => {
@@ -91,6 +91,31 @@ export const hasInvoicePending = async (ctx: { userId: string; organizationId: s
 
 export const receiveInvoice = async (input: { id: string, received?: boolean }) => {
   return HublyInvoiceRepository.updateInvoice(input)
+}
+
+export const getMemberInvoice = async (ctx: { userId: string, organizationId: string }) => {
+  const [installedApp] = await AppStoreService.getInstalledAffiliateStoreApps(ctx.organizationId, 'Hubly Invoice')
+  
+  if (installedApp.active) {
+    const [{ value: receiptDay }] = installedApp.configs
+    const today = moment();
+    const day = today.format('DD')
+    const month = today.subtract('1', 'month').format('MM')
+    const year = today.format('yyyy')
+
+    const response = await HublyInvoiceRepository.getInvoice({
+      month,
+      year,
+    }, ctx)
+
+    return {
+      url: response?.url,
+      isLastDay: receiptDay ? receiptDay === day : false,
+      receiptDay
+    }
+  }
+
+  return null
 }
 
 export const changeDefaultCluster = async (input: { cluster: string }, ctx: { organizationId: string }) => {
@@ -150,8 +175,6 @@ export const getUserCluster = async (input: { affiliateId: string,  }, ctx: { or
 export const updateUserCluster = async (input: { affiliateId: string, cluster: string  }[], ctx: { organizationId: string }) => {
   const defaultCluster = await getDefaultCluster(ctx);
 
-  console.log(input.length)
-
   for (const clusterData of input) {
     const data = {
       ...clusterData,
@@ -177,6 +200,7 @@ export default {
   getInvoice,
   getInvoices,
   receiveInvoice,
+  getMemberInvoice,
 
   changeDefaultCluster,
   updateUserCluster,

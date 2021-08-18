@@ -12,7 +12,7 @@ const HublyInvoiceData = new Schema<IHublyInvoiceDocument>({
     type: String,
     required: true
   },
-  invoice: {
+  url: {
     type: String,
     required: true
   },
