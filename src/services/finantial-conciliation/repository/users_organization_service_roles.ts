@@ -88,7 +88,7 @@ const getAffiliateInvoice = async (input: { year_month: string, id: string, orga
     if (invoiceData) {
       return {
         id: invoiceData.id,
-        url: invoiceData.invoice,
+        url: invoiceData.url,
         received: invoiceData.received
       }
     }

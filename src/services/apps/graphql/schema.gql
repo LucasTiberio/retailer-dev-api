@@ -94,6 +94,6 @@ type HublyInvoicePayload {
   userId: String!
   month: String!
   year: String!
-  invoice: String!
+  url: String!
   received: Boolean!
 }

@@ -83,6 +83,9 @@ const resolvers: IResolvers = {
       return knexDatabase.knexConfig.transaction((trx: Transaction) => {
         return UrlShortenerService.getAffiliateLastGeneratedUrl(obj.id, trx)
       })
+    },
+    invoice: (_, __, { organizationId, client: { id: userId } }) => {
+      return AppsService.getMemberInvoice({ organizationId, userId })
     }
   },
   Service: {

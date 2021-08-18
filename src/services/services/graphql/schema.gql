@@ -78,6 +78,13 @@ type UserOrganizationService {
   slug: String
   cluster: HublyClusterPayload
   lastGeneratedUrl: ShortenerUrl
+  invoice: InvoicePayload
+}
+
+type InvoicePayload {
+  url: String
+  receiptDay: String,
+  isLastDay: Boolean!
 }
 
 type ServiceRoles {

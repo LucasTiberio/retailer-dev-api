@@ -38,14 +38,14 @@ export interface IUploadInvoiceInput {
 
 export interface IStoreHublyInvoice {
   month: string
-  invoice: string
+  url: string
   year: string;
 }
 
 export interface IUpdateHublyInvoice {
   id: string
   month?: string
-  invoice?: string
+  url?: string
   year?: string;
   received?: boolean;
 }
@@ -53,7 +53,7 @@ export interface IUpdateHublyInvoice {
 export interface IHublyInvoiceData {
   organizationId: string
   userId: string
-  invoice: string
+  url: string
   month: string
   year: string
   received?: boolean
