@@ -46,4 +46,8 @@ export interface IAffiliateStoreApp {
   authorUrl?: string
   configs: AffiliateStoreAppConfig[]
   plans: string[]
+  views: {
+    hasAdminView?: boolean;
+    hasMemberView?: boolean;
+  }
 }
