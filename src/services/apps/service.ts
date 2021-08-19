@@ -111,7 +111,8 @@ export const getMemberInvoice = async (ctx: { userId: string, organizationId: st
     return {
       url: response?.url,
       isLastDay: receiptDay ? receiptDay === day : false,
-      receiptDay
+      isFirstDay: day === today.startOf('month').format('DD'),
+      receiptDay: receiptDay ? receiptDay : null
     }
   }
 
