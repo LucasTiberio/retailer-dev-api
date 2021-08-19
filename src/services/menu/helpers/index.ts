@@ -94,6 +94,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
                 name: 'payments',
                 slug: `/org/${slug}/affiliate/payments`,
               },
+              ...attachEnterpriseMenus(plan, enterpriseMenus)
             ],
           },
         ],
@@ -234,6 +235,7 @@ export const affiliateMemberMountMenu = async (
                 name: 'payments',
                 slug: `/org/${slug}/affiliate/payments`,
               },
+              ...affiliateApps
             ],
           },
         ],

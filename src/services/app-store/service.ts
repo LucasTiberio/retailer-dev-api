@@ -2,6 +2,7 @@ import AffiliateStoreApps from './models/AffiliateStoreApps'
 import OrganizationAffiliateStoreApps from './models/OrganizationAffiliateStoreApps'
 import OrganizationRulesService from '../organization-rules/service'
 import { InstalledAffiliateStoreApp, OrganizationAffiliateStoreAppConfig, OrganizationAffiliateStoreAppRequirement } from './types'
+import { cacheManager } from '../../utils/cache'
 
 const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
@@ -90,6 +91,18 @@ const editOrganizationAffiliateStoreAppConfig = async (
 
   appToInstallConfigKeys.forEach((key) => {
     const inputConfigItem = input.configs.find((inputItem) => inputItem.key === key && inputItem.value.trim() !== '')
+
+    if (key === 'receipt_date') {
+      cacheManager({
+        key: `${key}_${organizationId}`,
+        data: {
+          receiptDay: inputConfigItem?.value,
+          isAppActive: true
+        },
+        replaceIfDifferent: true
+      })
+    }
+
     if (!inputConfigItem) {
       throw new Error('invalid_app_config')
     }
