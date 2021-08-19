@@ -13,9 +13,11 @@ const getAffiliateAppMenu = (
     installedApp: InstalledAffiliateStoreApp
     app?: IAffiliateStoreApp
   }[],
-  slug: string
+  slug: string,
+  isAdmin?: boolean,
 ): { name: string; slug: string }[] => {
   return data
+    .filter(data => isAdmin ? data.app?.views.hasAdminView : data.app?.views.hasMemberView)
     .map((appData) => {
       if (appData.app) {
         return {
@@ -41,9 +43,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
   installedApp: InstalledAffiliateStoreApp
   app?: IAffiliateStoreApp
 }[]) => {
-  const apps = getAffiliateAppMenu(appsData, slug).filter(menu => menu.name !== 'Hubly Form')
-
-  console.log({apps})
+  const apps = getAffiliateAppMenu(appsData, slug, true)
 
   const enterpriseMenus = [
     {
