@@ -93,15 +93,38 @@ export const receiveInvoice = async (input: { id: string, received?: boolean }) 
   return HublyInvoiceRepository.updateInvoice(input)
 }
 
-export const getMemberInvoice = async (ctx: { userId: string, organizationId: string }) => {
-  const [installedApp] = await AppStoreService.getInstalledAffiliateStoreApps(ctx.organizationId, 'Hubly Invoice')
+const getInvoiceDayFromCache = async (organizationId: string) => {
+  const data = await cacheManager({
+    key: `receipt_date_${organizationId}`,
+  })
+
+  if (data) return data;
   
-  if (installedApp.active) {
-    const [{ value: receiptDay }] = installedApp.configs
+  const [installedApp] = await AppStoreService.getInstalledAffiliateStoreApps(organizationId, 'Hubly Invoice')
+  const [{ value: receiptDay }] = installedApp.configs
+
+  return cacheManager({
+    key: `receipt_date_${organizationId}`,
+    data: {
+      receiptDay,
+      isAppActive: installedApp.active
+    },
+    shouldCacheIfEmpty: true
+  })
+}
+
+export const getMemberInvoice = async (ctx: { userId: string, organizationId: string }) => {
+  const data = await getInvoiceDayFromCache(ctx.organizationId) as {
+    receiptDay?: string,
+    isAppActive: boolean
+  }
+  
+  if (data.isAppActive) {
     const today = moment();
     const day = today.format('DD')
     const month = today.subtract('1', 'month').format('MM')
     const year = today.format('yyyy')
+    const { receiptDay } = data
 
     const response = await HublyInvoiceRepository.getInvoice({
       month,
