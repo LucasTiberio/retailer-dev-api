@@ -81,10 +81,37 @@ const options = {
           },
           responses: {
             '200': {
-              description: 'Success',
+              description: 'success',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      email: {
+                        type: 'string',
+                        format: 'email',
+                        description: 'email of the user',
+                      },
+                      organizationRoleId: {
+                        type: 'string',
+                        example: '4beba19c-93a5-4813-b251-dd4badffdb4a',
+                        description: 'organization role id of user',
+                      },
+                      shortUrl: {
+                        type: 'string',
+                        example: 'https://go-staging.plugone.io/DzChS7hC9',
+                        description: 'short url of the home page, using organization domain (null if organization has no domain set)',
+                      },
+                    },
+                  }
+                },
+              },
             },
             '400': {
               description: 'Invalid token or organizationId',
+            },
+            '413': {
+              description: 'Payload can\'t be bigger than 30 items'
             },
             '429': {
               description: 'Too many requests',
