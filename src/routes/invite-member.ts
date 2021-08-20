@@ -86,15 +86,20 @@ export default async (req: Request, res: Response) => {
 
   console.log({ body: req.body })
 
+  if (req.body.length > 30) {
+    trx.rollback();
+    res.status(413).send({ error: `The payload can't be bigger than 30, you send ${req.body.length}` });
+  }
+
   if (!req.body.length) {
     trx.rollback()
     res.status(400).send({ error: 'Invalid body' })
   }
 
   try{
-    await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
+    const result = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
     trx.commit()
-    res.status(200).send({ status: 'success' })
+    res.status(200).send({ status: 'success', data: result })
   } catch(e){
     trx.rollback()
     res.status(500).send({ error: e.message || 'Internal Server Error' })

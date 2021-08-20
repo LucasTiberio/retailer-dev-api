@@ -48,6 +48,7 @@ import fetchVtexDomains from './clients/fetch-domains'
 
 /** Services */
 import IntegrationService from '../integration/service'
+import ShortenerService from '../shortener-url/service'
 import { Integrations } from '../integration/types'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { InviteStatus } from '../users-organizations/types'
@@ -527,6 +528,18 @@ const inviteAffiliateServiceMembers = async (
   }
 }
 
+const generateAffiliateHomeLink = async (organizationId: string, trx: Transaction) => {
+  const whitelabelInfo = await WhiteLabelService.getWhiteLabelInfos(organizationId, trx) as any
+  
+  if (whitelabelInfo.domain) {
+    const result = await ShortenerService.shortenerUrl(`https://${whitelabelInfo.domain}`, organizationId, trx)
+
+    return result.shortUrl
+  }
+
+  return null
+}
+
 const requestAffiliateServiceMembers = async (
   body: {
     email: string
@@ -573,7 +586,7 @@ const requestAffiliateServiceMembers = async (
   })
 
   try {
-    await Promise.all(
+    const result = await Promise.all(
       body.map(async (item) => {
         let hashToVerify = await common.encryptSHA256(JSON.stringify({ item, timestamp: +new Date() }))
 
@@ -583,7 +596,7 @@ const requestAffiliateServiceMembers = async (
           const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
 
           if (usersOrganizationFound) {
-            return console.log('ja existe')
+            throw new Error(`user ${item.email} is already exists`)
           }
         } else {
           userEmail = await UserService.signUpWithEmailPhoneNameDocument({ ...item }, trx)
@@ -598,6 +611,8 @@ const requestAffiliateServiceMembers = async (
           hashToVerify,
           true
         )
+
+        const homeShortUrl = await generateAffiliateHomeLink(organizationId, trx)
 
         await ServicesService.attachUserInOrganizationAffiliateService(
           {
@@ -633,13 +648,17 @@ const requestAffiliateServiceMembers = async (
           }
         }
 
-        return userOrganizationCreated
+        return {
+          email: item.email,
+          organizationRoleId: userOrganizationCreated.id,
+          shortUrl: homeShortUrl
+        }
       })
     )
 
     trx.commit()
 
-    return true
+    return result
   } catch (error) {
     let errorMessage = error.message
     throw new Error(errorMessage)
