@@ -91,12 +91,13 @@ export default async (req: Request, res: Response) => {
     res.status(400).send({ error: 'Invalid body' })
   }
 
-  const requestStatus = await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
-  if (requestStatus) {
+  try{
+    await OrganizationService.requestAffiliateServiceMembers(req.body, organization.id, organization.name, organization.public, trx)
     trx.commit()
     res.status(200).send({ status: 'success' })
-  } else {
+  } catch(e){
     trx.rollback()
-    res.status(500).send({ error: 'Internal Server Error' })
+    res.status(500).send({ error: e.message || 'Internal Server Error' })
   }
+
 }

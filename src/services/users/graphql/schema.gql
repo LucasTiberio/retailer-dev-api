@@ -1,7 +1,7 @@
 extend type Query {
   getUser: User! @acceptTermsAndConditions @isVerified @isAuthenticated
   isUserVerified: Boolean! @acceptTermsAndConditions @isAuthenticated
-  getUserPendencies: [UserPendenciesWithMetadata]! @acceptTermsAndConditions @isVerified @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @isAuthenticated
+  getUserPendencies: [UserPendenciesWithMetadata]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 
 extend type Mutation {

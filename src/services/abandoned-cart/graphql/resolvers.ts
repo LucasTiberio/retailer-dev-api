@@ -20,9 +20,9 @@ const resolvers: IResolvers = {
     },
   },
   Mutation: {
-    handleCart: (_, { input }) => {
-      return service.handleCart(input)
-    },
+    // handleCart: (_, { input }) => {
+    //   return service.handleCart(input)
+    // },
     generateNewCart: (_, { input }, { organizationId }) => {
       return service.generateNewCart(input.abandonedCartId, organizationId)
     },
@@ -31,9 +31,9 @@ const resolvers: IResolvers = {
         return service.handleAbandonedCartActivity(input, organizationId, trx)
       })
     },
-    handleCartOrderId: (_, { input }) => {
-      return service.handleCartOrderId(input)
-    },
+    // handleCartOrderId: (_, { input }) => {
+    //   return service.handleCartOrderId(input)
+    // },
     assumeCartAssistance: (_, { input }, { organizationId, userServiceOrganizationRolesId }) => {
       return service.assumeCartAssistance(input.abandonedCartId, organizationId, userServiceOrganizationRolesId)
     },
