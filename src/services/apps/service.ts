@@ -101,6 +101,9 @@ const getInvoiceDayFromCache = async (organizationId: string) => {
   if (data) return data;
   
   const [installedApp] = await AppStoreService.getInstalledAffiliateStoreApps(organizationId, 'Hubly Invoice')
+
+  if (!installedApp || !installedApp?.active) return null;
+
   const [{ value: receiptDay }] = installedApp.configs
 
   return cacheManager({
