@@ -121,6 +121,8 @@ export const getMemberInvoice = async (ctx: { userId: string, organizationId: st
     receiptDay?: string,
     isAppActive: boolean
   }
+
+  if (!data) return null
   
   if (data.isAppActive) {
     const today = moment();
