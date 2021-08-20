@@ -164,6 +164,8 @@ const getDefaultCluster = async (ctx: { organizationId: string }) => {
 
   const [installedApp] = await AppStoreService.getInstalledAffiliateStoreApps(ctx.organizationId, 'Hubly Cluster')
 
+  if (!installedApp || !installedApp.active) return null
+
   const requirement = installedApp.requirements.find(requirement => {
     return requirement.additionalFields ? JSON.parse(requirement.additionalFields)?.isDefault : false
   })
@@ -179,6 +181,8 @@ const getDefaultCluster = async (ctx: { organizationId: string }) => {
 
 export const getUserCluster = async (input: { affiliateId: string,  }, ctx: { organizationId: string }) => {
   const defaultCluster = await getDefaultCluster(ctx)
+
+  if (!defaultCluster) return null;
   
   const cluster = await HublyClusterRepository.getClusterByUserId(input, ctx)
 
