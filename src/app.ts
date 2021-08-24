@@ -13,6 +13,8 @@ import ipLimiter from './middlewares/ip-limiter'
 import getAffiliateInfo from './routes/get-affiliate-info'
 import orgLimiter from './middlewares/org-limiter'
 import downloadFile from './routes/download-file'
+import getOrder from './routes/get-order'
+import getOrders from './routes/get-orders'
 
 const logger = require('pino')()
 const app = express()
@@ -70,6 +72,8 @@ app.get('/health', async (req, res) => {
 })
 
 app.post('/invite-member/:organizationId', inviteMember)
+app.get('/orders/:orderId', ipLimiter, getOrder, orgLimiter)
+app.get('/orders', ipLimiter, getOrders, orgLimiter)
 app.get('/affiliates/:organizationId', ipLimiter, getAffiliateInfo, orgLimiter)
 app.get('/download', downloadFile)
 

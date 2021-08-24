@@ -11,9 +11,13 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
   console.log({ ipAddress })
 
-  const orgId = req.params.organizationId
+  const orgId = req.params.organizationId ?? req.query.organizationId
 
   console.log({ orgId })
+
+  if (!orgId) {
+    return res.status(400).send({ error: 'invalid organizationId' })
+  }
 
   ipLimiter = ipLimiter ?? ipLimiterFactory(`${req.path}_limit`)
   const resIP = await ipLimiter.get(ipAddress)
