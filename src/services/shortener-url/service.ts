@@ -116,8 +116,6 @@ const getAffiliateLastGeneratedUrl = async(affiliateId: string, trx: Transaction
   .orderBy('us.created_at', 'desc')
   .first()
 
-  console.log({ result })
-
   return result ? shortUrlAdapter(result) : null
 }
 
@@ -125,5 +123,6 @@ export default {
   shortenerUrl,
   getOriginalUrlByCode,
   getShortenerUrlById,
-  getAffiliateLastGeneratedUrl
+  getAffiliateLastGeneratedUrl,
+  getShortnerUrlByOriginalUrl
 };

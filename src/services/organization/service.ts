@@ -15,6 +15,7 @@ import ServicesService from '../services/service'
 import PaymentService from '../payments/service'
 import WhiteLabelService from '../white-label/service'
 import StorageService from '../storage/service'
+import AffiliateService from '../affiliate/service'
 import knexDatabase from '../../knex-database'
 import common from '../../common'
 import { IUserOrganizationDB, IOrganizationAdittionalInfos } from './types'
@@ -528,13 +529,30 @@ const inviteAffiliateServiceMembers = async (
   }
 }
 
-const generateAffiliateHomeLink = async (organizationId: string, trx: Transaction) => {
+const generateAffiliateHomeLink = async (args: {
+  userId: string,
+  affiliateId: string,
+  organizationId: string
+}, trx: Transaction) => {
+  const { userId, affiliateId, organizationId } = args
   const whitelabelInfo = await WhiteLabelService.getWhiteLabelInfos(organizationId, trx) as any
   
   if (whitelabelInfo.domain) {
-    const result = await ShortenerService.shortenerUrl(`https://${whitelabelInfo.domain}`, organizationId, trx)
+    const originalUrl = `https://${whitelabelInfo.domain}`
+    await AffiliateService.generateShortenerUrl({
+      originalUrl,
+      serviceName: Services.AFFILIATE
+    }, {
+      client: {
+        id: userId,
+        origin: ''
+      },
+      organizationId,
+    }, trx)
 
-    return result.shortUrl
+    const urlShortResult = await ShortenerService.getAffiliateLastGeneratedUrl(affiliateId, trx)
+
+    return urlShortResult?.shortUrl
   }
 
   return null
@@ -612,9 +630,7 @@ const requestAffiliateServiceMembers = async (
           true
         )
 
-        const homeShortUrl = await generateAffiliateHomeLink(organizationId, trx)
-
-        await ServicesService.attachUserInOrganizationAffiliateService(
+        const orgServices = await ServicesService.attachUserInOrganizationAffiliateService(
           {
             userOrganizationId: userOrganizationCreated.id,
             role: ServiceRoles.SALE,
@@ -623,6 +639,12 @@ const requestAffiliateServiceMembers = async (
           },
           trx
         )
+
+        const homeShortUrl = await generateAffiliateHomeLink({
+          userId: userEmail.id,
+          affiliateId: orgServices.id,
+          organizationId
+        }, trx)
 
         if (organizationPublic) {
 
@@ -1036,8 +1058,6 @@ const setCurrentOrganizationReturnInfos = async (currentOrganizationPayload: { o
   }
 
   const isUserOrganization = await getUserOrganizationByIds(context.client.id, currentOrganizationPayload.organizationId, trx)
-
-  console.log({ isUserOrganization })
 
   if (!isUserOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION)
 
