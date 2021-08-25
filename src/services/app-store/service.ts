@@ -3,6 +3,9 @@ import OrganizationAffiliateStoreApps from './models/OrganizationAffiliateStoreA
 import OrganizationRulesService from '../organization-rules/service'
 import { InstalledAffiliateStoreApp, OrganizationAffiliateStoreAppConfig, OrganizationAffiliateStoreAppRequirement } from './types'
 import { cacheManager } from '../../utils/cache'
+import { IncomingHttpHeaders } from 'http'
+import getHeaderDomain from '../../utils/getHeaderDomain'
+import { parseAppName } from '../apps/helpers'
 
 const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
@@ -116,14 +119,17 @@ const editOrganizationAffiliateStoreAppConfig = async (
   return true
 }
 
-const getAffiliateStoreApps = async (organizationId: string) => {
+const getAffiliateStoreApps = async (organizationId: string, headers: IncomingHttpHeaders) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApps = await OrganizationAffiliateStoreApps.find({ organizationId })
   const appList = await AffiliateStoreApps.find({}).lean()
+  const origin = headers.origin
+  const domain = getHeaderDomain(origin || '')
   const storeApps = appList
     .filter((app) => !app.plans.length || (app.plans.length && app.plans.includes(planType)))
     .map((app) => ({
       ...app,
+      displayName: parseAppName(app.name, domain) ?? app.name,
       id: app._id,
       isInstalled: installedApps.find((installedApp) => installedApp.affiliateStoreApp.toString() === app._id.toString())?.active ?? false,
     }))
@@ -212,17 +218,20 @@ const getInstalledAffiliateStoreApp = async (input: { id: string }, organization
   }
 }
 
-const getAffiliateStoreApp = async (input: { id: string }, organizationId: string) => {
+const getAffiliateStoreApp = async (input: { id: string }, organizationId: string, headers: IncomingHttpHeaders) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ affiliateStoreApp: input.id, organizationId })
   const app = await AffiliateStoreApps.findOne({ _id: input.id }).lean()
+  const origin = headers.origin
+  const domain = getHeaderDomain(origin || '')
+
   if (!app) {
     throw new Error('app_not_found')
   }
   if (app.plans.length && !app.plans.includes(planType)) {
     throw new Error('app_not_found')
   }
-  return { ...app, id: app._id, isInstalled: !!installedApp }
+  return { ...app, id: app._id, isInstalled: !!installedApp, displayName: parseAppName(app.name, domain) ?? app.name }
 }
 
 export default {

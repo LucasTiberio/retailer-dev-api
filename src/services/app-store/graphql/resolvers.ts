@@ -14,11 +14,11 @@ const resolvers: IResolvers = {
     }
   },
   Query: {
-    getAffiliateStoreApps: async (_, __, { organizationId }) => {
-      return service.getAffiliateStoreApps(organizationId)
+    getAffiliateStoreApps: async (_, __, { organizationId, headers }) => {
+      return service.getAffiliateStoreApps(organizationId, headers)
     },
-    getAffiliateStoreApp: async (_, { input }, { organizationId }) => {
-      return service.getAffiliateStoreApp(input, organizationId)
+    getAffiliateStoreApp: async (_, { input }, { organizationId, headers }) => {
+      return service.getAffiliateStoreApp(input, organizationId, headers)
     },
     getInstalledAffiliateStoreApps: async (_, __, { organizationId }) => {
       return service.getInstalledAffiliateStoreApps(organizationId)
@@ -28,8 +28,8 @@ const resolvers: IResolvers = {
     },
   },
   OrganizationAffiliateStoreApp: {
-    affiliateStoreApp: (obj, _, { organizationId }) => {
-      return service.getAffiliateStoreApp({ id: obj.affiliateStoreApp.toString() }, organizationId)
+    affiliateStoreApp: (obj, _, { organizationId, headers }) => {
+      return service.getAffiliateStoreApp({ id: obj.affiliateStoreApp.toString() }, organizationId, headers)
     },
   },
 }
