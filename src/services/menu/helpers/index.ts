@@ -7,6 +7,7 @@ import { Integrations } from '../../integration/types'
 import knexDatabase from '../../../knex-database'
 import { IAffiliateStoreApp, InstalledAffiliateStoreApp } from '../../app-store/types'
 import { parseAppName } from '../../apps/helpers'
+import { INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../../common/consts'
 
 const getAffiliateAppMenu = (
   data: {
@@ -21,7 +22,7 @@ const getAffiliateAppMenu = (
     .map((appData) => {
       if (appData.app) {
         return {
-          name: parseAppName(appData.app.name) ?? appData.app.name,
+          name: appData.app.displayName,
           slug: `/org/${slug}/affiliate/app/${(appData.installedApp as any).id}`,
         }
       }
@@ -41,8 +42,8 @@ const attachEnterpriseMenus = (plan: string, menus: any[]): any[] => {
 
 export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string, plan: string, appsData: {
   installedApp: InstalledAffiliateStoreApp
-  app?: IAffiliateStoreApp
-}[]) => {
+  app?: IAffiliateStoreApp,
+}[], domain: string) => {
   const apps = getAffiliateAppMenu(appsData, slug, true)
 
   const enterpriseMenus = [
@@ -95,7 +96,13 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
                 slug: `/org/${slug}/affiliate/payments`,
               },
               ...attachEnterpriseMenus(plan, enterpriseMenus)
-            ],
+            ].filter(menu => {
+              if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(domain)) {
+                return !menu.name.includes('commission')
+              }
+  
+              return true
+            }),
           },
         ],
       },
@@ -141,7 +148,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
               slug: `/org/${slug}/affiliate/payments`,
             },
             ...attachEnterpriseMenus(plan, enterpriseMenus)
-          ],
+          ]
         },
       ],
     },

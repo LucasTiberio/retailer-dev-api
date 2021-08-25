@@ -23,6 +23,7 @@ extend type Query {
 type AffiliateStoreApp {
   id: String!
   name: String!
+  displayName: String!
   shortDescription: String!
   description: String!
   tags: [String]!
