@@ -10,8 +10,10 @@ import { OrganizationRoles } from '../organization/types'
 import { organizationAdminMenu, organizationMemberMenu, affiliateMemberMountMenu } from './helpers'
 import { IAffiliateStoreApp, InstalledAffiliateStoreApp } from '../app-store/types'
 import { subscriptionNotFound } from '../../common/errors'
+import { IncomingHttpHeaders } from 'http'
+import getHeaderDomain from '../../utils/getHeaderDomain'
 
-const getMenuTree = async (context: { organizationId: string; client: IUserToken; organizationSlug: string }, trx: Transaction) => {
+const getMenuTree = async (context: { organizationId: string; client: IUserToken; organizationSlug: string, headers: IncomingHttpHeaders }, trx: Transaction) => {
   if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
 
   const userOrganization = await OrganizationService.getUserOrganizationByIds(context.client.id, context.organizationId, trx)
@@ -34,7 +36,7 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
     })
 
   const installedApps = await AffiliateStoreApps.getInstalledAffiliateStoreApps(context.organizationId)
-  const appsDetails = await Promise.all(installedApps.map(app => AffiliateStoreApps.getAffiliateStoreApp({ id: app.affiliateStoreApp }, context.organizationId)))
+  const appsDetails = await Promise.all(installedApps.map(app => AffiliateStoreApps.getAffiliateStoreApp({ id: app.affiliateStoreApp }, context.organizationId, context.headers)))
   const installedAppsWithDetail = installedApps.map(installedApp => {
     const app = appsDetails.find(detail => detail.id.toString() === installedApp.affiliateStoreApp.toString()) as IAffiliateStoreApp | undefined
 
@@ -43,10 +45,12 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
       app
     }
   })
+  const origin = context.headers.origin
+  const domain = getHeaderDomain(origin || '')
 
   if (organizationRole.name === OrganizationRoles.ADMIN) {
     
-    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug, plan, installedAppsWithDetail)
+    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug, plan, installedAppsWithDetail, domain)
   }
 
   const userOrganizationService = await ServicesService.getUserInOrganizationService({ userOrganizationId: userOrganization.id }, context, trx)

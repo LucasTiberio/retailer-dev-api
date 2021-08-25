@@ -36,6 +36,7 @@ export type InstalledAffiliateStoreApp = {
 
 export interface IAffiliateStoreApp {
   name: string
+  displayName: string
   shortDescription: string
   description: string
   tags?: string[]
