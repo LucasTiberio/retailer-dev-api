@@ -28,15 +28,12 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
 
   const plan = await OrganizationRulesService.getPlanType(context.organizationId)
     .catch(error => {
-      console.log(error.message === subscriptionNotFound, error.message)
       if (error.message === subscriptionNotFound) {
         return null
       }
 
       throw error
     })
-
-  console.log({ plan })
 
   const installedApps = plan ? await AffiliateStoreApps.getInstalledAffiliateStoreApps(context.organizationId) : null
   const appsDetails = plan ? await Promise.all((installedApps ?? []).map(app => AffiliateStoreApps.getAffiliateStoreApp({ id: app.affiliateStoreApp }, context.organizationId, context.headers))) : null
