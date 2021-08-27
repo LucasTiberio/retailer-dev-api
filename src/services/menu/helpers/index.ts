@@ -11,12 +11,14 @@ import { INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../../common/consts'
 
 const getAffiliateAppMenu = (
   data: {
-    installedApp: InstalledAffiliateStoreApp
+    installedApp?: InstalledAffiliateStoreApp
     app?: IAffiliateStoreApp
   }[],
   slug: string,
   isAdmin?: boolean,
 ): { name: string; slug: string }[] => {
+  if (data?.length) return []
+
   return data
     .filter(data => isAdmin ? data.app?.views.hasAdminView : data.app?.views.hasMemberView)
     .map((appData) => {
@@ -41,7 +43,7 @@ const attachEnterpriseMenus = (plan: string, menus: any[]): any[] => {
 }
 
 export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string, plan: string, appsData: {
-  installedApp: InstalledAffiliateStoreApp
+  installedApp?: InstalledAffiliateStoreApp
   app?: IAffiliateStoreApp,
 }[], domain: string) => {
   const apps = getAffiliateAppMenu(appsData, slug, true)
@@ -203,7 +205,7 @@ export const affiliateMemberMountMenu = async (
   organizationId: string,
   slug: string,
   appData: {
-    installedApp: InstalledAffiliateStoreApp
+    installedApp?: InstalledAffiliateStoreApp
     app?: IAffiliateStoreApp
   }[]
 ) => {

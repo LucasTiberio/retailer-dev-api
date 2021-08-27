@@ -28,6 +28,7 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
 
   const plan = await OrganizationRulesService.getPlanType(context.organizationId)
     .catch(error => {
+      console.log(error.message === subscriptionNotFound, error.message)
       if (error.message === subscriptionNotFound) {
         return null
       }
@@ -35,10 +36,12 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
       throw error
     })
 
-  const installedApps = await AffiliateStoreApps.getInstalledAffiliateStoreApps(context.organizationId)
-  const appsDetails = await Promise.all(installedApps.map(app => AffiliateStoreApps.getAffiliateStoreApp({ id: app.affiliateStoreApp }, context.organizationId, context.headers)))
-  const installedAppsWithDetail = installedApps.map(installedApp => {
-    const app = appsDetails.find(detail => detail.id.toString() === installedApp.affiliateStoreApp.toString()) as IAffiliateStoreApp | undefined
+  console.log({ plan })
+
+  const installedApps = plan ? await AffiliateStoreApps.getInstalledAffiliateStoreApps(context.organizationId) : null
+  const appsDetails = plan ? await Promise.all((installedApps ?? []).map(app => AffiliateStoreApps.getAffiliateStoreApp({ id: app.affiliateStoreApp }, context.organizationId, context.headers))) : null
+  const installedAppsWithDetail = installedApps?.map(installedApp => {
+    const app = appsDetails?.find(detail => detail.id.toString() === installedApp.affiliateStoreApp.toString()) as IAffiliateStoreApp | undefined
 
     return {
       installedApp,
@@ -50,7 +53,7 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
 
   if (organizationRole.name === OrganizationRoles.ADMIN) {
     
-    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug, plan, installedAppsWithDetail, domain)
+    return organizationAdminMenu(integration?.type, context.organizationId, context.organizationSlug, plan, installedAppsWithDetail ?? [], domain)
   }
 
   const userOrganizationService = await ServicesService.getUserInOrganizationService({ userOrganizationId: userOrganization.id }, context, trx)
@@ -63,7 +66,7 @@ const getMenuTree = async (context: { organizationId: string; client: IUserToken
 
   const userOrganizationServiceRole = await ServicesService.getUserOrganizationServiceRoleById(userOrganizationService.id, trx)
 
-  return affiliateMemberMountMenu(userOrganizationServiceRole.name, integration?.type, context.organizationId, context.organizationSlug, installedAppsWithDetail)
+  return affiliateMemberMountMenu(userOrganizationServiceRole.name, integration?.type, context.organizationId, context.organizationSlug, installedAppsWithDetail ?? [])
 }
 
 export default {
