@@ -15,12 +15,12 @@ const getAffiliateAppMenu = (
     app?: IAffiliateStoreApp
   }[],
   slug: string,
-  isAdmin?: boolean,
+  isAdmin?: boolean
 ): { name: string; slug: string }[] => {
-  if (data?.length) return []
+  if (!data?.length) return []
 
   return data
-    .filter(data => isAdmin ? data.app?.views.hasAdminView : data.app?.views.hasMemberView)
+    .filter((data) => (isAdmin ? data.app?.views.hasAdminView : data.app?.views.hasMemberView))
     .map((appData) => {
       if (appData.app) {
         return {
@@ -42,10 +42,17 @@ const attachEnterpriseMenus = (plan: string, menus: any[]): any[] => {
   return []
 }
 
-export const organizationAdminMenu = async (integrationType: Integrations, organizationId: string, slug: string, plan: string, appsData: {
-  installedApp?: InstalledAffiliateStoreApp
-  app?: IAffiliateStoreApp,
-}[], domain: string) => {
+export const organizationAdminMenu = async (
+  integrationType: Integrations,
+  organizationId: string,
+  slug: string,
+  plan: string,
+  appsData: {
+    installedApp?: InstalledAffiliateStoreApp
+    app?: IAffiliateStoreApp
+  }[],
+  domain: string
+) => {
   const apps = getAffiliateAppMenu(appsData, slug, true)
 
   const enterpriseMenus = [
@@ -57,7 +64,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
       name: 'Meus Apps',
       slug: `/org/${slug}/affiliate/apps`,
     },
-    ...apps
+    ...apps,
   ]
 
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
@@ -97,12 +104,12 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
                 name: 'payments',
                 slug: `/org/${slug}/affiliate/payments`,
               },
-              ...attachEnterpriseMenus(plan, enterpriseMenus)
-            ].filter(menu => {
+              ...attachEnterpriseMenus(plan, enterpriseMenus),
+            ].filter((menu) => {
               if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(domain)) {
                 return !menu.name.includes('commission')
               }
-  
+
               return true
             }),
           },
@@ -149,8 +156,8 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
               name: 'payments',
               slug: `/org/${slug}/affiliate/payments`,
             },
-            ...attachEnterpriseMenus(plan, enterpriseMenus)
-          ]
+            ...attachEnterpriseMenus(plan, enterpriseMenus),
+          ],
         },
       ],
     },
@@ -173,7 +180,7 @@ export const organizationAdminMenu = async (integrationType: Integrations, organ
         {
           name: 'insideSales',
           slug: `/org/${slug}/affiliate/inside-sales`,
-        },
+        }
         // {
         //   name: 'abandonedCarts',
         //   slug: `/org/${slug}/affiliate/abandoned-carts`,
@@ -244,7 +251,7 @@ export const affiliateMemberMountMenu = async (
                 name: 'payments',
                 slug: `/org/${slug}/affiliate/payments`,
               },
-              ...affiliateApps
+              ...affiliateApps,
             ],
           },
         ],
@@ -319,9 +326,7 @@ export const affiliateMemberMountMenu = async (
       if (integrationType === Integrations.VTEX && organization.abandoned_cart) {
         affiliateAnalyst = {
           ...affiliateAnalyst,
-          children: [
-            ...affiliateAnalyst.children,
-          ],
+          children: [...affiliateAnalyst.children],
         }
       }
 
