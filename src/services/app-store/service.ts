@@ -6,6 +6,7 @@ import { cacheManager } from '../../utils/cache'
 import { IncomingHttpHeaders } from 'http'
 import getHeaderDomain from '../../utils/getHeaderDomain'
 import { parseAppName } from '../apps/helpers'
+import { subscriptionNotFound } from '../../common/errors'
 
 const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
@@ -138,7 +139,13 @@ const getAffiliateStoreApps = async (organizationId: string, headers: IncomingHt
 
 const getInstalledAffiliateStoreApps = async (organizationId: string, name?: string) => {
   const nameRegex = name ? new RegExp(name.replace(' ', '\\s\?'), 'ig') : null
-  const planType = await OrganizationRulesService.getPlanType(organizationId)
+  const planType = await OrganizationRulesService.getPlanType(organizationId).catch(error => {
+    if (error.message === subscriptionNotFound) {
+      return null
+    }
+
+    throw error
+  })
   const installedApps = await OrganizationAffiliateStoreApps.find({ organizationId })
   const installedAppsStoreIds = installedApps.map((app) => app.affiliateStoreApp.toString())
   const installedAppsInStore = await AffiliateStoreApps.find({

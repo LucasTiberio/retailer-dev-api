@@ -593,7 +593,8 @@ const getAffiliateStoreWithProducts = async (
         const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
 
         let index = cachingObject.findIndex((obj: any) => obj.id === item.id)
-        cachingObject[index].preco = productPrice?.cheio || productPrice?.promocional ? productPrice.promocional ?? productPrice.cheio : ''
+
+        cachingObject[index].preco = productPrice?.cheio || productPrice?.promocional ? (Number(productPrice.promocional) === 0 ? productPrice.cheio : productPrice.promocional) : ''
       })
     )
 
