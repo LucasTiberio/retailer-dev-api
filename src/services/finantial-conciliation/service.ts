@@ -139,7 +139,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
         id: order._id,
         client: order.cliente.nome,
         date: moment(order.data_criacao).format('DD/MM/YYYY - HH:mm:ss'),
-        value: order.valor_total,
+        value: +order.valor_subtotal - +order.valor_desconto,
         commission: order.affiliateInfo.commission?.amount ?? 0,
         isPaid: order.isPaid,
       })
