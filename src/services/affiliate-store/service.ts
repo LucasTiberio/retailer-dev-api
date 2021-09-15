@@ -590,7 +590,17 @@ const getAffiliateStoreWithProducts = async (
       products.map(async (item: any) => {
         if (!item) return null
 
-        const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, item.id)
+        let productId = item.id
+
+        if (item.filhos && item.filhos.length) {
+          const firstChildren = item.filhos[0]
+          const firstChildrenId = firstChildren.match(/[0-9]{4,}/)
+          if (firstChildrenId && firstChildrenId.length) {
+            productId = firstChildrenId[0]
+          }
+        }
+
+        const productPrice = await fetchLojaIntegradaProductPriceByProductId(token, productId)
 
         let index = cachingObject.findIndex((obj: any) => obj.id === item.id)
 
