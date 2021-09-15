@@ -69,7 +69,7 @@ const getBrazilBanks = async (input: {name?: string} ,context: { client: IUserTo
 
   if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
 
-  const query = (trx || knexDatabase)('brazil_banks').select();
+  const query = (trx || knexDatabase.knexConfig)('brazil_banks').select();
   
   if(input && input.name){
     query.whereRaw(`LOWER(name) LIKE ?`, [`%${input.name.toLowerCase()}%`])
@@ -89,7 +89,7 @@ const createBankValues = async (
 
     if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
 
-    const [bankValuesInserted] = await (trx || knexDatabase)('banks_data').insert({
+    const [bankValuesInserted] = await (trx || knexDatabase.knexConfig)('banks_data').insert({
       agency: createUserBankValuesPayload.agency,
       account: createUserBankValuesPayload.account,
       account_digit: createUserBankValuesPayload.accountDigit,
@@ -110,7 +110,7 @@ const updateBankValues = async (
 
     if(!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED);
 
-    const [bankValuesInserted] = await (trx || knexDatabase)('banks_data').update({
+    const [bankValuesInserted] = await (trx || knexDatabase.knexConfig)('banks_data').update({
       agency: createUserBankValuesPayload.agency,
       account: createUserBankValuesPayload.account,
       account_digit: createUserBankValuesPayload.accountDigit,
