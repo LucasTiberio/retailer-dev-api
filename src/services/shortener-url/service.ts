@@ -4,6 +4,7 @@ import { IShortenerUrlFromDB } from "./types";
 import shortid from 'shortid';
 import store from '../../store';
 import OrganizationWhiteLabelCustomization from '../white-label/repositories/organization_white_label_customization';
+import OrganizationWhiteLabelCustomizationService from '../white-label/service';
 
 const backendRedirectUrl = process.env.REDIRECT_URL;
 
@@ -108,7 +109,7 @@ const getShortenerUrlById = async (organizationId: string, urlShortenerId: strin
 
 }
 
-const getAffiliateLastGeneratedUrl = async(affiliateId: string, trx: Transaction) => {
+const getAffiliateLastGeneratedUrl = async(affiliateId: string, organizationId: string, trx: Transaction) => {
   const result = await (trx || knexDatabase.knexConfig)('url_shorten as us')
   .select('us.*')
   .innerJoin('users_organization_service_roles_url_shortener as uosr', 'uosr.url_shorten_id', 'us.id')
@@ -116,7 +117,21 @@ const getAffiliateLastGeneratedUrl = async(affiliateId: string, trx: Transaction
   .orderBy('us.created_at', 'desc')
   .first()
 
-  return result ? shortUrlAdapter(result) : null
+  if (!result) return null
+
+  const whitelabel = await OrganizationWhiteLabelCustomizationService.getWhiteLabelInfos(organizationId, trx) as any
+  const adapted = shortUrlAdapter(result)
+
+  console.log({ whitelabel })
+
+  if (whitelabel?.redirectWhiteLabel) {
+    return {
+      ...adapted,
+      shortUrl: `https://${whitelabel.redirectWhiteLabel}/${adapted.urlCode}`
+    }
+  }
+
+  return adapted
 }
 
 export default {
