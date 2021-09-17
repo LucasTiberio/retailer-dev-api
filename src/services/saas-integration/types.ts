@@ -56,6 +56,7 @@ export type SaasSignatureFromDB = {
   planName: string
   organizationClientName: string
   status: string
+  additionalFields?: any | null
 }
 
 export enum PlugoneSaasCommissionStatus {

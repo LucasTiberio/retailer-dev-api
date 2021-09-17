@@ -28,6 +28,7 @@ export const SaasSignautreAdapter = (record: SaasSignatureFromDB) => ({
   planName: record.planName,
   organizationClientName: record.organizationClientName,
   status: record.status,
+  additionalFields: record.additionalFields ? JSON.stringify(record.additionalFields) : null
 })
 
 export const SaasSignatureCommissionAdapter = (record: SaasSignatureCommissionFromDB) => ({
