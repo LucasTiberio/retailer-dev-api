@@ -550,7 +550,7 @@ const generateAffiliateHomeLink = async (args: {
       organizationId,
     }, trx)
 
-    const urlShortResult = await ShortenerService.getAffiliateLastGeneratedUrl(affiliateId, trx)
+    const urlShortResult = await ShortenerService.getAffiliateLastGeneratedUrl(affiliateId, organizationId, trx)
 
     return urlShortResult?.shortUrl
   }
