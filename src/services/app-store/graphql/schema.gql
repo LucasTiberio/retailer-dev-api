@@ -40,6 +40,7 @@ type AffiliateStoreApp {
 type AffiliateStoreAppConfig {
   name: String!
   displayName: String!
+  description: String
   exampleValue: String
   type: String
   required: Boolean
