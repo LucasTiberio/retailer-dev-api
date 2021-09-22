@@ -4,7 +4,7 @@ import Bonifications from '../model/Bonifications'
 import LojaIntegradaOrders from '../model/LojaIntegradaOrders'
 import SaasCommissions from '../../saas-integration/models/SaasCommission'
 import FinancialReconciliation, { FinancialReconciliationStatus } from '../model/FinancialReconciliation'
-import { PlugOneAffiliateStatus } from '../types'
+import { PlugOneAffiliateStatus, PlugoneSaasCommissionStatus } from '../types'
 
 const getAffiliateOrdersDict = async (organizationId: string, yearMonth: string) => {
   const date = moment(yearMonth, 'YYYY-MM').utc()
@@ -90,6 +90,7 @@ const getSaasCommissionsDict = async (organizationId: string, yearMonth: string)
   const saasCommissions = await SaasCommissions.find({
     createdAt: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
     organizationId,
+    status: PlugoneSaasCommissionStatus.approved,
   })
   const saasCommissionsDict = saasCommissions.reduce((acc: any, cur: any) => {
     if (!acc[cur.affiliateId]) {
@@ -213,6 +214,7 @@ const getSaasCommissionsDailyDict = async (organizationId: string, yearMonth: st
   const saasCommissions = await SaasCommissions.find({
     createdAt: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
     organizationId,
+    status: PlugoneSaasCommissionStatus.approved,
   })
   const saasCommissionsDict = saasCommissions.reduce((acc: any, cur: any) => {
     const day = moment(cur.createdAt).date()
