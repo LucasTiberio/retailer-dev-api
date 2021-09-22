@@ -105,7 +105,14 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
       revenue: 0,
       commission: 0,
       orderList: [],
+      invoice: null
     }
+
+    const invoice = await UsersOrganizationServiceRoleRepository.getAffiliateInvoice({
+      id: context.affiliateId,
+      organizationId: context.organizationId,
+      year_month: context.referenceMonth,
+    })
 
     const affiliateOrders = await AffiliateOrders.find({
       creationDate: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
@@ -190,7 +197,9 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
       })
     })
 
-    return returnObj
+    console.log({ invoice })
+
+    return { ...returnObj, invoice: invoice?.url }
   } catch (error) {
     throw new Error(error.message)
   }
