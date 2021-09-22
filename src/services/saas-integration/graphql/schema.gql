@@ -55,6 +55,7 @@ type SaasSignature {
   planName: String!
   organizationClientName: String!
   status: PlugoneSaasCommissionStatus!
+  additionalFields: String!
 }
 
 enum PlugoneSaasCommissionStatus {
