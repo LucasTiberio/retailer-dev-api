@@ -10,6 +10,7 @@ import SaasCommissions from '../saas-integration/models/SaasCommission'
 import ServicesTimeToPayRepository from './repository/organization_services_time_to_pay'
 import UsersOrganizationServiceRoleRepository from './repository/users_organization_service_roles'
 import { PlugOneAffiliateStatus } from './types'
+import { PlugoneSaasCommissionStatus } from '../saas-integration/types'
 
 const handleOrganizationFinantialConciliationConfiguration = async (
   input: {
@@ -48,14 +49,17 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
     const affiliateIds = Object.keys(affiliates)
     const affiliatesBankData = await UsersOrganizationServiceRoleRepository.getBankDataByAffiliateIds(affiliateIds, trx)
     for (const affiliateId of affiliateIds) {
-      const plugFormFields = await UsersOrganizationServiceRoleRepository.getAffiliateForm({
-        id: affiliateId,
-        organizationId: context.organizationId
-      }, trx)
+      const plugFormFields = await UsersOrganizationServiceRoleRepository.getAffiliateForm(
+        {
+          id: affiliateId,
+          organizationId: context.organizationId,
+        },
+        trx
+      )
       const invoice = await UsersOrganizationServiceRoleRepository.getAffiliateInvoice({
         id: affiliateId,
         organizationId: context.organizationId,
-        year_month: context.year_month
+        year_month: context.year_month,
       })
 
       let affiliateObj = {
@@ -66,7 +70,7 @@ const getAffiliatesValuesByMonth = async (context: { organizationId: string; yea
         account: null,
         bank: null,
         plugFormFields: JSON.stringify(plugFormFields),
-        invoice
+        invoice,
       }
       let bankData = affiliatesBankData.find((bd) => bd.affiliate_id === affiliateId)
       if (bankData) {
@@ -167,6 +171,7 @@ const getOrderListByAffiliateIdAndReferenceMonth = async (context: { organizatio
 
     const saasCommissions = await SaasCommissions.find({
       createdAt: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+      status: PlugoneSaasCommissionStatus.approved,
       organizationId: context.organizationId,
       affiliateId: context.affiliateId,
     })
