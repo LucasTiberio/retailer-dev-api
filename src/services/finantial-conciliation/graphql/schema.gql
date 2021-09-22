@@ -108,6 +108,7 @@ type getOrderListByAffiliateIdAndReferenceMonthQuery {
   revenue: Float!
   commission: Float!
   orderList: [OrderList]!
+  invoice: String
 }
 
 type OrderList {
