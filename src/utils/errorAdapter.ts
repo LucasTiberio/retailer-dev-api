@@ -39,7 +39,8 @@ import {
   systemMessagesAreNotRemovable,
   cannotGenerateNewCartAtTheMoment,
   organizationHasBillingDependency,
-  subscriptionNotFound
+  subscriptionNotFound,
+  webhooUrlCantBeVerified
 } from '../common/errors'
 
 export default (message: string) => {
@@ -253,6 +254,12 @@ export default (message: string) => {
       return {
         code: 82,
         explication: 'Subscription not found'
+      }
+    }
+    case webhooUrlCantBeVerified: {
+      return {
+        code: 83,
+        explication: 'Webhook url can\'t be pinged'
       }
     }
     default:

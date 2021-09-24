@@ -1,0 +1,21 @@
+extend type Query {
+  getWebhookSubscription(input: GetWebhookSubscriptionInput!): WebhookSubscription @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+type WebhookSubscription {
+  type: Hooks!,
+  created: Date!,
+  organizationId: String!
+  description: String!,
+  enabledTopics: [String]!
+  status: HookSubscriptionStatus!,
+  url: string!
+}
+
+enum Hooks {
+  orders
+}
+
+input GetWebhookSubscriptionInput {
+  hook: Hooks!
+}
