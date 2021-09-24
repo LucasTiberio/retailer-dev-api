@@ -1,0 +1,55 @@
+extend type Query {
+  getAllWebhookSubscriptions: [WebhookSubscription]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAvailableWebhooks: [Webhook!]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+extend type Mutation {
+  subscribe(input: SubcribeWebhookInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  updateSubscription(input: UpdateSubscriptionInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+type WebhookSubscription {
+  id: String
+  type: Hooks!,
+  created: String!,
+  organizationId: String!
+  description: String,
+  enabledTopics: [String]!
+  status: HookSubscriptionStatus!,
+  url: String!
+}
+
+type WebhookTopic {
+  name: String!
+  description: String!
+}
+
+type Webhook {
+  name: String!
+  type: Hooks!
+  topics: [WebhookTopic!]!
+}
+
+enum Hooks {
+  orders
+}
+
+enum HookSubscriptionStatus {
+  enabled,
+  disabled
+}
+
+input SubcribeWebhookInput {
+  url: String!
+  topics: [String!]!
+  description: String
+}
+
+input UpdateSubscriptionInput {
+  id: String!
+  url: String!
+  organizationId: String!
+  enabledTopics: [String!]!
+  status:  HookSubscriptionStatus!
+  description: String
+}
