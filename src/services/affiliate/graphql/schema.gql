@@ -175,6 +175,7 @@ type AffiliateInfo {
 
 type AffiliateCommission {
   amount: Float
+  commission: Float
   payDay: String
 }
 
