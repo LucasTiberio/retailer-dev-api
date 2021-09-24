@@ -26,6 +26,7 @@ import AbandonedCartService from './abandoned-cart'
 import WhiteLabelService from './white-label'
 import AppStoreService from './app-store'
 import AppsService from './apps'
+import WebhookService from './webhook'
 
 let services = [
   SaasIntegrationService,
@@ -54,6 +55,7 @@ let services = [
   AbandonedCartService,
   AppStoreService,
   AppsService,
+  WebhookService
 ]
 
 export default {
