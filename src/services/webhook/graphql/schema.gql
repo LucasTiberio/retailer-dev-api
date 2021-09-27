@@ -12,6 +12,7 @@ type WebhookSubscription {
   id: String
   type: Hooks!,
   created: String!,
+  apiKey: String
   organizationId: String!
   description: String,
   enabledTopics: [String]!
@@ -42,12 +43,14 @@ enum HookSubscriptionStatus {
 input SubcribeWebhookInput {
   url: String!
   topics: [String!]!
+  apiKey: String
   description: String
 }
 
 input UpdateSubscriptionInput {
   id: String!
   url: String!
+  apiKey: String
   organizationId: String!
   enabledTopics: [String!]!
   status:  HookSubscriptionStatus!
