@@ -40,6 +40,7 @@ const getAllSubscriptions = async (
         organizationId
         enabledTopics
         status
+        apiKey
         url
         description
       }
