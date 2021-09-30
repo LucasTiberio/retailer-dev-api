@@ -21,6 +21,14 @@ const PlugFormData = new Schema<IPlugFormDataDocument>({
     ref: 'OrganizationAffiliateStoreApps',
     required: true,
   },
+  validated: {
+    type: Boolean,
+    required: false
+  },
+  user: {
+    type: Object,
+    required: false
+  }
 })
 
 const connection = mongoose.connection.useDb('plugone-apps')

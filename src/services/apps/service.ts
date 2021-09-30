@@ -1,5 +1,5 @@
 import { Transaction } from 'knex'
-import { IPlugFormDataInput, IEditPlugFormInput, IUploadInvoiceInput,IGetInvoiceInput, IGetInvoicesInput } from './types'
+import { IPlugFormDataInput, IEditPlugFormInput, IUploadInvoiceInput, IGetInvoiceInput, IGetInvoicesInput } from './types'
 import AppStoreService from '../app-store/service'
 import StorageService from '../storage/service'
 import { getInvoicesPath } from '../../utils/get-path'
@@ -7,6 +7,7 @@ import PlugFormRepository from './repositories/plug-form-repository'
 import HublyInvoiceRepository from './repositories/hubly-invoice-repository'
 import HublyClusterRepository from './repositories/hubly-cluster-repository'
 import moment from 'moment'
+import UserService from '../users/service'
 import { cacheManager } from '../../utils/cache'
 
 export const savePlugFormFields = (input: IPlugFormDataInput, ctx: { userId: string; organizationId: string }) => {
@@ -19,6 +20,27 @@ export const getPlugFormFields = (ctx: { userId: string; organizationId: string 
 
 export const editPlugForm = (input: IEditPlugFormInput) => {
   return PlugFormRepository.editPlugForm(input)
+}
+
+export const getUsersPlugForm = async (ctx: { organizationId: string }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const plugForm = await PlugFormRepository.getAll(ctx);
+      var data: any[] = [];
+
+      for(let i = 0; i < plugForm.length; i++){
+        let user = await UserService.getUserById(plugForm[i].userId);
+        plugForm[i].user = user;
+        data.push(plugForm[i]);
+      }
+      
+      resolve(data);
+    }
+    catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  })
 }
 
 export const uploadInvoice = async (input: IUploadInvoiceInput, ctx: { userId: string; organizationId: string }, trx: Transaction) => {
@@ -34,17 +56,17 @@ export const uploadInvoice = async (input: IUploadInvoiceInput, ctx: { userId: s
   const { url, ...rest } = await StorageService.uploadImage(path, stream, mimeType, trx)
 
   if (!input.id) {
-    return HublyInvoiceRepository.storeInvoice({ month, url, year }, ctx )
+    return HublyInvoiceRepository.storeInvoice({ month, url, year }, ctx)
   }
 
   return HublyInvoiceRepository.updateInvoice({ id, month, url, year })
 }
 
-export const getInvoice = async(input: IGetInvoiceInput, ctx: { userId: string; organizationId: string }) => {
+export const getInvoice = async (input: IGetInvoiceInput, ctx: { userId: string; organizationId: string }) => {
   return HublyInvoiceRepository.getInvoice(input, ctx)
 }
 
-export const getInvoices = async(input: IGetInvoicesInput, ctx: { userId: string; organizationId: string }) => {
+export const getInvoices = async (input: IGetInvoicesInput, ctx: { userId: string; organizationId: string }) => {
   return HublyInvoiceRepository.getInvoices(input, ctx)
 }
 
@@ -73,17 +95,17 @@ export const hasInvoicePending = async (ctx: { userId: string; organizationId: s
   if (!installedApp?.active) return null
 
   const [{ value }] = installedApp.configs
-  
+
   const monthlyInvoice = await HublyInvoiceRepository.getInvoice({
     month,
     year
   }, ctx)
 
-  if (!value ) return !monthlyInvoice
+  if (!value) return !monthlyInvoice
 
   const receiptDate = moment(`${year}-${month}-${value}`)
   const diff = receiptDate.diff(today, 'days')
-  
+
   if (diff <= 5) return !monthlyInvoice
 
   return false
@@ -99,7 +121,7 @@ const getInvoiceDayFromCache = async (organizationId: string) => {
   })
 
   if (data) return data;
-  
+
   const [installedApp] = await AppStoreService.getInstalledAffiliateStoreApps(organizationId, 'Hubly Invoice')
 
   if (!installedApp || !installedApp?.active) return null;
@@ -123,7 +145,7 @@ export const getMemberInvoice = async (ctx: { userId: string, organizationId: st
   }
 
   if (!data) return null
-  
+
   if (data.isAppActive) {
     const today = moment();
     const day = today.format('DD')
@@ -184,11 +206,11 @@ const getDefaultCluster = async (ctx: { organizationId: string }) => {
   return requirement?.value;
 }
 
-export const getUserCluster = async (input: { affiliateId: string,  }, ctx: { organizationId: string }) => {
+export const getUserCluster = async (input: { affiliateId: string, }, ctx: { organizationId: string }) => {
   const defaultCluster = await getDefaultCluster(ctx)
 
   if (!defaultCluster) return null;
-  
+
   const cluster = await HublyClusterRepository.getClusterByUserId(input, ctx)
 
   if (cluster) {
@@ -205,7 +227,7 @@ export const getUserCluster = async (input: { affiliateId: string,  }, ctx: { or
   }
 }
 
-export const updateUserCluster = async (input: { affiliateId: string, cluster: string  }[], ctx: { organizationId: string }) => {
+export const updateUserCluster = async (input: { affiliateId: string, cluster: string }[], ctx: { organizationId: string }) => {
   const defaultCluster = await getDefaultCluster(ctx);
 
   for (const clusterData of input) {
@@ -225,6 +247,7 @@ export default {
   savePlugFormFields,
   getPlugFormFields,
   editPlugForm,
+  getUsersPlugForm,
 
   hasFilledFields,
   hasInvoicePending,

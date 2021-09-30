@@ -16,6 +16,9 @@ const resolvers: IResolvers = {
     },
     getUserCluster: (_, { input }, { organizationId }) => {
       return AppsService.getUserCluster(input, { organizationId })
+    },
+    getUsersPlugForm: (_, __, { organizationId }) => {
+      return AppsService.getUsersPlugForm({ organizationId })
     }
   },
   Mutation: {
