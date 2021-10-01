@@ -12,14 +12,23 @@ extend type Query {
   getInvoice(input: GetInvoiceInput!): HublyInvoicePayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getInvoices(input: GetInvoicesInput!): [HublyInvoicePayload]! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getUserCluster(input: GetUserClusterInput!): HublyClusterPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  getUsersPlugForm: [PlugFormPayload]! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type PlugFormPayload {
   id: String!
   userId: String!
+  user: User
   organizationId: String!
   fields: [PlugFormField]!
   installedApp: OrganizationAffiliateStoreApp!
+  validated: Boolean
+}
+
+type User {
+  username: String
+  email: String
+  document: String
 }
 
 type PlugFormField {
@@ -43,7 +52,8 @@ input GetPlugFormInput {
 
 input EditPlugFormInput {
   id: String!
-  fields: [PlugFormFieldInput]!
+  fields: [PlugFormFieldInput]
+  validated: Boolean
 }
 
 input ReceiveInvoiceInput {

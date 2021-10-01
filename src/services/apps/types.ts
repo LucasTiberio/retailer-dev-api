@@ -1,6 +1,11 @@
 export interface IPlugFormData {
   organizationId: string
   userId: string
+  user?: {
+    username: string
+    email: string
+    document: string
+  }
   fields: {
     label: string
     value: string
@@ -22,10 +27,11 @@ export interface IGetPlugFormInput {
 
 export interface IEditPlugFormInput {
   id: string
-  fields: {
+  fields?: {
     label: string
     value: string
   }[]
+  validated?: boolean
 }
 
 export interface IUploadInvoiceInput {
