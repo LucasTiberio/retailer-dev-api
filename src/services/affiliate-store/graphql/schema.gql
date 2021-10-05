@@ -1,6 +1,7 @@
 extend type Mutation {
   handleAffiliateStoreSlug(input: HandleAffiliateStoreSlugInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   handleAffiliateStore(input: HandleAffiliateStoreInput!): AffiliateStore!
+    @verifyBlockedFeature
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
@@ -8,6 +9,7 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isAuthenticated
   addProductOnAffiliateStore(input: AddProductOnAffiliateStoreInput!): AffiliateStoreProduct!
+    @verifyBlockedFeature
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
@@ -44,6 +46,7 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isAuthenticated
   handleProductOnAffiliateStoreActivity(input: HandleProductOnAffiliateStoreActivityInput!): AffiliateStoreProduct!
+    @verifyBlockedFeature
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
@@ -51,6 +54,7 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isAuthenticated
   handleProductOnAffiliateStoreOrder(input: [HandleProductOnAffiliateStoreOrderInput]!): Boolean!
+    @verifyBlockedFeature
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify
@@ -58,6 +62,7 @@ extend type Mutation {
     @acceptTermsAndConditions
     @isAuthenticated
   handleProductOnAffiliateStoreSearchable(input: HandleProductOnAffiliateStoreSearchableInput!): AffiliateStoreProduct!
+    @verifyBlockedFeature
     @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate")
     @hasAffiliateStore
     @organizationPaidVerify

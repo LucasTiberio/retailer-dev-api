@@ -23,24 +23,21 @@ export const editPlugForm = (input: IEditPlugFormInput) => {
 }
 
 export const getUsersPlugForm = async (ctx: { organizationId: string }) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const plugForm = await PlugFormRepository.getAll(ctx);
-      var data: any[] = [];
+  try {
+    const plugForm = await PlugFormRepository.getAll(ctx);
+    var data: any[] = [];
 
-      for(let i = 0; i < plugForm.length; i++){
-        let user = await UserService.getUserById(plugForm[i].userId);
-        plugForm[i].user = user;
-        data.push(plugForm[i]);
-      }
-      
-      resolve(data);
+    for (let i = 0; i < plugForm.length; i++) {
+      let user = await UserService.getUserById(plugForm[i].userId);
+      plugForm[i].user = user;
+      data.push(plugForm[i]);
     }
-    catch (err) {
-      console.log(err);
-      reject(err);
-    }
-  })
+
+    return data;
+  }
+  catch (err) {
+    throw new Error(err.message)
+  }
 }
 
 export const uploadInvoice = async (input: IUploadInvoiceInput, ctx: { userId: string; organizationId: string }, trx: Transaction) => {

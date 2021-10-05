@@ -12,7 +12,7 @@ extend type Query {
   getInvoice(input: GetInvoiceInput!): HublyInvoicePayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getInvoices(input: GetInvoicesInput!): [HublyInvoicePayload]! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getUserCluster(input: GetUserClusterInput!): HublyClusterPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
-  getUsersPlugForm: [PlugFormPayload]! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  getUsersPlugForm: [PlugFormPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type PlugFormPayload {
