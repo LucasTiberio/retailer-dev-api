@@ -20,7 +20,22 @@ const getAffiliateAppMenu = (
   if (!data?.length) return []
 
   return data
-    .filter((data) => (isAdmin ? data.app?.views.hasAdminView : data.app?.views.hasMemberView))
+    .filter((data) => {
+      if (isAdmin) {
+        if (data.installedApp?.affiliateStoreApp.toString() === '60d2193024d3230e2bdd7a5f') {
+          const config = data.installedApp.configs.find(config => config.key === 'block_feature_to_invalid_afilliates')
+          if (config?.value === 'true') {
+            return data.app?.views.hasAdminView
+
+          } else return false
+        }
+        return data.app?.views.hasAdminView
+      }
+      else {
+        return data.app?.views.hasMemberView
+      }
+
+    })
     .map((appData) => {
       if (appData.app) {
         return {
@@ -217,7 +232,7 @@ export const affiliateMemberMountMenu = async (
   }[]
 ) => {
   const affiliateApps = getAffiliateAppMenu(appData, slug)
-
+  
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
