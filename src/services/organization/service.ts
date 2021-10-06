@@ -15,6 +15,7 @@ import ServicesService from '../services/service'
 import PaymentService from '../payments/service'
 import WhiteLabelService from '../white-label/service'
 import StorageService from '../storage/service'
+import OrganizationsService from '../organization/service'
 import AffiliateService from '../affiliate/service'
 import knexDatabase from '../../knex-database'
 import common from '../../common'
@@ -535,10 +536,10 @@ const generateAffiliateHomeLink = async (args: {
   organizationId: string
 }, trx: Transaction) => {
   const { userId, affiliateId, organizationId } = args
-  const whitelabelInfo = await WhiteLabelService.getWhiteLabelInfos(organizationId, trx) as any
+  const organization = await OrganizationsService.getOrganizationById(organizationId, trx)
   
-  if (whitelabelInfo.domain) {
-    const originalUrl = `https://${whitelabelInfo.domain}`
+  if (organization.domain) {
+    const originalUrl = organization.domain
     await AffiliateService.generateShortenerUrl({
       originalUrl,
       serviceName: Services.AFFILIATE
