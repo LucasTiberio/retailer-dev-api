@@ -11,6 +11,7 @@ export interface IPlugFormData {
     value: string
   }[]
   installedApp: string
+  validated?: boolean
 }
 
 export interface IPlugFormDataInput {
