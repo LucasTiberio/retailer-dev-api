@@ -20,6 +20,7 @@ import { Integrations } from './services/integration/types'
 import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions, organizationHasBillingDependency } from './common/errors'
 import TermsAndConditionsService from './services/terms-and-conditions/service'
 import AppsService from './services/apps/service'
+import AppStoreService from './services/app-store/service'
 import OrganizationRulesService from './services/organization-rules/service'
 import { InviteStatus } from './services/users-organizations/types'
 
@@ -230,7 +231,12 @@ const directiveResolvers: IDirectiveResolvers = {
   },
 
   async verifyBlockedFeature(next, _, __, context): Promise<NextFunction> {
-    const { client: { id }, organizationId } = context
+    const { client: { id }, organizationId, headers } = context
+    const apps = await AppStoreService.getInstalledAffiliateStoreApps(organizationId, 'hubly form')
+    const hasHublyFormInstalled = apps.find(app => app.affiliateStoreApp.toString() === '60d2193024d3230e2bdd7a5f')
+
+    if (!hasHublyFormInstalled) return next()
+
     const dataUser = await AppsService.getPlugFormFields({
       userId: id,
       organizationId: organizationId
@@ -238,7 +244,7 @@ const directiveResolvers: IDirectiveResolvers = {
 
     if (dataUser?.validated === true) return next()
 
-    throw new Error('Affiliate is blocked feature')
+    throw new Error('affiliate_blocked_feature')
   },
 
   async acceptTermsAndConditions(next, _, __, context): Promise<NextFunction> {
