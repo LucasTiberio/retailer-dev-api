@@ -40,7 +40,8 @@ import {
   cannotGenerateNewCartAtTheMoment,
   organizationHasBillingDependency,
   subscriptionNotFound,
-  webhooUrlCantBeVerified
+  webhooUrlCantBeVerified,
+  affiliateBlockedFeature
 } from '../common/errors'
 
 export default (message: string) => {
@@ -260,6 +261,12 @@ export default (message: string) => {
       return {
         code: 83,
         explication: 'Webhook url can\'t be pinged'
+      }
+    }
+    case affiliateBlockedFeature: {
+      return {
+        code: 84,
+        explication: 'Feature blocked for this affiliate'
       }
     }
     default:

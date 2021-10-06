@@ -7,6 +7,7 @@ import { IncomingHttpHeaders } from 'http'
 import getHeaderDomain from '../../utils/getHeaderDomain'
 import { parseAppName } from '../apps/helpers'
 import { subscriptionNotFound } from '../../common/errors'
+import { Types } from 'mongoose'
 
 const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
@@ -193,7 +194,9 @@ const getInstalledAffiliateStoreApps = async (organizationId: string, name?: str
 
 const getInstalledAffiliateStoreApp = async (input: { id: string }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
-  const installedApp = await OrganizationAffiliateStoreApps.findOne({ _id: input.id, organizationId })
+  const installedApp = await OrganizationAffiliateStoreApps.findOne({ _id: new Types.ObjectId(input.id), organizationId })
+  
+  console.log({ installedApp }, input.id, organizationId)
 
   if (!installedApp) {
     throw new Error('app_not_found')
@@ -211,7 +214,7 @@ const getInstalledAffiliateStoreApp = async (input: { id: string }, organization
     })
   }
 
-  const updatedInstalledApp = await OrganizationAffiliateStoreApps.findOne({ _id: input.id, organizationId })
+  const updatedInstalledApp = await OrganizationAffiliateStoreApps.findOne({ _id: new Types.ObjectId(input.id), organizationId })
   if (!updatedInstalledApp) {
     throw new Error('app_not_found')
   }
