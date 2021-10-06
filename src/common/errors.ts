@@ -42,3 +42,4 @@ export const cannotGenerateNewCartAtTheMoment = 'cannot_generate_new_cart_at_the
 export const organizationHasBillingDependency = 'organization_has_billing_dependency'
 export const subscriptionNotFound = 'Subscription not found'
 export const webhooUrlCantBeVerified = 'Can\'t verify url'
+export const affiliateBlockedFeature = 'affiliate_blocked_feature'
