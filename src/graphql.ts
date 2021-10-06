@@ -19,6 +19,7 @@ import { PaymentServiceStatus } from './services/payments/types'
 import { Integrations } from './services/integration/types'
 import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions, organizationHasBillingDependency } from './common/errors'
 import TermsAndConditionsService from './services/terms-and-conditions/service'
+import AppsService from './services/apps/service'
 import OrganizationRulesService from './services/organization-rules/service'
 import { InviteStatus } from './services/users-organizations/types'
 
@@ -44,6 +45,7 @@ const typeDefsBase = gql`
   directive @acceptTermsAndConditions on FIELD | FIELD_DEFINITION
   directive @hasOrganizationRole(role: [String]!) on FIELD | FIELD_DEFINITION
   directive @isAuthenticated on FIELD | FIELD_DEFINITION
+  directive @verifyBlockedFeature on FIELD | FIELD_DEFINITION
   directive @organizationPaidVerify on FIELD | FIELD_DEFINITION
   directive @asOrganizationFounder on FIELD | FIELD_DEFINITION
   directive @ordersService on FIELD | FIELD_DEFINITION
@@ -226,6 +228,19 @@ const directiveResolvers: IDirectiveResolvers = {
       throw new Error('You are not authorized.')
     }
   },
+
+  async verifyBlockedFeature(next, _, __, context): Promise<NextFunction> {
+    const { client: { id }, organizationId } = context
+    const dataUser = await AppsService.getPlugFormFields({
+      userId: id,
+      organizationId: organizationId
+    })
+
+    if (dataUser?.validated === true) return next()
+
+    throw new Error('Affiliate is blocked feature')
+  },
+
   async acceptTermsAndConditions(next, _, __, context): Promise<NextFunction> {
     const cachedTermsAndConditions = await redisClient.getAsync(`termsAndConditions_${context.client.id}`)
 
