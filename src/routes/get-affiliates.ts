@@ -25,10 +25,10 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         documentType: documentType as IDocumentType
       }, trx);
 
-      const affiliatewithutms = affiliates.data.map((a: IAffiliate) => {
+      const affiliatewithutms = affiliates.data.map((affiliate: IAffiliate) => {
         return {
-          ...a,
-          utm: `${a.organization_id}_${a.affiliate_id}`
+          ...affiliate,
+          utm: `${affiliate.organization_id}_${affiliate.affiliate_id}`
         }
       });
       
