@@ -15,6 +15,7 @@ import orgLimiter from './middlewares/org-limiter'
 import downloadFile from './routes/download-file'
 import getOrder from './routes/get-order'
 import getOrders from './routes/get-orders'
+import getAffiliates from './routes/get-affiliates'
 
 const logger = require('pino')()
 const app = express()
@@ -75,6 +76,7 @@ app.post('/invite-member/:organizationId', inviteMember)
 app.get('/orders/:orderId', ipLimiter, getOrder, orgLimiter)
 app.get('/orders', ipLimiter, getOrders, orgLimiter)
 app.get('/affiliates/:organizationId', ipLimiter, getAffiliateInfo, orgLimiter)
+app.get('/affiliates', ipLimiter, getAffiliates, orgLimiter)
 app.get('/download', downloadFile)
 
 const specs = swaggerJsdoc(swaggerOptions)

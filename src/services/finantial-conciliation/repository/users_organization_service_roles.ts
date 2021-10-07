@@ -2,6 +2,10 @@ import knexDatabase from '../../../knex-database'
 import { Transaction } from 'knex'
 import plugFormRepository from '../../apps/repositories/plug-form-repository'
 import hublyInvoiceRepository from '../../apps/repositories/hubly-invoice-repository'
+import { IGetAffiliatesFilter } from '../types'
+import { attachPaginate } from 'knex-paginate'
+
+attachPaginate();
 
 const getBankDataByAffiliateIds = async (ids: string[], trx: Transaction) => {
   const affiliatesBankData = await (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
@@ -130,6 +134,45 @@ const getAllAffiliates = async (organizationId: string, trx?: Transaction) => {
   return []
 }
 
+const getAffiliates = async (organizationId: string, page: number, perPage: number, filters?: IGetAffiliatesFilter, trx?: Transaction) => {
+  try {
+    let query = (trx || knexDatabase.knexConfig)('users_organization_service_roles as uosr')
+      .where('uo.organization_id', organizationId)
+      .innerJoin('users_organizations as uo', 'uo.id', 'uosr.users_organization_id')
+      .innerJoin('users as u', 'u.id', 'uo.user_id')
+
+    if (filters && filters?.documentType) {
+      query = query.where('u.document_type', filters.documentType)
+    }
+
+    if (filters && filters?.document) {
+      query = query.where('u.document', filters.document)
+    }
+
+    let affiliates = await query
+
+      .select(
+        'uo.organization_id as organization_id',
+        'uosr.id as affiliate_id',
+        'u.username',
+        'u.email',
+        'u.document',
+        'u.phone'
+      )
+      .paginate({
+        currentPage: page,
+        perPage: perPage,
+        isFromStart: false,
+        isLengthAware: true,
+      })
+
+    return affiliates
+  }
+  catch (err) {
+    return err
+  }
+}
+
 export default {
   getBankDataByAffiliateIds,
   getAffiliateNameById,
@@ -137,4 +180,5 @@ export default {
   getAffiliateForm,
   getAllAffiliates,
   getAffiliateInvoice,
+  getAffiliates
 }
