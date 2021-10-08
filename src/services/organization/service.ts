@@ -613,10 +613,18 @@ const requestAffiliateServiceMembers = async (
 
         if (userEmail) {
           const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
+          const homeShortUrl = await generateAffiliateHomeLink({
+            userId: userEmail.id,
+            affiliateId: usersOrganizationFound.id,
+            organizationId
+          }, trx)
 
-          if (usersOrganizationFound) {
-            throw new Error(`user ${item.email} is already exists`)
+          return {
+            email: userEmail.email,
+            organizationRoleId: usersOrganizationFound.id,
+            shortUrl: homeShortUrl
           }
+
         } else {
           userEmail = await UserService.signUpWithEmailPhoneNameDocument({ ...item }, trx)
         }
