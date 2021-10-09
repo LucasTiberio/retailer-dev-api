@@ -10,7 +10,13 @@ const resolvers : IResolvers = {
             return knexDatabase.knexConfig.transaction((trx: Transaction) => {
                 return service.getOriginalUrlByCode(input.urlCode, trx);
             });
-        }
+        },
+        getLatestUrl: (_, __, { organizationId, client: { id: userId } }) => {
+            return knexDatabase.knexConfig.transaction(async (trx: Transaction) => {
+              const list = await service.getAffiliateLatestUrl({ organizationId, userId }, trx)
+              return list
+            })
+        },
     }
 };
 
