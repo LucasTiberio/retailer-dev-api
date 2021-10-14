@@ -193,6 +193,180 @@ const options = {
           ]
         }
       },
+      '/affiliates': {
+        get: {
+          tags: ['Get Affiliates'],
+          parameters: [
+            {
+              name: 'organizationId',
+              in: 'query',
+              description: 'Organization identifier',
+              required: true,
+              schema: {
+                type: 'string',
+                format: 'uuid',
+              },
+            },
+            {
+              name: 'documentType',
+              in: 'query',
+              description: 'Type of document',
+              required: false,
+              schema: {
+                type: 'string',
+                example: 'cnpj'
+              },
+            },
+            {
+              name: 'document',
+              in: 'query',
+              description: 'Document identifier',
+              required: false,
+              schema: {
+                type: 'string',
+                example: '12456456000109'
+              },
+            },
+            {
+              name: 'page',
+              in: 'query',
+              description: 'current page',
+              required: false,
+              schema: {
+                type: 'string',
+                example: '1'
+              },
+            },
+            {
+              name: 'perPage',
+              in: 'query',
+              description: 'quantity that are being returned',
+              required: false,
+              schema: {
+                type: 'string',
+                example: '1'
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'A filterable list of affiliates',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      affiliates: {
+                        type: 'array',
+                        description: 'Array of affiliate information',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            organization_id: {
+                              type: 'string',
+                              description: 'Organization identifier'
+                            },
+                            affiliate_id: {
+                              type: 'string',
+                              description: 'Affiliate identifier'
+                            },
+                            username: {
+                              type: 'string',
+                              description: 'Affiliate username'
+                            },
+                            email: {
+                              type: 'string',
+                              description: 'Affiliate email'
+                            },
+                            document: {
+                              type: 'string',
+                              description: 'Affiliate document'
+                            },
+                            phone: {
+                              type: 'string',
+                              description: 'Affiliate phone'
+                            },
+                            utm: {
+                              type: 'string',
+                              description: 'Concatenation of organization_id and affiliate_id'
+                            },
+                          }
+                        }
+                      }, 
+                      pagination: {
+                        type: 'object',
+                        description: 'Information of pagination',
+                        properties: {
+                          total: {
+                            type: 'integer',
+                            description: 'Total items that the full query contains'
+                          },
+                          lastPage: {
+                            type: 'integer',
+                            description: 'Last page number'
+                          },
+                          perPage: {
+                            type: 'integer',
+                            description: 'Items per page'
+                          },
+                          currentPage: {
+                            type: 'integer',
+                            description: 'Current page number'
+                          },
+                          from: {
+                            type: 'integer',
+                            description: 'Counting ID of the first item of the current page'
+                          },
+                          to: {
+                            type: 'integer',
+                            description: 'Counting ID of the last item of the current page'
+                          },
+                        }
+                      },
+                      },
+                      example:  
+                      {
+                        affiliates: [
+                          {
+                            organization_id: "96da5eff-617a-4fac-8e87-6e14aeb55a5f",
+                            affiliate_id: "1126d03f-f149-4181-8d4e-98e39c996bcc",
+                            username: "gabi",
+                            email: "gabriela.pinheiro@teste2.com",
+                            document: "51294056840",
+                            phone: "1232132",
+                            utm: "96da5eff-617a-4fac-8e87-6e14aeb55a5f_1126d03f-f149-4181-8d4e-98e39c996bcc"
+                          }
+                        ],
+                        pagination: {
+                          total: 75,
+                          lastPage: 75,
+                          perPage: 1,
+                          currentPage: 1,
+                          from: 0,
+                          to: 1
+                        }
+                      }
+                  }
+                },
+              }
+            },
+            '400': {
+              description: 'Invalid token or organizationId',
+            },
+            '429': {
+              description: 'Too many requests',
+            },
+            '500': {
+              description: 'Internal Server Error',
+            },
+          },
+          security: [
+            {
+              'x-plugone-api-token': [],
+            },
+          ]
+        }
+      },
       '/orders': {
         get: {
           tags: ['Get Orders'],

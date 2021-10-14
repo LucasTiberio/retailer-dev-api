@@ -1,5 +1,6 @@
 extend type Query {
   getOriginalUrlByCode(input: GetOriginalUrlByCodeInput!): String!
+  getLatestUrl: [GetLatestUrl] @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 input GetOriginalUrlByCodeInput {
@@ -13,4 +14,13 @@ type ShortenerUrl {
   urlCode: String!
   createdAt: Datetime!
   updatedAt: Datetime!
+}
+
+type GetLatestUrl {
+  user_id: String
+  organization_id: String
+  id_url_shorten: String
+  original_url: String
+  short_url: String
+  created_at: String
 }
