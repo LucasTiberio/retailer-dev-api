@@ -3,11 +3,13 @@ import { getPendingAndIsRequestedMembersByOrganizationId, handleMemberInviteStat
 import { ResponseStatus } from './types'
 import UserService from '../users/service'
 import MadesaMailService from '../mail/madesa'
+import GrowPowerMailService from '../mail/madesa'
 import OrganizationService from '../organization/service'
 import MailService from '../mail/service'
 import WhiteLabelService from '../white-label/service'
 import { IncomingHttpHeaders } from 'http'
 import { MADESA_WHITE_LABEL_DOMAIN } from '../../common/consts'
+import { GROW_POWER_WHITE_LABEL_DOMAIN } from '../../common/consts'
 
 const getPendingMembersByOrganizationId = async (
   context: {
@@ -75,6 +77,13 @@ const handleMemberInvitation = async (
           email: member.email,
           hashToVerify: memberUpdated.invite_hash,
           organizationName: organization.name,
+        })
+      } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+        await GrowPowerMailService.sendInviteNewUserMail({
+          email: member.email,
+          hashToVerify: memberUpdated.invite_hash,
+          organizationName: organization.name,
+          whiteLabelInfo
         })
       } else {
         await MailService.sendInviteNewUserMail({

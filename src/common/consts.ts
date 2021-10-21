@@ -28,6 +28,7 @@ export const FREE_TRIAL_DAYS = 10
 
 export const INDICAE_LI_WHITE_LABEL_DOMAIN = ['indicaae.lojaintegrada.com.br', 'afiliados.b8one.com']
 export const MADESA_WHITE_LABEL_DOMAIN = ['afiliados.madesa.com']
+export const GROW_POWER_WHITE_LABEL_DOMAIN = ['app.growpowercultivo.com.br']
 export const DEFAULT_DOMAINS = ['staging.plugone.io', 'app.plugone.io']
 
 export const DEFAULT_IP_POINT_DURATION = 60 // 1 minute
