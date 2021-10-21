@@ -3,7 +3,7 @@ import { getPendingAndIsRequestedMembersByOrganizationId, handleMemberInviteStat
 import { ResponseStatus } from './types'
 import UserService from '../users/service'
 import MadesaMailService from '../mail/madesa'
-import GrowPowerMailService from '../mail/madesa'
+import GrowPowerMailService from '../mail/grow-power'
 import OrganizationService from '../organization/service'
 import MailService from '../mail/service'
 import WhiteLabelService from '../white-label/service'

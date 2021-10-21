@@ -20,7 +20,7 @@ import { ServiceRoles, Services } from '../services/types'
 import AppsService from '../apps/service'
 import AppsStoreService from '../app-store/service'
 import { IBaseMail } from '../mail/types'
-import GrowPowerMailService from '../mail/madesa'
+import GrowPowerMailService from '../mail/grow-power'
 import { GROW_POWER_WHITE_LABEL_DOMAIN } from '../../common/consts'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
