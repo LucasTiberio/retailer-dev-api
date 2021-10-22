@@ -14,7 +14,7 @@ const sendSignUpMail = async (data: ISendMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
+      from: 'Grow Power No-Reply <noreply@gohubly.com>',
       to: `${data.username || ''} <${data.email}>`,
       subject: `Bem vindo(a) a ${data?.whiteLabelInfo?.organizationName ?? 'Hubly Retailer'}!`,
       html: `
@@ -63,7 +63,7 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
+      from: 'Grow Power No-Reply <noreply@gohubly.com>',
       to: `${data.username || ''} <${data.email}>`,
       subject: 'Recuperacão de senha Hubly Retailer!',
       html: `
@@ -92,11 +92,13 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
       <p><br />
         Para escolher uma nova, clique no link abaixo:</p>
       <p>&nbsp;</p>
-      <p><img src="https://plugone-production.nyc3.digitaloceanspaces.com/grow-power/escolher.png" width="272" height="72" /></p>
       <p>
         <a href="${getBaseUrl(data?.whiteLabelInfo?.customDomain)}/recovery-password/change-password/${data.hashToVerify}">
-            <img src="https://plugone-production.nyc3.digitaloceanspaces.com/grow-power/terra.png" width="50%" />
+            <img src="https://plugone-production.nyc3.digitaloceanspaces.com/grow-power/escolher.png" width="272" height="72" />
         </a>
+      </p>
+      <p>
+            <img src="https://plugone-production.nyc3.digitaloceanspaces.com/grow-power/terra.png" width="50%" />
       </p>
       </body>
       </html>        
@@ -112,7 +114,7 @@ const sendRecoveredPasswordMail = async (data: IMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
+      from: 'Grow Power No-Reply <noreply@gohubly.com>',
       to: `${data.username || ''} <${data.email}>`,
       subject: 'Senha recuperada Hubly Retailer!',
       html: `
@@ -167,7 +169,7 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
+      from: 'Grow Power No-Reply <noreply@gohubly.com>',
       to: `<${data.email}>`,
       subject: `Você foi convidado por ${data.organizationName}!`,
       html: `
@@ -192,7 +194,13 @@ const sendInviteUserMail = async (data: ISendInviteUserMail) => {
         Você foi convidado à ultilizar a plataforma de Parceiros Grow Power</p>
       <p>Clique no botão abaixo para aceitar o convite</p>
       <p>&nbsp;</p>
-      <p><img src="https://plugone-production.nyc3.digitaloceanspaces.com/grow-power/aceitar.png" width="275" height="77" /></p>
+      <p>
+        <a href="${getBaseUrl(data?.whiteLabelInfo?.customDomain)}/verification/${
+            data.hashToVerify
+          }">
+            <img src="https://plugone-production.nyc3.digitaloceanspaces.com/grow-power/aceitar.png" width="275" height="77" />
+        </a>
+      </p>
       <p><img src="https://plugone-production.nyc3.digitaloceanspaces.com/grow-power/terra.png" width="50%" /></p>
       </body>
       </html>
@@ -208,7 +216,7 @@ const sendHelpToSpecialist = async (data: ISendSpecialistHelp, bucket: any, pixe
   if (process.env.NODE_ENV === 'test') return
 
   await Mail.sendMail({
-    from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
+    from: 'Grow Power No-Reply <noreply@gohubly.com>',
     to: `<${data.email}>`,
     subject: `Você foi requisitado para ajudar ${data.organizationName} na Hubly Retailer`,
     html: `
@@ -620,7 +628,7 @@ const sendInviteNewUserMail = async (data: ISendInviteUserMail) => {
 
   try {
     await Mail.sendMail({
-      from: 'Hubly Retailer No-reply <noreply@gohubly.com>',
+      from: 'Grow Power No-Reply <noreply@gohubly.com>',
       to: `<${data.email}>`,
       subject: `Você foi convidado à Hubly Retailer por ${data.organizationName}!`,
       html: `
