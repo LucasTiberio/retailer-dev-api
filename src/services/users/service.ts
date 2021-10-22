@@ -180,6 +180,9 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else if (MADESA_WHITE_LABEL_DOMAIN.includes(domain)) {
       await MadesaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(domain)) {
+      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+      await GrowPowerMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     }
