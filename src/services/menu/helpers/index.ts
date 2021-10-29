@@ -6,7 +6,6 @@ import OrganizationRulesService from '../../organization-rules/service'
 import { Integrations } from '../../integration/types'
 import knexDatabase from '../../../knex-database'
 import { IAffiliateStoreApp, InstalledAffiliateStoreApp } from '../../app-store/types'
-import { parseAppName } from '../../apps/helpers'
 import { INDICAE_LI_WHITE_LABEL_DOMAIN } from '../../../common/consts'
 
 const getAffiliateAppMenu = (
@@ -232,7 +231,7 @@ export const affiliateMemberMountMenu = async (
   }[]
 ) => {
   const affiliateApps = getAffiliateAppMenu(appData, slug)
-  
+
   if (integrationType === Integrations.IUGU || integrationType === Integrations.KLIPFOLIO) {
     return [
       {
@@ -293,8 +292,13 @@ export const affiliateMemberMountMenu = async (
         name: 'linkGenerator',
         slug: `/org/${slug}/affiliate/link-generator`,
       },
+      {
+        name: 'insideSales',
+        slug: `/org/${slug}/affiliate/inside-sales`,
+      },
     ],
   }
+// coloquei insadesale em analyst só pra teste 
 
   let affiliateSale: any = {
     name: 'affiliate',
@@ -315,6 +319,10 @@ export const affiliateMemberMountMenu = async (
         name: 'linkGenerator',
         slug: `/org/${slug}/affiliate/link-generator`,
       },
+      {
+        name: 'insideSales',
+        slug: `/org/${slug}/affiliate/inside-sales`,
+      }
     ],
   }
 
