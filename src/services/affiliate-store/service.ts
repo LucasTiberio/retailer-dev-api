@@ -541,7 +541,7 @@ const getAffiliateStoreWithProducts = async (
           <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${element.nome} </div>
           ${element.preco ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ ${Number(element.preco).toFixed(2)}</div>` : ''}
           <a style="background: black; color: white; text-align: center; padding: 0.7rem; border-radius: 8px; width: 100%;" 
-            href="${element.url}?utm_campaign=plugone-affiliate_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
+            href="${element.url}?utm_campaign=affiliate-store_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
             COMPRAR 
           </a>
         </li>
@@ -629,7 +629,7 @@ const getAffiliateStoreWithProducts = async (
         <div style="font-size: 14px; margin-bottom: 0.5rem; text-align: center;"> ${element.nome} </div>
         ${element.preco ? `<div style="margin-bottom: 0.5rem; font-size: 22px; font-weight: bold" >R$ ${Number(element.preco).toFixed(2)}</div>` : ''}
         <a style="background: black; color: white; text-align: center; padding: 0.7rem; border-radius: 8px; width: 100%;" 
-          href="${element.url}?utm_campaign=plugone-affiliate_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
+          href="${element.url}?utm_campaign=affiliate-store_${affiliateStore.users_organization_service_roles_id}_${input.organizationId}"> 
           COMPRAR 
         </a>
       </li>
@@ -657,7 +657,13 @@ const getAffiliateStoreWithProducts = async (
     if (helperComplement) {
       const prevHelperComplement = helperComplement.prev()
       if (prevHelperComplement && prevHelperComplement.length) {
-        console.log({ item })
+        $(prevHelperComplement[0]).find('a[href$="/p"]').each((_, item) => {
+          const href = $(item).attr('href')
+          const newHref = href + '?utm_source=affiliate_store'
+
+          $(item).attr('href', newHref)
+        })
+        console.log({ item }, $.html(prevHelperComplement[0]))
         activeProducts.push($.html(prevHelperComplement[0]))
       }
     }
