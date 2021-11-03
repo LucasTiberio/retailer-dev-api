@@ -49,7 +49,15 @@ const getAllVtexProducts = async (
     const integration = await IntegrationService.getIntegrationByOrganizationId(context.organizationId)
     switch (integration.type) {
       case Integrations.VTEX:
-        return await getVtexProducts(decode.accountName, input.from, input.to, input.search, input.category);
+        const products = await getVtexProducts(decode.accountName, input.from, input.to, input.search, input.category);
+        const VtexProducts = {
+          products,
+          pageInfo: {
+            hasNextPage: (input.to + input.from) < products.length
+          }, 
+        };
+
+        return VtexProducts
          
       default:
         return []
