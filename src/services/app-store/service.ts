@@ -12,8 +12,8 @@ import { Types } from 'mongoose'
 const installAffiliateStoreApp = async (input: { id: string; configs: OrganizationAffiliateStoreAppConfig[]; requirements: OrganizationAffiliateStoreAppRequirement[] }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ affiliateStoreApp: input.id, organizationId })
-
   const appToInstall = await AffiliateStoreApps.findById(input.id)
+
   if (!appToInstall) {
     throw new Error('app_not_found')
   }
@@ -25,14 +25,12 @@ const installAffiliateStoreApp = async (input: { id: string; configs: Organizati
     throw new Error('invalid_app_config')
   }
 
-  const appToInstallConfigKeys = appToInstall.configs.map((item) => item.name)
-
-  appToInstallConfigKeys.forEach((key) => {
-    const inputConfigItem = input.configs.find((inputItem) => inputItem.key === key && inputItem.value.trim() !== '')
-    if (!inputConfigItem) {
-      throw new Error('invalid_app_config')
+  appToInstall.configs.forEach(config => {
+    var configValue = input.configs.filter(x => x.key == config.name)[0];
+    if(config.required && configValue && configValue.value.trim() === ''){
+      throw new Error('invalid_app_field_config')
     }
-  })
+  });
 
   if (installedApp) {
     await installedApp.update({
@@ -195,7 +193,7 @@ const getInstalledAffiliateStoreApps = async (organizationId: string, name?: str
 const getInstalledAffiliateStoreApp = async (input: { id: string }, organizationId: string) => {
   const planType = await OrganizationRulesService.getPlanType(organizationId)
   const installedApp = await OrganizationAffiliateStoreApps.findOne({ _id: new Types.ObjectId(input.id), organizationId })
-  
+
   console.log({ installedApp }, input.id, organizationId)
 
   if (!installedApp) {
