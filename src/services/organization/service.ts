@@ -17,6 +17,7 @@ import WhiteLabelService from '../white-label/service'
 import StorageService from '../storage/service'
 import OrganizationsService from '../organization/service'
 import AffiliateService from '../affiliate/service'
+import AppsService from '../apps/service'
 import knexDatabase from '../../knex-database'
 import common from '../../common'
 import { IUserOrganizationDB, IOrganizationAdittionalInfos } from './types'
@@ -723,30 +724,40 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
   try {
     if (!user) return { status: false, message: userAlreadyRegistered }
 
-    await (trx || knexDatabase.knexConfig)('users_organizations')
+    const [organizationId] = await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
         invite_hash: null,
         invite_status: isResquested && user.invite_status === InviteStatus.pendent ? InviteStatus.pendent : responseInvitePayload.response,
       })
       .where('invite_hash', responseInvitePayload.inviteHash)
+      .returning('organization_id')
 
-    await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
+    const [affiliateId] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
       .update({
         active: responseInvitePayload.response === OrganizationInviteStatus.ACCEPT,
       })
       .where('users_organization_id', user.user_organization_id)
+      .returning('id')
 
-    if (!user.encrypted_password) {
-      return {
-        status: false,
-        email: user.email,
-        username: user.username,
-        phone: user.phone,
-        requested: user.is_requested,
+    try {
+      await AppsService.generateAffiliateCoupon({
+        affiliateId
+      }, { organizationId })
+    } catch (e) {
+
+    } finally {
+      if (!user.encrypted_password) {
+        return {
+          status: false,
+          email: user.email,
+          username: user.username,
+          phone: user.phone,
+          requested: user.is_requested,
+        }
       }
+  
+      return { status: true, requested: user.is_requested }
     }
-
-    return { status: true, requested: user.is_requested }
   } catch (e) {
     throw new Error(e.message)
   }
