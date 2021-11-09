@@ -6,6 +6,7 @@ import { getInvoicesPath } from '../../utils/get-path'
 import PlugFormRepository from './repositories/plug-form-repository'
 import HublyInvoiceRepository from './repositories/hubly-invoice-repository'
 import HublyClusterRepository from './repositories/hubly-cluster-repository'
+import HublyCouponRepository from './repositories/hubly-coupon-repository'
 import moment from 'moment'
 import UserService from '../users/service'
 import { cacheManager } from '../../utils/cache'
@@ -240,6 +241,14 @@ export const updateUserCluster = async (input: { affiliateId: string, cluster: s
   return true
 }
 
+export const generateAffiliateCoupon = async (input: { affiliateId: string }, ctx: { organizationId: string }) => {
+  return HublyCouponRepository.generateAffiliateCoupon(input, ctx)
+}
+
+export const getAffiliateCoupon = async (input: { affiliateId: string }, ctx: { organizationId: string }) => {
+  return HublyCouponRepository.getAffiliateCoupon(input, ctx)
+}
+
 export default {
   savePlugFormFields,
   getPlugFormFields,
@@ -257,5 +266,8 @@ export default {
 
   changeDefaultCluster,
   updateUserCluster,
-  getUserCluster
+  getUserCluster,
+
+  generateAffiliateCoupon,
+  getAffiliateCoupon
 }

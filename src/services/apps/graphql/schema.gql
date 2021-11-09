@@ -5,6 +5,7 @@ extend type Mutation {
   receiveInvoice(input: ReceiveInvoiceInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   changeDefaultCluster(input: ChangeDefaultClusterInput!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   updateUserCluster(input: [UpdateUserClusterInput]!): Boolean! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  generateAffiliateCoupon: HublyCoupon @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 extend type Query {
@@ -13,6 +14,7 @@ extend type Query {
   getInvoices(input: GetInvoicesInput!): [HublyInvoicePayload]! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getUserCluster(input: GetUserClusterInput!): HublyClusterPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getUsersPlugForm: [PlugFormPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAffiliateCoupon: HublyCoupon @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type PlugFormPayload {
@@ -106,4 +108,13 @@ type HublyInvoicePayload {
   year: String!
   url: String!
   received: Boolean!
+}
+
+type HublyCoupon {
+  affiliateId: String!
+  organizationId: String!
+  campaignId: String!
+  coupon: String!
+  sequence: Int!
+  active: Boolean
 }
