@@ -25,9 +25,9 @@ const installAffiliateStoreApp = async (input: { id: string; configs: Organizati
     throw new Error('invalid_app_config')
   }
 
-  appToInstall.configs.forEach(config => {
-    var configValue = input.configs.filter(x => x.key == config.name)[0];
-    if(config.required && configValue && configValue.value.trim() === ''){
+  appToInstall.configs.forEach(configs => {
+    let configValue = input.configs.find(config => config.key === configs.name);
+    if(configs.required && configValue && configValue.value.trim() === ''){
       throw new Error('invalid_app_field_config')
     }
   });
