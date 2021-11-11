@@ -1,11 +1,13 @@
 extend type Query {
   getAllWebhookSubscriptions: [WebhookSubscription]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   getAvailableWebhooks: [Webhook!]! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAllWebhookExecutions(offset: Int!, limit: Int!): PaginatedWebhookExecution! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 extend type Mutation {
   subscribe(input: SubcribeWebhookInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
   updateSubscription(input: UpdateSubscriptionInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  triggerManualSend(input: TriggerManualSendInput!): TriggerManualSendResponse
 }
 
 type WebhookSubscription {
@@ -55,4 +57,30 @@ input UpdateSubscriptionInput {
   enabledTopics: [String!]!
   status:  HookSubscriptionStatus!
   description: String
+}
+
+type WebhookExecution {
+  id: String!
+  webhook: WebhookSubscription!
+  payload: BaseWebhookPayload!
+  nextExecutionAt: String
+  executed: Boolean
+}
+
+type BaseWebhookPayload {
+  event: String!
+}
+
+type PaginatedWebhookExecution {
+  data: [WebhookExecution]!
+  count: Int!
+}
+
+type TriggerManualSendResponse {
+  success: Boolean!
+  nextExecution: String
+}
+
+input TriggerManualSendInput {
+  executionId: String!
 }

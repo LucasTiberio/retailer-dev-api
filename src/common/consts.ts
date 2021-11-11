@@ -19,6 +19,7 @@ export const MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE = 'user has already repli
 export const MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION = 'organization doesnt have active integration'
 
 export const PAYMENTS_URL = process.env.PAYMENTS_URL
+export const COUPON_URL = process.env.COUPON_URL
 export const WEBHOOK_URL = process.env.WEBHOOK_URL
 export const BUCKET_URL = process.env.BUCKET_URL
 export const BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH = process.env.BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH
