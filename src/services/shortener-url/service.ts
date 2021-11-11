@@ -1,6 +1,6 @@
 import { Transaction } from 'knex';
 import knexDatabase from "../../knex-database";
-import { IGetLatestUrl, IShortenerUrlFromDB } from "./types";
+import { IShortenerUrlFromDB } from "./types";
 import shortid from 'shortid';
 import store from '../../store';
 import OrganizationWhiteLabelCustomization from '../white-label/repositories/organization_white_label_customization';
@@ -134,25 +134,34 @@ const getAffiliateLastGeneratedUrl = async(affiliateId: string, organizationId: 
 }
 
 const getAffiliateLatestUrl = async(ctx: { userId: string; organizationId: string }, trx: Transaction) => {
-  const result: IGetLatestUrl[] = await (trx || knexDatabase.knexConfig)('url_shorten as us')
-  .select('u.id as user_id', 
-    'o.id as organization_id', 
-    'us.id as id_url_shorten',
-    'us.original_url as original_url', 
-    'us.short_url as short_url', 
-    'us.created_at as created_at'
-  )
-  .innerJoin('users_organization_service_roles_url_shortener as uosr', 'uosr.url_shorten_id', 'us.id')
-  .innerJoin('users_organization_service_roles as uos', 'uosr.users_organization_service_roles_id', 'uos.id')
-  .innerJoin(' users_organizations as uo', 'uos.users_organization_id', 'uo.id')
-  .innerJoin('users as u', 'uo.user_id', 'u.id')
-  .innerJoin('organizations as o', 'uo.organization_id', 'o.id')
-  .where('u.id', ctx.userId)
-  .where('o.id', ctx.organizationId)
-  .orderBy('us.created_at', 'desc')
-  .limit(5)
+  const whitelabel = await OrganizationWhiteLabelCustomizationService.getWhiteLabelInfos(ctx.organizationId, trx) as any
+  const result: IShortenerUrlFromDB[] = await (trx || knexDatabase.knexConfig)('url_shorten as us')
+    .select('u.id as user_id', 
+      'o.id as organization_id', 
+      'us.*'
+    )
+    .innerJoin('users_organization_service_roles_url_shortener as uosr', 'uosr.url_shorten_id', 'us.id')
+    .innerJoin('users_organization_service_roles as uos', 'uosr.users_organization_service_roles_id', 'uos.id')
+    .innerJoin(' users_organizations as uo', 'uos.users_organization_id', 'uo.id')
+    .innerJoin('users as u', 'uo.user_id', 'u.id')
+    .innerJoin('organizations as o', 'uo.organization_id', 'o.id')
+    .where('u.id', ctx.userId)
+    .where('o.id', ctx.organizationId)
+    .orderBy('us.created_at', 'desc')
+    .limit(5)
 
   return result
+    .map(res => {
+      const adapted = shortUrlAdapter(res)
+      if (whitelabel?.redirectWhiteLabel) {
+        return {
+          ...adapted,
+          shortUrl: `https://${whitelabel.redirectWhiteLabel}/${adapted.urlCode}`
+        }
+      }
+
+      return adapted
+    })
 }
 
 export default {
