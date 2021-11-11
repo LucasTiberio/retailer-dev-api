@@ -4,7 +4,6 @@ import { ISendMail, ISendRecoveryPasswordMail, IMail, ISendInviteUserMail, ISend
 const frontUrl = process.env.FRONT_URL
 
 const getBaseUrl = (whiteLabelDomain?: string) => {
-  return 'http:localhost:3001'
   if (whiteLabelDomain) return `https://${whiteLabelDomain}`
 
   return frontUrl
