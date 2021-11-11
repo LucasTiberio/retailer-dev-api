@@ -13,4 +13,4 @@ data:
   WEBHOOK_URL: "https://webhook-staging.gohubly.com/graphql"
   REDIRECT_URL: https://go-staging.plugone.io
   VTEX_HOOK_URL: https://hook-orders-staging.plugone.io/feed/affiliate/vtex/orders/sync
-  COUPON_URL: staging-coupon.gohubly.com
+  COUPON_URL: staging-coupon.gohubly.com/graphql
