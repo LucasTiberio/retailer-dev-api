@@ -15,6 +15,7 @@ extend type Query {
   getUserCluster(input: GetUserClusterInput!): HublyClusterPayload! @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getUsersPlugForm: [PlugFormPayload]! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   getAffiliateCoupon: HublyCoupon @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
+  getAllAffiliatesCoupon: [HublyCouponAffiliate]! @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 type PlugFormPayload {
@@ -117,4 +118,12 @@ type HublyCoupon {
   coupon: String!
   sequence: Int!
   active: Boolean
+}
+
+type HublyCouponAffiliate {
+  username: String,
+  email: String!,
+  document: String,
+  affiliateId: String!
+  coupon: String
 }

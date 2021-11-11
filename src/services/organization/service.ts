@@ -732,6 +732,8 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
       .where('invite_hash', responseInvitePayload.inviteHash)
       .returning('organization_id')
 
+      console.log({ organizationId }, organizationId)
+
     const [affiliateId] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
       .update({
         active: responseInvitePayload.response === OrganizationInviteStatus.ACCEPT,
@@ -739,12 +741,14 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
       .where('users_organization_id', user.user_organization_id)
       .returning('id')
 
+    console.log({ affiliateId }, affiliateId)
+
     try {
-      await AppsService.generateAffiliateCoupon({
+      const res = await AppsService.generateAffiliateCoupon({
         affiliateId
       }, { organizationId })
     } catch (e) {
-
+      console.log('error', { e })
     } finally {
       if (!user.encrypted_password) {
         return {
@@ -1165,6 +1169,8 @@ const handleServiceMembersActivity = async (
         {
           userOrganizationId: userOrganizationServiceRoleFound.users_organization_id,
           activity: false,
+          organizationServiceRolesId: userOrganizationServiceRoleFound.id,
+          organizationId: context.organizationId
         },
         trx
       )
@@ -1175,6 +1181,8 @@ const handleServiceMembersActivity = async (
         {
           userOrganizationId: userOrganizationServiceRoleFound.users_organization_id,
           activity: true,
+          organizationServiceRolesId: userOrganizationServiceRoleFound.id,
+          organizationId: context.organizationId
         },
         trx
       )
@@ -1224,8 +1232,15 @@ const handleTeammatesActivity = async (input: { userOrganizationId: string; acti
   return _usersOrganizationsAdapter(userOrganizationInatived)
 }
 
-const _handleMemberActivity = async (input: { userOrganizationId: string; activity: boolean }, trx: Transaction) => {
-  const { userOrganizationId, activity } = input
+const _handleMemberActivity = async (input: { userOrganizationId: string; organizationServiceRolesId: string; organizationId: string; activity: boolean }, trx: Transaction) => {
+  const { userOrganizationId, organizationId, organizationServiceRolesId, activity } = input
+  
+  await AppsService.toggleAffiliateCoupon({
+    affiliateId: organizationServiceRolesId,
+    activity: activity
+  }, {
+    organizationId
+  })
 
   const organizationAdmin = await isOrganizationAdmin(userOrganizationId, trx)
 

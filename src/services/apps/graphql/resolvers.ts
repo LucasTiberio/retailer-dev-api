@@ -23,6 +23,9 @@ const resolvers: IResolvers = {
     getAffiliateCoupon: (_, __, { userServiceOrganizationRolesId, organizationId }) => {
       return AppsService.getAffiliateCoupon({ affiliateId: userServiceOrganizationRolesId }, { organizationId })
     },
+    getAllAffiliatesCoupon: (_, __, { organizationId }) => {
+      return AppsService.getAllAffiliatesCoupon({ organizationId })
+    },
   },
   Mutation: {
     savePlugForm: (_, { input }, { organizationId, client: { id: userId } }) => {

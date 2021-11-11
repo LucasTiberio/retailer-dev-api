@@ -249,6 +249,14 @@ export const getAffiliateCoupon = async (input: { affiliateId: string }, ctx: { 
   return HublyCouponRepository.getAffiliateCoupon(input, ctx)
 }
 
+export const getAllAffiliatesCoupon = async (ctx: { organizationId: string }) => {
+  return HublyCouponRepository.getAllAffiliatesCoupon(ctx)
+}
+
+export const toggleAffiliateCoupon = async (input: { affiliateId: string, activity?: boolean }, ctx: { organizationId: string }) => {
+  return HublyCouponRepository.toggleAffiliateCoupon(input, ctx)
+}
+
 export default {
   savePlugFormFields,
   getPlugFormFields,
@@ -269,5 +277,7 @@ export default {
   getUserCluster,
 
   generateAffiliateCoupon,
-  getAffiliateCoupon
+  getAffiliateCoupon,
+  getAllAffiliatesCoupon,
+  toggleAffiliateCoupon
 }
