@@ -20,8 +20,6 @@ import getAffiliates from './routes/get-affiliates'
 const logger = require('pino')()
 const app = express()
 
-app.use(cors())
-
 const prometheusMiddleware = prometheusBundle({
   includeMethod: true,
   includePath: true,
@@ -39,6 +37,7 @@ try {
   process.exit(0)
 }
 
+app.use(cors())
 app.use(prometheusMiddleware)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
