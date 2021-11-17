@@ -66,6 +66,45 @@ const getAllSubscriptions = async (
   }
 }
 
+const getAllExecutions = async (input: { offset: number, limit: number }, ctx: { organizationId: string }) => {
+  const query = `
+    query GetAll($input: GetAllExecutionsInput!) {
+      getAllExecutions(input: $input) {
+        data {
+          id
+          webhook {
+            apiKey
+            organizationId
+            description
+            enabledTopics
+            status
+          }
+          payload {
+            event
+          }
+          executed
+          nextExecutionAt
+        }
+        count
+      }
+    }
+  `
+
+  try {
+    const res = await fetchWebhookService(query, {
+      input: { ...input, ...ctx }
+    })
+
+    if (res?.data?.errors) {
+      throw new Error(res?.data?.errors[0]?.message)
+    }
+
+    return res?.data?.data?.getAllExecutions ?? []
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
 const createSubscription = async (
   input: IWebhookSubscriptions
 ) => {
@@ -116,9 +155,39 @@ const updateSubscription = async (
   }
 }
 
+const triggerManualSend = async (
+  input: { executionId: string }
+) => {
+  const query = `
+    mutation TriggerManualSend($input: TriggerManualSendInput!){
+      triggerManualSend(input: $input) {
+        success
+        nextExecution
+      }
+    }`
+
+  const variables = {
+    input
+  }
+
+  try {
+    const res = await fetchWebhookService(query, variables)
+
+    if (res.data?.errors) {
+      throw new Error(res.data.errors[0].message)
+    }
+
+    return res.data.data.triggerManualSend
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
 export default {
   getAvailableWebhooks,
   getAllSubscriptions,
+  getAllExecutions,
   createSubscription,
-  updateSubscription
+  updateSubscription,
+  triggerManualSend
 }

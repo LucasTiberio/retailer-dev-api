@@ -22,18 +22,15 @@ const getAffiliateAppMenu = (
     .filter((data) => {
       if (isAdmin) {
         if (data.installedApp?.affiliateStoreApp.toString() === '60d2193024d3230e2bdd7a5f') {
-          const config = data.installedApp.configs.find(config => config.key === 'block_feature_to_invalid_afilliates')
+          const config = data.installedApp.configs.find((config) => config.key === 'block_feature_to_invalid_afilliates')
           if (config?.value === 'true') {
             return data.app?.views.hasAdminView
-
           } else return false
         }
         return data.app?.views.hasAdminView
-      }
-      else {
+      } else {
         return data.app?.views.hasMemberView
       }
-
     })
     .map((appData) => {
       if (appData.app) {
@@ -189,18 +186,19 @@ export const organizationAdminMenu = async (
   }
 
   if (integrationType === Integrations.VTEX) {
-    if (paymentServiceStatus.maxSales > 0) {
-      baseAdminMenu[1].items[0].children.push(
-        {
-          name: 'insideSales',
-          slug: `/org/${slug}/affiliate/inside-sales`,
-        }
-        // {
-        //   name: 'abandonedCarts',
-        //   slug: `/org/${slug}/affiliate/abandoned-carts`,
-        // }
-      )
-    }
+    // if (paymentServiceStatus.maxSales > 0) {
+    //   baseAdminMenu[1].items[0].children
+    //     .push
+    //     // {
+    //     //   name: 'insideSales',
+    //     //   slug: `/org/${slug}/affiliate/inside-sales`,
+    //     // }
+    //     // {
+    //     //   name: 'abandonedCarts',
+    //     //   slug: `/org/${slug}/affiliate/abandoned-carts`,
+    //     // }
+    //     ()
+    // }
 
     return baseAdminMenu
   }

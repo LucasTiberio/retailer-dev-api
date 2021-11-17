@@ -17,7 +17,13 @@ import PaymentService from './services/payments/service'
 import IntegrationService from './services/integration/service'
 import { PaymentServiceStatus } from './services/payments/types'
 import { Integrations } from './services/integration/types'
-import { organizationsPlanDoesNotHaveAffiliateStore, onlyIuguIntegrationFeature, onlyVtexIntegrationFeature, userDoesNotAcceptTermsAndConditions, organizationHasBillingDependency } from './common/errors'
+import {
+  organizationsPlanDoesNotHaveAffiliateStore,
+  onlyIuguIntegrationFeature,
+  onlyVtexIntegrationFeature,
+  userDoesNotAcceptTermsAndConditions,
+  organizationHasBillingDependency,
+} from './common/errors'
 import TermsAndConditionsService from './services/terms-and-conditions/service'
 import AppsService from './services/apps/service'
 import AppStoreService from './services/app-store/service'
@@ -163,9 +169,9 @@ const directiveResolvers: IDirectiveResolvers = {
     let serviceName = other.variableValues.input?.serviceName || args.serviceName
 
     if (!serviceName) {
-      const fields = other.fieldNodes[0].arguments[0].value.fields
+      const fields = other.fieldNodes[0].arguments[0]?.value?.fields
       const serviceNameField = fields.filter((el: any) => el.name.value === 'serviceName')
-      serviceName = serviceNameField[0].value.value
+      serviceName = serviceNameField[0]?.value?.value
     }
 
     if (!serviceName) throw new Error('service identifier invalid!')
@@ -183,6 +189,7 @@ const directiveResolvers: IDirectiveResolvers = {
       context.organizationId = organizationId
       context.isOrganizationAdmin = false
       context.userServiceOrganizationRolesId = userServiceOrganizationRoles[0].id
+      console.log({ a: context.userServiceOrganizationRolesId })
       return next()
     }
     throw new Error(`Must have role: ${args.role}, you have role: ${userServiceOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)
@@ -231,15 +238,18 @@ const directiveResolvers: IDirectiveResolvers = {
   },
 
   async verifyBlockedFeature(next, _, __, context): Promise<NextFunction> {
-    const { client: { id }, organizationId, headers } = context
+    const {
+      client: { id },
+      organizationId,
+    } = context
     const apps = await AppStoreService.getInstalledAffiliateStoreApps(organizationId, 'hubly form')
-    const hasHublyFormInstalled = apps.find(app => app.affiliateStoreApp.toString() === '60d2193024d3230e2bdd7a5f')
+    const hasHublyFormInstalled = apps.find((app) => app.affiliateStoreApp.toString() === '60d2193024d3230e2bdd7a5f')
 
-    if (!hasHublyFormInstalled) return next()
+    if (!hasHublyFormInstalled || !hasHublyFormInstalled.requirements.length) return next()
 
     const dataUser = await AppsService.getPlugFormFields({
       userId: id,
-      organizationId: organizationId
+      organizationId: organizationId,
     })
 
     if (dataUser?.validated === true) return next()
@@ -258,7 +268,7 @@ const directiveResolvers: IDirectiveResolvers = {
       client: {
         id: context.client.id,
       },
-      headers: context.headers.origin
+      headers: context.headers.origin,
     })
 
     if (!validTermsAndConditions) return next()
