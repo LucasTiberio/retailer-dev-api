@@ -1,5 +1,6 @@
 import { Transaction } from 'knex'
 import knexDatabase from '../../../knex-database'
+import { _organizationAdapter } from '../../organization/adapters'
 import { usersOrganizationsAdapter } from '../adapters'
 import { InviteStatus, ResponseStatus } from '../types'
 
@@ -7,6 +8,17 @@ export const getPendingAndIsRequestedMembersByOrganizationId = async (organizati
   const members = await (trx || knexDatabase.knexConfig)('users_organizations').where('organization_id', organizationId).andWhere('is_requested', true).andWhere('invite_status', 'pendent')
 
   return members.map(usersOrganizationsAdapter)
+}
+
+export const getOrganizationsWaitingForApproval = async (userId: string, trx: Transaction) => {
+  const organizations = await (trx || knexDatabase.knexConfig)('users_organizations as uo')
+    .innerJoin('organizations as o', 'o.id', 'uo.organization_id')
+    .where('uo.user_id', userId)
+    .andWhere('uo.is_requested', true)
+    .andWhere('uo.invite_status', 'pendent')
+    .select('o.*')
+
+  return organizations.map(_organizationAdapter)
 }
 
 export const handleMemberInviteStatus = async (

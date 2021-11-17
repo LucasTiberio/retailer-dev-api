@@ -1,5 +1,5 @@
 import { Transaction } from 'knex'
-import { getPendingAndIsRequestedMembersByOrganizationId, handleMemberInviteStatus, cancelMemberInvite, memberHasInvite } from './repositories/users_organizations'
+import { getPendingAndIsRequestedMembersByOrganizationId, handleMemberInviteStatus, cancelMemberInvite, memberHasInvite, getOrganizationsWaitingForApproval } from './repositories/users_organizations'
 import { ResponseStatus } from './types'
 import UserService from '../users/service'
 import MadesaMailService from '../mail/madesa'
@@ -100,8 +100,13 @@ const handleMemberInvitation = async (
   return memberUpdated
 }
 
+const getOrganizationsWaitingForAdminApproval = (userId: string, trx: Transaction) => {
+  return getOrganizationsWaitingForApproval(userId, trx)
+}
+
 export default {
   getPendingMembersByOrganizationId,
+  getOrganizationsWaitingForAdminApproval,
   handleMemberInvitation,
   deleteMemberInvitation,
 }
