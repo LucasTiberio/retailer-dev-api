@@ -13,8 +13,6 @@ export const getVtexProducts = async (accountName: string, from: number = 0, to:
     }
 
     searchUrl += `${category ? '&' : '?'}_from=${from}&_to=${to}`;
-    
-    console.log("searchUrl", searchUrl)
 
     const { data: vtexProductsData } = await Axios.get(searchUrl, {
         headers: {

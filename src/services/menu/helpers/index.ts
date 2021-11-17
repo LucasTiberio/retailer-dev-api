@@ -298,7 +298,7 @@ export const affiliateMemberMountMenu = async (
       },
     ],
   }
-// coloquei insadesale em analyst só pra teste 
+// coloquei insidesale em analyst só pra teste 
 
   let affiliateSale: any = {
     name: 'affiliate',
