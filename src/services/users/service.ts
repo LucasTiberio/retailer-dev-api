@@ -20,6 +20,8 @@ import { ServiceRoles, Services } from '../services/types'
 import AppsService from '../apps/service'
 import AppsStoreService from '../app-store/service'
 import { IBaseMail } from '../mail/types'
+import GrowPowerMailService from '../mail/grow-power'
+import { GROW_POWER_WHITE_LABEL_DOMAIN } from '../../common/consts'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -178,6 +180,9 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
     } else if (MADESA_WHITE_LABEL_DOMAIN.includes(domain)) {
       await MadesaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(domain)) {
+      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+      await GrowPowerMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     } else {
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     }
@@ -276,6 +281,9 @@ const signUpWithOrganization = async (
     let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
     if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await LojaIntegradaMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash })
+    } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+      await GrowPowerMailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     } else {
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
@@ -360,7 +368,13 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
         username: user.username,
         hashToVerify: encryptedHashVerification,
       })
-    }else {
+    } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await GrowPowerMailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+      })
+    } else {
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveryPasswordMail({
         email: user.email,
@@ -395,6 +409,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       await LojaIntegradaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
       await MadesaMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
+    } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await GrowPowerMailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username })
     } else {
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username, whiteLabelInfo })

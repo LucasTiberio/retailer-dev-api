@@ -19,7 +19,13 @@ const resolvers: IResolvers = {
     },
     getUsersPlugForm: (_, __, { organizationId }) => {
       return AppsService.getUsersPlugForm({ organizationId })
-    }
+    },
+    getAffiliateCoupon: (_, __, { userServiceOrganizationRolesId, organizationId }) => {
+      return AppsService.getAffiliateCoupon({ affiliateId: userServiceOrganizationRolesId }, { organizationId })
+    },
+    getAllAffiliatesCoupon: (_, __, { organizationId }) => {
+      return AppsService.getAllAffiliatesCoupon({ organizationId })
+    },
   },
   Mutation: {
     savePlugForm: (_, { input }, { organizationId, client: { id: userId } }) => {
@@ -41,6 +47,9 @@ const resolvers: IResolvers = {
     },
     updateUserCluster: (_, { input }, { organizationId }) => {
       return AppsService.updateUserCluster(input, { organizationId })
+    },
+    generateAffiliateCoupon: (_, __, { userServiceOrganizationRolesId, organizationId }) => {
+      return AppsService.generateAffiliateCoupon({ affiliateId: userServiceOrganizationRolesId }, { organizationId })
     },
   },
 }

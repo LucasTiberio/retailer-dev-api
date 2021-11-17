@@ -10,16 +10,16 @@ import ClientAffiliate from '../client'
 import RepositoryServices from '../../services/repository/users_organization_service_roles'
 import { Transaction } from 'knex'
 
-const vtexUtmSource = 'plugone_affiliate'
+const utmSource = 'affiliate_link_generator'
 
 export const generateVtexShortener = (originalUrl: string, hasQueryString: boolean, affiliateId: string, organizationId: string) => {
-  const urlWithMemberAttached = `${originalUrl}${hasQueryString ? '&' : '?'}utm_source=${vtexUtmSource}&utm_campaign=${affiliateId}_${organizationId}`
+  const urlWithMemberAttached = `${originalUrl}${hasQueryString ? '&' : '?'}utm_source=${utmSource}&utm_campaign=${affiliateId}_${organizationId}`
 
   return urlWithMemberAttached
 }
 
 export const generateLojaIntegradaShortener = (originalUrl: string, hasQueryString: boolean, affiliateId: string, organizationId: string) => {
-  const urlWithMemberAttached = `${originalUrl}${hasQueryString ? '&' : '?'}utm_campaign=plugone-affiliate_${affiliateId}_${organizationId}`
+  const urlWithMemberAttached = `${originalUrl}${hasQueryString ? '&' : '?'}utm_campaign=affiliate-link-generator_plugone-affiliate_${affiliateId}_${organizationId}`
 
   return urlWithMemberAttached
 }

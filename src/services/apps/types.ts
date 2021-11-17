@@ -81,3 +81,12 @@ export interface IHublyClusterData {
   affiliateId: string
   name: string
 }
+
+export interface IHublyCoupon {
+  affiliateId: string;
+  organizationId: string;
+  campaignId: string;
+  coupon: string;
+  sequence: number;
+  active?: boolean;
+}

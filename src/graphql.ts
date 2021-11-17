@@ -169,9 +169,9 @@ const directiveResolvers: IDirectiveResolvers = {
     let serviceName = other.variableValues.input?.serviceName || args.serviceName
 
     if (!serviceName) {
-      const fields = other.fieldNodes[0].arguments[0].value.fields
+      const fields = other.fieldNodes[0].arguments[0]?.value?.fields
       const serviceNameField = fields.filter((el: any) => el.name.value === 'serviceName')
-      serviceName = serviceNameField[0].value.value
+      serviceName = serviceNameField[0]?.value?.value
     }
 
     if (!serviceName) throw new Error('service identifier invalid!')
@@ -189,6 +189,7 @@ const directiveResolvers: IDirectiveResolvers = {
       context.organizationId = organizationId
       context.isOrganizationAdmin = false
       context.userServiceOrganizationRolesId = userServiceOrganizationRoles[0].id
+      console.log({ a: context.userServiceOrganizationRolesId })
       return next()
     }
     throw new Error(`Must have role: ${args.role}, you have role: ${userServiceOrganizationRoles.map((item: IOrganizationRoleResponse) => item.name)}`)

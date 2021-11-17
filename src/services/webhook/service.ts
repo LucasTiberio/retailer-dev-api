@@ -13,6 +13,10 @@ const getAllWebhookSubscriptions = async (
   return WebhookSubscriptionRepository.getAllSubscriptions(input)
 }
 
+const getAllExecutions = async (input: { offset: number, limit: number }, ctx: { organizationId: string }) => {
+  return WebhookSubscriptionRepository.getAllExecutions(input, ctx)
+}
+
 const subscribe = async (
   input: IWebhookSubscriptions
 ) => {
@@ -46,9 +50,17 @@ const updateSubscription = async (
   }
 }
 
+const triggerManualSend = async (
+  input: { executionId: string }
+) => {
+  return WebhookSubscriptionRepository.triggerManualSend(input)
+}
+
 export default {
   getAvailableWebhooks,
   getAllWebhookSubscriptions,
+  getAllExecutions,
   subscribe,
-  updateSubscription
+  updateSubscription,
+  triggerManualSend
 }
