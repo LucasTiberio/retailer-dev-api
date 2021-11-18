@@ -10,6 +10,7 @@ import { IUserToken } from '../authentication/types'
 import OrganizationService from '../organization/service'
 import ServicesService from '../services/service'
 import WhiteLabelService from '../white-label/service'
+import UserOrganizationsService from '../users-organizations/service'
 import { RedisClient } from 'redis'
 import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { IncomingHttpHeaders } from 'http'
@@ -22,6 +23,7 @@ import AppsStoreService from '../app-store/service'
 import { IBaseMail } from '../mail/types'
 import GrowPowerMailService from '../mail/grow-power'
 import { GROW_POWER_WHITE_LABEL_DOMAIN } from '../../common/consts'
+import { InviteStatus } from '../users-organizations/types'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -318,6 +320,16 @@ const isUserVerified = async (client: IUserToken, trx: Transaction) => {
   return user.verified
 }
 
+const getOrganizationsWaitingForApproval = async (context: { client: IUserToken } ,trx: Transaction) => {
+  const { client } = context
+
+  if (!client) throw new Error('Token must be provided.')
+
+  const pendingOrganizations = await UserOrganizationsService.getOrganizationsWaitingForAdminApproval(client.id, trx)
+
+  return pendingOrganizations
+}
+
 const getUserByEmail = async (email: string, trx: Transaction) => {
   const [user] = await (trx || database.knexConfig)('users').where('email', email.toLowerCase()).select()
 
@@ -477,5 +489,6 @@ export default {
   signUpWithOrganization,
   signUpWithEmailPhoneNameDocument,
   getUserPendencies,
-  getPendencyMetadata
+  getPendencyMetadata,
+  getOrganizationsWaitingForApproval
 }

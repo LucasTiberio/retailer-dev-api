@@ -1,6 +1,7 @@
 extend type Query {
   getUser: User! @acceptTermsAndConditions @isVerified @isAuthenticated
   isUserVerified: Boolean! @acceptTermsAndConditions @isAuthenticated
+  getOrganizationsWaitingForApproval: [Organization]! @acceptTermsAndConditions @isAuthenticated
   getUserPendencies: [UserPendenciesWithMetadata]! @hasOrganizationRole(role: ["ADMIN", "MEMBER"]) @acceptTermsAndConditions @isVerified @isAuthenticated
 }
 

@@ -55,6 +55,11 @@ const resolvers: IResolvers = {
         return service.isUserVerified(client, trx)
       })
     },
+    getOrganizationsWaitingForApproval: (_, __, { client, headers }) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
+        return service.getOrganizationsWaitingForApproval({ client }, trx)
+      })
+    },
     getUserPendencies: (_, __, { organizationId, organizationRoles, client: { id: userId } }) => {
       return service.getUserPendencies({ organizationId, userId, organizationRoles })
     },
