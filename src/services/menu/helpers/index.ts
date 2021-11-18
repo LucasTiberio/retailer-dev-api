@@ -271,6 +271,13 @@ export const affiliateMemberMountMenu = async (
     ]
   }
 
+  const onlyStagingMenus = process.env.ENVIRONMENT === 'staging' ? [
+    {
+      name: 'insideSales',
+      slug: `/org/${slug}/affiliate/inside-sales`,
+    }
+  ] : []
+
   let affiliateAnalyst: any = {
     name: 'affiliate',
     children: [
@@ -290,10 +297,7 @@ export const affiliateMemberMountMenu = async (
         name: 'linkGenerator',
         slug: `/org/${slug}/affiliate/link-generator`,
       },
-      {
-        name: 'insideSales',
-        slug: `/org/${slug}/affiliate/inside-sales`,
-      },
+      ...onlyStagingMenus
     ],
   }
 // coloquei insidesale em analyst só pra teste 
@@ -317,10 +321,7 @@ export const affiliateMemberMountMenu = async (
         name: 'linkGenerator',
         slug: `/org/${slug}/affiliate/link-generator`,
       },
-      {
-        name: 'insideSales',
-        slug: `/org/${slug}/affiliate/inside-sales`,
-      }
+      ...onlyStagingMenus
     ],
   }
 
