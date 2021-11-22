@@ -13,3 +13,9 @@ spec:
       - backend:
           serviceName: plugone-api-staging
           servicePort: 80
+  - host: api-staging.gohubly.com
+    http:
+      paths:
+      - backend:
+          serviceName: plugone-api-staging
+          servicePort: 80
