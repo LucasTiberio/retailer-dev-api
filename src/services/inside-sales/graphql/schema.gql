@@ -1,7 +1,74 @@
 extend type Mutation {
-  sendAffiliateInsideSalesSpecialistMail(input: SendAffiliateInsideSalesSpecialistMailInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @isAuthenticated
+  sendAffiliateInsideSalesSpecialistMail(input: SendAffiliateInsideSalesSpecialistMailInput!): Boolean! 
+    @hasOrganizationRole(role: ["ADMIN"]) 
+    @organizationPaidVerify 
+    @isVerified 
+    @isAuthenticated
+}
+
+extend type Query {
+  getAllVtexProducts(input: getAllVtexProductsSearchInput): VtexProducts @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") @hasIntegration @isVerified @acceptTermsAndConditions @isAuthenticated
+  getCategoriesVtex: [VtexCategories] 
+    @hasServiceRole(role: ["ANALYST", "SALE"], serviceName: "affiliate") 
+    @hasIntegration
+    @isVerified 
+    @acceptTermsAndConditions 
+    @isAuthenticated
 }
 
 input SendAffiliateInsideSalesSpecialistMailInput {
   email: String!
+}
+
+input getAllVtexProductsSearchInput {
+  from: Int
+  to: Int
+  search: String
+  category: String
+}
+
+type VtexProducts {
+  products: [VtexProduct]
+  pageInfo: PageInfo
+}
+
+type VtexProduct {
+  productName: String
+  productId: Int
+  items: [VtextProductItem]
+  brand: String
+  categories: [String]
+}
+
+type PageInfo {
+  hasNextPage: Boolean
+}
+
+type VtextProductItem {
+  itemId: String
+  name: String
+  nameComplete: String
+  complementName: String
+  images: [VtextProductImage]
+  sellers: [VtextProductSeller]
+}
+
+type VtextProductImage {
+  imageUrl: String
+  imageText: String
+}
+
+type VtextProductSeller {
+  sellerName: String
+  commertialOffer: VtextProductPrices
+}
+
+type VtextProductPrices {
+  PriceWithoutDiscount: String
+  Price: String
+}
+
+type VtexCategories {
+  id: String
+  name: String
 }

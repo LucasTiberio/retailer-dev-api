@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: plugone-api-config
-data:  
+data:
   BUCKET_URL: https://plugone-staging.nyc3.digitaloceanspaces.com
   BUCKET_AFFILIATE_INSIDE_SALES_PIXEL_PATH: /pixel-affiliate/staging-pixel-sale-affiliate.js  
   DIGITAL_OCEAN_BUCKET_NAME: plugone-staging
