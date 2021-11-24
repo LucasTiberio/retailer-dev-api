@@ -37,6 +37,7 @@ try {
   process.exit(0)
 }
 
+server.applyMiddleware({ app, path: "/graphql", cors: true });
 app.use(cors())
 app.use(prometheusMiddleware)
 app.use(express.json())

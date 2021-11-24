@@ -4,6 +4,7 @@ bases:
 resources:
   - secret.yml
   - ingress.yml
+  - ingress-hubly.yml
 
 patchesStrategicMerge:
   - configmap.yml
