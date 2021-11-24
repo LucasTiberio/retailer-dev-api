@@ -85,6 +85,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: false }))
 server.applyMiddleware({
   app,
   cors: true,
+  path: '/graphql',
   bodyParserConfig: {
     limit: '50mb',
   },
