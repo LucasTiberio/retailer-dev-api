@@ -2,6 +2,8 @@ import { checkCartReadOnly, getPreviousCarts } from '../helpers'
 import { AbandonedCartFromDB } from '../types'
 
 export const responseAbandonedCartAdapter = async (record: AbandonedCartFromDB): Promise<any> => {
+  if (!record._id) return null
+
   let children = await getPreviousCarts(record._id)
   let readOnly = await checkCartReadOnly(record._id)
   let isChildren = false
@@ -29,6 +31,10 @@ export const responseAbandonedCartAdapter = async (record: AbandonedCartFromDB):
 }
 
 export const abandonedCartAdapter = async (record: AbandonedCartFromDB, isOwner?: boolean): Promise<any> => {
+  if (!record._id) {
+    return null
+  }
+
   return {
     id: record._id,
     organizationId: record.organizationId,

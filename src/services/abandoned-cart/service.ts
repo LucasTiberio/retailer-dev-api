@@ -90,6 +90,10 @@ const getFilteredAbandonedCarts = async (organizationId: string, affiliateId: st
           return null
         }
 
+        if (!cart._id) {
+          return null
+        }
+
         let email: any = cart.email
         let phone: any = cart.phone
         let readOnly = await checkCartReadOnly(cart._id)
@@ -249,7 +253,7 @@ const assumeCartAssistance = async (abandonedCartId: string, organizationId: str
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     const now = moment().utc().toISOString()
     if (cartObj) {
-      if (await checkCartReadOnly(cartObj._id)) {
+      if (await checkCartReadOnly(cartObj._id as string)) {
         throw new Error(cartIsReadOnly)
       }
       if (cartObj.blockedAffiliates.find((item) => item.id === affiliateId)) {
@@ -281,7 +285,7 @@ const leaveCartAssistance = async (abandonedCartId: string, organizationId: stri
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     const now = moment().utc().toISOString()
     if (cartObj) {
-      if (await checkCartReadOnly(cartObj._id)) {
+      if (await checkCartReadOnly(cartObj._id as string)) {
         throw new Error(cartIsReadOnly)
       }
       if (cartObj.currentAssistantAffiliateId === affiliateId && cartObj.status === AbandonedCartStatus.ENGAGED) {
@@ -320,7 +324,7 @@ const rejectCartAssistance = async (abandonedCartId: string, organizationId: str
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     const now = moment().utc().toISOString()
     if (cartObj) {
-      if (await checkCartReadOnly(cartObj._id)) {
+      if (await checkCartReadOnly(cartObj._id as string)) {
         throw new Error(cartIsReadOnly)
       }
       if (cartObj.currentAssistantAffiliateId === affiliateId && cartObj.status === AbandonedCartStatus.ENGAGED) {
@@ -356,7 +360,7 @@ const createObservation = async (abandonedCartId: string, organizationId: string
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     if (cartObj) {
-      if (await checkCartReadOnly(cartObj._id)) {
+      if (await checkCartReadOnly(cartObj._id as string)) {
         throw new Error(cartIsReadOnly)
       }
       if (cartObj.currentAssistantAffiliateId === affiliateId) {
@@ -385,7 +389,7 @@ const editObservation = async (abandonedCartId: string, organizationId: string, 
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     if (cartObj) {
-      if (await checkCartReadOnly(cartObj._id)) {
+      if (await checkCartReadOnly(cartObj._id as string)) {
         throw new Error(cartIsReadOnly)
       }
       if (cartObj.currentAssistantAffiliateId === affiliateId) {
@@ -414,7 +418,7 @@ const removeObservation = async (abandonedCartId: string, organizationId: string
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     if (cartObj) {
-      if (await checkCartReadOnly(cartObj._id)) {
+      if (await checkCartReadOnly(cartObj._id as string)) {
         throw new Error(cartIsReadOnly)
       }
       if (cartObj.currentAssistantAffiliateId === affiliateId) {
@@ -445,7 +449,7 @@ const removeCartAssistance = async (abandonedCartId: string, organizationId: str
   try {
     let cartObj = await AbandonedCart.findOne({ _id: abandonedCartId, organizationId })
     if (cartObj) {
-      if (await checkCartReadOnly(cartObj._id)) {
+      if (await checkCartReadOnly(cartObj._id as string)) {
         throw new Error(cartIsReadOnly)
       }
       if (cartObj.status === AbandonedCartStatus.ENGAGED && cartObj.currentAssistantAffiliateId) {
