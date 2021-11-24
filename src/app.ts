@@ -83,7 +83,14 @@ const specs = swaggerJsdoc(swaggerOptions)
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: false }))
 
-server.applyMiddleware({ app, cors: true })
+server.applyMiddleware({
+  app,
+  cors: true,
+  path: '/graphql',
+  bodyParserConfig: {
+    limit: '50mb',
+  },
+})
 
 const port = process.env.PORT || 80
 

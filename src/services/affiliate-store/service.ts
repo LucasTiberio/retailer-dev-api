@@ -370,13 +370,19 @@ const addOrganizationAffiliateStoreBanner = async (
 
   const banners = await RepositoryOrganizationAffiliateStoreBanner.getCountByOrganizationId(affiliateStore.id, trx)
 
+  console.log({ input })
+
   if (Number(banners[0].count) >= 3) {
     throw new Error(onlyThreeBannersInAffiliateStore)
   }
 
   let { mimetype, createReadStream } = await input.data
 
+  console.log({ mimetype, createReadStream })
+
   let data = createReadStream()
+
+  console.log({ data })
 
   if (!mimetype.match(/\/png/gi)?.length && !mimetype.match(/\/jpg/gi)?.length && !mimetype.match(/\/jpeg/gi)?.length) {
     throw new Error(onlyPnhAndJpgIsSupported)
@@ -394,6 +400,8 @@ const addOrganizationAffiliateStoreBanner = async (
     newData = await data.pipe(pipeline)
   }
 
+  console.log({ newData })
+
   const imageUploaded = await StorageService.uploadImage(
     process.env.NODE_ENV === 'test' ? `tdd/affiliate-store/banners/${path}` : `affiliate-store/banners/${path}`,
     process.env.NODE_ENV === 'test' ? data : newData,
@@ -401,9 +409,15 @@ const addOrganizationAffiliateStoreBanner = async (
     trx
   )
 
+  console.log({ imageUploaded })
+
   const imageUploadedUrl = imageUploaded.url
 
   const [bannerAdded] = await RepositoryOrganizationAffiliateStoreBanner.create(affiliateStore.id, imageUploadedUrl, trx)
+
+  console.log({ bannerAdded })
+
+  console.log('organizationAffiliateStoreBannerAdapter(bannerAdded)', organizationAffiliateStoreBannerAdapter(bannerAdded))
 
   return organizationAffiliateStoreBannerAdapter(bannerAdded)
 }
@@ -657,12 +671,14 @@ const getAffiliateStoreWithProducts = async (
     if (helperComplement) {
       const prevHelperComplement = helperComplement.prev()
       if (prevHelperComplement && prevHelperComplement.length) {
-        $(prevHelperComplement[0]).find('a[href$="/p"]').each((_, item) => {
-          const href = $(item).attr('href')
-          const newHref = href + '?utm_source=affiliate_store'
+        $(prevHelperComplement[0])
+          .find('a[href$="/p"]')
+          .each((_, item) => {
+            const href = $(item).attr('href')
+            const newHref = href + '?utm_source=affiliate_store'
 
-          $(item).attr('href', newHref)
-        })
+            $(item).attr('href', newHref)
+          })
         console.log({ item }, $.html(prevHelperComplement[0]))
         activeProducts.push($.html(prevHelperComplement[0]))
       }

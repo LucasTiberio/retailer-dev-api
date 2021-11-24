@@ -83,13 +83,9 @@ const resolversBase: IResolvers = {
     name: 'Upload',
     description: 'The `Upload` scalar type represents a file upload.',
     async parseValue(value: Promise<FileUpload>): Promise<FileUpload> {
-      console.log('init file upload')
       const upload = await value
-      console.log('upload value', upload)
       const stream = upload.createReadStream()
-      console.log('stream value', stream)
       const fileType = await FileType.fromStream(stream)
-      console.log('fileType value', fileType)
 
       if (fileType?.mime !== upload.mimetype) throw new GraphQLError('Mime type does not match file content.')
 

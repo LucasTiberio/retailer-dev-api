@@ -3,8 +3,8 @@ import { Stream } from 'stream'
 import { Transaction } from 'knex'
 import knexDatabase from '../../knex-database'
 import { IImageFromDB } from './types'
-const AWS = require('aws-sdk');
-const logger = require('pino')();
+const AWS = require('aws-sdk')
+const logger = require('pino')()
 
 const imageAdapter = (record: IImageFromDB) => ({
   id: record.id,
@@ -63,8 +63,6 @@ const getFileByName = (filename: string) => {
     })
 }
 
-logger.info({ DIGITAL_OCEAN_BUCKET_NAME: process.env.DIGITAL_OCEAN_BUCKET_NAME });
-
 const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: Transaction) => {
   var params = {
     Key: path,
@@ -74,7 +72,7 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
     ContentType: mimetype,
   }
 
-  logger.info({ params });
+  console.log({ params })
 
   try {
     const image = await s3
@@ -82,14 +80,15 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
       .promise()
       .then((res: any) => res.Location)
       .catch((err: Error) => {
+        console.log({ uploadError: err })
         throw new Error(err.message)
       })
 
-      logger.info({ image });
+    logger.info({ image })
 
     let imageFound = await getImageByUrl(image, trx)
 
-    logger.info({ imageFound });
+    logger.info({ imageFound })
 
     if (!imageFound) {
       let query = (trx || knexDatabase.knexConfig)('image')
@@ -102,11 +101,11 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
       imageFound = imageInserted
     }
 
-    logger.info('depois', { imageFound });
+    logger.info('depois', { imageFound })
 
     return imageAdapter(imageFound)
   } catch (error) {
-    logger.error(error.message);
+    logger.error(error.message)
     throw new Error(error.message)
   }
 }
@@ -120,13 +119,13 @@ const deleteImage = async (key: string) => {
       .promise()
       .then((res: any) => res.Location)
       .catch((err: Error) => {
-        logger.error(err.message);
+        logger.error(err.message)
         throw new Error(err.message)
       })
 
     return true
   } catch (error) {
-    logger.error(error.message);
+    logger.error(error.message)
     throw new Error(error.message)
   }
 }
@@ -136,5 +135,5 @@ export default {
   getImageById,
   deleteImage,
   getImageByUrl,
-  imageAdapter
+  imageAdapter,
 }

@@ -1,4 +1,4 @@
-FROM node:12-alpine
+FROM node:14.18.0
 
 ENV NODE_ENV=production
 ENV NODE_TLS_REJECT_UNAUTHORIZED=0
