@@ -69,7 +69,7 @@ export interface IAbandonedCart {
 }
 
 export interface AbandonedCartFromDB {
-  _id: string
+  _id?: string
   organizationId: string
   orderFormId: string
   orderId?: string
