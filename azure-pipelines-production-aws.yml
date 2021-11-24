@@ -23,7 +23,7 @@ stages:
         steps:
           - task: NodeTool@0
             inputs:
-              versionSpec: "14.17.5"
+              versionSpec: "14.18.0"
               checkLatest: true
             displayName: Install Node
 
