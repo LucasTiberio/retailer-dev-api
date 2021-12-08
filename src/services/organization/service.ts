@@ -614,6 +614,7 @@ const requestAffiliateServiceMembers = async (
 
         if (userEmail) {
           const usersOrganizationFound = await getUserOrganizationByIds(userEmail.id, organizationId, trx)
+          const [organizationServiceRoleFound] = await ServicesService.getUserInOrganizationServiceByUserOrganizationId({ usersOrganizationId: usersOrganizationFound.id }, trx)
           const homeShortUrl = await generateAffiliateHomeLink({
             userId: userEmail.id,
             affiliateId: usersOrganizationFound.id,
@@ -623,6 +624,7 @@ const requestAffiliateServiceMembers = async (
           return {
             email: userEmail.email,
             organizationRoleId: usersOrganizationFound.id,
+            affiliateId: organizationServiceRoleFound.id,
             shortUrl: homeShortUrl
           }
 
@@ -680,9 +682,12 @@ const requestAffiliateServiceMembers = async (
           }
         }
 
+        const [organizationServiceRoleFound] = await ServicesService.getUserInOrganizationServiceByUserOrganizationId({ usersOrganizationId: userOrganizationCreated.id }, trx)
+
         return {
           email: item.email,
           organizationRoleId: userOrganizationCreated.id,
+          affiliateId: organizationServiceRoleFound.id,
           shortUrl: homeShortUrl
         }
       })
