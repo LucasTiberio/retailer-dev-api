@@ -621,8 +621,6 @@ const requestAffiliateServiceMembers = async (
             organizationId
           }, trx)
 
-          console.log({ homeShortUrl })
-
           return {
             email: userEmail.email,
             organizationRoleId: usersOrganizationFound.id,
