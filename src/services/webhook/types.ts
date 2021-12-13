@@ -1,6 +1,7 @@
 export interface IWebhookSubscriptions {
   created: Date,
   updated: Date,
+  apiKey: string,
   organizationId: string
   description?: string,
   enabledTopics: string[]
