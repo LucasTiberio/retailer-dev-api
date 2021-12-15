@@ -9,7 +9,7 @@
     "copy-schemas": "npx cpx src/services/authentication/graphql/*.gql dist/services/authentication/graphql && npx cpx src/services/users/graphql/*.gql dist/services/users/graphql && npx cpx src/services/organization/graphql/*.gql dist/services/organization/graphql && npx cpx src/services/services/graphql/*.gql dist/services/services/graphql && npx cpx src/services/vtex/graphql/*.gql dist/services/vtex/graphql && npx cpx src/services/shortener-url/graphql/*.gql dist/services/shortener-url/graphql && npx cpx src/services/affiliate/graphql/*.gql dist/services/affiliate/graphql && npx cpx src/services/organization-permissions/graphql/*.gql dist/services/organization-permissions/graphql && npx cpx src/services/service-permissions/graphql/*.gql dist/services/service-permissions/graphql && npx cpx src/services/menu/graphql/*.gql dist/services/menu/graphql && npx cpx src/services/bank-data/graphql/*.gql dist/services/bank-data/graphql && npx cpx src/services/payments/graphql/*.gql dist/services/payments/graphql && npx cpx src/services/integration/graphql/*.gql dist/services/integration/graphql && npx cpx src/services/affiliate-store/graphql/*.gql dist/services/affiliate-store/graphql && npx cpx src/services/inside-sales/graphql/*.gql dist/services/inside-sales/graphql && npx cpx src/services/personalized-commissions/graphql/*.gql dist/services/personalized-commissions/graphql && npx cpx src/services/terms-and-conditions/graphql/*.gql dist/services/terms-and-conditions/graphql && npx cpx src/services/inside-sales/graphql/*.gql dist/services/inside-sales/graphql && npx cpx src/services/commission-bonification/graphql/*.gql dist/services/commission-bonification/graphql && npx cpx src/services/saas-integration/graphql/*.gql dist/services/saas-integration/graphql && npx cpx src/services/finantial-conciliation/graphql/*.gql dist/services/finantial-conciliation/graphql && npx cpx src/services/users-organizations/graphql/*.gql dist/services/users-organizations/graphql && npx cpx src/services/organization-rules/graphql/*.gql dist/services/organization-rules/graphql && npx cpx src/services/abandoned-cart/graphql/*.gql dist/services/abandoned-cart/graphql && npx cpx src/services/white-label/graphql/*.gql dist/services/white-label/graphql && npx cpx src/services/app-store/graphql/*.gql dist/services/app-store/graphql && npx cpx src/services/apps/graphql/*.gql dist/services/apps/graphql && npx cpx src/services/webhook/graphql/*.gql dist/services/webhook/graphql",
     "start": "node app.js",
     "test": "jest --runInBand --detectOpenHandles",
-    "knex:migrate:make": "knex -x ts migrate:make",
+    "knex:migrate:make": "knex migrate:make",
     "knex:migrate:latest": "knex migrate:latest",
     "knex:migrate:rollback": "knex migrate:rollback"
   },
@@ -28,7 +28,6 @@
     "@types/jest": "^25.2.3",
     "@types/jsonwebtoken": "^8.3.9",
     "@types/lodash": "^4.14.150",
-    "@types/mongoose": "^5.7.32",
     "@types/node": "^12.12.31",
     "@types/nodemailer": "^6.4.0",
     "@types/redis": "^2.8.22",
@@ -64,10 +63,10 @@
     "merge-graphql-schemas": "^1.7.6",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.25",
-    "mongoose": "5.9.25",
+    "mongoose": "5.13.13",
     "node-fetch": "^2.6.0",
     "nodemailer": "^6.4.6",
-    "pg": "^8.4.1",
+    "pg": "^8.7.1",
     "pino-http": "^5.2.0",
     "prom-client": "^12.0.0",
     "rate-limiter-flexible": "^2.1.13",
@@ -79,10 +78,10 @@
     "stream-to-array": "^2.3.0",
     "swagger-jsdoc": "^5.0.1",
     "swagger-ui-express": "^4.1.4",
+    "typescript": "^4.4.3",
     "uuid": "^8.0.0",
     "uuidv4": "^6.0.8",
-    "valid-url": "^1.0.9",
-    "typescript": "^4.4.3"
+    "valid-url": "^1.0.9"
   },
   "resolutions": {
     "fs-capacitor": "^6.2.0",
@@ -96,9 +95,5 @@
     "ts-node": "^8.8.1",
     "ts-node-dev": "^1.0.0-pre.44",
     "ts-node-register": "^1.0.0"
-  },
-  "resolutions": {
-    "fs-capacitor": "^6.2.0",
-    "graphql-upload": "^11.0.0"
   }
 }

@@ -80,6 +80,7 @@ const uploadImage = async (path: string, stream: Stream, mimetype: string, trx: 
       .promise()
       .then((res: any) => res.Location)
       .catch((err: Error) => {
+        console.log({ uploadError: err })
         throw new Error(err.message)
       })
 

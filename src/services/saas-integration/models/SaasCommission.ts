@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose'
 import { PlugoneSaasCommissionStatus } from '../types'
 
 interface ISaasCommission extends Document {
+  _id: string
   plataformIdentifier: string
   plataform: string
   createdAt: string
