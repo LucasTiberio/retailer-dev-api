@@ -29,11 +29,14 @@ input UserVerifyEmailInput {
 
 input SignUpInput {
   username: String!
+  birthDate: String
+  gender: UserGender
   email: String!
   password: String!
   document: String!
   documentType: DocumentType!
-  phone: String!
+  phone: String
+  position: String
 }
 
 input SignUpWithOrganizationInput {
@@ -54,10 +57,13 @@ input OrganizationInfos {
 type User {
   id: String!
   username: String
+  birthDate: Date
+  gender: UserGender
   email: String!
   document: String
   documentType: DocumentType
   phone: String
+  position: String
   organizations(organizationId: String): [Organization]!
   token: String
 }
@@ -76,4 +82,10 @@ type UserPendenciesWithMetadata {
 enum UserPendencies {
   PLUG_FORM,
   HUBLY_INVOICE
+}
+
+enum UserGender {
+  male,
+  female,
+  undefined
 }

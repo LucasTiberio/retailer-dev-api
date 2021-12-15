@@ -24,6 +24,7 @@ import { IBaseMail } from '../mail/types'
 import GrowPowerMailService from '../mail/grow-power'
 import { GROW_POWER_WHITE_LABEL_DOMAIN } from '../../common/consts'
 import { InviteStatus } from '../users-organizations/types'
+import moment from 'moment'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -32,6 +33,9 @@ const _signUpAdapter = (record: ISignUpFromDB) => ({
   document: record.document,
   documentType: record.document_type,
   phone: record.phone,
+  gender: record.gender,
+  birthDate: record.birth_date,
+  position: record.position
 })
 
 
@@ -88,7 +92,7 @@ const resendConfirmationEmail = async (userId: string, context: { headers: Incom
 }
 
 const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
-  const { username, password, email, document, documentType, phone } = attrs
+  const { username, password, email, document, documentType, phone, birthDate: rawBirthDate, gender, position } = attrs
 
   if (!document) {
     throw new Error('document_is_required')
@@ -96,6 +100,14 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
   if (!documentType) {
     throw new Error('documentType_is_required')
+  }
+  
+  if (!username) {
+    throw new Error('username_is_required')
+  }
+  
+  if (!email) {
+    throw new Error('username_is_required')
   }
 
   if (!common.verifyPassword(password))
@@ -118,6 +130,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
   const encryptedPassword = await common.encrypt(password)
   const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
+  const birthDate = rawBirthDate ? moment(rawBirthDate).format('YYYY-MM-DD') : null
 
   let signUpCreated: ISignUpFromDB[]
 
@@ -131,6 +144,9 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
           document,
           document_type: documentType,
           phone,
+          gender,
+          birth_date: birthDate,
+          position
         })
         .where('id', userPreAddedFound.id)
         .into('users')
@@ -145,6 +161,9 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
           document,
           document_type: documentType,
           phone,
+          gender,
+          birth_date: birthDate,
+          position
         })
         .into('users')
         .returning('*')
@@ -217,14 +236,22 @@ const signUpWithOrganization = async (
   trx: Transaction
 ) => {
   try {
-    const { username, password, email, document, documentType, phone } = input
+    const { username, password, email, document, documentType, phone, birthDate: rawBirthDate, gender, position } = input
 
-    if (!document) {
-      throw new Error('document_is_required')
+    if (!rawBirthDate) {
+      throw new Error('birthDate_is_required')
     }
-
-    if (!documentType) {
-      throw new Error('documentType_is_required')
+    
+    if (!gender) {
+      throw new Error('gender_is_required')
+    }
+    
+    if (!username) {
+      throw new Error('username_is_required')
+    }
+    
+    if (!email) {
+      throw new Error('email_is_required')
     }
 
     if (!common.verifyPassword(password))
@@ -236,6 +263,7 @@ const signUpWithOrganization = async (
 
     const encryptedPassword = await common.encrypt(password)
     const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
+    const birthDate = rawBirthDate ? moment(rawBirthDate).format('YYYY-MM-DD') : null
 
     let signUpCreated: ISignUpFromDB[]
 
@@ -248,6 +276,9 @@ const signUpWithOrganization = async (
           document,
           document_type: documentType,
           phone,
+          gender,
+          birth_date: birthDate,
+          position
         })
         .where('id', userPreAddedFound.id)
         .into('users')
@@ -262,6 +293,9 @@ const signUpWithOrganization = async (
           document,
           document_type: documentType,
           phone,
+          gender,
+          birth_date: birthDate,
+          position
         })
         .into('users')
         .returning('*')

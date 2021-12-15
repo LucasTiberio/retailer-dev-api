@@ -1,10 +1,13 @@
 export interface ISignUp {
   username: string
+  gender?: EUserGender
+  birthDate?: string
   email: string
   password: string
   document: string
   documentType: IDocumentType
   phone: string
+  position?: string
 }
 
 export interface IUsersDB {
@@ -26,10 +29,13 @@ export interface ISignUpFromDB {
   username: string
   email: string
   password: string
+  birth_date: string
+  gender: EUserGender
   verification_hash: string
   document: string
   document_type: IDocumentType
   phone: string
+  position: string
 }
 
 export enum IDocumentType {
@@ -57,4 +63,10 @@ export interface UserPendencies {
 export enum EUserPendencies {
   PLUG_FORM = 'PLUG_FORM',
   HUBLY_INVOICE = 'HUBLY_INVOICE'
+}
+
+export enum EUserGender {
+  MALE = 'male',
+  FEMALE = 'female',
+  UNDEFINED = 'undefined'
 }
