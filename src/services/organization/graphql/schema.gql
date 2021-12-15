@@ -218,20 +218,32 @@ input CreateOrganizationInput {
 
 input AdditionalInfos {
   segment: String!
-  resellersEstimate: Int!
-  reason: String!
-  plataform: String!
+  resellersEstimate: Int
+  reason: String
+  plataform: String
 }
 
 input OrganizationInput {
   name: String!
-  phone: String!
-  contactEmail: String!
+  phone: String
+  contactEmail: String
+  document: String
+  address: OrganizationAddressInput
+}
+
+input OrganizationAddressInput {
+  cep: String!
+  address: String!
+  number: String!
+  complement: String
+  neighbourhood: String!
+  city: String!
+  state: String!
 }
 
 type Organization {
   name: String!
-  contactEmail: String!
+  contactEmail: String
   id: String!
   slug: String!
   active: Boolean!

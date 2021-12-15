@@ -84,10 +84,9 @@ const createOrganization = async (
   trx: Transaction
 ) => {
   const {
-    organization: { name, contactEmail, phone },
+    organization: { name, contactEmail, phone, document },
     integration,
   } = createOrganizationPayload
-
   try {
     const [organizationFound] = await (trx || knexDatabase.knexConfig)('organizations').where('user_id', context.client.id).select()
 
@@ -111,10 +110,14 @@ const createOrganization = async (
     }
 
     const attachedOrganizationInfosId = await attachOrganizationAditionalInfos(createOrganizationPayload.additionalInfos, trx)
+    const attachedOrganizationAddressId = createOrganizationPayload.organization.address 
+      ? await attachOrganizationAddress(createOrganizationPayload.organization.address, trx)
+      : null
 
     const [organizationCreated] = await (trx || database.knexConfig)
       .insert({
         name,
+        document,
         contact_email: contactEmail,
         user_id: context.client.id,
         slug: stringToSlug(name),
@@ -122,6 +125,7 @@ const createOrganization = async (
         free_trial: true,
         free_trial_expires: moment().add(FREE_TRIAL_DAYS, 'days'),
         organization_additional_infos_id: attachedOrganizationInfosId,
+        organization_address_id: attachedOrganizationAddressId
       })
       .into('organizations')
       .returning('*')
@@ -151,6 +155,7 @@ const createOrganization = async (
 
     return _organizationAdapter(organizationCreated)
   } catch (e) {
+    console.log(e.message)
     throw new Error(e.message)
   }
 }
@@ -159,6 +164,18 @@ const verifyOrganizationName = async (name: string, trx: Transaction) => {
   const organizationFound = await (trx || knexDatabase.knexConfig)('organizations').where('name', name).select()
 
   return !!organizationFound.length
+}
+
+const attachOrganizationAddress = async (address: IOrganizationPayload['organization']['address'], trx: Transaction) => {
+  if (!address) throw new Error('address_not_found')
+
+  const [organizationAddressCreatedId] = await (trx || knexDatabase.knexConfig)('organizations_address')
+    .insert({
+      ...address
+    })
+    .returning('id')
+
+  return organizationAddressCreatedId
 }
 
 const organizationRolesAttach = async (

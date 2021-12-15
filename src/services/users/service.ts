@@ -223,6 +223,16 @@ const signUpWithOrganization = async (
         name: string
         contactEmail: string
         phone: string
+        document: string
+        address: {
+          cep: string
+          address: string
+          number: string
+          complement?: string
+          neighbourhood: string
+          city: string
+          state: string
+        }
       }
       additionalInfos: {
         segment: string
@@ -235,6 +245,7 @@ const signUpWithOrganization = async (
   context: { redisClient: RedisClient; headers: IncomingHttpHeaders },
   trx: Transaction
 ) => {
+  console.log('aaaaaa')
   try {
     const { username, password, email, document, documentType, phone, birthDate: rawBirthDate, gender, position } = input
 
@@ -327,6 +338,7 @@ const signUpWithOrganization = async (
 
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
   } catch (error) {
+    console.log(error.message)
     await trx.rollback()
     throw new Error(error.message)
   }

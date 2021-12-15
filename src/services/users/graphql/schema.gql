@@ -46,6 +46,9 @@ input SignUpWithOrganizationInput {
   document: String!
   documentType: DocumentType!
   phone: String!
+  position: String
+  birthDate: String
+  gender: UserGender
   organizationInfos: OrganizationInfos!
 }
 
