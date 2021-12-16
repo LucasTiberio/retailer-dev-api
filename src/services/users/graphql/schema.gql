@@ -43,8 +43,8 @@ input SignUpWithOrganizationInput {
   username: String!
   email: String!
   password: String!
-  document: String!
-  documentType: DocumentType!
+  document: String
+  documentType: DocumentType
   phone: String!
   position: String
   birthDate: String
@@ -55,6 +55,7 @@ input SignUpWithOrganizationInput {
 input OrganizationInfos {
   organization: OrganizationInput!
   additionalInfos: AdditionalInfos!
+  teammates: InviteTeammatesInput
 }
 
 type User {

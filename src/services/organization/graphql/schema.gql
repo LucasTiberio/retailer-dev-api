@@ -227,7 +227,7 @@ input OrganizationInput {
   name: String!
   phone: String
   contactEmail: String
-  document: String
+  document: String!
   address: OrganizationAddressInput
 }
 

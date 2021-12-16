@@ -23,6 +23,9 @@ export interface IOrganizationPayload {
     type: Integrations
   }
   additionalInfos: IOrganizationAdittionalInfos
+  teammates: {
+    emails: string[]
+  }
 }
 
 export interface IOrganizationAdittionalInfos {

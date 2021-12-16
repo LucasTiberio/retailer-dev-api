@@ -240,12 +240,17 @@ const signUpWithOrganization = async (
         reason: string
         plataform: string
       }
+      teammates: {
+        emails: string[]
+      }
     }
   },
   context: { redisClient: RedisClient; headers: IncomingHttpHeaders },
   trx: Transaction
 ) => {
-  console.log('aaaaaa')
+  let organizationCreatedId
+  let signUpCreatedUser: ISignUpFromDB | null = null
+
   try {
     const { username, password, email, document, documentType, phone, birthDate: rawBirthDate, gender, position } = input
 
@@ -312,7 +317,7 @@ const signUpWithOrganization = async (
         .returning('*')
     }
 
-    await OrganizationService.createOrganization(
+    const organizationCreated = await OrganizationService.createOrganization(
       input.organizationInfos,
       {
         client: {
@@ -321,6 +326,7 @@ const signUpWithOrganization = async (
         },
         redisClient: context.redisClient,
         createOrganizationWithoutIntegrationSecret: CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET,
+        headers: context.headers
       },
       trx
     )
@@ -336,11 +342,27 @@ const signUpWithOrganization = async (
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     }
 
+    organizationCreatedId = organizationCreated.id
+    signUpCreatedUser = signUpCreated[0] as ISignUpFromDB
+
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
   } catch (error) {
     console.log(error.message)
+    organizationCreatedId = null
+    signUpCreatedUser = null
     await trx.rollback()
     throw new Error(error.message)
+  } finally {
+    if (organizationCreatedId && signUpCreatedUser && input.organizationInfos.teammates?.emails?.length) {
+      OrganizationService.inviteUnlimitedTeammates({ ...input.organizationInfos.teammates, unlimited: true }, {
+        organizationId: organizationCreatedId,
+        client: {
+          id: signUpCreatedUser.id,
+          origin: 'user',
+        },
+        headers: context.headers as IncomingHttpHeaders
+      }, trx)
+    }
   }
 }
 
