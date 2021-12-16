@@ -19,3 +19,7 @@ export const JWT_SECRET = process.env.JWT_SECRET ?? ''
 export const CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET = process.env.CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET ?? ''
 export const LOJA_INTEGRADA_APPLICATION_KEY = process.env.LOJA_INTEGRADA_APPLICATION_KEY ?? ''
 export const MONGO_URI = process.env.MONGO_URI ?? ''
+
+export const AGIDESK_URL = process.env.AGIDESK_URL
+export const AGIDESK_USER = process.env.AGIDESK_USER
+export const AGIDESK_PASSWORD = process.env.AGIDESK_PASSWORD

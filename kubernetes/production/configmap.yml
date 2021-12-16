@@ -15,3 +15,4 @@ data:
   WEBHOOK_URL: "https://webhook.gohubly.com/graphql"
   VTEX_HOOK_URL: https://hook-orders.plugone.io/feed/affiliate/vtex/orders/sync
   COUPON_URL: https://coupon.gohubly.com/graphql
+  AGIDESK_URL: https://hubly.hml.agidesk.com

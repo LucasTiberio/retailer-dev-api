@@ -70,3 +70,21 @@ export enum EUserGender {
   FEMALE = 'female',
   UNDEFINED = 'undefined'
 }
+
+export interface AgideskAuthenticateResponse {
+  access_token: string
+  expires_in: number
+  token_type: 'Bearer'
+  scope?: string
+  refresh_token: string
+}
+
+export interface AgideskCreateUserPayload {
+  fullname: string
+  customertitle: string
+  customercode: string
+  email: string
+  password: string
+  status_id: 2
+  step: 'tour'
+}

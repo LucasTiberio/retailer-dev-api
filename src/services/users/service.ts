@@ -2,7 +2,7 @@ import common from '../../common'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
 import MadesaMailService from '../mail/madesa'
-import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType } from './types'
+import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType, AgideskAuthenticateResponse, AgideskCreateUserPayload } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
 import knexDatabase from '../../knex-database'
@@ -12,7 +12,7 @@ import ServicesService from '../services/service'
 import WhiteLabelService from '../white-label/service'
 import UserOrganizationsService from '../users-organizations/service'
 import { RedisClient } from 'redis'
-import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
+import { AGIDESK_PASSWORD, AGIDESK_URL, AGIDESK_USER, CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { IncomingHttpHeaders } from 'http'
 import { DEFAULT_DOMAINS, INDICAE_LI_WHITE_LABEL_DOMAIN, MADESA_WHITE_LABEL_DOMAIN } from '../../common/consts'
 import getHeaderDomain from '../../utils/getHeaderDomain'
@@ -25,6 +25,8 @@ import GrowPowerMailService from '../mail/grow-power'
 import { GROW_POWER_WHITE_LABEL_DOMAIN } from '../../common/consts'
 import { InviteStatus } from '../users-organizations/types'
 import moment from 'moment'
+import Axios from 'axios'
+import getWithEncodedParameters from '../../utils/getWithEncodedParameters'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -345,6 +347,16 @@ const signUpWithOrganization = async (
     organizationCreatedId = organizationCreated.id
     signUpCreatedUser = signUpCreated[0] as ISignUpFromDB
 
+    await sendContactToAgidesk({
+      fullname: signUpCreatedUser.username,
+      customertitle: organizationCreated.name,
+      customercode: input.organizationInfos.organization.document,
+      email: signUpCreatedUser.email,
+      password: input.password,
+      status_id: 2,
+      step: 'tour'
+    })
+
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
   } catch (error) {
     console.log(error.message)
@@ -540,6 +552,37 @@ const getPendencyMetadata = async (pendency: EUserPendencies, ctx: { organizatio
     return hublyInvoice?.id ?? ''
   }
 }
+
+const authenticateAgideskUser = async () => {
+  const { data } = await Axios.post<AgideskAuthenticateResponse>(
+    `${AGIDESK_URL}/api/v1/auth/token`, 
+    getWithEncodedParameters({
+      username: AGIDESK_USER,
+      password: AGIDESK_PASSWORD,
+      grant_type: 'password'
+    }), 
+    { headers: { 'X-Tenant-ID': 'hubly', 'Content-Type': 'application/x-www-form-urlencoded' } }
+  )
+
+  return data
+}
+
+const createUserInAgidesk = async (payload: AgideskCreateUserPayload, token: string): Promise<boolean> => {
+  const { data } = await Axios.post(
+    `${AGIDESK_URL}/api/v1/contacts`,
+    getWithEncodedParameters<AgideskCreateUserPayload>(payload), 
+    { headers: { 'Authorization': `Bearer ${token}`, 'X-Tenant-ID': 'hubly', 'Content-Type': 'application/x-www-form-urlencoded' } }
+  )
+
+  return Boolean(data?.id)
+}
+
+const sendContactToAgidesk = async (payload: AgideskCreateUserPayload): Promise<boolean> => {
+  const response = await authenticateAgideskUser()
+  
+  return createUserInAgidesk(payload, response.access_token)
+}
+
 
 export default {
   signUp,
