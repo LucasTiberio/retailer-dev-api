@@ -125,6 +125,12 @@ const generateShortenerUrl = async (
     throw new Error(integrationTypeShortenerGeneratorNotFound)
   }
 
+  const existent = integration.type === Integrations.KLIPFOLIO ? await ShortenerUrlService.getExistentUrlShortenerForKlipfolioIntegration(affiliate.id, trx) : null
+
+  if (existent) {
+    return affiliateShorterUrlAdapter(existent)
+  }
+
   const shorterUrl = await ShortenerUrlService.shortenerUrl(memberUrlToAttach, context.organizationId, trx)
 
   const attachedShorterUrlOnAffiliate = await attachShorterUrlOnAffiliate(affiliate.id, shorterUrl.id, trx)
