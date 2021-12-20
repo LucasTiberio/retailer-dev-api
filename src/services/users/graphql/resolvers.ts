@@ -43,6 +43,9 @@ const resolvers: IResolvers = {
         return service.changePassword(input, { headers }, trx)
       })
     },
+    confirmRecoveryPasswordCode: (_, { input }) => {
+      return service.confirmRecoveryPasswordCode(input)
+    },
   },
   Query: {
     getUser: (_, __, { client }) => {

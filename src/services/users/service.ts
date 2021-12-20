@@ -27,6 +27,8 @@ import { InviteStatus } from '../users-organizations/types'
 import moment from 'moment'
 import Axios from 'axios'
 import getWithEncodedParameters from '../../utils/getWithEncodedParameters'
+import redisClient from '../../lib/Redis'
+import generateRandomNumber from '../../utils/generate-random-number'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -445,38 +447,17 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
   if (!user) throw new Error('E-mail not found.')
 
   try {
-    const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
+    const [emailName] = email.split('@')
+    const code = await generateSixDigitsCode(emailName)
 
-    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
-    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
-      await LojaIntegradaMailService.sendRecoveryPasswordMail({
-        email: user.email,
-        username: user.username,
-        hashToVerify: encryptedHashVerification,
-      })
-    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
-      await MadesaMailService.sendRecoveryPasswordMail({
-        email: user.email,
-        username: user.username,
-        hashToVerify: encryptedHashVerification,
-      })
-    } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
-      await GrowPowerMailService.sendRecoveryPasswordMail({
-        email: user.email,
-        username: user.username,
-        hashToVerify: encryptedHashVerification,
-      })
-    } else {
-      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
-      await MailService.sendRecoveryPasswordMail({
-        email: user.email,
-        username: user.username,
-        hashToVerify: encryptedHashVerification,
-        whiteLabelInfo
-      })
-    }
+    console.log({ code })
+    
+    await redisClient.setAsync(`recovery_password_${emailName}`, JSON.stringify({
+      confirmed: false,
+      code
+    }), 'EX', 43200)
 
-    await (trx || database.knexConfig)('users').where('email', email.toLowerCase()).update({ verification_hash: encryptedHashVerification, verified: true })
+    await sendRecoveryPasswordEmail({ user, code, context }, trx)
 
     return true
   } catch (e) {
@@ -486,13 +467,21 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
 
 const changePassword = async (attrs: IChangePassword, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   try {
+    const [emailName] = attrs.email.split('@')
+    const recoveryPasswordMetadata = await redisClient.getAsync(`recovery_password_${emailName}`)
+    const parsedPasswordMetadata = JSON.parse(recoveryPasswordMetadata)
+
+    if (!parsedPasswordMetadata?.confirmed) {
+      throw new Error('recovery_password_unconfirmed_code')
+    }
+
     if (!common.verifyPassword(attrs.password))
       throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
 
     const encryptedPassword = await common.encrypt(attrs.password)
 
     const [userPasswordChanged] = await (trx || database.knexConfig)('users')
-      .where('verification_hash', attrs.hash)
+      .where('email', attrs.email)
       .update({ encrypted_password: encryptedPassword, verification_hash: null })
       .returning(['email', 'username'])
 
@@ -507,6 +496,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username, whiteLabelInfo })
     }
+
+    await redisClient.del(`recovery_password_${emailName}`)
 
     return true
   } catch (e) {
@@ -583,6 +574,69 @@ const sendContactToAgidesk = async (payload: AgideskCreateUserPayload): Promise<
   return createUserInAgidesk(payload, response.access_token)
 }
 
+const confirmRecoveryPasswordCode = async (input: { email: string, code: number }) => {
+  const { email, code } = input
+  const [emailName] = email.split('@')
+  const recoveryPasswordMetadata = await redisClient.getAsync(`recovery_password_${emailName}`)
+  const parsedPasswordMetadata = JSON.parse(recoveryPasswordMetadata)
+  const existantCode = parsedPasswordMetadata.code
+
+  if (existantCode === code) {
+    await redisClient.setAsync(`recovery_password_${emailName}`, JSON.stringify({
+      confirmed: true,
+      code
+    }))
+
+    return true
+  }
+
+  throw new Error('invalid_recovery_password_code')
+}
+
+const generateSixDigitsCode = async (email: string): Promise<number> => {
+  const code = generateRandomNumber()
+  const recoveryPasswordMetadata = await redisClient.getAsync(`recovery_password_${email}`)
+  const parsedPasswordMetadata = JSON.parse(recoveryPasswordMetadata)
+  const alreadyExistantCode = parsedPasswordMetadata?.code
+
+  if (alreadyExistantCode) {
+    return alreadyExistantCode
+  }
+
+  return +code
+}
+
+const sendRecoveryPasswordEmail = async ({ user, code, context }: { user: any, code: number, context: { headers: IncomingHttpHeaders } }, trx: Transaction) => {
+  let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
+
+  if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+    await LojaIntegradaMailService.sendRecoveryPasswordMail({
+      email: user.email,
+      username: user.username,
+      code,
+    })
+  } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+    await MadesaMailService.sendRecoveryPasswordMail({
+      email: user.email,
+      username: user.username,
+      code,
+    })
+  } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+    await GrowPowerMailService.sendRecoveryPasswordMail({
+      email: user.email,
+      username: user.username,
+      code,
+    })
+  } else {
+    const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+    await MailService.sendRecoveryPasswordMail({
+      email: user.email,
+      username: user.username,
+      code,
+      whiteLabelInfo
+    })
+  }
+}
 
 export default {
   signUp,
@@ -601,5 +655,6 @@ export default {
   signUpWithEmailPhoneNameDocument,
   getUserPendencies,
   getPendencyMetadata,
-  getOrganizationsWaitingForApproval
+  getOrganizationsWaitingForApproval,
+  confirmRecoveryPasswordCode
 }

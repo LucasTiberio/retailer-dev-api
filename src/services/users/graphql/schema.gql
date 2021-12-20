@@ -11,16 +11,22 @@ extend type Mutation {
   signUpWithOrganization(input: SignUpWithOrganizationInput!): User!
   userVerifyEmail(input: UserVerifyEmailInput!): Boolean
   userRecoveryPassword(input: UserRecoveryPasswordInput!): Boolean
+  confirmRecoveryPasswordCode(input: ConfirmRecoveryPasswordInput!): Boolean
   userPasswordChange(input: UserPasswordChangeInput!): Boolean
 }
 
 input UserPasswordChangeInput {
-  hash: String!
+  email: String!
   password: String!
 }
 
 input UserRecoveryPasswordInput {
   email: String!
+}
+
+input ConfirmRecoveryPasswordInput {
+  email: String!
+  code: Int!
 }
 
 input UserVerifyEmailInput {

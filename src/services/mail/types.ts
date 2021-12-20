@@ -20,7 +20,8 @@ export interface ISendMail extends IMail {
 }
 
 export interface ISendRecoveryPasswordMail extends IMail {
-  hashToVerify: string
+  code: number
+  hashToVerify?: string
 }
 export interface ISendInviteUserMail extends IBaseMail {
   email: string
