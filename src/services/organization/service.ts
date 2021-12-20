@@ -343,6 +343,8 @@ const inviteUnlimitedTeammates = async (
 
               const adminRole = await getOrganizationRoleByName(OrganizationRoles.ADMIN, trx)
 
+              console.log({ adminRole })
+
               await (trx || knexDatabase.knexConfig)('users_organization_roles')
                 .update({
                   organization_role_id: adminRole.id,
@@ -361,7 +363,7 @@ const inviteUnlimitedTeammates = async (
           userEmail = await UserService.signUpWithEmailOnly(item, trx)
         }
 
-        const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.ADMIN, OrganizationInviteStatus.PENDENT, trx, hashToVerify)
+        const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.MEMBER, OrganizationInviteStatus.PENDENT, trx, hashToVerify)
 
         let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
         if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
