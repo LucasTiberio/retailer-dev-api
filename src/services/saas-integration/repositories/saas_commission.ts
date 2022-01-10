@@ -2,7 +2,7 @@ import organization from '../../organization'
 import SaasCommissionSchema from '../models/SaasCommission'
 
 const getSignaturesByOrganizationId = async (organizationId: string) => {
-  const signatures = await SaasCommissionSchema.find({ organizationId }).lean()
+  const signatures = await SaasCommissionSchema.find({ organizationId }).sort({ createdAt: -1 }).lean()
   return signatures
 }
 
