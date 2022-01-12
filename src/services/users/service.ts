@@ -2,7 +2,7 @@ import common from '../../common'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
 import MadesaMailService from '../mail/madesa'
-import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType, AgideskAuthenticateResponse, AgideskCreateUserPayload } from './types'
+import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType, AgideskAuthenticateResponse, AgideskCreateUserPayload, IUpdateUserInformationPayload } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
 import knexDatabase from '../../knex-database'
@@ -638,6 +638,31 @@ const sendRecoveryPasswordEmail = async ({ user, code, context }: { user: any, c
   }
 }
 
+const updateUserInformation = async (attrs: IUpdateUserInformationPayload, trx: Transaction) => {
+  const { email, ...fieldsToUpdate } = attrs
+  const { document, phone, username } = fieldsToUpdate
+  const documentType = document.length === 11 ? 'cpf' : 'cnpj'
+
+  if (!document) {
+    throw new Error('missing_document')
+  }
+
+  if (!phone) {
+    throw new Error('missing_phone_number')
+  }
+
+  if (!username) {
+    throw new Error('missing_username')
+  }
+
+  const [userId] = await (trx || database.knexConfig)('users')
+    .update({ ...fieldsToUpdate, document_type: documentType })
+    .where('email', email)
+    .returning('id')
+
+  return !!userId
+}
+
 export default {
   signUp,
   resendConfirmationEmail,
@@ -656,5 +681,6 @@ export default {
   getUserPendencies,
   getPendencyMetadata,
   getOrganizationsWaitingForApproval,
-  confirmRecoveryPasswordCode
+  confirmRecoveryPasswordCode,
+  updateUserInformation
 }

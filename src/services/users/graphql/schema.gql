@@ -13,6 +13,14 @@ extend type Mutation {
   userRecoveryPassword(input: UserRecoveryPasswordInput!): Boolean
   confirmRecoveryPasswordCode(input: ConfirmRecoveryPasswordInput!): Boolean
   userPasswordChange(input: UserPasswordChangeInput!): Boolean
+  updateUserInformation(input: UpdateUserInformationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+input UpdateUserInformationInput {
+  document: String!
+  phone: String!
+  email: String!
+  username: String!
 }
 
 input UserPasswordChangeInput {

@@ -46,6 +46,11 @@ const resolvers: IResolvers = {
     confirmRecoveryPasswordCode: (_, { input }) => {
       return service.confirmRecoveryPasswordCode(input)
     },
+    updateUserInformation: (_, { input }, { organizationId }) => {
+      return database.knexConfig.transaction((trx: Transaction) => {
+        return service.updateUserInformation(input, trx)
+      })
+    }
   },
   Query: {
     getUser: (_, __, { client }) => {

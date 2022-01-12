@@ -88,3 +88,10 @@ export interface AgideskCreateUserPayload {
   status_id: 2
   step: 'tour'
 }
+
+export interface IUpdateUserInformationPayload {
+  email: string;
+  document: string
+  phone: string
+  username: string
+}
