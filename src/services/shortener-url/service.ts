@@ -59,6 +59,17 @@ const shortenerUrl = async (originalUrl: string, organizationId: string, trx: Tr
   return originalUrlFound
 }
 
+const getExistentUrlShortenerForKlipfolioIntegration = async (affiliateId: string, trx: Transaction) => {
+  const [existent] = await (trx || knexDatabase.knexConfig)('url_shorten as us')
+    .innerJoin('users_organization_service_roles_url_shortener as uosrus', 'us.id', 'uosrus.url_shorten_id')
+    .innerJoin('users_organization_service_roles as uosr', 'uosr.id', 'uosrus.users_organization_service_roles_id')
+    .where('uosr.id', affiliateId)
+    .orderBy('us.created_at', 'asc')
+    .select('uosrus.*')
+
+  return existent
+}
+
 const getShortnerUrlByOriginalUrl = async (originalUrl: string, trx: Transaction) => {
   const [shortIdFoundOnDb] = await (trx || knexDatabase.knexConfig)('url_shorten').where('original_url', originalUrl).select('*')
 
@@ -143,6 +154,7 @@ const getAffiliateLatestUrl = async (ctx: { userId: string; organizationId: stri
 
 export default {
   shortenerUrl,
+  getExistentUrlShortenerForKlipfolioIntegration,
   getOriginalUrlByCode,
   getShortenerUrlById,
   getAffiliateLastGeneratedUrl,

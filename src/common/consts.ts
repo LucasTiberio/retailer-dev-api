@@ -18,6 +18,7 @@ export const MESSAGE_ERROR_USER_PENDENT_ORGANIZATION_INVITE = 'user are pendent 
 export const MESSAGE_ERROR_USER_ALREADY_REPLIED_INVITE = 'user has already replied to the invitation'
 export const MESSAGE_ERROR_ORGANIZATION_DOES_NOT_HAVE_ACTIVE_INTEGRATION = 'organization doesnt have active integration'
 
+export const HUBLY_WEBHOOK_HEADER = 'x-hubly-key'
 export const PAYMENTS_URL = process.env.PAYMENTS_URL
 export const COUPON_URL = process.env.COUPON_URL
 export const WEBHOOK_URL = process.env.WEBHOOK_URL

@@ -2,6 +2,7 @@ import { IWebhookSubscriptions} from './types'
 import Axios from 'axios'
 import { webhooUrlCantBeVerified } from '../../common/errors'
 import WebhookSubscriptionRepository from './repository'
+import { HUBLY_WEBHOOK_HEADER } from '../../common/consts'
 
 const getAvailableWebhooks = async () => {
   return WebhookSubscriptionRepository.getAvailableWebhooks()
@@ -22,7 +23,10 @@ const subscribe = async (
 ) => {
   try {
     await Axios.post(input.url, { "ping": "pong" }, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        [HUBLY_WEBHOOK_HEADER]: input.apiKey
+      },
     })
 
     return WebhookSubscriptionRepository.createSubscription(input)
@@ -37,7 +41,10 @@ const updateSubscription = async (
 ) => {
   try {
     await Axios.post(input.url, { "ping": "pong" }, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        [HUBLY_WEBHOOK_HEADER]: input.apiKey
+      },
     })
     
     const payload = await WebhookSubscriptionRepository.updateSubscription(input)

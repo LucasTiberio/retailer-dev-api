@@ -119,10 +119,16 @@ const generateShortenerUrl = async (
     memberUrlToAttach = iuguUrlWithMemberAttached
   } else if (integration.type === Integrations.KLIPFOLIO) {
     const lojaIntegradaRedirectUrl = 'https://criar.lojaintegrada.com.br/indicaae'
-    const klipfolioUrlWithMemberAttached = `${lojaIntegradaRedirectUrl}?utm_source=afiliados&utm_campaign=${context.organizationId}_${affiliate.id}`
+    const klipfolioUrlWithMemberAttached = `${lojaIntegradaRedirectUrl}?utm_source=afiliados&utm_medium=indicaae&utm_campaign=${context.organizationId}_${affiliate.id}`
     memberUrlToAttach = klipfolioUrlWithMemberAttached
   } else {
     throw new Error(integrationTypeShortenerGeneratorNotFound)
+  }
+
+  const existent = integration.type === Integrations.KLIPFOLIO ? await ShortenerUrlService.getExistentUrlShortenerForKlipfolioIntegration(affiliate.id, trx) : null
+
+  if (existent) {
+    return affiliateShorterUrlAdapter(existent)
   }
 
   const shorterUrl = await ShortenerUrlService.shortenerUrl(memberUrlToAttach, context.organizationId, trx)

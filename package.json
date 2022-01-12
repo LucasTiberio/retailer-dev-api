@@ -83,10 +83,6 @@
     "uuidv4": "^6.0.8",
     "valid-url": "^1.0.9"
   },
-  "resolutions": {
-    "fs-capacitor": "^6.2.0",
-    "graphql-upload": "^11.0.0"
-  },
   "devDependencies": {
     "jest": "^25.2.0",
     "prettier": "^2.0.5",
@@ -95,5 +91,9 @@
     "ts-node": "^8.8.1",
     "ts-node-dev": "^1.0.0-pre.44",
     "ts-node-register": "^1.0.0"
+  },
+  "resolutions": {
+    "**/**/fs-capacitor": "^6.2.0",
+    "**/graphql-upload": "^11.0.0"
   }
 }

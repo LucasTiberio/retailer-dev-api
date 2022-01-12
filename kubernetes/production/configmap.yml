@@ -12,7 +12,7 @@ data:
   PAYMENTS_URL: "http://plugone-payments-production.plugone-payments-production.svc.cluster.local/graphql"
   REDIRECT_URL: https://go.plugone.io
   REDIS_HOST: plugone-prod.redis.cache.windows.net
-  WEBHOOK_URL: "https://webhook.gohubly.com/graphql"
+  WEBHOOK_URL: https://webhook.gohubly.com/graphql
   VTEX_HOOK_URL: https://hook-orders.plugone.io/feed/affiliate/vtex/orders/sync
   COUPON_URL: https://coupon.gohubly.com/graphql
   AGIDESK_URL: https://hubly.hml.agidesk.com
