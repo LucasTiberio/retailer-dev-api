@@ -1,8 +1,8 @@
-import { ApolloServer, makeExecutableSchema } from "apollo-server-express";
-import GraphQLAPI from "./graphql";
-import store from "./store";
-import redisClient from "./lib/Redis";
-import errorAdapter from "./utils/errorAdapter";
+import { ApolloServer, makeExecutableSchema } from 'apollo-server-express'
+import GraphQLAPI from './graphql'
+import store from './store'
+import redisClient from './lib/Redis'
+import errorAdapter from './utils/errorAdapter'
 
 const server = new ApolloServer({
   schema: makeExecutableSchema({
@@ -16,22 +16,25 @@ const server = new ApolloServer({
     maxFieldSize: 700000,
   },
   context: ({ req }) => {
-    store.resetStores();
+    store.resetStores()
+
+    console.log('new Request', { req })
+
     return {
       headers: req.headers,
       redisClient,
-    };
+    }
   },
   formatError: (error) => {
-    const formattedError = errorAdapter(error.message);
+    const formattedError = errorAdapter(error.message)
     return {
       ...formattedError,
       message: error.message,
       stack: error?.extensions?.exception?.stacktrace,
-    };
+    }
   },
   introspection: true,
   playground: true,
-});
+})
 
-export default server;
+export default server
