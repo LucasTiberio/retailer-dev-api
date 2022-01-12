@@ -1063,18 +1063,27 @@ const organizationUploadImage = async (
 const setCurrentOrganization = async (currentOrganizationPayload: { organizationId: string | null }, context: { client: IUserToken; redisClient: RedisClient }, trx: Transaction) => {
   if (!context.client) throw new Error(MESSAGE_ERROR_TOKEN_MUST_BE_PROVIDED)
 
+  console.log({ context })
+  console.log({ currentOrganizationPayload })
+
   if (!currentOrganizationPayload.organizationId) {
     return context.redisClient.del(context.client.id)
   }
 
   const isUserOrganization = await getUserOrganizationByIds(context.client.id, currentOrganizationPayload.organizationId, trx)
 
+  console.log({ isUserOrganization })
+
   if (!isUserOrganization) throw new Error(MESSAGE_ERROR_USER_NOT_IN_ORGANIZATION)
 
   try {
     const currentOrganization = await context.redisClient.setAsync(context.client.id, currentOrganizationPayload.organizationId)
+
+    console.log({ currentOrganization })
+
     return currentOrganization === 'OK'
   } catch (e) {
+    console.log({ error: e.message })
     throw new Error(e.message)
   }
 }
