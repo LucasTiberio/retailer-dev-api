@@ -190,6 +190,7 @@ type OrganizationAverageTicket {
 
 type OrganizationRevenue {
   amount: Float!
+  commission: Float
 }
 
 input GetOrganizationRevenueInput {
