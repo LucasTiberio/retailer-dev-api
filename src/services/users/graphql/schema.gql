@@ -13,7 +13,7 @@ extend type Mutation {
   userRecoveryPassword(input: UserRecoveryPasswordInput!): Boolean
   confirmRecoveryPasswordCode(input: ConfirmRecoveryPasswordInput!): Boolean
   userPasswordChange(input: UserPasswordChangeInput!): Boolean
-  updateUserInformation(input: UpdateUserInformationInput!): Boolean @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+  updateUserInformation(input: UpdateUserInformationInput!): UpdateUserInformationResponse @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
 }
 
 input UpdateUserInformationInput {
@@ -95,6 +95,12 @@ enum DocumentType {
 type UserPendenciesWithMetadata {
   pendency: UserPendencies!
   metadata: String
+}
+
+type UpdateUserInformationResponse {
+  username: String!
+  phone: String!
+  document: String!
 }
 
 enum UserPendencies {

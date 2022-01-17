@@ -655,12 +655,22 @@ const updateUserInformation = async (attrs: IUpdateUserInformationPayload, trx: 
     throw new Error('missing_username')
   }
 
-  const [userId] = await (trx || database.knexConfig)('users')
+  const [user] = await (trx || database.knexConfig)('users')
     .update({ ...fieldsToUpdate, document_type: documentType })
     .where('email', email)
-    .returning('id')
+    .returning('*')
 
-  return !!userId
+  const { 
+    username: updatedUsername,
+    document: updatedDocument,
+    phone: updatedPhone
+  } = user
+
+  return {
+    username: updatedUsername,
+    document: updatedDocument,
+    phone: updatedPhone
+  }
 }
 
 export default {
