@@ -908,6 +908,35 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
   }
 }
 
+const resetUncompletedSignUpAfterInvite = async (input: { inviteHash: string, email: string }, trx: Transaction) => {
+  try {
+    const { inviteHash, email } = input
+
+    const [user] = await (trx || knexDatabase.knexConfig)('users')
+      .select('*')
+      .where('email', email)
+
+    const [userOrganizationId] = await (trx || knexDatabase.knexConfig)('users_organizations')
+      .update({
+        invite_hash: inviteHash,
+        invite_status: InviteStatus.pendent,
+      })
+      .where('user_id', user.id)
+      .returning('id')
+    
+    await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
+      .update({
+        active: false,
+      })
+      .where('users_organization_id', userOrganizationId)
+      .returning('id')
+
+    return true
+  } catch(_) {
+    return false
+  }
+}
+
 const _usersOrganizationAdapter = (record: IUserOrganizationDB) => ({
   user: {
     id: record.id,
@@ -1584,4 +1613,5 @@ export default {
   requestAffiliateServiceMembers,
   organizationRolesAttach,
   setCurrentOrganizationReturnInfos,
+  resetUncompletedSignUpAfterInvite
 }
