@@ -473,7 +473,8 @@ const getOrganizationRevenue = async (
 
   try {
     const { data } = await Axios.get(url)
-    return { amount: data.amount }
+
+    return { amount: data.amount, commission: data.commission }
   } catch (error) {
     throw new Error(error.message)
   }
