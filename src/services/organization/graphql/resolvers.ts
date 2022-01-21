@@ -81,7 +81,7 @@ const resolvers: IResolvers = {
       return database.knexConfig.transaction((trx: Transaction) => {
         return service.handlePublicOrganization(input, { organizationId }, trx)
       })
-    },
+    }
   },
   Query: {
     verifyOrganizationName: (_, { input }) => {

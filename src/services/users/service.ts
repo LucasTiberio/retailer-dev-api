@@ -2,7 +2,7 @@ import common from '../../common'
 import MailService from '../mail/service'
 import LojaIntegradaMailService from '../mail/loja-integrada'
 import MadesaMailService from '../mail/madesa'
-import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType } from './types'
+import { ISignUp, IChangePassword, ISignUpFromDB, EUserPendencies, UserPendencies, IDocumentType, AgideskAuthenticateResponse, AgideskCreateUserPayload, IUpdateUserInformationPayload } from './types'
 import { Transaction } from 'knex'
 import database from '../../knex-database'
 import knexDatabase from '../../knex-database'
@@ -12,7 +12,7 @@ import ServicesService from '../services/service'
 import WhiteLabelService from '../white-label/service'
 import UserOrganizationsService from '../users-organizations/service'
 import { RedisClient } from 'redis'
-import { CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
+import { AGIDESK_PASSWORD, AGIDESK_URL, AGIDESK_USER, CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET } from '../../common/envs'
 import { IncomingHttpHeaders } from 'http'
 import { DEFAULT_DOMAINS, INDICAE_LI_WHITE_LABEL_DOMAIN, MADESA_WHITE_LABEL_DOMAIN } from '../../common/consts'
 import getHeaderDomain from '../../utils/getHeaderDomain'
@@ -24,6 +24,11 @@ import { IBaseMail } from '../mail/types'
 import GrowPowerMailService from '../mail/grow-power'
 import { GROW_POWER_WHITE_LABEL_DOMAIN } from '../../common/consts'
 import { InviteStatus } from '../users-organizations/types'
+import moment from 'moment'
+import Axios from 'axios'
+import getWithEncodedParameters from '../../utils/getWithEncodedParameters'
+import redisClient from '../../lib/Redis'
+import generateRandomNumber from '../../utils/generate-random-number'
 
 const _signUpAdapter = (record: ISignUpFromDB) => ({
   username: record.username,
@@ -32,6 +37,9 @@ const _signUpAdapter = (record: ISignUpFromDB) => ({
   document: record.document,
   documentType: record.document_type,
   phone: record.phone,
+  gender: record.gender,
+  birthDate: record.birth_date,
+  position: record.position
 })
 
 
@@ -88,7 +96,7 @@ const resendConfirmationEmail = async (userId: string, context: { headers: Incom
 }
 
 const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
-  const { username, password, email, document, documentType, phone } = attrs
+  const { username, password, email, document, documentType, phone, birthDate: rawBirthDate, gender, position } = attrs
 
   if (!document) {
     throw new Error('document_is_required')
@@ -96,6 +104,10 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
   if (!documentType) {
     throw new Error('documentType_is_required')
+  }
+  
+  if (!email) {
+    throw new Error('username_is_required')
   }
 
   if (!common.verifyPassword(password))
@@ -118,6 +130,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
 
   const encryptedPassword = await common.encrypt(password)
   const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
+  const birthDate = rawBirthDate ? moment(rawBirthDate).format('YYYY-MM-DD') : null
 
   let signUpCreated: ISignUpFromDB[]
 
@@ -131,10 +144,14 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
           document,
           document_type: documentType,
           phone,
+          gender,
+          birth_date: birthDate,
+          position
         })
         .where('id', userPreAddedFound.id)
         .into('users')
         .returning('*')
+
     } else {
       signUpCreated = await (trx || database.knexConfig)
         .insert({
@@ -145,10 +162,19 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
           document,
           document_type: documentType,
           phone,
+          gender,
+          birth_date: birthDate,
+          position
         })
         .into('users')
         .returning('*')
     }
+
+    await (trx || database.knexConfig)('users_organizations')
+      .update({
+        invite_hash: null
+      })
+      .where('user_id', signUpCreated[0].id)
 
     if (organizationIdFoundByDomain && !userPreAddedFound) {
       const organization = await OrganizationService.getOrganizationById(organizationIdFoundByDomain, trx)
@@ -204,6 +230,16 @@ const signUpWithOrganization = async (
         name: string
         contactEmail: string
         phone: string
+        document: string
+        address: {
+          cep: string
+          address: string
+          number: string
+          complement?: string
+          neighbourhood: string
+          city: string
+          state: string
+        }
       }
       additionalInfos: {
         segment: string
@@ -211,21 +247,19 @@ const signUpWithOrganization = async (
         reason: string
         plataform: string
       }
+      teammates: {
+        emails: string[]
+      }
     }
   },
   context: { redisClient: RedisClient; headers: IncomingHttpHeaders },
   trx: Transaction
 ) => {
+  let organizationCreatedId
+  let signUpCreatedUser: ISignUpFromDB | null = null
+
   try {
-    const { username, password, email, document, documentType, phone } = input
-
-    if (!document) {
-      throw new Error('document_is_required')
-    }
-
-    if (!documentType) {
-      throw new Error('documentType_is_required')
-    }
+    const { username, password, email, document, documentType, phone, birthDate: rawBirthDate, gender, position } = input
 
     if (!common.verifyPassword(password))
       throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
@@ -236,6 +270,7 @@ const signUpWithOrganization = async (
 
     const encryptedPassword = await common.encrypt(password)
     const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ username, password, email, timestamp: +new Date() }))
+    const birthDate = rawBirthDate ? moment(rawBirthDate).format('YYYY-MM-DD') : null
 
     let signUpCreated: ISignUpFromDB[]
 
@@ -248,6 +283,9 @@ const signUpWithOrganization = async (
           document,
           document_type: documentType,
           phone,
+          gender,
+          birth_date: birthDate,
+          position
         })
         .where('id', userPreAddedFound.id)
         .into('users')
@@ -262,12 +300,15 @@ const signUpWithOrganization = async (
           document,
           document_type: documentType,
           phone,
+          gender,
+          birth_date: birthDate,
+          position
         })
         .into('users')
         .returning('*')
     }
 
-    await OrganizationService.createOrganization(
+    const organizationCreated = await OrganizationService.createOrganization(
       input.organizationInfos,
       {
         client: {
@@ -276,6 +317,7 @@ const signUpWithOrganization = async (
         },
         redisClient: context.redisClient,
         createOrganizationWithoutIntegrationSecret: CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET,
+        headers: context.headers
       },
       trx
     )
@@ -291,10 +333,37 @@ const signUpWithOrganization = async (
       await MailService.sendSignUpMail({ email: signUpCreated[0].email, username: signUpCreated[0].username, hashToVerify: signUpCreated[0].verification_hash, whiteLabelInfo })
     }
 
+    organizationCreatedId = organizationCreated.id
+    signUpCreatedUser = signUpCreated[0] as ISignUpFromDB
+
+    // await sendContactToAgidesk({
+    //   fullname: signUpCreatedUser.username,
+    //   customertitle: organizationCreated.name,
+    //   customercode: input.organizationInfos.organization.document,
+    //   email: signUpCreatedUser.email,
+    //   password: input.password,
+    //   status_id: 2,
+    //   step: 'tour'
+    // })
+
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
   } catch (error) {
+    console.log(error.message)
+    organizationCreatedId = null
+    signUpCreatedUser = null
     await trx.rollback()
     throw new Error(error.message)
+  } finally {
+    // if (organizationCreatedId && signUpCreatedUser && input.organizationInfos.teammates?.emails?.length) {
+    //   OrganizationService.inviteUnlimitedTeammates({ ...input.organizationInfos.teammates, unlimited: true }, {
+    //     organizationId: organizationCreatedId,
+    //     client: {
+    //       id: signUpCreatedUser.id,
+    //       origin: 'user',
+    //     },
+    //     headers: context.headers as IncomingHttpHeaders
+    //   }, trx)
+    // }
   }
 }
 
@@ -365,38 +434,17 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
   if (!user) throw new Error('E-mail not found.')
 
   try {
-    const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
+    const [emailName] = email.split('@')
+    const code = await generateSixDigitsCode(emailName)
 
-    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
-    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
-      await LojaIntegradaMailService.sendRecoveryPasswordMail({
-        email: user.email,
-        username: user.username,
-        hashToVerify: encryptedHashVerification,
-      })
-    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
-      await MadesaMailService.sendRecoveryPasswordMail({
-        email: user.email,
-        username: user.username,
-        hashToVerify: encryptedHashVerification,
-      })
-    } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
-      await GrowPowerMailService.sendRecoveryPasswordMail({
-        email: user.email,
-        username: user.username,
-        hashToVerify: encryptedHashVerification,
-      })
-    } else {
-      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
-      await MailService.sendRecoveryPasswordMail({
-        email: user.email,
-        username: user.username,
-        hashToVerify: encryptedHashVerification,
-        whiteLabelInfo
-      })
-    }
+    console.log({ code })
+    
+    await redisClient.setAsync(`recovery_password_${emailName}`, JSON.stringify({
+      confirmed: false,
+      code
+    }), 'EX', 43200)
 
-    await (trx || database.knexConfig)('users').where('email', email.toLowerCase()).update({ verification_hash: encryptedHashVerification, verified: true })
+    await sendRecoveryPasswordEmail({ user, code, context }, trx)
 
     return true
   } catch (e) {
@@ -406,13 +454,21 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
 
 const changePassword = async (attrs: IChangePassword, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   try {
+    const [emailName] = attrs.email.split('@')
+    const recoveryPasswordMetadata = await redisClient.getAsync(`recovery_password_${emailName}`)
+    const parsedPasswordMetadata = JSON.parse(recoveryPasswordMetadata)
+
+    if (!parsedPasswordMetadata?.confirmed) {
+      throw new Error('recovery_password_unconfirmed_code')
+    }
+
     if (!common.verifyPassword(attrs.password))
       throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
 
     const encryptedPassword = await common.encrypt(attrs.password)
 
     const [userPasswordChanged] = await (trx || database.knexConfig)('users')
-      .where('verification_hash', attrs.hash)
+      .where('email', attrs.email)
       .update({ encrypted_password: encryptedPassword, verification_hash: null })
       .returning(['email', 'username'])
 
@@ -427,6 +483,8 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username, whiteLabelInfo })
     }
+
+    await redisClient.del(`recovery_password_${emailName}`)
 
     return true
   } catch (e) {
@@ -473,6 +531,135 @@ const getPendencyMetadata = async (pendency: EUserPendencies, ctx: { organizatio
   }
 }
 
+const authenticateAgideskUser = async () => {
+  const { data } = await Axios.post<AgideskAuthenticateResponse>(
+    `${AGIDESK_URL}/api/v1/auth/token`, 
+    getWithEncodedParameters({
+      username: AGIDESK_USER,
+      password: AGIDESK_PASSWORD,
+      grant_type: 'password'
+    }), 
+    { headers: { 'X-Tenant-ID': 'hubly', 'Content-Type': 'application/x-www-form-urlencoded' } }
+  )
+
+  return data
+}
+
+const createUserInAgidesk = async (payload: AgideskCreateUserPayload, token: string): Promise<boolean> => {
+  const { data } = await Axios.post(
+    `${AGIDESK_URL}/api/v1/contacts`,
+    getWithEncodedParameters<AgideskCreateUserPayload>(payload), 
+    { headers: { 'Authorization': `Bearer ${token}`, 'X-Tenant-ID': 'hubly', 'Content-Type': 'application/x-www-form-urlencoded' } }
+  )
+
+  return Boolean(data?.id)
+}
+
+const sendContactToAgidesk = async (payload: AgideskCreateUserPayload): Promise<boolean> => {
+  const response = await authenticateAgideskUser()
+  
+  return createUserInAgidesk(payload, response.access_token)
+}
+
+const confirmRecoveryPasswordCode = async (input: { email: string, code: number }) => {
+  const { email, code } = input
+  const [emailName] = email.split('@')
+  const recoveryPasswordMetadata = await redisClient.getAsync(`recovery_password_${emailName}`)
+  const parsedPasswordMetadata = JSON.parse(recoveryPasswordMetadata)
+  const existantCode = parsedPasswordMetadata.code
+
+  if (existantCode === code) {
+    await redisClient.setAsync(`recovery_password_${emailName}`, JSON.stringify({
+      confirmed: true,
+      code
+    }))
+
+    return true
+  }
+
+  throw new Error('invalid_recovery_password_code')
+}
+
+const generateSixDigitsCode = async (email: string): Promise<number> => {
+  const code = generateRandomNumber()
+  const recoveryPasswordMetadata = await redisClient.getAsync(`recovery_password_${email}`)
+  const parsedPasswordMetadata = JSON.parse(recoveryPasswordMetadata)
+  const alreadyExistantCode = parsedPasswordMetadata?.code
+
+  if (alreadyExistantCode) {
+    return alreadyExistantCode
+  }
+
+  return +code
+}
+
+const sendRecoveryPasswordEmail = async ({ user, code, context }: { user: any, code: number, context: { headers: IncomingHttpHeaders } }, trx: Transaction) => {
+  let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
+
+  if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+    await LojaIntegradaMailService.sendRecoveryPasswordMail({
+      email: user.email,
+      username: user.username,
+      code,
+    })
+  } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+    await MadesaMailService.sendRecoveryPasswordMail({
+      email: user.email,
+      username: user.username,
+      code,
+    })
+  } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+    await GrowPowerMailService.sendRecoveryPasswordMail({
+      email: user.email,
+      username: user.username,
+      code,
+    })
+  } else {
+    const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+    await MailService.sendRecoveryPasswordMail({
+      email: user.email,
+      username: user.username,
+      code,
+      whiteLabelInfo
+    })
+  }
+}
+
+const updateUserInformation = async (attrs: IUpdateUserInformationPayload, trx: Transaction) => {
+  const { email, ...fieldsToUpdate } = attrs
+  const { document, phone, username } = fieldsToUpdate
+  const documentType = document.length === 11 ? 'cpf' : 'cnpj'
+
+  if (!document) {
+    throw new Error('missing_document')
+  }
+
+  if (!phone) {
+    throw new Error('missing_phone_number')
+  }
+
+  if (!username) {
+    throw new Error('missing_username')
+  }
+
+  const [user] = await (trx || database.knexConfig)('users')
+    .update({ ...fieldsToUpdate, document_type: documentType })
+    .where('email', email)
+    .returning('*')
+
+  const { 
+    username: updatedUsername,
+    document: updatedDocument,
+    phone: updatedPhone
+  } = user
+
+  return {
+    username: updatedUsername,
+    document: updatedDocument,
+    phone: updatedPhone
+  }
+}
+
 export default {
   signUp,
   resendConfirmationEmail,
@@ -490,5 +677,7 @@ export default {
   signUpWithEmailPhoneNameDocument,
   getUserPendencies,
   getPendencyMetadata,
-  getOrganizationsWaitingForApproval
+  getOrganizationsWaitingForApproval,
+  confirmRecoveryPasswordCode,
+  updateUserInformation
 }

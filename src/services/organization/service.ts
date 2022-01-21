@@ -80,14 +80,14 @@ const attachOrganizationAditionalInfos = async (input: IOrganizationAdittionalIn
 
 const createOrganization = async (
   createOrganizationPayload: IOrganizationPayload,
-  context: { redisClient: RedisClient; client: IUserToken; createOrganizationWithoutIntegrationSecret?: string },
+  context: { redisClient: RedisClient; client: IUserToken; createOrganizationWithoutIntegrationSecret?: string, headers?: IncomingHttpHeaders },
   trx: Transaction
 ) => {
   const {
-    organization: { name, contactEmail, phone },
+    organization: { name, contactEmail, phone, document },
     integration,
+    teammates
   } = createOrganizationPayload
-
   try {
     const [organizationFound] = await (trx || knexDatabase.knexConfig)('organizations').where('user_id', context.client.id).select()
 
@@ -96,7 +96,6 @@ const createOrganization = async (
     //     throw new Error('Only 1 organization per account an available')
     //   }
     // }
-
     if (
       (!context.createOrganizationWithoutIntegrationSecret && !integration) ||
       (!integration && context.createOrganizationWithoutIntegrationSecret !== CREATE_ORGANIZATION_WITHOUT_INTEGRATION_SECRET)
@@ -111,17 +110,22 @@ const createOrganization = async (
     }
 
     const attachedOrganizationInfosId = await attachOrganizationAditionalInfos(createOrganizationPayload.additionalInfos, trx)
+    const attachedOrganizationAddressId = createOrganizationPayload.organization.address 
+      ? await attachOrganizationAddress(createOrganizationPayload.organization.address, trx)
+      : null
 
     const [organizationCreated] = await (trx || database.knexConfig)
       .insert({
         name,
+        document,
         contact_email: contactEmail,
         user_id: context.client.id,
         slug: stringToSlug(name),
         phone,
-        free_trial: true,
-        free_trial_expires: moment().add(FREE_TRIAL_DAYS, 'days'),
+        free_trial: false,
+        free_trial_expires: moment(),
         organization_additional_infos_id: attachedOrganizationInfosId,
+        organization_address_id: attachedOrganizationAddressId
       })
       .into('organizations')
       .returning('*')
@@ -151,6 +155,7 @@ const createOrganization = async (
 
     return _organizationAdapter(organizationCreated)
   } catch (e) {
+    console.log(e.message)
     throw new Error(e.message)
   }
 }
@@ -159,6 +164,18 @@ const verifyOrganizationName = async (name: string, trx: Transaction) => {
   const organizationFound = await (trx || knexDatabase.knexConfig)('organizations').where('name', name).select()
 
   return !!organizationFound.length
+}
+
+const attachOrganizationAddress = async (address: IOrganizationPayload['organization']['address'], trx: Transaction) => {
+  if (!address) throw new Error('address_not_found')
+
+  const [organizationAddressCreatedId] = await (trx || knexDatabase.knexConfig)('organizations_address')
+    .insert({
+      ...address
+    })
+    .returning('id')
+
+  return organizationAddressCreatedId
 }
 
 const organizationRolesAttach = async (
@@ -258,14 +275,131 @@ const userTeammatesOrganizationCountByUserOrganizationId = async (organizationId
   return userOrganizationCreatedId.count
 }
 
-const inviteTeammates = async (
+const inviteUnlimitedTeammates = async (
   input: {
-    emails: string[]
+    emails: string[],
+    unlimited?: boolean
   },
   context: { organizationId: string; client: IUserToken; headers: IncomingHttpHeaders },
-  trx: Transaction
+  transaction: Transaction
 ) => {
-  const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId)
+  const trx = transaction.isCompleted() ? transaction : knexDatabase.knexConfig as Transaction
+
+  const uniqueEmails = [...new Set(input.emails)]
+
+  const [organization] = await trx('organizations').where('id', context.organizationId).select('name')
+
+  if (!organization) throw new Error('Organization not found.')
+
+  const hasFounder = await isFounderBulk(context.organizationId, input.emails, trx)
+
+  if (hasFounder) {
+    throw new Error('Founder doesnt attached a member service')
+  }
+
+  try {
+    let users = await Promise.all(
+      uniqueEmails.map(async (item) => {
+        let hashToVerify = await common.encryptSHA256(JSON.stringify({ item, timestamp: +new Date() }))
+
+        const userEmailFound = await UserService.getUserByEmail(item, trx)
+
+        if (userEmailFound) {
+          const usersOrganizationFound = await getUserOrganizationByIds(userEmailFound.id, context.organizationId, trx)
+
+          if (usersOrganizationFound) {
+            const [userOrganizationCreated] = await (trx || knexDatabase.knexConfig)('users_organizations')
+              .update({
+                invite_status: OrganizationInviteStatus.PENDENT,
+                active: true,
+              })
+              .where('id', usersOrganizationFound.id)
+              .returning('*')
+
+            let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
+            if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+              await LojaIntegradaMailService.sendInviteUserMail({
+                email: item,
+                hashToVerify,
+                organizationName: organization.name,
+              })
+            } else {
+              const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+              await MailService.sendInviteUserMail({
+                email: item,
+                hashToVerify,
+                organizationName: organization.name,
+                whiteLabelInfo
+              })
+            }
+
+            const userInOrganizationService = await ServicesService.getUserInOrganizationServiceByUserOrganizationId({ usersOrganizationId: usersOrganizationFound.id }, trx)
+
+            if (userInOrganizationService.length) {
+              await ServicesService.inativeServiceMembersById(
+                userInOrganizationService.map((item) => item.id),
+                trx
+              )
+
+              const adminRole = await getOrganizationRoleByName(OrganizationRoles.ADMIN, trx)
+
+              console.log({ adminRole })
+
+              await (trx || knexDatabase.knexConfig)('users_organization_roles')
+                .update({
+                  organization_role_id: adminRole.id,
+                })
+                .where('users_organization_id', usersOrganizationFound.id)
+                .returning('*')
+            }
+
+            return userOrganizationCreated
+          }
+        }
+
+        let userEmail = await UserService.getUserByEmail(item, trx)
+
+        if (!userEmail) {
+          userEmail = await UserService.signUpWithEmailOnly(item, trx)
+        }
+
+        const userOrganizationCreated = await organizationRolesAttach(userEmail.id, context.organizationId, OrganizationRoles.MEMBER, OrganizationInviteStatus.PENDENT, trx, hashToVerify)
+
+        let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
+        if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+          await LojaIntegradaMailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organization.name,
+          })
+        } else {
+          await MailService.sendInviteNewUserMail({
+            email: userEmail.email,
+            hashToVerify,
+            organizationName: organization.name,
+          })
+        }
+
+        return userOrganizationCreated
+      })
+    )
+
+    return users
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
+const inviteTeammates = async (
+  input: {
+    emails: string[],
+    unlimited?: boolean
+  },
+  context: { organizationId: string; client: IUserToken; headers: IncomingHttpHeaders },
+  transaction: Transaction
+) => {
+  const trx = transaction.isCompleted() ? transaction : knexDatabase.knexConfig as Transaction
+  const affiliateTeammateRules = await OrganizationRulesService.getAffiliateTeammateRules(context.organizationId, trx)
 
   const maxTeammates = affiliateTeammateRules.maxTeammates
 
@@ -273,9 +407,11 @@ const inviteTeammates = async (
 
   const uniqueEmails = [...new Set(input.emails)]
 
-  if (uniqueEmails.length > maxTeammates || Number(currentTeammates) + uniqueEmails.length > maxTeammates) throw new Error(MESSAGE_ERROR_UPGRADE_PLAN)
+  if (!input.unlimited) {
+    if (uniqueEmails.length > maxTeammates || Number(currentTeammates) + uniqueEmails.length > maxTeammates) throw new Error(MESSAGE_ERROR_UPGRADE_PLAN)
+  }
 
-  const [organization] = await (trx || knexDatabase.knexConfig)('organizations').where('id', context.organizationId).select('name')
+  const [organization] = await trx('organizations').where('id', context.organizationId).select('name')
 
   if (!organization) throw new Error('Organization not found.')
 
@@ -731,7 +867,6 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
 
     const [organizationId] = await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
-        invite_hash: null,
         invite_status: isResquested && user.invite_status === InviteStatus.pendent ? InviteStatus.pendent : responseInvitePayload.response,
       })
       .where('invite_hash', responseInvitePayload.inviteHash)
@@ -1448,6 +1583,7 @@ export default {
   inviteAffiliateServiceMembers,
   listTeammates,
   teammatesCapacities,
+  inviteUnlimitedTeammates,
   getOrganizationRoleByName,
   handleOrganizationDomain,
   getOrganizationPaymentsDetails,
@@ -1455,5 +1591,5 @@ export default {
   handlePublicOrganization,
   requestAffiliateServiceMembers,
   organizationRolesAttach,
-  setCurrentOrganizationReturnInfos,
+  setCurrentOrganizationReturnInfos
 }

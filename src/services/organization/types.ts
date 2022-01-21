@@ -7,12 +7,25 @@ export interface IOrganizationPayload {
     name: string
     contactEmail: string
     phone: string
+    document: string
+    address: {
+      cep: string
+      address: string
+      number: string
+      complement?: string
+      neighbourhood: string
+      city: string
+      state: string
+    }
   }
   integration?: {
     secrets: any
     type: Integrations
   }
   additionalInfos: IOrganizationAdittionalInfos
+  teammates: {
+    emails: string[]
+  }
 }
 
 export interface IOrganizationAdittionalInfos {

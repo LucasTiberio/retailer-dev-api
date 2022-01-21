@@ -11,16 +11,30 @@ extend type Mutation {
   signUpWithOrganization(input: SignUpWithOrganizationInput!): User!
   userVerifyEmail(input: UserVerifyEmailInput!): Boolean
   userRecoveryPassword(input: UserRecoveryPasswordInput!): Boolean
+  confirmRecoveryPasswordCode(input: ConfirmRecoveryPasswordInput!): Boolean
   userPasswordChange(input: UserPasswordChangeInput!): Boolean
+  updateUserInformation(input: UpdateUserInformationInput!): UpdateUserInformationResponse @hasOrganizationRole(role: ["ADMIN"]) @isVerified @acceptTermsAndConditions @isAuthenticated
+}
+
+input UpdateUserInformationInput {
+  document: String!
+  phone: String!
+  email: String!
+  username: String!
 }
 
 input UserPasswordChangeInput {
-  hash: String!
+  email: String!
   password: String!
 }
 
 input UserRecoveryPasswordInput {
   email: String!
+}
+
+input ConfirmRecoveryPasswordInput {
+  email: String!
+  code: Int!
 }
 
 input UserVerifyEmailInput {
@@ -29,35 +43,45 @@ input UserVerifyEmailInput {
 
 input SignUpInput {
   username: String!
+  birthDate: String
+  gender: UserGender
   email: String!
   password: String!
   document: String!
   documentType: DocumentType!
-  phone: String!
+  phone: String
+  position: String
 }
 
 input SignUpWithOrganizationInput {
   username: String!
   email: String!
   password: String!
-  document: String!
-  documentType: DocumentType!
+  document: String
+  documentType: DocumentType
   phone: String!
+  position: String
+  birthDate: String
+  gender: UserGender
   organizationInfos: OrganizationInfos!
 }
 
 input OrganizationInfos {
   organization: OrganizationInput!
   additionalInfos: AdditionalInfos!
+  teammates: InviteTeammatesInput
 }
 
 type User {
   id: String!
   username: String
+  birthDate: Date
+  gender: UserGender
   email: String!
   document: String
   documentType: DocumentType
   phone: String
+  position: String
   organizations(organizationId: String): [Organization]!
   token: String
 }
@@ -73,7 +97,19 @@ type UserPendenciesWithMetadata {
   metadata: String
 }
 
+type UpdateUserInformationResponse {
+  username: String!
+  phone: String!
+  document: String!
+}
+
 enum UserPendencies {
   PLUG_FORM,
   HUBLY_INVOICE
+}
+
+enum UserGender {
+  male,
+  female,
+  undefined
 }
