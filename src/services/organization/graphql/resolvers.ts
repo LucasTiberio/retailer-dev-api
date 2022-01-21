@@ -81,11 +81,6 @@ const resolvers: IResolvers = {
       return database.knexConfig.transaction((trx: Transaction) => {
         return service.handlePublicOrganization(input, { organizationId }, trx)
       })
-    },
-    resetUncompletedSignUpAfterInvite: (_, { input }) => {
-      return database.knexConfig.transaction((trx: Transaction) => {
-        return service.resetUncompletedSignUpAfterInvite(input, trx)
-      })
     }
   },
   Query: {

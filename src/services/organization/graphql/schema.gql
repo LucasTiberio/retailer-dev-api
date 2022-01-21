@@ -98,7 +98,6 @@ extend type Mutation {
   organizationUploadImage(input: OrganizationUploadImageInput!): Organization! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   inviteUserToOrganization(input: InviteUserToOrganizationInput!): Boolean! @hasOrganizationRole(role: ["ADMIN"]) @organizationPaidVerify @isVerified @acceptTermsAndConditions @isAuthenticated
   responseOrganizationInvite(input: ResponseOrganizationInviteInput!): ResponseOrganizationInvitePayload!
-  resetUncompletedSignUpAfterInvite(input: ResetUncompletedSignUpAfterInviteInput!): Boolean!
   handleUserPermissionInOrganization(input: HandleUserPermissionInOrganizationInput!): UserOrganizationRole!
     @hasOrganizationRole(role: ["ADMIN"])
     @organizationPaidVerify
@@ -191,11 +190,6 @@ input HandleUserPermissionInOrganizationInput {
 input ResponseOrganizationInviteInput {
   inviteHash: String!
   response: OrganizationInviteStatus!
-}
-
-input ResetUncompletedSignUpAfterInviteInput {
-  inviteHash: String!
-  email: String!
 }
 
 enum OrganizationInviteStatus {

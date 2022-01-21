@@ -155,6 +155,7 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .where('id', userPreAddedFound.id)
         .into('users')
         .returning('*')
+
     } else {
       signUpCreated = await (trx || database.knexConfig)
         .insert({
@@ -172,6 +173,12 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
         .into('users')
         .returning('*')
     }
+
+    await (trx || database.knexConfig)('users_organizations')
+      .update({
+        invite_hash: null
+      })
+      .where('user_id', signUpCreated[0].id)
 
     if (organizationIdFoundByDomain && !userPreAddedFound) {
       const organization = await OrganizationService.getOrganizationById(organizationIdFoundByDomain, trx)
