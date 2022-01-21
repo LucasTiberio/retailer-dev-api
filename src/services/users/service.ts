@@ -106,10 +106,6 @@ const signUp = async (attrs: ISignUp, context: { headers: IncomingHttpHeaders },
     throw new Error('documentType_is_required')
   }
   
-  if (!username) {
-    throw new Error('username_is_required')
-  }
-  
   if (!email) {
     throw new Error('username_is_required')
   }
@@ -265,22 +261,6 @@ const signUpWithOrganization = async (
   try {
     const { username, password, email, document, documentType, phone, birthDate: rawBirthDate, gender, position } = input
 
-    if (!rawBirthDate) {
-      throw new Error('birthDate_is_required')
-    }
-    
-    if (!gender) {
-      throw new Error('gender_is_required')
-    }
-    
-    if (!username) {
-      throw new Error('username_is_required')
-    }
-    
-    if (!email) {
-      throw new Error('email_is_required')
-    }
-
     if (!common.verifyPassword(password))
       throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
 
@@ -356,15 +336,15 @@ const signUpWithOrganization = async (
     organizationCreatedId = organizationCreated.id
     signUpCreatedUser = signUpCreated[0] as ISignUpFromDB
 
-    await sendContactToAgidesk({
-      fullname: signUpCreatedUser.username,
-      customertitle: organizationCreated.name,
-      customercode: input.organizationInfos.organization.document,
-      email: signUpCreatedUser.email,
-      password: input.password,
-      status_id: 2,
-      step: 'tour'
-    })
+    // await sendContactToAgidesk({
+    //   fullname: signUpCreatedUser.username,
+    //   customertitle: organizationCreated.name,
+    //   customercode: input.organizationInfos.organization.document,
+    //   email: signUpCreatedUser.email,
+    //   password: input.password,
+    //   status_id: 2,
+    //   step: 'tour'
+    // })
 
     return { ..._signUpAdapter(signUpCreated[0]), token: common.generateJwt(signUpCreated[0].id, 'user') }
   } catch (error) {
@@ -374,16 +354,16 @@ const signUpWithOrganization = async (
     await trx.rollback()
     throw new Error(error.message)
   } finally {
-    if (organizationCreatedId && signUpCreatedUser && input.organizationInfos.teammates?.emails?.length) {
-      OrganizationService.inviteUnlimitedTeammates({ ...input.organizationInfos.teammates, unlimited: true }, {
-        organizationId: organizationCreatedId,
-        client: {
-          id: signUpCreatedUser.id,
-          origin: 'user',
-        },
-        headers: context.headers as IncomingHttpHeaders
-      }, trx)
-    }
+    // if (organizationCreatedId && signUpCreatedUser && input.organizationInfos.teammates?.emails?.length) {
+    //   OrganizationService.inviteUnlimitedTeammates({ ...input.organizationInfos.teammates, unlimited: true }, {
+    //     organizationId: organizationCreatedId,
+    //     client: {
+    //       id: signUpCreatedUser.id,
+    //       origin: 'user',
+    //     },
+    //     headers: context.headers as IncomingHttpHeaders
+    //   }, trx)
+    // }
   }
 }
 
