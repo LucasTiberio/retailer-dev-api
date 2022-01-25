@@ -827,13 +827,11 @@ const sendRecoveryPasswordMail = async (data: ISendRecoveryPasswordMail) => {
                                                                     <tbody>
                                                                         <tr>
                                                                             <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color: #EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
-                                                                                Aqui está o seu código
-                                                                            </td>
-                                                                        </tr>
-
-                                                                        <tr>
-                                                                            <td align="center" height="36" bgcolor="#3B24A8" width="260" style="width:260px;font-family: 'Inter', sans-serif!important;margin:48px auto;color:#ffffff;text-align:center;font-weight:700;font-weight:bold;font-size:18px;line-height:24px;box-sizing:border-box;display:block;padding:16px 32px;height:56px;background-color: #EB0045;border-radius:6px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;">
-                                                                                ${data.code}
+                                                                                <a href="${getBaseUrl(data?.whiteLabelInfo?.customDomain)}/recovery-password/change-password/${
+        data.hashToVerify
+      }" style="color:#ffffff; font-weight:700;font-weight:bold;font-size:18px;line-height:24px;color: #ffffff; text-align: center;cursor: pointer;text-decoration: none;font-family: 'Inter', sans-serif!important;">
+                                                                                    Escolher nova senha
+                                                                                </a>
                                                                             </td>
                                                                         </tr>
                                                                     </tbody>

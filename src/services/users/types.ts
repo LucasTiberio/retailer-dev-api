@@ -52,6 +52,7 @@ export interface ISignUpAdapted {
 
 export interface IChangePassword {
   password: string
+  hash: string
   email: string
 }
 
