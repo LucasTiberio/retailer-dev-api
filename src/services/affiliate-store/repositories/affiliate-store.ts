@@ -3,7 +3,7 @@ import { ICreateAffiliateStore } from '../types'
 import { Transaction } from 'knex'
 
 const getBySlugAndOrganizationId = async (slug: string, organizationId: string, trx: Transaction) => {
-  return await (trx || knexDatabase.knexConfig)('affiliate_store').where('slug', slug).andWhere('organization_id', organizationId).first().select()
+  return await (trx || knexDatabase.knexConfig)('affiliate_store').where('slug', decodeURI(slug)).andWhere('organization_id', organizationId).first().select()
 }
 
 const updateAffiliateStoreSlug = async (affiliateStoreId: string, slug: string, trx: Transaction) => {
