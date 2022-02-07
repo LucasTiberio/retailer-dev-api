@@ -859,20 +859,26 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
 
   const [user] = await (trx || knexDatabase.knexConfig)('users_organizations AS uo')
     .where('invite_hash', responseInvitePayload.inviteHash)
-    .innerJoin('users AS usr', 'usr.id', 'uo.user_id')
-    .select('usr.encrypted_password', 'usr.username', 'usr.email', 'usr.phone', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested')
+    .innerJoin('users AS u', 'u.id', 'uo.user_id')
+    .innerJoin('users_organization_roles AS usr', 'usr.users_organization_id', 'uo.id')
+    .innerJoin('organization_roles AS or', 'or.id', 'usr.organization_role_id')
+    .select('u.encrypted_password', 'u.username', 'u.email', 'u.phone', 'uo.id AS user_organization_id', 'uo.invite_status', 'uo.is_requested', 'or.name AS organization_role_name')
 
   try {
     if (!user) return { status: false, message: userAlreadyRegistered }
 
+    const updateInviteHashIfAdmin = user?.organization_role_name === OrganizationRoles.ADMIN ? {
+      invite_hash: null
+    } : {}
+
     const [organizationId] = await (trx || knexDatabase.knexConfig)('users_organizations')
       .update({
         invite_status: isResquested && user.invite_status === InviteStatus.pendent ? InviteStatus.pendent : responseInvitePayload.response,
+        ...updateInviteHashIfAdmin
       })
       .where('invite_hash', responseInvitePayload.inviteHash)
       .returning('organization_id')
 
-      console.log({ organizationId }, organizationId)
 
     const [affiliateId] = await (trx || knexDatabase.knexConfig)('users_organization_service_roles')
       .update({
@@ -880,8 +886,6 @@ const responseInvite = async (responseInvitePayload: IResponseInvitePayload, trx
       })
       .where('users_organization_id', user.user_organization_id)
       .returning('id')
-
-    console.log({ affiliateId }, affiliateId)
 
     try {
       const res = await AppsService.generateAffiliateCoupon({
