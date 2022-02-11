@@ -24,7 +24,8 @@ input UpdateUserInformationInput {
 }
 
 input UserPasswordChangeInput {
-  email: String!
+  email: String
+  hash: String
   password: String!
 }
 

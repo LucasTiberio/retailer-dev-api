@@ -434,17 +434,38 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
   if (!user) throw new Error('E-mail not found.')
 
   try {
-    const [emailName] = email.split('@')
-    const code = await generateSixDigitsCode(emailName)
+    const encryptedHashVerification = await common.encryptSHA256(JSON.stringify({ email, timestamp: +new Date() }))
 
-    console.log({ code })
-    
-    await redisClient.setAsync(`recovery_password_${emailName}`, JSON.stringify({
-      confirmed: false,
-      code
-    }), 'EX', 43200)
+    let HEADER_HOST = (context.headers.origin || '').split('//')[1].split(':')[0]
+    if (INDICAE_LI_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await LojaIntegradaMailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+      })
+    } else if (MADESA_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await MadesaMailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+      })
+    } else if (GROW_POWER_WHITE_LABEL_DOMAIN.includes(HEADER_HOST)) {
+      await GrowPowerMailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+      })
+    } else {
+      const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
+      await MailService.sendRecoveryPasswordMail({
+        email: user.email,
+        username: user.username,
+        hashToVerify: encryptedHashVerification,
+        whiteLabelInfo
+      })
+    }
 
-    await sendRecoveryPasswordEmail({ user, code, context }, trx)
+    await (trx || database.knexConfig)('users').where('email', email.toLowerCase()).update({ verification_hash: encryptedHashVerification, verified: true })
 
     return true
   } catch (e) {
@@ -454,21 +475,13 @@ const recoveryPassword = async (email: string, context: { headers: IncomingHttpH
 
 const changePassword = async (attrs: IChangePassword, context: { headers: IncomingHttpHeaders }, trx: Transaction) => {
   try {
-    const [emailName] = attrs.email.split('@')
-    const recoveryPasswordMetadata = await redisClient.getAsync(`recovery_password_${emailName}`)
-    const parsedPasswordMetadata = JSON.parse(recoveryPasswordMetadata)
-
-    if (!parsedPasswordMetadata?.confirmed) {
-      throw new Error('recovery_password_unconfirmed_code')
-    }
-
     if (!common.verifyPassword(attrs.password))
       throw new Error(`Password must contain min ${common.PASSWORD_MIN_LENGTH} length and max ${common.PASSWORD_MAX_LENGTH} length, uppercase, lowercase, special caracter and number.`)
 
     const encryptedPassword = await common.encrypt(attrs.password)
 
     const [userPasswordChanged] = await (trx || database.knexConfig)('users')
-      .where('email', attrs.email)
+      .where('verification_hash', attrs.hash)
       .update({ encrypted_password: encryptedPassword, verification_hash: null })
       .returning(['email', 'username'])
 
@@ -483,8 +496,6 @@ const changePassword = async (attrs: IChangePassword, context: { headers: Incomi
       const whiteLabelInfo = await WhiteLabelService.getWhiteLabelInfosDomain(context, trx)
       await MailService.sendRecoveredPasswordMail({ email: userPasswordChanged.email, username: userPasswordChanged.username, whiteLabelInfo })
     }
-
-    await redisClient.del(`recovery_password_${emailName}`)
 
     return true
   } catch (e) {
